@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="13.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Features" Version="6.0.0-preview.4.21253.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Core\Core.Shared\Core.Shared.csproj" />
+    <ProjectReference Include="..\Core\GenericRepository\Core.GenericRepository.Shared\Core.GenericRepository.Shared.csproj" />
+    <ProjectReference Include="..\REAC.Domain.Shared\REAC.Domain.Shared.csproj" />
+    <ProjectReference Include="..\REAC.EntityFrameworkCore\REAC.EntityFrameworkCore.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Dtos\Litigation\GetAll\" />
+    <Folder Include="Dtos\ReformerAssigningRequest\" />
+  </ItemGroup>
+
+</Project>

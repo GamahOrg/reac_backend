@@ -1,0 +1,6 @@
+@REAC.Mobile_HostAddress = http://localhost:5275
+
+GET {{REAC.Mobile_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

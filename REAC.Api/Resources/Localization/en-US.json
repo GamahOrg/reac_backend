@@ -1,0 +1,19 @@
+{
+  "Contract_Not_Found": "Contract Not Found",
+
+  //#region OTP
+  "OTPCodeVALID": "OTP Code VALID",
+  "OTPCodeEXPIRED": "OTP Code EXPIRED",
+  "OTPCodeHAS_ISSUE": "OTP Code HAS ISSUE",
+  "OTPCodeNOT_EXIST": "OTP Code NOT EXIST",
+  "OTP_Code_WRONG": "OTP Code WRONG",
+  "OTP_SMS_Sent_SUCCESS": "OTP SMS Sent SUCCESS",
+  "OTP_SMS_Sent_FAILED": "OTP SMS Sent FAILED",
+
+  "OTPCode": "OTP: ",
+  // #endregion
+
+  //#region Common errors
+  "CannotConnectWithIntegrationsApi": "Can not Connect with Integrations Api"
+  //#endregion
+}
