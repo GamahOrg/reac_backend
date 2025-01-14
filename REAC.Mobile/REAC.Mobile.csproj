@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="13.0.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.8" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Core\Log\Core.Log.Application\Core.Log.Application.csproj" />
+    <ProjectReference Include="..\REAC.Application.Contracts\REAC.Application.Contracts.csproj" />
+    <ProjectReference Include="..\REAC.Application\REAC.Application.csproj" />
+    <ProjectReference Include="..\REAC.EntityFrameworkCore\REAC.EntityFrameworkCore.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Resources\" />
+    <Folder Include="reac\" />
+  </ItemGroup>
+
+</Project>

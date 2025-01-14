@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="AutoMapper" Version="13.0.1" />
+    <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="6.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Metadata" Version="8.0.2" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.4.0-preview1" />
+    <PackageReference Include="System.Text.Json" Version="8.0.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Core\GenericRepository\Core.GenericRepository\Core.GenericRepository.csproj" />
+    <ProjectReference Include="..\Core\Log\Core.Log.Application.Contracts\Core.Log.Application.Contracts.csproj" />
+    <ProjectReference Include="..\REAC.Application.Contracts\REAC.Application.Contracts.csproj" />
+    <ProjectReference Include="..\REAC.Domain.Shared\REAC.Domain.Shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="AppServices\Hubs\" />
+  </ItemGroup>
+
+</Project>

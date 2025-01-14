@@ -1,0 +1,330 @@
+{
+  "Header": {
+    "ResTime": "2024-02-25T07:15:48.922Z",
+    "ChId": "spl_user",
+    "RefId": "1",
+    "ReqID": "adc3e91065dae923002f9bf0",
+    "Status": {
+      "Code": 200,
+      "Description": "OK"
+    }
+  },
+  "Body": {
+    "data": [
+      {
+        "type": "contracts",
+        "id": "f7ad269c-e549-4170-966b-ac420c93ec50",
+        "attributes": {
+          "contract_no": "10732702933",
+          "contract_version": 2,
+          "contract_minor_number": 0,
+          "contract_start_date": "2023-07-29",
+          "contract_end_date": "2024-09-11",
+          "contract_type": {
+            "en": "Residential",
+            "ar": "سكني"
+          },
+          "termination_date": null,
+          "contract_revoke_date": null,
+          "contract_status": {
+            "en": "Fee reserved",
+            "ar": "الرسوم حجز"
+          },
+          "is_sublease": false,
+          "total_rent_amount": "14000.0"
+        },
+        "relationships": {
+          "lessor_individuals": {
+            "data": [
+              {
+                "type": "lessor_individuals",
+                "id": "20496"
+              },
+              {
+                "type": "lessor_individuals",
+                "id": "20499"
+              }
+            ]
+          },
+          "tenant_individuals": {
+            "data": [
+              {
+                "type": "tenant_individuals",
+                "id": "20497"
+              }
+            ]
+          },
+          "lessor_representative": {
+            "data": {
+              "type": "lessor_individuals",
+              "id": "20498"
+            }
+          },
+          "tenant_representative": {
+            "data": {
+              "type": "tenant_individuals",
+              "id": "20497"
+            }
+          },
+          "property": {
+            "data": {
+              "type": "contract_properties",
+              "id": "9928"
+            }
+          },
+          "rental_fee": {
+            "data": {
+              "type": "rental_fees",
+              "id": "8767"
+            }
+          }
+        }
+      }
+    ],
+    "included": [
+      {
+        "type": "lessor_individuals",
+        "id": "20496",
+        "attributes": {
+          "contract_id": "f7ad269c-e549-4170-966b-ac420c93ec50",
+          "party_role": {
+            "en": "Lessor",
+            "ar": "المؤجر"
+          },
+          "party_type": {
+            "en": "Individual",
+            "ar": "فرد"
+          },
+          "full_lessor_name": "حسين علي حاسن المكرمي",
+          "lessor_id_type": {
+            "en": "National Identity",
+            "ar": "وطنية هوية"
+          },
+          "lessor_id_number": "NLFzoMkgNRl4tbB7xnrIjA==\n"
+        },
+        "relationships": {}
+      },
+      {
+        "type": "lessor_individuals",
+        "id": "20499",
+        "attributes": {
+          "contract_id": "f7ad269c-e549-4170-966b-ac420c93ec50",
+          "party_role": {
+            "en": "Lessor",
+            "ar": "المؤجر"
+          },
+          "party_type": {
+            "en": "Individual",
+            "ar": "فرد"
+          },
+          "full_lessor_name": "حمد حمدان عبدهللا النصار",
+          "lessor_id_type": {
+            "en": "National Identity",
+            "ar": "وطنية هوية"
+          },
+          "lessor_id_number": "x03QJA9anEqQVS5bspudaQ==\n"
+        },
+        "relationships": {}
+      },
+      {
+        "type": "tenant_individuals",
+        "id": "20497",
+        "attributes": {
+          "contract_id": "f7ad269c-e549-4170-966b-ac420c93ec50",
+          "party_role": {
+            "en": "Tenant",
+            "ar": "المستأجر"
+          },
+          "party_type": {
+            "en": "Individual",
+            "ar": "فرد"
+          },
+          "full_name_of_tenant": "محمد خالد",
+          "tenant_id_type": {
+            "en": "Other",
+            "ar": "آخرى"
+          },
+          "tenant_id_number": "Se3VkeE0la807z22boxgaA==\n"
+        },
+        "relationships": {}
+      },
+      {
+        "type": "lessor_individuals",
+        "id": "20498",
+        "attributes": {
+          "contract_id": "f7ad269c-e549-4170-966b-ac420c93ec50",
+          "party_role": {
+            "en": "Lessor representative",
+            "ar": "المؤجر ممثل"
+          },
+          "party_type": {
+            "en": "Individual",
+            "ar": "فرد"
+          },
+          "full_lessor_name": "ابتهاج محمد بن شجاع العتيبي",
+          "lessor_id_type": {
+            "en": "National Identity",
+            "ar": "وطنية هوية"
+          },
+          "lessor_id_number": "xQKkzP8j7E6v3V1w38lzEQ==\n"
+        },
+        "relationships": {}
+      },
+      {
+        "type": "lessor_individuals",
+        "id": "20499",
+        "attributes": {
+          "contract_id": "f7ad269c-e549-4170-966b-ac420c93ec50",
+          "party_role": {
+            "en": "Lessor",
+            "ar": "المؤجر"
+          },
+          "party_type": {
+            "en": "Individual",
+            "ar": "فرد"
+          },
+          "full_lessor_name": "حمد حمدان عبدهللا النصار",
+          "lessor_id_type": {
+            "en": "National Identity",
+            "ar": "وطنية هوية"
+          },
+          "lessor_id_number": "x03QJA9anEqQVS5bspudaQ==\n"
+        },
+        "relationships": {}
+      },
+      {
+        "type": "lessor_individuals",
+        "id": "20496",
+        "attributes": {
+          "contract_id": "f7ad269c-e549-4170-966b-ac420c93ec50",
+          "party_role": {
+            "en": "Lessor",
+            "ar": "المؤجر"
+          },
+          "party_type": {
+            "en": "Individual",
+            "ar": "فرد"
+          },
+          "full_lessor_name": " حسين عليحاسن المكرمي ",
+          "lessor_id_type": {
+            "en": "National Identity",
+            "ar": "وطنية هوية"
+          },
+          "lessor_id_number": "NLFzoMkgNRl4tbB7xnrIjA==\n"
+        },
+        "relationships": {}
+      },
+      {
+        "type": "tenant_individuals",
+        "id": "20497",
+        "attributes": {
+          "contract_id": "f7ad269c-e549-4170-966b-ac420c93ec50",
+          "party_role": {
+            "en": "Tenant",
+            "ar": "المستأجر"
+          },
+          "party_type": {
+            "en": "Individual",
+            "ar": "فرد"
+          },
+          "full_name_of_tenant": "محمد خالد",
+          "tenant_id_type": {
+            "en": "Other",
+            "ar": "آخرى"
+          },
+          "tenant_id_number": "Se3VkeE0la807z22boxgaA==\n"
+        },
+        "relationships": {}
+      },
+      {
+        "type": "contract_properties",
+        "id": "9928",
+        "attributes": {
+          "contract_id": "f7ad269c-e549-4170-966b-ac420c93ec50",
+          "property_number": "5555",
+          "property_type": {
+            "en": "Villa",
+            "ar": "فيال"
+          },
+          "property_used_for": {
+            "en": "Individual Housing",
+            "ar": "أفراد سكن"
+          },
+          "total_of_floor": 2,
+          "total_of_units_for_each_floor": 4,
+          "contruction_date": "2016-02-01",
+          "regions": {
+            "ar": "الرياض",
+            "en": "Riyadh"
+          },
+          "city": {
+            "ar": "الرياض",
+            "en": "AR RIYADH"
+          },
+          "province": {
+            "ar": "الرياض",
+            "en": "الرياض"
+          },
+          "street_name": " رقم260 ",
+          "building_no": "4405",
+          "post_cost": "12345",
+          "additional_number": "8812",
+          "coordiantes": "{ latitude: , longitude: }"
+        },
+        "relationships": {
+          "units": {
+            "data": [
+              {
+                "type": "contract_units",
+                "id": "11707"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "type": "contract_units",
+        "id": "11707",
+        "attributes": {
+          "property_id": 9928,
+          "unit_number": "3",
+          "unit_type": {
+            "en": "Secondary apartment",
+            "ar": "ثانوية شقة"
+          },
+          "unit_used_for": {
+            "en": "Family Housing",
+            "ar": "عائالت سكن"
+          },
+          "unit_area": "3.0",
+          "number_of_rooms": "3",
+          "established_date": null,
+          "electricity_meter_device_number": null,
+          "water_meter_device_number": null,
+          "count_of_parking": null
+        },
+        "relationships": {}
+      },
+      {
+        "type": "rental_fees",
+        "id": "8767",
+        "attributes": {
+          "contract_id": "f7ad269c-e549-4170-966b-ac420c93ec50",
+          "total_rent_amount": "14000.0",
+          "payment_frequency": {
+            "en": "Recurring payments",
+            "ar": "متكررة دفعات"
+          },
+          "recurring_payment": {
+            "en": "Monthly",
+            "ar": "سنوي ربع"
+          }
+        },
+        "relationships": {}
+      }
+    ],
+    "meta": {
+      "count": 1
+    }
+  }
+}

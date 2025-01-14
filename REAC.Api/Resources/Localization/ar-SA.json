@@ -1,0 +1,19 @@
+{
+  "Contract_Not_Found": "بيانات العقد غير صحيحة",
+
+  //#region OTP
+  "OTPCodeVALID": "رمز OTP صحيح",
+  "OTPCodeEXPIRED": "رمز OTP منتهي الصلاحية",
+  "OTPCodeHAS_ISSUE": "هناك مشكلة في رمز OTP",
+  "OTPCodeNOT_EXIST": "رمز OTP غير موجود",
+  "OTP_Code_WRONG": "رمز OTP خاطئ",
+  "OTP_SMS_Sent_SUCCESS": "تم إرسال رسالة OTP نصية قصيرة بنجاح",
+  "OTP_SMS_Sent_FAILED": "فشل إرسال رسالة OTP نصية قصيرة.",
+
+  "OTPCode": "رمز التحقق: ",
+  // #endregion
+
+  //#region Common errors
+  "CannotConnectWithIntegrationsApi": "لا يمكن الإتصال مع تطبيقات التكامل API"
+  //#endregion
+}

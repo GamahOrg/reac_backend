@@ -1,0 +1,38 @@
+﻿    <Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>95b44be3-dc2b-4879-837d-3634631f83bc</UserSecretsId>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    <DockerComposeProjectPath>..\docker-compose.dcproj</DockerComposeProjectPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="6.0.0" />
+	  <PackageReference Include="AutoMapper" Version="13.0.1" />
+	  <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="7.0.3" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.2">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.19.5" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Core\Log\Core.Log.Application\Core.Log.Application.csproj" />
+    <ProjectReference Include="..\REAC.Application.Contracts\REAC.Application.Contracts.csproj" />
+    <ProjectReference Include="..\REAC.Application\REAC.Application.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Attachments\Rent\adfdfsdf\" />
+    <Folder Include="Attachments\Rent\cb3d6b00-2966-49dd-96db-16f345d74ae2\d4b21df4-bd49-4e3b-b634-2a714e4ebcf2\" />
+    <Folder Include="Attachments\Rent\contractkey\References\" />
+    <Folder Include="Attachments\Rent\contractkey\Requests\" />
+    <Folder Include="Attachments\Rent\eef3e3232\" />
+  </ItemGroup>
+
+</Project>

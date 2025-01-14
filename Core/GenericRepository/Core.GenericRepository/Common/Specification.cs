@@ -1,0 +1,23 @@
+﻿
+using Core.GenericRepository.Shared.BaseEntities;
+
+namespace Core.GenericRepository.Common
+{
+    /// <summary>
+    /// This object hold the query specifications.
+    /// </summary>
+    /// <typeparam name="T">The database entity.</typeparam>
+    public class Specification<T, TPrimaryKey> : BaseSpecification<T, TPrimaryKey>
+        where T : BaseEntity<TPrimaryKey>
+    {
+        /// <summary>
+        /// Gets or sets the value of number of item you want to skip in the query.
+        /// </summary>
+        public int? Skip { get; set; }
+
+        /// <summary>
+        /// Gets or sets the value of number of item you want to take in the query.
+        /// </summary>
+        public int? Take { get; set; }
+    }
+}
