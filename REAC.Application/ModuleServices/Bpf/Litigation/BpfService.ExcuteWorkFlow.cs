@@ -31,8 +31,10 @@ namespace Bpf.Application.ModuleServices
                 var response = await ExecuteWorkFlowSteps(litigationRequest.LitigationRequestCategory.BpfId, requestId, null, 1, null, cancellationToken);
 
 
-                litigationRequest.InternalStatusId = (response as DataResponse<ResponseWorkFlowDto>).Data.InternalStatus.Value;
-                litigationRequest.ExternalStatusId = (response as DataResponse<ResponseWorkFlowDto>).Data.ExternalStatus.Value;
+                //litigationRequest.InternalStatusId = (response as DataResponse<ResponseWorkFlowDto>).Data.InternalStatus.Value;
+                //litigationRequest.ExternalStatusId = (response as DataResponse<ResponseWorkFlowDto>).Data.ExternalStatus.Value;
+                litigationRequest.InternalStatusId = (response as DataResponse<ResponseWorkFlowDto>).Data.InternalStatus is not null ? (response as DataResponse<ResponseWorkFlowDto>).Data.InternalStatus.Value : RequestStatus.New;
+                litigationRequest.ExternalStatusId = (response as DataResponse<ResponseWorkFlowDto>).Data.ExternalStatus is not null ? (response as DataResponse<ResponseWorkFlowDto>).Data.ExternalStatus.Value : RequestStatus.New;
                 litigationRequest.IsSent = true;
                 litigationRequest.SentOn = DateTime.Now;
                 litigationRequest.IsActive = (response as DataResponse<ResponseWorkFlowDto>).Data.IsActive;

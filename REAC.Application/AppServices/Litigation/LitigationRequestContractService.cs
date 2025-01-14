@@ -76,6 +76,7 @@ namespace REAC.Application.AppServices.Litigation
                         contract.ContractFileId = model.ContractFileId;
                         break;
                     case LitigationRequestContractType.OtherServices:
+                        contract.ContractFileId = model.ContractFileId;
                         break;
                 }
                 var response = _repository.SaveChangesAsync().Result;
