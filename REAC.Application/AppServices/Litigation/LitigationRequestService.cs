@@ -253,7 +253,7 @@ namespace REAC.Application.AppServices.Litigation
                         }
                     }
                     else
-                        await _bpfService.ExcuteWorkFlow(litigationRequest.Id, default);
+                        await _bpfService.ExcuteWorkFlow(litigationRequest.Id, default, null);
                     return new DataResponse<LitigationCreateUpdateDto>()
                     {
                         Data = model,
@@ -3475,9 +3475,9 @@ namespace REAC.Application.AppServices.Litigation
                 else
                 {
                     var _bpfService = _serviceProvider.GetRequiredService<IBpfService>();
-                    await _bpfService.ExcuteWorkFlow(litigationRequest.Id, default);
-                    litigationRequest.InternalStatusId = RequestStatus.New;
-                    litigationRequest.ExternalStatusId = RequestStatus.New;
+                    await _bpfService.ExcuteWorkFlow(litigationRequest.Id, default, 2);
+                    litigationRequest.InternalStatusId = RequestStatus.LitigationFeesHaveBeenCollected;
+                    litigationRequest.ExternalStatusId = RequestStatus.LitigationFeesHaveBeenCollected;
 
                     //  Send Notification 
                     // تم الموافقة على طلب المشارطة على الدعوى رقم........
