@@ -26,7 +26,7 @@ namespace Bpf.Api.Controllers.Business
         {
             if (ModelState.IsValid)
             {
-                var returnValue = await _bpfService.ExcuteWorkFlow(requestId, cancellationToken);
+                var returnValue = await _bpfService.ExcuteWorkFlow(requestId, cancellationToken, null);
                 return Ok(returnValue);
             }
             return BadRequest();

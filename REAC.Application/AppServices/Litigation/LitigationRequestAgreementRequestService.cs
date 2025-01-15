@@ -224,7 +224,7 @@ namespace REAC.Application.AppServices.Litigation
                 else
                 {
                     var _bpfService = _serviceProvider.GetRequiredService<IBpfService>();
-                    await _bpfService.ExcuteWorkFlow(litigationRequest.Id, default);
+                    await _bpfService.ExcuteWorkFlow(litigationRequest.Id, default, null);
                     litigationRequest.InternalStatusId = RequestStatus.New;
                     litigationRequest.ExternalStatusId = RequestStatus.New;
 

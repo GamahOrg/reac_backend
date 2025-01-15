@@ -11,7 +11,7 @@ namespace Bpf.Application.ModuleServices
 {
     public partial class BpfService
     {
-        public async Task<BaseResponse> ExcuteWorkFlow(Guid requestId, CancellationToken cancellationToken)
+        public async Task<BaseResponse> ExcuteWorkFlow(Guid requestId,  CancellationToken cancellationToken, int? orderId = null)
         {
             try
             {
@@ -27,12 +27,15 @@ namespace Bpf.Application.ModuleServices
                           .AsNoTracking()
                           .Where(x => x.Id == requestId).ToList().FirstOrDefault();
 
+                BaseResponse response;
 
-                var response = await ExecuteWorkFlowSteps(litigationRequest.LitigationRequestCategory.BpfId, requestId, null, 1, null, cancellationToken);
+                if (orderId is not null)
+                     response = await ExecuteWorkFlowSteps(litigationRequest.LitigationRequestCategory.BpfId, requestId, null, (int)orderId, null, cancellationToken);
+                else
+                    response = await ExecuteWorkFlowSteps(litigationRequest.LitigationRequestCategory.BpfId, requestId, null, 1, null, cancellationToken);
 
 
-                //litigationRequest.InternalStatusId = (response as DataResponse<ResponseWorkFlowDto>).Data.InternalStatus.Value;
-                //litigationRequest.ExternalStatusId = (response as DataResponse<ResponseWorkFlowDto>).Data.ExternalStatus.Value;
+
                 litigationRequest.InternalStatusId = (response as DataResponse<ResponseWorkFlowDto>).Data.InternalStatus is not null ? (response as DataResponse<ResponseWorkFlowDto>).Data.InternalStatus.Value : RequestStatus.New;
                 litigationRequest.ExternalStatusId = (response as DataResponse<ResponseWorkFlowDto>).Data.ExternalStatus is not null ? (response as DataResponse<ResponseWorkFlowDto>).Data.ExternalStatus.Value : RequestStatus.New;
                 litigationRequest.IsSent = true;
@@ -64,7 +67,7 @@ namespace Bpf.Application.ModuleServices
                 }
 
 
-               
+
 
                 return response;
             }

@@ -604,7 +604,8 @@ namespace REAC.EntityFrameworkCore.Seed
                             CreatedOn = DateTime.Now,
                             CreatedBy = Guid.NewGuid(),
                             IsDeleted = false,
-
+                            InternalStatusId = RequestStatus.New,
+                            ExternalStatusId = RequestStatus.New,
                             DepartmentId = Guid.Parse("657004f4-57e1-4715-addc-0e5ff0b00938"),
                             StageId = _context.WorkFlowStepStages.ToList().FirstOrDefault().Id,
                             ShowForApplicant = true,
@@ -1277,7 +1278,8 @@ namespace REAC.EntityFrameworkCore.Seed
                             CreatedOn = DateTime.Now,
                             CreatedBy = Guid.NewGuid(),
                             IsDeleted = false,
-
+                            InternalStatusId = RequestStatus.New,
+                            ExternalStatusId = RequestStatus.New,
                             DepartmentId = Guid.Parse("657004f4-57e1-4715-addc-0e5ff0b00938"),
                             StageId = _context.WorkFlowStepStages.ToList().FirstOrDefault().Id,
                             ShowForApplicant = true,
