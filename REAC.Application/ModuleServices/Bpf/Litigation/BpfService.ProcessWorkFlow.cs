@@ -657,7 +657,7 @@ namespace Bpf.Application.ModuleServices
 
 
             }
-            _notificationService.SendNotifications(objEmail, objSms, lstNotification);
+            await _notificationService.SendNotifications(objEmail, objSms, lstNotification);
 
         }
         //المدعى -مدير ادارة التدقيق -المدعى عليه

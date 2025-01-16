@@ -114,7 +114,7 @@ namespace REAC.Application.ModuleServices
                         };
                 }
 
-                if (litigationRequest.LitigationRequestStage != LitigationRequestStage.Reconciliation)
+                if (litigationRequest.LitigationRequestStage != LitigationRequestStage.Reconciliation && litigationRequest.LitigationRequestStage != LitigationRequestStage.SetReformer)
                     return new BaseResponse()
                     {
                         IsDone = false,
@@ -172,25 +172,28 @@ namespace REAC.Application.ModuleServices
                         {
                             msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reconciliation_Cancelled).Result.Data?.Value;
                             msg = msg?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                            var currentReformerEmail = litigationRequest.ReformerCitizen is not null ? litigationRequest.ReformerCitizen.Email : request.ReformerCitizen.Email;
+                            var currentReformerMobile = litigationRequest.ReformerCitizen is not null ? litigationRequest.ReformerCitizen.Mobile : request.ReformerCitizen.Mobile;
+
 
                             await _notificationService.SendNotifications(
-                            new Contracts.Dtos.Notification.SendEmailDto()
+                            new SendEmailDto()
                             {
-                                To = new List<string>() { litigationRequest.ReformerCitizen.Email, deptAdminInfoReconciliation.Data.Email },
+                                To = new List<string>() { currentReformerEmail, deptAdminInfoReconciliation.Data.Email },
                                 Subject = "Reconciliation cancelled",
                                 Body = msg
                             },
                             new Contracts.Dtos.Integration.GEE.SMSRequestDto()
                             {
                                 message_text = msg,
-                                recipients = new List<string>() { litigationRequest.ReformerCitizen.Mobile, deptAdminInfoReconciliation.Data.Mobile },
+                                recipients = new List<string>() { currentReformerMobile, deptAdminInfoReconciliation.Data.Mobile },
                                 notification_type = "SMS",
                             },
                             new List<SysNotificationDto>()
                             {
                                new SysNotificationDto()
                                {
-                                    ActorId = litigationRequest.ReformerCitizen.Id,
+                                    ActorId = litigationRequest.ReformerCitizen is not null ? litigationRequest.ReformerCitizen.Id : litigationRequest.LitigationRequestReformerAssigningRequests.FirstOrDefault().CitizenId,
                                     CreatedOn = DateTime.Now,
                                     ActorTypeId = NotificationActorType.Reformer,
                                     IsViewed = false,

@@ -56,9 +56,9 @@ namespace REAC.Application.AppServices.Litigation
 
 
         #region Agreement Request
-        public async Task<BaseResponse> AddCitizenLitigationRequestForAgreementRequestReply(Guid requestId,string nationalId, ApproveRejectStatus agreementRequestStatus)
+        public async Task<BaseResponse> AddCitizenLitigationRequestForAgreementRequestReply(Guid requestId, string nationalId, ApproveRejectStatus agreementRequestStatus)
         {
-            
+
 
             Guid? referenceId = _userManager.Users.FirstOrDefault(u => u.UserName == nationalId).ReferenceId;
 
@@ -74,6 +74,7 @@ namespace REAC.Application.AppServices.Litigation
                           .Include(x => x.Contract.SecondPartyFacility)
                           .Include(x => x.Contract.SecondPartyCitizen)
                           .Where(x => x.Id == requestId).ToList().FirstOrDefault();
+            BaseResponse repositorySaveResponse = new BaseResponse();
 
             bool isDone = false;
             if (litigationRequest != null && referenceId != null)
@@ -96,6 +97,10 @@ namespace REAC.Application.AppServices.Litigation
                                 ShowForApplicant = false,
                                 LogMessage = agreementRequestStatus == ApproveRejectStatus.Approve ? "تم قبول المشارطة من قبل مقدم الطلب" : "تم رفض المشارطة من قبل مقدم الطلب"
                             });
+
+                            repositorySaveResponse = await _repository.SaveChangesAsync(new CancellationToken());
+                            if (!repositorySaveResponse.IsDone)
+                                return repositorySaveResponse;
                         }
                     }
                 }
@@ -120,6 +125,10 @@ namespace REAC.Application.AppServices.Litigation
                                     ShowForApplicant = false,
                                     LogMessage = agreementRequestStatus == ApproveRejectStatus.Approve ? "تم قبول المشارطة من قبل المدعي" : "تم رفض المشارطة من قبل المدعي"
                                 });
+
+                                repositorySaveResponse = await _repository.SaveChangesAsync(new CancellationToken());
+                                if (!repositorySaveResponse.IsDone)
+                                    return repositorySaveResponse;
                             }
                         }
                     }
@@ -145,6 +154,10 @@ namespace REAC.Application.AppServices.Litigation
                                     ShowForApplicant = false,
                                     LogMessage = agreementRequestStatus == ApproveRejectStatus.Approve ? "تم قبول المشارطة من قبل المدعي عليه" : "تم رفض المشارطة من قبل المدعي عليه"
                                 });
+
+                                repositorySaveResponse = await _repository.SaveChangesAsync(new CancellationToken());
+                                if (!repositorySaveResponse.IsDone)
+                                    return repositorySaveResponse;
                             }
                         }
                     }
@@ -170,6 +183,10 @@ namespace REAC.Application.AppServices.Litigation
                                     ShowForApplicant = false,
                                     LogMessage = agreementRequestStatus == ApproveRejectStatus.Approve ? "تم قبول المشارطة من قبل المدعي" : "تم رفض المشارطة من قبل المدعي"
                                 });
+
+                                repositorySaveResponse = await _repository.SaveChangesAsync(new CancellationToken());
+                                if (!repositorySaveResponse.IsDone)
+                                    return repositorySaveResponse;
                             }
                         }
                     }
@@ -195,6 +212,10 @@ namespace REAC.Application.AppServices.Litigation
                                     ShowForApplicant = false,
                                     LogMessage = agreementRequestStatus == ApproveRejectStatus.Approve ? "تم قبول المشارطة من قبل المدعي عليه" : "تم رفض المشارطة من قبل المدعي عليه"
                                 });
+
+                                repositorySaveResponse = await _repository.SaveChangesAsync(new CancellationToken());
+                                if (!repositorySaveResponse.IsDone)
+                                    return repositorySaveResponse;
                             }
                         }
                     }
@@ -209,6 +230,11 @@ namespace REAC.Application.AppServices.Litigation
                     litigationRequest.ExternalStatusId = RequestStatus.AgreementRequestHasBeenRejected;
                     litigationRequest.IsFinished = true;
                     litigationRequest.IsActive = false;
+
+                    repositorySaveResponse = await _repository.SaveChangesAsync(new CancellationToken());
+                    if (!repositorySaveResponse.IsDone)
+                        return repositorySaveResponse;
+
                     //  Send Notification 
                     // تم رفض طلب المشارطة على الدعوى رقم..........
                     // المدعى - المدعى عليه - مدير ادارة التدقيق - موظف التدقيق
@@ -219,14 +245,22 @@ namespace REAC.Application.AppServices.Litigation
 
                         await SendNotificationMSWithDefendant(msg, litigationRequest, RequestType.LitigationAgreementRequest, "رفض طلب المشارطة");
                     }
-                    catch { }
+                    catch (Exception ex)
+                    {
+                        return new ExceptionResponse() { IsDone = false, Message = ex.Message, Exception = ex.ToString() };
+
+                    }
                 }
                 else
                 {
                     var _bpfService = _serviceProvider.GetRequiredService<IBpfService>();
-                    await _bpfService.ExcuteWorkFlow(litigationRequest.Id, default, null);
+                    await _bpfService.ExcuteWorkFlow(litigationRequest.Id, default, 2);
                     litigationRequest.InternalStatusId = RequestStatus.New;
                     litigationRequest.ExternalStatusId = RequestStatus.New;
+
+                    repositorySaveResponse = await _repository.SaveChangesAsync(new CancellationToken());
+                    if (!repositorySaveResponse.IsDone)
+                        return repositorySaveResponse;
 
                     //  Send Notification 
                     // تم الموافقة على طلب المشارطة على الدعوى رقم........
@@ -238,7 +272,10 @@ namespace REAC.Application.AppServices.Litigation
 
                         await SendNotificationMSWithDefendant(msg, litigationRequest, RequestType.LitigationAgreementRequest, "قبول طلب المشارطة");
                     }
-                    catch { }
+                    catch (Exception ex)
+                    {
+                        return new ExceptionResponse() { IsDone = false, Message = ex.Message, Exception = ex.ToString() };
+                    }
                 }
 
             }
@@ -251,18 +288,18 @@ namespace REAC.Application.AppServices.Litigation
             }
 
 
-            var repositorySaveResponse = await _repository.SaveChangesAsync(new CancellationToken());
+            //var repositorySaveResponse = await _repository.SaveChangesAsync(new CancellationToken());
             if (!repositorySaveResponse.IsDone)
                 return repositorySaveResponse;
 
-            return await GetCitizenLitigationRequestForAgreementRequestReply(requestId,nationalId);
+            return await GetCitizenLitigationRequestForAgreementRequestReply(requestId, nationalId);
 
         }
 
         private async Task<BaseResponse> GetCitizenLitigationRequestForAgreementRequestReply(Guid requestId, string nationalId)
         {
 
-            
+
             Guid? referenceId = _userManager.Users.FirstOrDefault(u => u.UserName == nationalId).ReferenceId;
 
 
@@ -285,8 +322,8 @@ namespace REAC.Application.AppServices.Litigation
                          .Include(x => x.Contract.SecondPartyCitizen.Nationality)
                          .Include(x => x.Contract.LitigationRequestContractType)
                          .Include(x => x.LitigationRequestRequests)
-
-                         .Where(x => x.Id == requestId).AsNoTracking().ToList().FirstOrDefault();
+                         .AsNoTracking()
+                         .FirstOrDefault(x => x.Id == requestId);
             if (litigationRequest == null)
             {
                 return new BaseResponse { IsDone = false, Message = "No Litigation for this id " };
