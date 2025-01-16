@@ -282,20 +282,43 @@ namespace REAC.Application.AppServices.Litigation
             }
 
         }
+
+        public async Task<BaseResponse> ApproveArbitrationFeesPaid(Guid litigationId, CancellationToken cancellationToken)
+        {
+            var litigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>())                          .Where(x => x.Id == litigationId).ToList().FirstOrDefault();
+
+            if (litigationRequest == null)
+                return new ExceptionResponse()
+                {
+                    Exception = "لم يتم العثور على الدعوى",
+                    IsDone = false,
+                };
+
+            litigationRequest.IsArbitrationFeesHaveBeenCollected = true;
+
+            return _repository.SaveChangesAsync().Result;
+            //if (!saveResponse.IsDone)
+            //    return saveResponse;
+
+        }
+
+
         public async Task<BaseResponse> SendLitigationFeesRequestPaid(Guid litigationId)        {            try            {                var litigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>())                          .Where(x => x.Id == litigationId).ToList().FirstOrDefault();                if (litigationRequest == null)                    return new ExceptionResponse()
                     {
                         Exception = "لم يتم العثور على الدعوى",
                         IsDone = false,
-                    };                litigationRequest.IsLitigationFeesHaveBeenCollected = true;                litigationRequest.InternalStatusId = RequestStatus.LitigationFeesHaveBeenCollected;                litigationRequest.ExternalStatusId = RequestStatus.LitigationFeesHaveBeenCollected;                var saveResponse = _repository.SaveChangesAsync().Result;                if (!saveResponse.IsDone)                    return saveResponse;
+                    };                litigationRequest.IsLitigationFeesHaveBeenCollected = true;                litigationRequest.InternalStatusId = RequestStatus.LitigationFeesHaveBeenCollected;                litigationRequest.ExternalStatusId = RequestStatus.LitigationFeesHaveBeenCollected;
+
+                var saveResponse = _repository.SaveChangesAsync().Result;                if (!saveResponse.IsDone)                    return saveResponse;
 
                 var _bpfService = _serviceProvider.GetRequiredService<IBpfService>();
                 var _stepService = _serviceProvider.GetRequiredService<IWorkFlowStepService>();
 
                 var processingLog = (await _repository.GetQueryable<WorkFlowProcessingLog, Guid>())
                     .Include(t => t.WorkFlowStep)
-                     .Include(t => t.WorkFlowStep.WorkFlowStepEvents)
-                .AsNoTracking()
-                      .Where(x => x.RequestId == litigationRequest.Id).ToList();
+                    .Include(t => t.WorkFlowStep.WorkFlowStepEvents)
+                    .AsNoTracking()
+                    .Where(x => x.RequestId == litigationRequest.Id).ToList();
 
                 if (processingLog.Count > 0)
                 {
@@ -680,7 +703,7 @@ namespace REAC.Application.AppServices.Litigation
                 .Include(x => x.LitigationRequestReformerAssigningRequests)
                 .Include(x => x.LitigationRequestArbitratorAssigningRequests)
                 .Include(x => x.Contract)
-                
+
                 .Include(x => x.LitigationRequestCategory)
                 .Include(x => x.Area)
                 .Include(x => x.City)
@@ -705,7 +728,7 @@ namespace REAC.Application.AppServices.Litigation
 
                 .Include(x => x.LitigationRequestRequests)
                 .FirstOrDefault(x => x.Id == litigationId &&
-                x.ApplicantCitizenId == referenceId 
+                x.ApplicantCitizenId == referenceId
                       |
                       x.Contract.FirstPartyCitizenId == referenceId & x.Id == litigationId
                       |
@@ -714,12 +737,13 @@ namespace REAC.Application.AppServices.Litigation
                        x.Contract.FirstPartyFacility.CitizenId == referenceId & x.Id == litigationId
                       |
                       x.Contract.SecondPartyFacility.CitizenId == referenceId & x.Id == litigationId
-                      | x.LitigationRequestReformerAssigningRequests.Any( l => l.CitizenId == referenceId) & x.Id == litigationId
-                      | x.LitigationRequestArbitratorAssigningRequests.Any( l => l.CitizenId == referenceId) & x.Id == litigationId
+                      | x.LitigationRequestReformerAssigningRequests.Any(l => l.CitizenId == referenceId) & x.Id == litigationId
+                      | x.LitigationRequestArbitratorAssigningRequests.Any(l => l.CitizenId == referenceId) & x.Id == litigationId
                 );
 
-            if(result is null)
-                return new ExceptionResponse {  IsDone = false, Message = "غير مصرح بعرض الدعوي" };
+            if (result is null)
+                return new ExceptionResponse { IsDone = false, Message = "غير مصرح بعرض الدعوي" };
+
 
             var reconciliationFees = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reconciliation_Fees).Result.Data?.Value;
 
@@ -727,8 +751,8 @@ namespace REAC.Application.AppServices.Litigation
 
             return new DataResponse<LitigationRequest> { Data = result, IsDone = true };
         }
-        
-        
+
+
         public async Task<BaseResponse> GetLitigationByIdForEmployee(Guid litigationId)
         {
             Guid referenceId = Guid.Empty;
@@ -1023,7 +1047,7 @@ namespace REAC.Application.AppServices.Litigation
                 LitigationType = litigationRequest.Contract.LitigationRequestContractType.TypeName,
                 Subject = "100",
                 ReformerAssignerName = "مركز التحكيم العقاري",
-                ReformerAssigningCost = litigationRequest.LitigationRequestAmount ==null?"50":litigationRequest.LitigationRequestAmount?.Fees.ToString(),
+                ReformerAssigningCost = litigationRequest.LitigationRequestAmount == null ? "50" : litigationRequest.LitigationRequestAmount?.Fees.ToString(),
                 RequestTypeId = litigationRequest.Contract.LitigationRequestContractType.Id.GetHashCode(),
                 FirstPartyName = (litigationRequest.Contract.FirstPartyCitizen == null) ? litigationRequest.Contract.FirstPartyFacility.ArabicFacilityName : litigationRequest.Contract.FirstPartyCitizen.FullName,
                 SecondPartyName = (litigationRequest.Contract.SecondPartyCitizen == null) ? litigationRequest.Contract.SecondPartyFacility.ArabicFacilityName : litigationRequest.Contract.SecondPartyCitizen.FullName,
@@ -2379,7 +2403,7 @@ namespace REAC.Application.AppServices.Litigation
                 }
 
 
-                TryGetCitizenAgian:
+            TryGetCitizenAgian:
 
                 var citizen = (await _repository.GetQueryable<Citizen, Guid>())
                                                 .Where(x => x.IdentityNumber == litigationRequestDto.SecondPartyNationalId)
@@ -3166,7 +3190,7 @@ namespace REAC.Application.AppServices.Litigation
                          .Include(x => x.Contract.LitigationRequestContractType)
                          .Include(x => x.LitigationRequestRequests)
 
-                         .Where(x => 
+                         .Where(x =>
                          x.ApplicantCitizenId == referenceId & x.Id == requestId
                       |
                       x.Contract.FirstPartyCitizenId == referenceId & x.Id == requestId

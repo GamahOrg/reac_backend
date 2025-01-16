@@ -601,6 +601,26 @@ public partial class LitigationRequestStatusSeedDataCreator
                             }
                         }
                     }
+                    ,
+                    new SysLitigationRequestStatus
+                    {
+                        Id = Domain.Shared.Enum.RequestStatus.PendingPayment,
+                        RequestStatus = "قيد دفع رسوم التحكيم",
+                        CreatedOn = DateTime.Now,
+                        Translations=new List<SysLitigationRequestStatusTranslation>
+                        {
+                            new SysLitigationRequestStatusTranslation
+                            {
+                                RequestStatus = "Pending Payment",
+                                LanguageCode = Constants.EnglishLanguage
+                            },
+                            new SysLitigationRequestStatusTranslation
+                            {
+                                RequestStatus = "قيد دفع رسوم التحكيم",
+                                LanguageCode = Constants.ArabicLanguage
+                            }
+                        }
+                    }
             });
         context.SaveChanges();
     }

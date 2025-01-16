@@ -944,6 +944,91 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.ToTable("Facility", (string)null);
                 });
 
+            modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Invoice.SysInvoice", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<Guid>("ApplicantCitizenId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("CancelledDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("ExpirationDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("InvoiceCode")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("InvoiceStatusId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("InvoiceTax")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("InvoiceTypeId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("PaymentDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("RequestId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("TotalAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("InvoiceStatusId");
+
+                    b.HasIndex("InvoiceTypeId");
+
+                    b.ToTable("Invoices");
+                });
+
+            modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Invoice.SysInvoiceStatus", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("SysInvoiceStatus", (string)null);
+                });
+
+            modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Invoice.SysInvoiceType", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("SysInvoiceType", (string)null);
+                });
+
             modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Litigation.LitigationCompanyRepresentative", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1499,6 +1584,35 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.HasIndex("LitigationRequestCorrespondenceReplyId");
 
                     b.ToTable("LitigationRequestCorrespondenceReplyFile");
+                });
+
+            modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Litigation.LitigationRequestFees", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("ArbitratorsCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("ExtraAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("Fees")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("FromAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("PercentageExtraAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("ToAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("LitigationRequestFees");
                 });
 
             modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Litigation.LitigationRequestGround", b =>
@@ -2850,10 +2964,16 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Property<decimal>("Fees")
                         .HasColumnType("money");
 
+                    b.Property<decimal?>("FromAmount")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<string>("LitigationAmount")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
+
+                    b.Property<decimal?>("ToAmount")
+                        .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id")
                         .HasName("PK__SysLitig__3214EC07298413D2");
@@ -4480,6 +4600,89 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasConstraintName("FKFacility36705");
 
                     b.Navigation("Citizen");
+                });
+
+            modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Invoice.SysInvoice", b =>
+                {
+                    b.HasOne("REAC.EntityFrameworkCore.Entities.Invoice.SysInvoiceStatus", "InvoiceStatus")
+                        .WithMany("Invoices")
+                        .HasForeignKey("InvoiceStatusId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("REAC.EntityFrameworkCore.Entities.Invoice.SysInvoiceType", "InvoiceType")
+                        .WithMany("Invoices")
+                        .HasForeignKey("InvoiceTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("InvoiceStatus");
+
+                    b.Navigation("InvoiceType");
+                });
+
+            modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Invoice.SysInvoiceStatus", b =>
+                {
+                    b.OwnsMany("REAC.EntityFrameworkCore.Entities.Invoice.SysInvoiceStatusTranslation", "Translations", b1 =>
+                        {
+                            b1.Property<int>("SysInvoiceStatusId")
+                                .HasColumnType("int");
+
+                            b1.Property<int>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("int");
+
+                            b1.Property<string>("LanguageCode")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("Name")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.HasKey("SysInvoiceStatusId", "Id");
+
+                            b1.ToTable("SysInvoiceStatus");
+
+                            b1.ToJson("Translations");
+
+                            b1.WithOwner()
+                                .HasForeignKey("SysInvoiceStatusId");
+                        });
+
+                    b.Navigation("Translations");
+                });
+
+            modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Invoice.SysInvoiceType", b =>
+                {
+                    b.OwnsMany("REAC.EntityFrameworkCore.Entities.Invoice.SysInvoiceTypeTranslation", "Translations", b1 =>
+                        {
+                            b1.Property<int>("SysInvoiceTypeId")
+                                .HasColumnType("int");
+
+                            b1.Property<int>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("int");
+
+                            b1.Property<string>("LanguageCode")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("Name")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.HasKey("SysInvoiceTypeId", "Id");
+
+                            b1.ToTable("SysInvoiceType");
+
+                            b1.ToJson("Translations");
+
+                            b1.WithOwner()
+                                .HasForeignKey("SysInvoiceTypeId");
+                        });
+
+                    b.Navigation("Translations");
                 });
 
             modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Litigation.LitigationRequest", b =>
@@ -6623,6 +6826,16 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Navigation("LitigationRequestContractFirstPartyFacilities");
 
                     b.Navigation("LitigationRequestContractSecondPartyFacilities");
+                });
+
+            modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Invoice.SysInvoiceStatus", b =>
+                {
+                    b.Navigation("Invoices");
+                });
+
+            modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Invoice.SysInvoiceType", b =>
+                {
+                    b.Navigation("Invoices");
                 });
 
             modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Litigation.LitigationCompanyRepresentative", b =>

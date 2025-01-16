@@ -1312,6 +1312,37 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                         },
 	                    #endregion
 
+                    #region Invoice 
+                    new SysSetting
+                    {
+                        Id = Guid.NewGuid(),
+                        Key = SysSettingKeyConstants.Invoice_Taxes,
+                        Value = "0"
+
+                    },
+                    new SysSetting
+                    {
+                        Id = Guid.NewGuid(),
+                        Key = SysSettingKeyConstants.Invoice_ExpirationDays,
+                        Value = "5"
+
+                    },
+                     new SysSetting
+                    {
+                        Id = Guid.NewGuid(),
+                        Key = SysSettingKeyConstants.Invoice_CreatedInvoiceMessage,
+                        Value = "تم انشاء فاتورة برقم {InvoiceCode} لدفع رسوم التحكيم للطلب {LitigationCode} لسدادها"
+
+                    },
+                     new SysSetting
+                    {
+                        Id = Guid.NewGuid(),
+                        Key = SysSettingKeyConstants.Invoice_ArbitrationInvoicePaidMessage,
+                        Value = "تم سداد رسوم التحكيم لطلب رقم {LitigationCode}"
+
+                    },
+	                #endregion
+
                         #region Fees
                         new SysSetting
                         {

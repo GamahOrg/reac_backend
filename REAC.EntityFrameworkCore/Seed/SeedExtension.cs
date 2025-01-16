@@ -82,6 +82,10 @@ namespace REAC.EntityFrameworkCore.Seed
 
                 await DefaultWorkFlowDataCreator.CreateAsync(context);
 
+                await InvoiceTypeCreator.SeedAsync(context);
+
+                await InvoiceStatusCreator.SeedAsync(context);
+
                 context.SaveChanges();
 
                 logger.LogInformation("***********************************************");

@@ -75,6 +75,7 @@ public partial class LitigationRequestMircoForAllArbitratorsCountDto : BaseEntit
     public int? SecondPartyArbitratorsCount { get; set; }
     public int? ArbitratorsCount { get; set; }
     public string IsDone { get; set; } = null!;
+    public bool IsArbitrationFeesHaveBeenCollected { get; set; } = false;
 }
 public partial class LitigationRequestMircoForArbitratorsSelectionDurationDto : BaseEntity<Guid>
 {

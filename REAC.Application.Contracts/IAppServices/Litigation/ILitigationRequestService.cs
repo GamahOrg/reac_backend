@@ -19,7 +19,7 @@ namespace REAC.Application.Contracts.IAppServices.Litigation
         Task<BaseResponse> SendLitigationFeesRequestPaid(Guid litigationId);
         Task<BaseResponse> SendReconciliationFeesRequestPaid(Guid litigationId);
 
-
+        Task<BaseResponse> ApproveArbitrationFeesPaid(Guid litigationId, CancellationToken cancellationToken);
         Task<BaseResponse> List(int pageIndex, int pageSize, string? searchKey, LitigationListDto model);
         Task<BaseResponse> ReformerList(int pageIndex, int pageSize, string? searchKey, LitigationListDto model);
 

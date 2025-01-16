@@ -69,6 +69,9 @@ public enum RequestStatus
     ///<summary>تم تحصيل رسوم التحكيم</summary>
     ArbitrationFeesHaveBeenCollected = 31,
     ///<summary>تم قبول الدعوى وجارى إرسال طلب تحصيل رسوم الصلح</summary>
-    LitigationApprovedCollectionOfReconciliationFeesRequestIsBeingSend = 32
+    LitigationApprovedCollectionOfReconciliationFeesRequestIsBeingSend = 32,
+    ///<summary>قيد دفع رسوم التحكيم</summary>
+    PendingPayment = 33
+
 }
 

@@ -95,10 +95,12 @@
 
         #endregion
 
-
-
-
-
+        #region Invoice
+        public const string Invoice_Taxes = "Invoice.Taxes";
+        public const string Invoice_ExpirationDays = "Invoice.ExpirationDays";
+        public const string Invoice_CreatedInvoiceMessage = "Invoice.CreatedInvoiceMessage";
+        public const string Invoice_ArbitrationInvoicePaidMessage = "Invoice.ArbitrationInvoicePaidMessage";
+        #endregion
 
         public const string Arbitration_ExpirationDateHours = "Arbitration.ExpirationDateHours";
         public const string Arbitration_Period = "Arbitration.Period";
