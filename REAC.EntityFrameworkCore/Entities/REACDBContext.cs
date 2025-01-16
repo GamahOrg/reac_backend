@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using REAC.EntityFrameworkCore.Entities.Actor;
 using REAC.EntityFrameworkCore.Entities.Arbitration;
+using REAC.EntityFrameworkCore.Entities.Invoice;
 using REAC.EntityFrameworkCore.Entities.Litigation;
 using REAC.EntityFrameworkCore.Entities.Notification;
 using REAC.EntityFrameworkCore.Entities.Reconciliation;
@@ -21,6 +22,12 @@ public partial class REACDBContext : DbContext
     {
 
     }
+
+
+    public virtual DbSet<LitigationRequestFees> LitigationRequestFees { get; set; }
+    public virtual DbSet<SysInvoice> Invoices { get; set; }
+    public virtual DbSet<SysInvoiceStatus> InvoiceStatuses { get; set; }
+    public virtual DbSet<SysInvoiceType> InvoiceTypes { get; set; }
     public virtual DbSet<LitigationRequestArbitratorRecusalRequest> LitigationRequestArbitratorRecusalRequests { get; set; }
     public virtual DbSet<LitigationRequestArbitratorRecusalRequestFile> LitigationRequestArbitratorRecusalRequestFiles { get; set; }
     public virtual DbSet<LitigationRequestArbitratorsChairmanNominationListValue> LitigationRequestArbitratorsChairmanNominationListValues { get; set; }
@@ -1292,15 +1299,15 @@ public partial class REACDBContext : DbContext
             entity.HasOne(l => l.LitigationRequestCategory)
             .WithMany(l => l.LitigationRequestCorrespondences)
             .HasForeignKey(l => l.LitigationRequestCategoryId);
-            
+
             entity.HasOne(l => l.LitigationRequestCorrespondenceStatus)
             .WithMany(l => l.LitigationRequestCorrespondences)
             .HasForeignKey(l => l.LitigationRequestCorrespondenceStatusId);
         });
-        
+
         modelBuilder.Entity<LitigationRequestCorrespondenceReply>(entity =>
         {
-            
+
             entity.HasOne(l => l.Citizen)
             .WithMany(l => l.LitigationRequestCorrespondenceReply)
             .HasForeignKey(l => l.CreatedBy);
@@ -1328,7 +1335,7 @@ public partial class REACDBContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FKLitigation804409");
         });
-        
+
         modelBuilder.Entity<LitigationRequestCorrespondenceReplyFile>(entity =>
         {
 
@@ -1532,7 +1539,7 @@ public partial class REACDBContext : DbContext
             entity.HasOne(l => l.Citizen)
             .WithMany(l => l.LitigationRequestNotes)
             .HasForeignKey(l => l.CreatedBy);
-            
+
             entity.HasOne(l => l.LitigationRequestCategory)
             .WithMany(l => l.LitigationRequestNotes)
             .HasForeignKey(l => l.LitigationRequestCategoryId);
@@ -2107,14 +2114,32 @@ public partial class REACDBContext : DbContext
             entity.HasOne(l => l.LitigationRequest)
             .WithMany(l => l.LitigationRequestModificationRequests)
             .HasForeignKey(l => l.LitigationRequestId);
-            
+
             entity.HasOne(l => l.Citizen)
             .WithMany(l => l.LitigationRequestModificationRequests)
             .HasForeignKey(l => l.CreatedBy);
-            
+
         });
 
-            
+        modelBuilder.Entity<SysInvoiceType>(entity =>
+        {
+            entity.ToTable("SysInvoiceType");
+
+            entity.Property(e => e.Name).HasMaxLength(100);
+
+            entity.OwnsMany(d => d.Translations, ownedNavigationBuilder => { ownedNavigationBuilder.ToJson(); });
+
+        });
+
+        modelBuilder.Entity<SysInvoiceStatus>(entity =>
+        {
+            entity.ToTable("SysInvoiceStatus");
+
+            entity.Property(e => e.Name).HasMaxLength(100);
+
+            entity.OwnsMany(d => d.Translations, ownedNavigationBuilder => { ownedNavigationBuilder.ToJson(); });
+
+        });
 
         // By abdulrahman
         //modelBuilder.Entity<SysLitigationRequestContractType>()

@@ -113,8 +113,11 @@ namespace REAC.EntityFrameworkCore.Seed
                 {
                     Id = RequestType.LitigationRequestCorrespondenceReply,
                     RequestTypeName = "رد المراسلات",
-                }
-
+                },new SysRequestType
+                {
+                    Id = RequestType.Invoices,
+                    RequestTypeName = "الفواتير",
+                },
 
             });
             context.SaveChanges();

@@ -43,6 +43,12 @@ public class LitigationRequestController : BaseController<LitigationRequest,
         return BadRequest();
     }
 
+    [HttpGet("ApproveArbitrationFeesPaid/{litigationId}")]
+    public async Task<IActionResult> ApproveArbitrationFeesPaid(Guid litigationId, CancellationToken cancellationToken)
+    {
+        return Ok(await _litigationService.ApproveArbitrationFeesPaid(litigationId, cancellationToken));
+    }
+
     [HttpPost("SendLitigationFeesRequestPaid")]
     public async Task<IActionResult> SendLitigationFeesRequestPaid(Guid litigationId,
           CancellationToken cancellationToken)
@@ -177,14 +183,14 @@ public class LitigationRequestController : BaseController<LitigationRequest,
 
         return BadRequest();
     }
-    
+
     [HttpGet(nameof(GetLitigationByIdForEmployee))]
     public async Task<ActionResult<IEnumerable<LitigationRequest>>> GetLitigationByIdForEmployee(Guid litigationId)
     {
         if (ModelState.IsValid)
         {
             var returnValue = await _litigationService.GetLitigationByIdForEmployee(litigationId);
-            if(returnValue.IsDone == false) return Unauthorized(returnValue);
+            if (returnValue.IsDone == false) return Unauthorized(returnValue);
 
             return Ok(returnValue);
         }
@@ -278,7 +284,9 @@ public class LitigationRequestController : BaseController<LitigationRequest,
     [HttpGet]
     [Route(nameof(GetWafiData))]
     public async Task<DataResponse<WafiDataDto>> GetWafiData(string licenseNumber, string identityNumber)
-    => await _litigationService.GetWafiData(licenseNumber, identityNumber);
+    {
+        return await _litigationService.GetWafiData(licenseNumber, identityNumber);
+    }
 
     #region AgreementRequest
     [HttpPost(nameof(AddCitizenLitigationRequestForAgreementRequestReply))]

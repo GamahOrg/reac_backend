@@ -114,11 +114,13 @@ namespace REAC.Application.ModuleServices
 
         Task<BaseResponse> Assign(AssignArbitratorRequestPayload assignRequestPayload);
         Task<BaseResponse> GetAllArbitrationLitigationRequest(int pageIndex, int pageSize, CancellationToken cancellationToken);
+
     }
 
     public partial class ArbitrationService : IArbitrationService
     {
         private readonly IMapper _mapper;
+        private readonly ISysInvoiceService _sysInvoiceService;
         private readonly IEntityRepository _repository;
         private readonly IJwtReader _jwtReader;
         private readonly ISysSettingService _settingService;
@@ -128,10 +130,11 @@ namespace REAC.Application.ModuleServices
         protected readonly IHubContext<NotificationHub, INotificationClient> _notificationHub;
         public ArbitrationService(IEntityRepository repository, ISysSettingService settingService,
                           IWorkFlowProcessingLogService workFlowProcessingLogService,
-                          IMapper mapper,
+                          IMapper mapper, ISysInvoiceService sysInvoiceService,
                           IJwtReader jwtReader, ISysEmployeeService sysEmployeeService, INotificationService notificationService, IZoomService zoomService)
         {
             _mapper = mapper;
+            _sysInvoiceService = sysInvoiceService;
             _repository = repository;
             _jwtReader = jwtReader;
             _settingService = settingService;

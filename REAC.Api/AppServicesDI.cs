@@ -111,6 +111,7 @@ namespace REAC.Api
             services.AddScoped<ISysSettingService, SysSettingService>();
             services.AddScoped<ISysDelegationRelationshipTypeService, SysDelegationRelationshipTypeService>();
             services.AddScoped<ISysArbitratorClassService, SysArbitratorClassService>();
+            services.AddScoped<ISysInvoiceService, SysInvoiceService>();
 
 
             services.AddScoped<ILoggerManager, LoggerManager>();

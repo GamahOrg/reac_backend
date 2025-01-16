@@ -1,7 +1,6 @@
 ﻿using Core.GenericRepository.Shared.BaseEntities;
 using REAC.Application.Contracts.Dtos.Citizen;
 using REAC.Application.Contracts.Dtos.Litigation;
-using REAC.Application.Contracts.Dtos.Litigation.CreateUpdate.Litigation;
 using REAC.Application.Contracts.Dtos.System.LitigationRequestCategoryDtos;
 using REAC.Application.Contracts.Dtos.System.LitigationRequestOwnerTypeDtos;
 using REAC.Application.Contracts.Dtos.System.LitigationRequestStatusDtos;
@@ -17,13 +16,13 @@ public partial class LitigationRequestShortDto : BaseEntity<Guid>
     public string? AreaName { get; set; }
     public RequestStatus ExternalStatusId { get; set; }
     public string? ContractAddress { get; set; } // العنوان الوطني
-
+    public bool IsArbitrationFeesHaveBeenCollected { get; set; } = false;
     public ApproveRejectStatus? MintuesOfMeetingApprovalPlaintiffStatus { get; set; }
 
     public ApproveRejectStatus? MintuesOfMeetingApprovalDefendantStatus { get; set; }
     public DateTime? MintuesOfMeetingApprovalPlaintiffStatusOn { get; set; }
     public DateTime? MintuesOfMeetingApprovalDefendantStatusOn { get; set; }
-   
+
     public ApproveRejectStatus? PlaintiffAgreementRequestResponse { get; set; }
     public DateTime? PlaintiffAgreementRequestResponseOn { get; set; }
     public ApproveRejectStatus? DefendantAgreementRequestResponse { get; set; }
