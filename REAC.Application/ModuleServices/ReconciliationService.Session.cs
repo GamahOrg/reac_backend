@@ -876,6 +876,8 @@ namespace REAC.Application.ModuleServices
                                       .Include(x => x.City)
                                       .Include(x => x.LitigationRequestSessions.Where(x => x.LitigationRequestSessionRequestTypeId == LitigationRequestSessionRequestType.Reconciliation))
                                       .Include(x => x.LitigationRequestReconciliationReports)
+                                      .Include(x => x.LitigationRequestReformerAssigningRequests.Where(r => r.Response == 0))
+                                      .ThenInclude(x => x.ReformerCitizen)
                                       .Include(x => x.ApplicantCitizen)
                                       .Include(x => x.InternalStatus)
                                       .Include(x => x.ExternalStatus)
@@ -916,7 +918,7 @@ namespace REAC.Application.ModuleServices
                     litigationRequestMircoDto.SecondPartyName = (litigationRequest.Contract.SecondPartyCitizen == null) ? litigationRequest.Contract.SecondPartyFacility.ArabicFacilityName : litigationRequest.Contract.SecondPartyCitizen.FullName;
                     litigationRequestMircoDto.RequestTypeName = litigationRequest.Contract.LitigationRequestContractType.TypeName;
                     litigationRequestMircoDto.ReformerId = litigationRequest.ReformerCitizen?.Id;
-                    litigationRequestMircoDto.ReformerName = litigationRequest.ReformerCitizen?.FullName;
+                    litigationRequestMircoDto.ReformerName = litigationRequest.ReformerCitizen is not null ? litigationRequest.ReformerCitizen?.FullName : litigationRequest.LitigationRequestReformerAssigningRequests is not null ? litigationRequest.LitigationRequestReformerAssigningRequests.OrderByDescending(l => l.RequestOn).FirstOrDefault().ReformerCitizen.FullName : null;
                     litigationRequestMircoDtos.Add(litigationRequestMircoDto);
                 }
             }

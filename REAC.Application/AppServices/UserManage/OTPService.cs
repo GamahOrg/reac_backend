@@ -217,6 +217,9 @@ namespace REAC.Application.AppServices.UserManage
             }
             while (await IsOTPExists(otp));
 
+            if(otp.StartsWith("0"))
+                otp = random.Next(1, numbers.Length) + otp.Remove(0,1) ;
+
             return otp;
         }
 

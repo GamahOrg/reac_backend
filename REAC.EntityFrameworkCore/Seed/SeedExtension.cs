@@ -86,6 +86,8 @@ namespace REAC.EntityFrameworkCore.Seed
 
                 await InvoiceStatusCreator.SeedAsync(context);
 
+                await LitigationRequestFeesCreator.SeedAsync(context);
+
                 context.SaveChanges();
 
                 logger.LogInformation("***********************************************");

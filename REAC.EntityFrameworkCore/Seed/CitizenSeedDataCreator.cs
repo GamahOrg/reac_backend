@@ -68,7 +68,7 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                         IdentityExpiryDate = DateTime.Now.AddYears(2),
                         IdentityFileId = Guid.Parse("06f63ff3-28d8-41e2-8769-658406db0788"),
                         Employer ="الشركة الألمانية للصلب",
-                        Mobile = "2345678901",
+                        Mobile = "0551234589",
                         HomeTelephone = null,
                         WorkTelephone = null,
                         BirthDate = DateTime.Now,

@@ -92,7 +92,7 @@ namespace REAC.Application.ModuleServices
 
                     case ReconciliationRequestDecision.WaiverOfTheLitigation:
                         litigationRequest.InternalStatusId = RequestStatus.WaiverOfTheLitigation;
-                        litigationRequest.ExternalStatusId = RequestStatus.TheMinutesOfTheMeetingWereWritten;
+                        litigationRequest.ExternalStatusId = RequestStatus.WaiverOfTheLitigation;
                         litigationRequest.IsMinutesOfMeetingApprovalRequired = true;
                         litigationRequest.LitigationRequestSubStage = LitigationRequestSubStage.LitigationRequestReformerDecisionAdded;
                         //litigationRequest.IsActive = false;

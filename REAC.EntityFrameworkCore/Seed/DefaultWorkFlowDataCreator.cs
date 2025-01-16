@@ -1594,7 +1594,7 @@ namespace REAC.EntityFrameworkCore.Seed
                                     AllowChangeExternalStatus = true,
                                     ExternalStatusId = RequestStatus.AgreementRequestHasBeenSent,
                                     AllowChangeIsActive = false,
-                                    AllowNotes = true,
+                                    AllowNotes = false,
                                     EventSecurityLevelId = EventSecurityLevel.UnSpecified,
                                     LogMessage = "تم إرسال طلب مشارطة",
                                     ActionModeId = EventActionMode.SpecificStep,
