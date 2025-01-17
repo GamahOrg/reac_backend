@@ -97,9 +97,9 @@ namespace REAC.EntityFrameworkCore.Seed
                  },new SysLitigationRequestAmount
                 {
                     Id = Guid.NewGuid(),
-                    LitigationAmount = "10,000,000-25,000,000 \\ رسوم التسجيل 92,508",
+                    LitigationAmount = "10,000,001-25,000,000 \\ رسوم التسجيل 92,508",
                     Fees = 92508m,
-                    FromAmount=10000000,
+                    FromAmount=10000001,
                     ToAmount=25000000
                  },new SysLitigationRequestAmount
                 {

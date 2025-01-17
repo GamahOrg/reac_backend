@@ -398,7 +398,7 @@ namespace REAC.Application.AppServices.Litigation
                 foreach (var litigationRequest in litigationRequests)
                 {
                     foreach (var litigationRequestArbitratorAssigningRequest in litigationRequest.LitigationRequestArbitratorAssigningRequests
-                        .Where(x => x.CitizenId == referenceId).OrderByDescending(x => x.RequestOn))
+                        .Where(x => x.CitizenId == referenceId).OrderByDescending(x => x.RequestOn).DistinctBy(x => x.LitigationRequestId))
                     {
                         int arbitrationPeriod = 0;
                         int.TryParse(_sysSettingService.GetBySettingKey(SysSettingKeyConstants.Arbitration_Period).Result.Data?.Value, out arbitrationPeriod);

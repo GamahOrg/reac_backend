@@ -261,6 +261,7 @@ namespace REAC.Application.ModuleServices
 
             var litigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>())
                          .Include(x => x.ArbitratorCitizen)
+                         .ThenInclude(x=>x.SigntureFile)
                          .Include(x => x.Area)
                          .Include(x => x.City)
                          .Include(x => x.LitigationRequestSessions)
@@ -299,8 +300,21 @@ namespace REAC.Application.ModuleServices
             if (litigationRequest == null)
                 return new BaseResponse() { IsDone = false, Message = "طلب غير موجود" };
 
+            string base64String = string.Empty;
+
             var request = _mapper.Map<LitigationRequestShortDto>(litigationRequest);
 
+            if (!string.IsNullOrEmpty(litigationRequest.ArbitratorCitizen?.SigntureFile?.FilePath))
+            {
+                string inputFilePath = Path.Combine(Directory.GetCurrentDirectory(), litigationRequest.ArbitratorCitizen?.SigntureFile?.FilePath);
+                // Read file and convert to Base64
+                byte[] fileBytes = File.ReadAllBytes(inputFilePath);
+                base64String = Convert.ToBase64String(fileBytes);
+            }
+            if (request != null)
+            {
+              request.ArbitratorCitizen.SigntureFile = base64String;
+            }
             var reports = _mapper.Map<List<LitigationRequestArbitrationReportCreateUpdateDto>>(litigationRequest?.LitigationRequestArbitrationReports);
 
             bool isDone = false;
