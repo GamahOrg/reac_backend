@@ -53,6 +53,10 @@ namespace REAC.Application.AppServices.Litigation
 
             var litigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>())?
                         .Include(x => x.LitigationRequestExtendPeriodRequests)
+                        .Include(x => x.Contract.FirstPartyCitizen)
+                        .Include(x => x.Contract.SecondPartyCitizen)
+                        .Include(x => x.Contract.FirstPartyFacility.Citizen)
+                        .Include(x => x.Contract.SecondPartyFacility.Citizen)
                         .Where(x => x.Id == litigationRequestReformerAssigningRequest.LitigationRequestId)
                         .SingleOrDefault();
 
@@ -110,6 +114,26 @@ namespace REAC.Application.AppServices.Litigation
                                 RequestId = litigationRequestReformerAssigningRequest.Id,
                                 RequestTypeId = RequestType.ReformerTaskrequests,
                                 Message = msg
+                            }); applicationNotifications.Add(new SysNotificationDto()
+                            {
+                                ActorId = litigationRequest.Contract.FirstPartyCitizen is not null ? litigationRequest.Contract.FirstPartyCitizen.Id : litigationRequest.Contract.FirstPartyFacility.Id,
+                                CreatedOn = DateTime.Now,
+                                ActorTypeId = NotificationActorType.Plaintiff,
+                                IsViewed = false,
+                                ViewedOn = null,
+                                RequestId = litigationRequestReformerAssigningRequest.Id,
+                                RequestTypeId = RequestType.ReformerTaskrequests,
+                                Message = msg
+                            }); applicationNotifications.Add(new SysNotificationDto()
+                            {
+                                ActorId = litigationRequest.Contract.FirstPartyCitizen is not null ? litigationRequest.Contract.FirstPartyCitizen.Id : litigationRequest.Contract.FirstPartyFacility.Id,
+                                CreatedOn = DateTime.Now,
+                                ActorTypeId = NotificationActorType.Defendant,
+                                IsViewed = false,
+                                ViewedOn = null,
+                                RequestId = litigationRequestReformerAssigningRequest.Id,
+                                RequestTypeId = RequestType.ReformerTaskrequests,
+                                Message = msg
                             });
 
                             applicationNotifications.Add(new SysNotificationDto()
@@ -127,14 +151,16 @@ namespace REAC.Application.AppServices.Litigation
                             await _notificationService.SendNotifications(
                                  new SendEmailDto()
                                  {
-                                     To = new List<string>() { citizenInfo.Email, deptAdminInfoReconciliation.Data.Email },
-                                     Subject = "Arbitraor Accept Task",
+                                     To = new List<string>() { citizenInfo.Email,litigationRequest.Contract.FirstPartyCitizen is not null ? litigationRequest.Contract.FirstPartyCitizen.Email : litigationRequest.Contract.FirstPartyFacility.Citizen.Email,
+                                         litigationRequest.Contract.SecondPartyCitizen is not null ?  litigationRequest.Contract.SecondPartyCitizen.Email : litigationRequest.Contract.SecondPartyFacility.Citizen.Email, deptAdminInfoReconciliation.Data.Email },
+                                     Subject = "قبول المصلح المهمة",
                                      Body = msg
                                  },
                                  new SMSRequestDto()
                                  {
                                      message_text = msg,
-                                     recipients = new List<string>() { citizenInfo.Mobile, deptAdminInfoReconciliation.Data.Mobile },
+                                     recipients = new List<string>() { citizenInfo.Mobile,litigationRequest.Contract.FirstPartyCitizen is not null ? litigationRequest.Contract.FirstPartyCitizen.Mobile : litigationRequest.Contract.FirstPartyFacility.Citizen.Mobile,
+                                         litigationRequest.Contract.SecondPartyCitizen is not null ?  litigationRequest.Contract.SecondPartyCitizen.Mobile : litigationRequest.Contract.SecondPartyFacility.Citizen.Mobile, deptAdminInfoReconciliation.Data.Mobile },
                                      notification_type = "SMS",
 
                                  },

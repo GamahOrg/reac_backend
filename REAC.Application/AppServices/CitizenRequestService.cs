@@ -784,126 +784,127 @@ namespace REAC.Application.AppServices
                             break;
                     }
                     break;
-                case CitizenRequestAction.CertifiedWithFees:
-                    citizenRequests.StatusId = CitizenRequestStatus.WaitingForMembershipFeesToBePaid;
-                    saveResponse = await _repository.SaveChangesAsync();
-                    if (!saveResponse.IsDone) return saveResponse;
-                    switch (citizenRequests.CitizenRequestTypeId)
-                    {
-                        case CitizenRequestType.Arbitrator:
-                            // Send Notification
-                            // تم إعتماد طلب بالانضمام كمحكم مع وجود رسوم
-                            try
-                            {
-                                msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Arbitrator_AcceptJoiningRequest_WaitingForFees).Result.Data?.Value;
-                                msg = msg.Replace("{CitizenName}", citizenRequests.Citizen.FullName);
+                //case CitizenRequestAction.CertifiedWithFees:
+                //    citizenRequests.StatusId = CitizenRequestStatus.WaitingForMembershipFeesToBePaid;
+                //    saveResponse = await _repository.SaveChangesAsync();
+                //    if (!saveResponse.IsDone) return saveResponse;
+                //    switch (citizenRequests.CitizenRequestTypeId)
+                //    {
+                //        case CitizenRequestType.Arbitrator:
+                //            // Send Notification
+                //            // تم إعتماد طلب بالانضمام كمحكم مع وجود رسوم
+                //            try
+                //            {
+                //                msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Arbitrator_AcceptJoiningRequest_WaitingForFees).Result.Data?.Value;
+                //                msg = msg.Replace("{CitizenName}", citizenRequests.Citizen.FullName);
 
-                                applicationNotifications.Add(new SysNotificationDto()
-                                {
-                                    ActorId = citizenInfo.Id,
-                                    CreatedOn = DateTime.Now,
-                                    ActorTypeId = NotificationActorType.Arbitrator,
-                                    IsViewed = false,
-                                    ViewedOn = null,
-                                    RequestId = citizenRequests.Id,
-                                    RequestTypeId = RequestType.JoinRequestAsArbitratorRequest,
-                                    Message = msg
-                                });
+                //                applicationNotifications.Add(new SysNotificationDto()
+                //                {
+                //                    ActorId = citizenInfo.Id,
+                //                    CreatedOn = DateTime.Now,
+                //                    ActorTypeId = NotificationActorType.Arbitrator,
+                //                    IsViewed = false,
+                //                    ViewedOn = null,
+                //                    RequestId = citizenRequests.Id,
+                //                    RequestTypeId = RequestType.JoinRequestAsArbitratorRequest,
+                //                    Message = msg
+                //                });
 
-                                applicationNotifications.Add(new SysNotificationDto()
-                                {
-                                    ActorId = deptAdminInfoArbitration.Data.Id,
-                                    CreatedOn = DateTime.Now,
-                                    ActorTypeId = NotificationActorType.Employee,
-                                    IsViewed = false,
-                                    ViewedOn = null,
-                                    RequestId = citizenRequests.Id,
-                                    RequestTypeId = RequestType.JoinRequestAsArbitratorRequest,
-                                    Message = msg
-                                });
+                //                applicationNotifications.Add(new SysNotificationDto()
+                //                {
+                //                    ActorId = deptAdminInfoArbitration.Data.Id,
+                //                    CreatedOn = DateTime.Now,
+                //                    ActorTypeId = NotificationActorType.Employee,
+                //                    IsViewed = false,
+                //                    ViewedOn = null,
+                //                    RequestId = citizenRequests.Id,
+                //                    RequestTypeId = RequestType.JoinRequestAsArbitratorRequest,
+                //                    Message = msg
+                //                });
 
-                                var notificationResultUpdatedArbitrator = _notificationService.SendNotifications(
-                                    new SendEmailDto()
-                                    {
-                                        To = new List<string>() { citizenInfo.Email, deptAdminInfoArbitration.Data.Email },
-                                        Subject = "Arbitrator AcceptJoiningRequest and WaitingForFees",
-                                        Body = msg
-                                    },
-                                    new SMSRequestDto()
-                                    {
-                                        message_text = msg,
-                                        recipients = new List<string>() { citizenInfo.Mobile, deptAdminInfoArbitration.Data.Mobile },
-                                        notification_type = "SMS",
+                //                var notificationResultUpdatedArbitrator = _notificationService.SendNotifications(
+                //                    new SendEmailDto()
+                //                    {
+                //                        To = new List<string>() { citizenInfo.Email, deptAdminInfoArbitration.Data.Email },
+                //                        Subject = "Arbitrator AcceptJoiningRequest and WaitingForFees",
+                //                        Body = msg
+                //                    },
+                //                    new SMSRequestDto()
+                //                    {
+                //                        message_text = msg,
+                //                        recipients = new List<string>() { citizenInfo.Mobile, deptAdminInfoArbitration.Data.Mobile },
+                //                        notification_type = "SMS",
 
-                                    },
-                                    applicationNotifications
-                                    );
-                            }
-                            catch (Exception ex)
-                            {
+                //                    },
+                //                    applicationNotifications
+                //                    );
+                //            }
+                //            catch (Exception ex)
+                //            {
 
-                            }
+                //            }
 
 
-                            break;
-                        case CitizenRequestType.Reformer:
-                            // Send Notification
-                            // تم إعتماد طلب بالانضمام كمصلح مع وجود رسوم
+                //            break;
+                //        case CitizenRequestType.Reformer:
+                //            // Send Notification
+                //            // تم إعتماد طلب بالانضمام كمصلح مع وجود رسوم
 
-                            try
-                            {
-                                msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reformer_AcceptJoiningRequest_WaitingForFees).Result.Data?.Value;
-                                msg = msg.Replace("{CitizenName}", citizenRequests.Citizen.FullName);
-                                applicationNotifications.Add(new SysNotificationDto()
-                                {
-                                    ActorId = citizenRequests.Citizen.Id,
-                                    CreatedOn = DateTime.Now,
-                                    ActorTypeId = NotificationActorType.Reformer,
-                                    IsViewed = false,
-                                    ViewedOn = null,
-                                    RequestId = citizenRequests.Id,
-                                    RequestTypeId = RequestType.JoinRequestAsReformerRequest,
-                                    Message = msg
-                                });
+                //            try
+                //            {
+                //                msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reformer_AcceptJoiningRequest_WaitingForFees).Result.Data?.Value;
+                //                msg = msg.Replace("{CitizenName}", citizenRequests.Citizen.FullName);
+                //                applicationNotifications.Add(new SysNotificationDto()
+                //                {
+                //                    ActorId = citizenRequests.Citizen.Id,
+                //                    CreatedOn = DateTime.Now,
+                //                    ActorTypeId = NotificationActorType.Reformer,
+                //                    IsViewed = false,
+                //                    ViewedOn = null,
+                //                    RequestId = citizenRequests.Id,
+                //                    RequestTypeId = RequestType.JoinRequestAsReformerRequest,
+                //                    Message = msg
+                //                });
 
-                                applicationNotifications.Add(new SysNotificationDto()
-                                {
-                                    ActorId = deptAdminInfoArbitration.Data.Id,
-                                    CreatedOn = DateTime.Now,
-                                    ActorTypeId = NotificationActorType.Employee,
-                                    IsViewed = false,
-                                    ViewedOn = null,
-                                    RequestId = citizenRequests.Id,
-                                    RequestTypeId = RequestType.JoinRequestAsReformerRequest,
-                                    Message = msg
-                                });
+                //                applicationNotifications.Add(new SysNotificationDto()
+                //                {
+                //                    ActorId = deptAdminInfoArbitration.Data.Id,
+                //                    CreatedOn = DateTime.Now,
+                //                    ActorTypeId = NotificationActorType.Employee,
+                //                    IsViewed = false,
+                //                    ViewedOn = null,
+                //                    RequestId = citizenRequests.Id,
+                //                    RequestTypeId = RequestType.JoinRequestAsReformerRequest,
+                //                    Message = msg
+                //                });
 
-                                var notificationResultUpdatedArbitrator = _notificationService.SendNotifications(
-                                    new SendEmailDto()
-                                    {
-                                        To = new List<string>() { citizenRequests.Citizen.Email, deptAdminInfoReconciliation.Data.Email },
-                                        Subject = "Reformer AcceptJoiningRequest and WaitingForFees",
-                                        Body = msg
-                                    },
-                                    new SMSRequestDto()
-                                    {
-                                        message_text = msg,
-                                        recipients = new List<string>() { citizenRequests.Citizen.Mobile, deptAdminInfoReconciliation.Data.Mobile },
-                                        notification_type = "SMS",
+                //                var notificationResultUpdatedArbitrator = _notificationService.SendNotifications(
+                //                    new SendEmailDto()
+                //                    {
+                //                        To = new List<string>() { citizenRequests.Citizen.Email, deptAdminInfoReconciliation.Data.Email },
+                //                        Subject = "Reformer AcceptJoiningRequest and WaitingForFees",
+                //                        Body = msg
+                //                    },
+                //                    new SMSRequestDto()
+                //                    {
+                //                        message_text = msg,
+                //                        recipients = new List<string>() { citizenRequests.Citizen.Mobile, deptAdminInfoReconciliation.Data.Mobile },
+                //                        notification_type = "SMS",
 
-                                    },
-                                    applicationNotifications
-                                    );
-                            }
-                            catch (Exception ex)
-                            {
+                //                    },
+                //                    applicationNotifications
+                //                    );
+                //            }
+                //            catch (Exception ex)
+                //            {
 
-                            }
+                //            }
 
-                            break;
-                    }
-                    break;
+                //            break;
+                //    }
+                //    break;
                 case CitizenRequestAction.CertifiedWithOutFees:
+                case CitizenRequestAction.CertifiedWithFees:
                     citizenRequests.StatusId = CitizenRequestStatus.Certified;
                     var citizen = (await _repository.GetQueryable<Citizen, Guid>())
                          .FirstOrDefault(x => x.Id == citizenRequests.CitizenId);
