@@ -38,7 +38,7 @@ namespace REAC.Application.AppServices.Email
                         UseDefaultCredentials = emailSetting.Result.UseDefaultCredentials,
                         Host = emailSetting.Result.Host,
                         Credentials = new NetworkCredential(emailSetting.Result.From, emailSetting.Result.Passowrd),
-                        EnableSsl = true,
+                        EnableSsl = false,
                     };
                     mail.Subject = subject;
                     mail.From = new MailAddress(emailSetting.Result.From);
@@ -53,7 +53,7 @@ namespace REAC.Application.AppServices.Email
 
                     try
                     {
-                         client.SendMailAsync(mail);
+                        await client.SendMailAsync(mail);
                         return new BaseResponse { IsDone = true };
                     }
                     catch (Exception ex)
