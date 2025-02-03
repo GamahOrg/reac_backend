@@ -29,10 +29,17 @@ using REAC.Application.Contracts.IAppServices.System;
 using REAC.Application.Contracts.IAppServices.UserManage;
 using REAC.Application.Contracts.IAppServices.Wpf.Business;
 using REAC.Application.Contracts.IAppServices.Wpf.System;
+using REAC.Application.Contracts.IMobileAppServices.Arbitration;
+using REAC.Application.Contracts.IMobileAppServices.Litigation;
+using REAC.Application.Contracts.IMobileAppServices.Reconciliation;
 using REAC.Application.Contracts.IModuleServices;
+using REAC.Application.MobileAppServices.Arbitration;
+using REAC.Application.MobileAppServices.Litigation;
+using REAC.Application.MobileAppServices.Reconciliation;
 using REAC.Application.ModuleServices;
 using CitizenService = REAC.Application.AppServices.CitizenService;
 using ILitigationRequestReconciliationReportService = REAC.Application.Contracts.IAppServices.Litigation.ILitigationRequestReconciliationReportService;
+using LitigationRequestService = REAC.Application.AppServices.Litigation.LitigationRequestService;
 namespace REAC.Api
 {
     public static class AppServicesDi
@@ -137,6 +144,12 @@ namespace REAC.Api
             services.AddScoped<IZoomService, ZoomService>();
             services.AddScoped<IReportService, ReportService>();
 
+
+            #region Mobile
+            services.AddScoped<IMobileLitigationRequestService, MobileLitigationRequestService>();
+            services.AddScoped<IMobileArbitrationService, MobileArbitrationService>();
+            services.AddScoped<IMobileReconciliationService, MobileReconciliationService>();
+            #endregion
         }
 
 

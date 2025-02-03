@@ -5,6 +5,9 @@ using Core.Shared.Responses;
 using REAC.Application.Contracts.IAppServices;
 using REAC.Application.Contracts.IAppServices.System;
 using REAC.EntityFrameworkCore.Entities.System;
+using static Dapper.SqlMapper;
+using System.Threading;
+using System.Runtime.InteropServices;
 
 
 namespace REAC.Application.AppServices.System
@@ -37,12 +40,12 @@ namespace REAC.Application.AppServices.System
                 Message = response.Message
             };
         }
-        
-        public async  Task<BaseResponse> GetOrderedListAsync()
+
+        public async Task<BaseResponse> GetOrderedListAsync()
         {
             var response = (await _repository.GetQueryable<SysLitigationRequestAmount, Guid>())
                 .OrderBy(x => x.Fees).ToList();
-                
+
             List<SysLitigationRequestAmountCreateUpdateDto> entityDtos
                 = _mapper.Map<List<SysLitigationRequestAmountCreateUpdateDto>>
                 ((response));
@@ -50,8 +53,40 @@ namespace REAC.Application.AppServices.System
             {
                 IsDone = true,
                 Data = entityDtos,
-                
+
             };
+        }
+
+        public async Task<BaseResponse> Create(SysLitigationRequestAmountCreateUpdateDto sysLitigationRequestAmountCreateUpdateDto, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var checkIfExist = (await _repository.GetQueryable<SysLitigationRequestAmount, Guid>())
+                .Any(x => x.FromAmount == sysLitigationRequestAmountCreateUpdateDto.FromAmount && x.ToAmount == sysLitigationRequestAmountCreateUpdateDto.ToAmount && x.Fees == sysLitigationRequestAmountCreateUpdateDto.Fees);
+
+                if (checkIfExist)
+                    return new BaseResponse() { IsDone = false, Message = "هذه الرسوم الأدارية موجودة مسبقا" };
+
+                SysLitigationRequestAmount originalEntity = _mapper.Map<SysLitigationRequestAmount>(sysLitigationRequestAmountCreateUpdateDto);
+                await _repository.AddAsync<SysLitigationRequestAmount, Guid>(originalEntity, cancellationToken);
+                var response = await _repository.SaveChangesAsync(cancellationToken);
+                if (response.IsDone)
+                {
+                    return new DataResponse<SysLitigationRequestAmount>()
+                    {
+                        IsDone = true,
+                        Data = originalEntity,
+                        Message = response.Message
+                    };
+                }
+                return response;
+            }
+            catch (Exception ex)
+            {
+                return new BaseResponse() { IsDone = false, Message = "خطأ داخلي" };
+
+            }
+
         }
     }
 }

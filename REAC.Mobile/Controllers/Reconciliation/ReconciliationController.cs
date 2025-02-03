@@ -18,20 +18,20 @@ namespace REAC.Mobile.Controllers.Reconciliation;
 
 public class ReconciliationController : ControllerBase
 {
-    private readonly IMobileReconciliationService _reconciliationService;
+    private readonly IMobileReconciliationService _mobileReconciliationService;
     public ReconciliationController(IMobileReconciliationService reconciliationService)
     {
-        _reconciliationService = reconciliationService;
+        _mobileReconciliationService = reconciliationService;
     }
 
     #region Reconciliation Report Citizen Replay
 
-    [HttpGet(nameof(GetCitizenLitigationRequestForReportReply))]
-    public async Task<IActionResult> GetCitizenLitigationRequestForReportReply(int pageIndex, int pageSize)
+    [HttpGet(nameof(GetCitizenLitigationRequestForReportReplyMobile))]
+    public async Task<IActionResult> GetCitizenLitigationRequestForReportReplyMobile(int pageIndex, int pageSize)
     {
         if (ModelState.IsValid)
         {
-            var returnValue = await _reconciliationService.GetCitizenLitigationRequestForReportReply( pageIndex,  pageSize);
+            var returnValue = await _mobileReconciliationService.GetCitizenLitigationRequestForReportReply( pageIndex,  pageSize);
             return Ok(returnValue);
         }
 
@@ -39,24 +39,24 @@ public class ReconciliationController : ControllerBase
     }
 
 
-    [HttpPost(nameof(AddCitizenLitigationRequestForReportReply))]
-    public async Task<IActionResult> AddCitizenLitigationRequestForReportReply(Guid requestId, ApproveRejectStatus minutesOfMeetingApprovalStatus)
+    [HttpPost(nameof(AddCitizenLitigationRequestForReportReplyMobile))]
+    public async Task<IActionResult> AddCitizenLitigationRequestForReportReplyMobile(Guid requestId, ApproveRejectStatus minutesOfMeetingApprovalStatus)
     {
         if (ModelState.IsValid)
         {
-            var returnValue = await _reconciliationService.AddCitizenLitigationRequestForReportReply(requestId, minutesOfMeetingApprovalStatus);
+            var returnValue = await _mobileReconciliationService.AddCitizenLitigationRequestForReportReply(requestId, minutesOfMeetingApprovalStatus);
             return Ok(returnValue);
         }
 
         return BadRequest();
     }
 
-    [HttpGet(nameof(GetCitizenLitigationRequestForReportReplyByRequestId))]
-    public async Task<IActionResult> GetCitizenLitigationRequestForReportReplyByRequestId(Guid requestId)
+    [HttpGet(nameof(GetCitizenLitigationRequestForReportReplyByRequestIdMobile))]
+    public async Task<IActionResult> GetCitizenLitigationRequestForReportReplyByRequestIdMobile(Guid requestId)
     {
         if (ModelState.IsValid)
         {
-            var returnValue = await _reconciliationService.GetCitizenLitigationRequestForReportReply(requestId);
+            var returnValue = await _mobileReconciliationService.GetCitizenLitigationRequestForReportReply(requestId);
             return Ok(returnValue);
         }
 

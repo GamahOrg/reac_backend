@@ -943,7 +943,7 @@ namespace REAC.Application.ModuleServices
                             };
                         }
 
-                        _notificationService.SendNotifications(new Contracts.Dtos.Notification.SendEmailDto()
+                       await _notificationService.SendNotifications(new Contracts.Dtos.Notification.SendEmailDto()
                         {
                             To = emails,
                             Subject = "اضافة طلب تفسير على حكم التحكيم",

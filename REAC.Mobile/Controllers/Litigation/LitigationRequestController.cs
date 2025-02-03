@@ -22,33 +22,33 @@ namespace REAC.Mobile.Controllers.Litigation;
 
 public class LitigationRequestController : ControllerBase
 {
-    private readonly IMobileLitigationRequestService _litigationService;
+    private readonly IMobileLitigationRequestService _mobileLitigationService;
     public LitigationRequestController(IMobileLitigationRequestService litigationService) 
         
     {
-        _litigationService = litigationService;
+        _mobileLitigationService = litigationService;
     }
     
-    [HttpGet(nameof(List))]
+    [HttpGet(nameof(ListMobile))]
     [AllowAnonymous]
-    public async Task<ActionResult<IEnumerable<LitigationListDto>>> List([FromQuery] int pageIndex, [FromQuery] int pageSize, [FromQuery] string? searchKey,[FromQuery] List<int> statuses,[FromQuery] List<int> types)
+    public async Task<ActionResult<IEnumerable<LitigationListDto>>> ListMobile([FromQuery] int pageIndex, [FromQuery] int pageSize, [FromQuery] string? searchKey,[FromQuery] List<int> statuses,[FromQuery] List<int> types)
     {
         if (ModelState.IsValid)
         {
-            var returnValue = await _litigationService.List(pageIndex, pageSize, searchKey, statuses,types);
+            var returnValue = await _mobileLitigationService.List(pageIndex, pageSize, searchKey, statuses,types);
             return Ok(returnValue);
         }
 
         return BadRequest();
     }
 
-    [HttpGet(nameof(GetLitigationById))]
+    [HttpGet(nameof(GetLitigationByIdMobile))]
     [AllowAnonymous]
-    public async Task<IActionResult> GetLitigationById(Guid litigationId)
+    public async Task<IActionResult> GetLitigationByIdMobile(Guid litigationId)
     {
         if (ModelState.IsValid)
         {
-            var returnValue = await _litigationService.GetById(litigationId);
+            var returnValue = await _mobileLitigationService.GetById(litigationId);
 
             return Ok(returnValue);
         }
@@ -56,12 +56,12 @@ public class LitigationRequestController : ControllerBase
         return BadRequest();
     }
 
-    [HttpGet(nameof(GetLitigationRequestEvents))]
-    public  async Task<IActionResult> GetLitigationRequestEvents(Guid requestId)
+    [HttpGet(nameof(GetLitigationRequestEventsMobile))]
+    public  async Task<IActionResult> GetLitigationRequestEventsMobile(Guid requestId)
     {
         if (ModelState.IsValid)
         {
-            var returnValue = await _litigationService.GetLitigationRequestEvents(requestId);
+            var returnValue = await _mobileLitigationService.GetLitigationRequestEvents(requestId);
             return Ok(returnValue);
         }
 
@@ -69,35 +69,35 @@ public class LitigationRequestController : ControllerBase
     }
 
     #region Agreement
-    [HttpPost(nameof(AddCitizenLitigationRequestForAgreementRequestReply))]
-    public async Task<IActionResult> AddCitizenLitigationRequestForAgreementRequestReply([FromBody] AgreementRequestPayload agreementRequestPayload, CancellationToken cancellationToken)
+    [HttpPost(nameof(AddCitizenLitigationRequestForAgreementRequestReplyMobile))]
+    public async Task<IActionResult> AddCitizenLitigationRequestForAgreementRequestReplyMobile([FromBody] AgreementRequestPayload agreementRequestPayload, CancellationToken cancellationToken)
     {
         if (ModelState.IsValid)
         {
-            var returnValue = await _litigationService.AddCitizenLitigationRequestForAgreementRequestReply(agreementRequestPayload.RequestId, agreementRequestPayload.agreementRequestStatus);
+            var returnValue = await _mobileLitigationService.AddCitizenLitigationRequestForAgreementRequestReply(agreementRequestPayload.RequestId, agreementRequestPayload.agreementRequestStatus);
             return Ok(returnValue);
         }
 
         return BadRequest();
     }
 
-    [HttpGet(nameof(GetCitizenLitigationRequestForAgreementRequestReplyByRequestId))]
-    public async Task<IActionResult> GetCitizenLitigationRequestForAgreementRequestReplyByRequestId(Guid requestId)
+    [HttpGet(nameof(GetCitizenLitigationRequestForAgreementRequestReplyByRequestIdMobile))]
+    public async Task<IActionResult> GetCitizenLitigationRequestForAgreementRequestReplyByRequestIdMobile(Guid requestId)
     {
         if (ModelState.IsValid)
         {
-            var returnValue = await _litigationService.GetCitizenLitigationRequestForAgreementRequestReply(requestId);
+            var returnValue = await _mobileLitigationService.GetCitizenLitigationRequestForAgreementRequestReply(requestId);
             return Ok(returnValue);
         }
         return BadRequest();
     }
 
-    [HttpGet(nameof(GetCitizenLitigationRequestForAgreementRequestReply))]
-    public async Task<IActionResult> GetCitizenLitigationRequestForAgreementRequestReply(int pageIndex,  int pageSize)
+    [HttpGet(nameof(GetCitizenLitigationRequestForAgreementRequestReplyMobile))]
+    public async Task<IActionResult> GetCitizenLitigationRequestForAgreementRequestReplyMobile(int pageIndex,  int pageSize)
     {
         if (ModelState.IsValid)
         {
-            var returnValue = await _litigationService.GetCitizenLitigationRequestForAgreementRequestReply(pageIndex, pageSize);
+            var returnValue = await _mobileLitigationService.GetCitizenLitigationRequestForAgreementRequestReply(pageIndex, pageSize);
             return Ok(returnValue);
         }
         return BadRequest();

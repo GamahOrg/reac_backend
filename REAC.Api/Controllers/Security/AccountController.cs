@@ -52,5 +52,11 @@ namespace REAC.Api.Controllers.Security
         {
             return Ok(_nafathTransactionService.GettAll());
         }
+
+        [HttpPost(nameof(ChangePassword))]
+        public async Task<IActionResult> ChangePassword(ChangeUserPasswordDto changeUserPasswordDto)
+        {
+            return Ok(await _userRegister.ChangePassword(changeUserPasswordDto));
+        }
     }
 }

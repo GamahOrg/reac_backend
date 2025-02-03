@@ -300,6 +300,57 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                             //     }
                             //}
                         }
+                    },
+                    new SysDepartment
+                    {
+                        Id = Guid.Parse("8d3aee1d-353d-48fb-9f8c-f3345eacf3d6"),
+                        DepartmentName = "إدارة النظام",
+                        DepartmentType = DepartmentType.SystemManagement,
+                        DistributionMode = DepartmentDistributionMode.NoneDistribution,
+                        Translations=new List<SysDepartmentTranslation>
+                        {
+                            new SysDepartmentTranslation
+                            {
+                                DepartmentName="إدارة النظام",
+                                LanguageCode=Constants.EnglishLanguage
+                            },
+                            new SysDepartmentTranslation
+                            {
+                                DepartmentName="System Management Department",
+                                LanguageCode=Constants.ArabicLanguage
+                            }
+                        },
+                        SysEmployees = new List<SysEmployee>(){
+                            new SysEmployee()
+                            {
+                                 Id = Guid.Parse("0216e06f-26bf-4840-a90c-7ec2d12211e5"),
+                                 
+                                 CreatedOn = DateTime.Now,
+                                 Email = "admin@admin.com",
+                                 EmployeeName = "مدير النظام 1",
+                                 IsActive = true,
+                                 IsLocked = false,
+                                  AllowAssign = true,
+                                 AllowReAssign= true,
+                                 IsDeleted = false,
+                                 IsAdmin = true,
+                                 Mobile = "0558500225",
+                                 UserId = new Guid("c30016d7-556d-4a55-a4f0-ef9e5055a113"),
+                                 Translations = new List<SysEmployeeTranslation>()
+                                 {
+                                     new SysEmployeeTranslation()
+                                     {
+                                         EmployeeName = "System Management Department",
+                                         LanguageCode=Constants.EnglishLanguage
+                                     },
+                                     new SysEmployeeTranslation()
+                                     {
+                                         EmployeeName = "مدير النظام 1",
+                                         LanguageCode=Constants.ArabicLanguage
+                                     }
+                                 }
+                            }
+                        }
                     }
                 });
             context.SaveChanges();
