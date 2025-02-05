@@ -7,5 +7,7 @@ namespace REAC.Application.Contracts.IAppServices.System
     {
         Task<string?> GetLitigationRequestAmount(Guid LitigationRequestAmountId);
         Task<BaseResponse> GetOrderedListAsync();
+
+        Task<BaseResponse> Create(SysLitigationRequestAmountCreateUpdateDto sysLitigationRequestAmountCreateUpdateDto, CancellationToken cancellationToken);
     }
 }

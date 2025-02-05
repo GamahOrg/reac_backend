@@ -32,4 +32,11 @@ public class SysLitigationRequestAmountController : BaseController<SysLitigation
         var returnValue = await _amountService.GetOrderedListAsync();
         return  Ok(returnValue);
     }
+    
+    [HttpPost("Create")]
+    public override async Task<IActionResult> Create(SysLitigationRequestAmountCreateUpdateDto input,CancellationToken cancellationToken)
+    {
+        var returnValue = await _amountService.Create(input,cancellationToken);
+        return  Ok(returnValue);
+    }
 }

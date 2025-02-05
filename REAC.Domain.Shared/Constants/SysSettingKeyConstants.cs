@@ -330,6 +330,8 @@
 
         #region Fees
         public const string Reconciliation_Fees = "Configurable.ReconciliationFees";
+        public const string Reformer_JoiningRequest_Fees = "Configurable.ReformerJoiningRequestFees";
+        public const string Arbitrator_JoiningRequest_Fees = "Configurable.ArbitratorJoiningRequestFees";
 
         #endregion
     }

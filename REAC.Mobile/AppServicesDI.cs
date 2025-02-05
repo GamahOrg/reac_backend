@@ -42,7 +42,7 @@ namespace REAC.Mobile
         {
             services.AddScoped<IMobileLitigationRequestService, MobileLitigationRequestService>();
             services.AddScoped<IMobileArbitrationService, MobileArbitrationService>();
-            services.AddScoped<IMobileReconciliationService, ReconciliationService>();
+            services.AddScoped<IMobileReconciliationService, MobileReconciliationService>();
 
 
             services.AddScoped<ILoggerManager, LoggerManager>();

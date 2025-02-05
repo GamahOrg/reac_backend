@@ -84,6 +84,7 @@ namespace REAC.EntityFrameworkCore.Seed
             {
                 Id = Guid.Parse("c30016d7-556d-4a55-a4f0-ef9e5055a113"),
                 UserName = "admin",
+                ReferenceId = Guid.Parse("0216e06f-26bf-4840-a90c-7ec2d12211e5"),
                 Email = "superadmin@domain.com",
                 EmailConfirmed = true,
             };

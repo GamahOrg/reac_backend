@@ -21,6 +21,7 @@ using REAC.Application.AppServices.Common;
 using REAC.Application.AppServices.Integration.GEE;
 using REAC.Application.AppServices.Integration.Hubs;
 using REAC.Application.AppServices.SLA;
+using REAC.Application.Contracts.Dtos.System;
 using REAC.Application.Contracts.IAppServices.Common;
 using REAC.Domain.Shared.Constants;
 using REAC.EntityFrameworkCore.Entities.System;
@@ -32,6 +33,9 @@ using Wafi.Application.Common.Localization;
 using Wafi.Application.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
+
+
+
 
 #region configure DBContexts
 
@@ -57,6 +61,9 @@ builder.Services.AddHostedService<NafathBackgroundTaskService>();
 builder.Services.AddHostedService<SLABackgroundTaskService>();
 
 #endregion
+
+
+
 // Add services to the container.
 string _defaultCorsPolicyName = "localhost";
 builder.Services.AddCors(

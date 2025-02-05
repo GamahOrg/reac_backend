@@ -20,7 +20,7 @@ using Core.GenericRepository.Shared.Pagging;
 
 namespace REAC.Application.MobileAppServices.Reconciliation
 {
-    public class ReconciliationService : IMobileReconciliationService
+    public class MobileReconciliationService : IMobileReconciliationService
     {
 
         private readonly IMapper _mapper;
@@ -30,7 +30,7 @@ namespace REAC.Application.MobileAppServices.Reconciliation
         private readonly INotificationService _notificationService;
         private readonly ISysSettingService _sysSettingService;
 
-        public ReconciliationService(IEntityRepository repository,
+        public MobileReconciliationService(IEntityRepository repository,
                           ISysSettingService sysSettingService,
                           IWorkFlowProcessingLogService workFlowProcessingLogService,
                           IMapper mapper,

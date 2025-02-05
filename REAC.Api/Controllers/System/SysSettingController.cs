@@ -52,14 +52,52 @@ public class SysSettingController : BaseController<SysSetting,
 
         return BadRequest();
     }
-
-    [HttpGet("UpdateBySettingKey")]
+    
+    [HttpGet("GetReconciliationFeesSettings")]
     [AllowAnonymous]
-    public async Task<IActionResult> UpdateBySettingKey(SysSetting updateSetting)
+    public async Task<IActionResult> GetReconciliationFeesSettings()
+    {
+        if (ModelState.IsValid)
+        {
+            var returnValue = await _settingService.GetReconciliationFeesSettings();
+            return Ok(returnValue);
+        }
+
+        return BadRequest();
+    }
+
+    [HttpPut("UpdateBySettingKey")]
+    [AllowAnonymous]
+    public async Task<IActionResult> UpdateBySettingKey([FromBody]SysSetting updateSetting)
     {
         if (ModelState.IsValid)
         {
             var returnValue = await _settingService.UpdateBySettingKey(updateSetting);
+            return Ok(returnValue);
+        }
+
+        return BadRequest();
+    }
+
+    [HttpPut("UpdateSettingsAsync")]
+    [AllowAnonymous]
+    public async Task<IActionResult> UpdateSettingsAsync(Dictionary<string, string> settingsToUpdate)
+    {
+        if (ModelState.IsValid)
+        {
+            var returnValue = await _settingService.UpdateSettingsAsync(settingsToUpdate);
+            return Ok(returnValue);
+        }
+
+        return BadRequest();
+    }
+    [HttpGet("GetReconciliationSetting")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetReconciliationSetting()
+    {
+        if (ModelState.IsValid)
+        {
+            var returnValue = await _settingService.GetReconciliationSetting();
             return Ok(returnValue);
         }
 

@@ -100,7 +100,7 @@ namespace REAC.Application.AppServices
         {
             Guid referenceId = Guid.Empty;
             _jwtReader.GetReferenceId(ref referenceId);
-            var citizenRequests = (await _repository.GetQueryable<CitizenRequest, Guid>())
+            var citizenRequest = (await _repository.GetQueryable<CitizenRequest, Guid>())
                 .Where(x => x.Id == citizenRequestId)
                 .Include(x => x.SysCitizenRequestType)
                 .Include(x => x.Status)
@@ -116,11 +116,15 @@ namespace REAC.Application.AppServices
                 .Include(x => x.CitizenRequestExperienceCertificates)
                 .ThenInclude(x => x.CitizenRequestExperienceCertificateFiles)
                 .ThenInclude(x => x.ExperienceCertificateFile)
-                .AsSplitQuery().AsNoTracking().ToList();
+                .AsSplitQuery().AsNoTracking().FirstOrDefault();
 
-            if (citizenRequests.Count > 0)
+            if (citizenRequest is not null)
             {
-                var fullDelegators = _mapper.Map<CitizenRequestFullDataDto>(citizenRequests.FirstOrDefault());
+                var fullDelegators = _mapper.Map<CitizenRequestFullDataDto>(citizenRequest);
+
+                fullDelegators.Fees = citizenRequest.CitizenRequestTypeId == CitizenRequestType.Reformer ?
+                    _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reformer_JoiningRequest_Fees).Result.Data?.Value :
+                    _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Arbitrator_JoiningRequest_Fees).Result.Data?.Value;
 
                 return new DataResponse<CitizenRequestFullDataDto>()
                 {

@@ -21,19 +21,19 @@ namespace REAC.Mobile.Controllers.Arbitration.Process;
 
 public class ArbitrationController : ControllerBase
 {
-    private readonly IMobileArbitrationService _arbitrationService;
+    private readonly IMobileArbitrationService _mobileArbitrationService;
     public ArbitrationController(IMobileArbitrationService ArbitrationService)
     {
-        _arbitrationService = ArbitrationService;
+        _mobileArbitrationService = ArbitrationService;
     }
 
     #region Arbitrators Count
-    [HttpPost(nameof(AddArbitratorsCount))]
-    public async Task<IActionResult> AddArbitratorsCount(ArbitratorCountRequestPayload arbitratorCountRequestPayload)
+    [HttpPost(nameof(AddArbitratorsCountMobile))]
+    public async Task<IActionResult> AddArbitratorsCountMobile(ArbitratorCountRequestPayload arbitratorCountRequestPayload)
     {
         if (ModelState.IsValid)
         {
-            var returnValue = await _arbitrationService.AddArbitratorsCount(arbitratorCountRequestPayload);
+            var returnValue = await _mobileArbitrationService.AddArbitratorsCount(arbitratorCountRequestPayload);
             return Ok(returnValue);
         }
 
@@ -41,23 +41,23 @@ public class ArbitrationController : ControllerBase
     }
 
 
-    [HttpGet(nameof(GetLitigationRequestForAddArbitratorsCountByRequestId))]
-    public async Task<IActionResult> GetLitigationRequestForAddArbitratorsCountByRequestId(Guid requestId)
+    [HttpGet(nameof(GetLitigationRequestForAddArbitratorsCountByRequestIdMobile))]
+    public async Task<IActionResult> GetLitigationRequestForAddArbitratorsCountByRequestIdMobile(Guid requestId)
     {
         if (ModelState.IsValid)
         {
-            var returnValue = await _arbitrationService.GetLitigationRequestForAddArbitratorsCount(requestId);
+            var returnValue = await _mobileArbitrationService.GetLitigationRequestForAddArbitratorsCount(requestId);
             return Ok(returnValue);
         }
         return BadRequest();
     }
 
-    [HttpGet(nameof(GetCitizenLitigationRequestForArbitratorsCountReply))]
-    public async Task<IActionResult> GetCitizenLitigationRequestForArbitratorsCountReply(int pageIndex, int pageSize)
+    [HttpGet(nameof(GetCitizenLitigationRequestForArbitratorsCountReplyMobile))]
+    public async Task<IActionResult> GetCitizenLitigationRequestForArbitratorsCountReplyMobile(int pageIndex, int pageSize)
     {
         if (ModelState.IsValid)
         {
-            var returnValue = await _arbitrationService.GetCitizenLitigationRequestForArbitratorsCountReply(pageIndex, pageSize);
+            var returnValue = await _mobileArbitrationService.GetCitizenLitigationRequestForArbitratorsCountReply(pageIndex, pageSize);
             return Ok(returnValue);
         }
         return BadRequest();
@@ -66,36 +66,36 @@ public class ArbitrationController : ControllerBase
     #endregion
 
     #region Nomination List
-    [HttpGet(nameof(GetCitizenLitigationRequestForArbitratorsNominationListReplyByRequestId))]
-    public async Task<IActionResult> GetCitizenLitigationRequestForArbitratorsNominationListReplyByRequestId(Guid litigationRequestId)
+    [HttpGet(nameof(GetCitizenLitigationRequestForArbitratorsNominationListReplyByRequestIdMobile))]
+    public async Task<IActionResult> GetCitizenLitigationRequestForArbitratorsNominationListReplyByRequestIdMobile(Guid litigationRequestId)
     {
         if (ModelState.IsValid)
         {
-            var returnValue = await _arbitrationService.GetCitizenLitigationRequestForArbitratorsNominationListReply(litigationRequestId);
+            var returnValue = await _mobileArbitrationService.GetCitizenLitigationRequestForArbitratorsNominationListReply(litigationRequestId);
             return Ok(returnValue);
         }
 
         return BadRequest();
     }
 
-    [HttpPost(nameof(AddCitizenLitigationRequestForReportArbitratorsNominationListReply))]
-    public async Task<IActionResult> AddCitizenLitigationRequestForReportArbitratorsNominationListReply([FromBody] ArbitratorNominationListRequestReplyPayload arbitratorNominationListRequestReplyPayload)
+    [HttpPost(nameof(AddCitizenLitigationRequestForReportArbitratorsNominationListReplyMobile))]
+    public async Task<IActionResult> AddCitizenLitigationRequestForReportArbitratorsNominationListReplyMobile([FromBody] ArbitratorNominationListRequestReplyPayload arbitratorNominationListRequestReplyPayload)
     {
         if (ModelState.IsValid)
         {
-            var returnValue = await _arbitrationService.AddCitizenLitigationRequestForReportArbitratorsNominationListReply(arbitratorNominationListRequestReplyPayload);
+            var returnValue = await _mobileArbitrationService.AddCitizenLitigationRequestForReportArbitratorsNominationListReply(arbitratorNominationListRequestReplyPayload);
             return Ok(returnValue);
         }
 
         return BadRequest();
     }
 
-    [HttpGet(nameof(GetCitizenLitigationRequestForArbitratorsNominationListReply))]
-    public async Task<IActionResult> GetCitizenLitigationRequestForArbitratorsNominationListReply(int pageIndex, int pageSize ,CancellationToken cancellationToken)
+    [HttpGet(nameof(GetCitizenLitigationRequestForArbitratorsNominationListReplyMobile))]
+    public async Task<IActionResult> GetCitizenLitigationRequestForArbitratorsNominationListReplyMobile(int pageIndex, int pageSize ,CancellationToken cancellationToken)
     {
         if (ModelState.IsValid)
         {
-            var returnValue = await _arbitrationService.GetCitizenLitigationRequestForArbitratorsNominationListReply(pageIndex, pageSize, cancellationToken);
+            var returnValue = await _mobileArbitrationService.GetCitizenLitigationRequestForArbitratorsNominationListReply(pageIndex, pageSize, cancellationToken);
             return Ok(returnValue);
         }
 
@@ -105,12 +105,12 @@ public class ArbitrationController : ControllerBase
 
     #region Arbitration Verdict
 
-    [HttpGet(nameof(GetLitigationRequestForReportByRequestId))]
-    public async Task<IActionResult> GetLitigationRequestForReportByRequestId(Guid litigationRequestId)
+    [HttpGet(nameof(GetLitigationRequestForReportByRequestIdMobile))]
+    public async Task<IActionResult> GetLitigationRequestForReportByRequestIdMobile(Guid litigationRequestId)
     {
         if (ModelState.IsValid)
         {
-            var returnValue = await _arbitrationService.GetLitigationRequestForReport(litigationRequestId);
+            var returnValue = await _mobileArbitrationService.GetLitigationRequestForReport(litigationRequestId);
             return Ok(returnValue);
         }
 
@@ -120,12 +120,12 @@ public class ArbitrationController : ControllerBase
 
     #region Explanation Request
 
-    [HttpGet(nameof(GetLitigationRequestForReportExplanationRequest))]
-    public async Task<IActionResult> GetLitigationRequestForReportExplanationRequest(int pageIndex, int pageSize)
+    [HttpGet(nameof(GetLitigationRequestForReportExplanationRequestMobile))]
+    public async Task<IActionResult> GetLitigationRequestForReportExplanationRequestMobile(int pageIndex, int pageSize)
     {
         if (ModelState.IsValid)
         {
-            var returnValue = await _arbitrationService.GetLitigationRequestForReportExplanationRequest(pageIndex, pageSize);
+            var returnValue = await _mobileArbitrationService.GetLitigationRequestForReportExplanationRequest(pageIndex, pageSize);
             return Ok(returnValue);
         }
 
@@ -133,12 +133,12 @@ public class ArbitrationController : ControllerBase
     }
 
 
-    [HttpPost(nameof(AddArbitrationReportExplanationRequest))]
-    public async Task<IActionResult> AddArbitrationReportExplanationRequest([FromBody] LitigationRequestArbitrationReportExplanationRequestCreateDto litigationRequestArbitrationReportExplanationRequestCreateDto)
+    [HttpPost(nameof(AddArbitrationReportExplanationRequestMobile))]
+    public async Task<IActionResult> AddArbitrationReportExplanationRequestMobile([FromBody] LitigationRequestArbitrationReportExplanationRequestCreateDto litigationRequestArbitrationReportExplanationRequestCreateDto)
     {
         if (ModelState.IsValid)
         {
-            var returnValue = await _arbitrationService.AddArbitrationReportExplanationRequest(litigationRequestArbitrationReportExplanationRequestCreateDto);
+            var returnValue = await _mobileArbitrationService.AddArbitrationReportExplanationRequest(litigationRequestArbitrationReportExplanationRequestCreateDto);
             return Ok(returnValue);
         }
 
@@ -146,36 +146,36 @@ public class ArbitrationController : ControllerBase
     }
 
 
-    [HttpGet(nameof(GetLitigationRequestForReportExplanationRequestByRequestId))]
-    public async Task<IActionResult> GetLitigationRequestForReportExplanationRequestByRequestId(Guid litigationRequestId)
+    [HttpGet(nameof(GetLitigationRequestForReportExplanationRequestByRequestIdMobile))]
+    public async Task<IActionResult> GetLitigationRequestForReportExplanationRequestByRequestIdMobile(Guid litigationRequestId)
     {
         if (ModelState.IsValid)
         {
-            var returnValue = await _arbitrationService.GetLitigationRequestForReportExplanationRequest(litigationRequestId);
+            var returnValue = await _mobileArbitrationService.GetLitigationRequestForReportExplanationRequest(litigationRequestId);
             return Ok(returnValue);
         }
 
         return BadRequest();
     }
 
-    [HttpGet(nameof(GetLitigationRequestForReportExplanationRequestForArbitratorByRequestId))]
-    public async Task<IActionResult> GetLitigationRequestForReportExplanationRequestForArbitratorByRequestId(Guid litigationRequestId)
+    [HttpGet(nameof(GetLitigationRequestForReportExplanationRequestForArbitratorByRequestIdMobile))]
+    public async Task<IActionResult> GetLitigationRequestForReportExplanationRequestForArbitratorByRequestIdMobile(Guid litigationRequestId)
     {
         if (ModelState.IsValid)
         {
-            var returnValue = await _arbitrationService.GetLitigationRequestForReportExplanationRequestForArbitrator(litigationRequestId);
+            var returnValue = await _mobileArbitrationService.GetLitigationRequestForReportExplanationRequestForArbitrator(litigationRequestId);
             return Ok(returnValue);
         }
 
         return BadRequest();
     }
 
-    [HttpGet(nameof(GetLitigationRequestForReportExplanationRequestForArbitrator))]
-    public async Task<IActionResult> GetLitigationRequestForReportExplanationRequestForArbitrator(int pageIndex, int pageSize)
+    [HttpGet(nameof(GetLitigationRequestForReportExplanationRequestForArbitratorMobile))]
+    public async Task<IActionResult> GetLitigationRequestForReportExplanationRequestForArbitratorMobile(int pageIndex, int pageSize)
     {
         if (ModelState.IsValid)
         {
-            var returnValue = await _arbitrationService.GetLitigationRequestForReportExplanationRequestForArbitrator(pageIndex, pageSize);
+            var returnValue = await _mobileArbitrationService.GetLitigationRequestForReportExplanationRequestForArbitrator(pageIndex, pageSize);
             return Ok(returnValue);
         }
 

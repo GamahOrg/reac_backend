@@ -11,5 +11,6 @@ namespace REAC.Application.Contracts.IAppServices.UserManage
     public interface IUserRegisterService
     {
         Task<BaseResponse> Register(UserRegisterDto userRegisterDto);
+        Task<BaseResponse> ChangePassword(ChangeUserPasswordDto changeUserPasswordDto);
     }
 }

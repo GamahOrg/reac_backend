@@ -1349,6 +1349,16 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                             Id = Guid.NewGuid(),
                             Key = "Configurable.ReconciliationFees",
                             Value = "50"
+                        },new SysSetting
+                        {
+                            Id = Guid.NewGuid(),
+                            Key = "Configurable.ReformerJoiningRequestFees",
+                            Value = "20"
+                        },new SysSetting
+                        {
+                            Id = Guid.NewGuid(),
+                            Key = "Configurable.ArbitratorJoiningRequestFees",
+                            Value = "30"
                         },
                         #endregion
                 });
