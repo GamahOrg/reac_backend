@@ -918,7 +918,7 @@ namespace REAC.Application.ModuleServices
                     litigationRequestMircoDto.SecondPartyName = (litigationRequest.Contract.SecondPartyCitizen == null) ? litigationRequest.Contract.SecondPartyFacility.ArabicFacilityName : litigationRequest.Contract.SecondPartyCitizen.FullName;
                     litigationRequestMircoDto.RequestTypeName = litigationRequest.Contract.LitigationRequestContractType.TypeName;
                     litigationRequestMircoDto.ReformerId = litigationRequest.ReformerCitizen?.Id;
-                    litigationRequestMircoDto.ReformerName = litigationRequest.ReformerCitizen is not null ? litigationRequest.ReformerCitizen?.FullName : litigationRequest.LitigationRequestReformerAssigningRequests is not null ? litigationRequest.LitigationRequestReformerAssigningRequests.OrderByDescending(l => l.RequestOn).FirstOrDefault().ReformerCitizen.FullName : null;
+                    litigationRequestMircoDto.ReformerName = litigationRequest.ReformerCitizen is not null ? litigationRequest.ReformerCitizen?.FullName : litigationRequest.LitigationRequestReformerAssigningRequests is not null && litigationRequest.LitigationRequestReformerAssigningRequests.Count != 0 ? litigationRequest.LitigationRequestReformerAssigningRequests.OrderByDescending(l => l.RequestOn).FirstOrDefault().ReformerCitizen.FullName : null;
                     litigationRequestMircoDtos.Add(litigationRequestMircoDto);
                 }
             }

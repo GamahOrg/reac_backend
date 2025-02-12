@@ -448,6 +448,24 @@ public partial class LitigationRequestStatusSeedDataCreator
                                 LanguageCode = Constants.ArabicLanguage
                             }
                         }
+                    },new SysLitigationRequestStatus
+                    {
+                        Id = Domain.Shared.Enum.RequestStatus.Cancelled,
+                        RequestStatus = "ملغاة",
+                        CreatedOn = DateTime.Now,
+                        Translations=new List<SysLitigationRequestStatusTranslation>
+                        {
+                            new SysLitigationRequestStatusTranslation
+                            {
+                                RequestStatus = "Cancelled",
+                                LanguageCode = Constants.EnglishLanguage
+                            },
+                            new SysLitigationRequestStatusTranslation
+                            {
+                                RequestStatus = "ملغاة",
+                                LanguageCode = Constants.ArabicLanguage
+                            }
+                        }
                     },
                     new SysLitigationRequestStatus
                     {

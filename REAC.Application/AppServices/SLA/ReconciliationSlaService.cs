@@ -1,5 +1,7 @@
 ﻿using AutoMapper;
 using Core.GenericRepository.BaseRepository;
+using Core.Log.Application.Contracts.Dto;
+using Core.Log.Application.Contracts.IAppServices;
 using Core.Shared.Responses;
 using Microsoft.EntityFrameworkCore;
 using REAC.Application.Contracts.Dtos.Notification;
@@ -11,6 +13,7 @@ using REAC.EntityFrameworkCore.Entities.Actor;
 using REAC.EntityFrameworkCore.Entities.Litigation;
 using REAC.EntityFrameworkCore.Entities.System;
 using REAC.EntityFrameworkCore.Entities.Wpf.Business;
+using System.Text.Json;
 
 namespace REAC.Application.AppServices.SLA
 {
@@ -25,15 +28,17 @@ namespace REAC.Application.AppServices.SLA
         protected ISysSettingService _sysSettingService;
         private readonly ISysEmployeeService _employeeService;
         private readonly INotificationService _notificationService;
+        private readonly ILoggerManager _loggerManager;
 
 
-        public ReconciliationSlaService(ISysSettingService sysSettingService, IMapper mapper, IEntityRepository repository, ISysEmployeeService employeeService, INotificationService notificationService)
+        public ReconciliationSlaService(ISysSettingService sysSettingService, IMapper mapper, IEntityRepository repository, ISysEmployeeService employeeService, INotificationService notificationService, ILoggerManager loggerManager)
         {
             _mapper = mapper;
             _repository = repository;
             _sysSettingService = sysSettingService;
             _employeeService = employeeService;
             _notificationService = notificationService;
+            _loggerManager = loggerManager;
         }
         public async Task<BaseResponse> Execute()
         {
@@ -73,6 +78,7 @@ namespace REAC.Application.AppServices.SLA
                                 {
                                     litigationRequest.IsReformerReminderForReconciliationFirstPeriodSent = true;
 
+                                    
                                     //Send Notification for reformer(reformer actorType),RequestType(ReformerTaskrequests)
                                     // Mail - Sms - Application Notification
                                     // يرجى سرعة اتمام عملية الصلح على الدعوى رقم ......
@@ -86,7 +92,12 @@ namespace REAC.Application.AppServices.SLA
                                     }
                                     catch (Exception e)
                                     {
-
+                                        _loggerManager.Log(Core.Log.Domain.Shared.Enums.LoggerType.Database
+                                        , new LogDto()
+                                        {
+                                            Type = Core.Log.Domain.Shared.Enums.LogType.Exception,
+                                            Message = e.ToString()
+                                        });
                                     }
                                 }
                             }
@@ -264,7 +275,7 @@ namespace REAC.Application.AppServices.SLA
                                 {
                                     litigationRequestReformerAssigningRequest.LitigationRequest.IsLitigationRequestReformerAssigningRequestResponsePeriodSent = true;
 
-                                    
+
                                     try
                                     {
 

@@ -201,6 +201,7 @@
         public const string Reconciliation_ReAssigned = "Reconciliation.ReAssigned";
         public const string Reconciliation_Assign = "Reconciliation.Assign";
         public const string Reconciliation_NewRequest = "Reconciliation.NewRequest";
+        public const string Reconciliation_NewRequest_ManualDistripution = "Reconciliation.NewRequest.ManualDistripution";
         public const string LitigationRequest_Creation_Reject = "LitigationRequest.Creation.Reject";
         public const string LitigationRequest_Creation_Resent = "LitigationRequest.Creation.Resent";
         public const string LitigationRequest_Creation_Accept = "LitigationRequest.Creation.Accept";

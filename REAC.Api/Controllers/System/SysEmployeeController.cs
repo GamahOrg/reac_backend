@@ -13,6 +13,8 @@ using REAC.Application.Contracts.IAppServices.System;
 using REAC.Domain.Shared.Constants;
 using REAC.EntityFrameworkCore.Entities.System;
 using Core.Shared.Responses;
+using REAC.Application.Contracts.Dtos.System.DepartmentDtos;
+using REAC.Domain.Shared.Enum;
 
 namespace REAC.Api.Controllers.System;
 
@@ -48,6 +50,19 @@ public class SysEmployeeController : BaseController<SysEmployee,
         return BadRequest();
     }
 
+    [HttpGet(nameof(GetDistributioonMode))]
+
+    public async Task<ActionResult<IEnumerable<SysDepartmentDistributionModeDto>>>GetDistributioonMode()
+    {
+        if (ModelState.IsValid)
+        {
+            var returnValue = await _sysEmployeeService.GetDistributioonMode();
+            return Ok(returnValue);
+        }
+
+        return BadRequest();
+    }
+
     //[AllowAnonymous]
     [HttpPost(nameof(CreateEmployee))]
     public async Task<ActionResult> CreateEmployee(SysEmployeeDto sysEmployeeDto)
@@ -65,6 +80,18 @@ public class SysEmployeeController : BaseController<SysEmployee,
         if (ModelState.IsValid)
         {
             var returnValue = await _sysEmployeeService.UpdateEmployeeStatus(Guid.Parse(employeeId), isActive);
+            return Ok(returnValue);
+        }
+
+        return BadRequest();
+    }
+
+    [HttpPut(nameof(UpdateDistributioonMode))]
+    public async Task<ActionResult> UpdateDistributioonMode(DepartmentDistributionMode distributionMode)
+    {
+        if (ModelState.IsValid)
+        {
+            var returnValue = await _sysEmployeeService.UpdateDistributioonMode(distributionMode);
             return Ok(returnValue);
         }
 

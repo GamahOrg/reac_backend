@@ -1,5 +1,7 @@
 ﻿using AutoMapper;
 using Core.GenericRepository.BaseRepository;
+using Core.Log.Application.Contracts.Dto;
+using Core.Log.Application.Contracts.IAppServices;
 using Core.Shared.Responses;
 using Microsoft.EntityFrameworkCore;
 using REAC.Application.Contracts.Dtos.Notification;
@@ -12,6 +14,7 @@ using REAC.EntityFrameworkCore.Entities.Arbitration;
 using REAC.EntityFrameworkCore.Entities.Litigation;
 using REAC.EntityFrameworkCore.Entities.System;
 using REAC.EntityFrameworkCore.Entities.Wpf.Business;
+using System.Text.Json;
 
 namespace REAC.Application.AppServices.SLA
 {
@@ -23,14 +26,16 @@ namespace REAC.Application.AppServices.SLA
         protected ISysSettingService _sysSettingService;
         private readonly INotificationService _notificationService;
         private readonly ISysEmployeeService _employeeService;
+        private readonly ILoggerManager _loggerManager;
 
-        public ReviewSlaService(ISysSettingService sysSettingService, IMapper mapper, IEntityRepository repository, INotificationService notificationService, ISysEmployeeService employeeService)
+        public ReviewSlaService(ISysSettingService sysSettingService, IMapper mapper, IEntityRepository repository, INotificationService notificationService, ISysEmployeeService employeeService, ILoggerManager loggerManager)
         {
             _mapper = mapper;
             _repository = repository;
             _sysSettingService = sysSettingService;
             _notificationService = notificationService;
             _employeeService = employeeService;
+            _loggerManager = loggerManager;
         }
         public async Task<BaseResponse> Execute()
         {
@@ -126,9 +131,14 @@ namespace REAC.Application.AppServices.SLA
                                                     }, applicationNotifications
                                                     );
                                             }
-                                            catch (Exception ex)
+                                            catch (Exception e)
                                             {
-
+                                                _loggerManager.Log(Core.Log.Domain.Shared.Enums.LoggerType.Database
+                                        , new LogDto()
+                                        {
+                                            Type = Core.Log.Domain.Shared.Enums.LogType.Exception,
+                                            Message = e.ToString()
+                                        });
                                             }
 
                                         }
@@ -452,7 +462,7 @@ namespace REAC.Application.AppServices.SLA
                                         {
                                             var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_FinishNotes).Result.Data?.Value;
                                             msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
-                                            msg = msg.Replace("{ExpirationDate}", $"{(reminderForApplicantSecondPeriod - (int)totalReviewHours)/24}");
+                                            msg = msg.Replace("{ExpirationDate}", $"{(reminderForApplicantSecondPeriod - (int)totalReviewHours) / 24}");
 
 
                                             List<SysNotificationDto> notifications = new List<SysNotificationDto>()
@@ -688,7 +698,7 @@ namespace REAC.Application.AppServices.SLA
 
                         if (firstAgreementRequestForRequest > 0)
                         {
-                            if ( litigationRequest.IsReminderForAgreementRequestForRequestSent is null || litigationRequest.IsReminderForAgreementRequestForRequestSent != true)
+                            if (litigationRequest.IsReminderForAgreementRequestForRequestSent is null || litigationRequest.IsReminderForAgreementRequestForRequestSent != true)
                             {
                                 if (totalReviewHours >= secondAgreementRequestForForRequest)
                                 {

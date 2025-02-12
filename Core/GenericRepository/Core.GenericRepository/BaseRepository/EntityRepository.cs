@@ -15,12 +15,14 @@ using Core.GenericRepository.Extensions;
 using static Core.GenericRepository.Shared.RepositoryDelegates;
 using Microsoft.Data.SqlClient;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+using Core.Log.Application.Contracts.IAppServices;
 
 namespace Core.GenericRepository.BaseRepository
 {
     public class EntityRepository : IEntityRepository
     {
         private readonly DbContext _dbContext;
+        private readonly ILoggerManager _loggerManager;
 
         public event BeforeUpdateDelegate BeforeUpdateEvent;
         public event AfterUpdateDelegate AfterUpdateEvent;
@@ -130,10 +132,11 @@ namespace Core.GenericRepository.BaseRepository
             }
             catch (Exception e)
             {
-                return new ExceptionResponse()
+
+                return new BaseResponse()
                 {
                     IsDone = false,
-                    Exception = e.InnerException != null ? e.InnerException.Message : e.Message
+                    Message = e.InnerException != null ? e.InnerException.Message : e.Message
                 };
             }
         }
