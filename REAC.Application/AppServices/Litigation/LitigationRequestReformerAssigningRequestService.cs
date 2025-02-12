@@ -75,6 +75,7 @@ namespace REAC.Application.AppServices.Litigation
                     .Where(c => c.Id == referenceId)
                     .FirstOrDefault();
                 var msg = "";
+                string body;
                 var deptAdminInfoReconciliation = await _employeeService.GetAdminsByDepartmentType(DepartmentType.Reconciliation);
 
                 var applicationNotifications = new List<SysNotificationDto>();
@@ -104,6 +105,14 @@ namespace REAC.Application.AppServices.Litigation
                             msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reconciliation_Reconciliator_AcceptTask).Result.Data?.Value;
                             msg = msg.Replace("{ReconciliatorName}", litigationRequestReformerAssigningRequest.ReformerCitizen.FullName);
                             msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
+                            var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                            using (StreamReader streamReader = File.OpenText(pathToFile))
+                            {
+                                body = await streamReader.ReadToEndAsync();
+                                body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reconciliation_Reconciliator_AcceptTask).Result.Data?.Value);
+                                body = body.Replace("{ReconciliatorName}", litigationRequestReformerAssigningRequest.ReformerCitizen.FullName);
+                                body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                            }
                             applicationNotifications.Add(new SysNotificationDto()
                             {
                                 ActorId = citizenInfo.Id,
@@ -154,7 +163,7 @@ namespace REAC.Application.AppServices.Litigation
                                      To = new List<string>() { citizenInfo.Email,litigationRequest.Contract.FirstPartyCitizen is not null ? litigationRequest.Contract.FirstPartyCitizen.Email : litigationRequest.Contract.FirstPartyFacility.Citizen.Email,
                                          litigationRequest.Contract.SecondPartyCitizen is not null ?  litigationRequest.Contract.SecondPartyCitizen.Email : litigationRequest.Contract.SecondPartyFacility.Citizen.Email, deptAdminInfoReconciliation.Data.Email },
                                      Subject = "قبول المصلح المهمة",
-                                     Body = msg
+                                     Body = body
                                  },
                                  new SMSRequestDto()
                                  {
@@ -234,9 +243,26 @@ namespace REAC.Application.AppServices.Litigation
                                             var reAssignMsg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reconciliation_ReAssigned).Result.Data?.Value;
                                             reAssignMsg = reAssignMsg.Replace("{LitigationCode}", litigationRequest.RequestCode);
                                             reAssignMsg = reAssignMsg.Replace("{ReformerName}", reformer.FullName);
+                                            var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                            string reAssignBody;
+                                            using (StreamReader streamReader = File.OpenText(pathToFile))
+                                            {
+                                                reAssignBody = await streamReader.ReadToEndAsync();
+                                                reAssignBody = reAssignBody?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reconciliation_ReAssigned).Result.Data?.Value);
+                                                reAssignBody = reAssignBody?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                                                reAssignBody = reAssignBody.Replace("{ReformerName}", reformer.FullName);
+                                            }
 
                                             var assignMsg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reconciliation_Assign).Result.Data?.Value;
                                             assignMsg = assignMsg.Replace("{LitigationCode}", litigationRequest.RequestCode);
+                                            pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                            string assignBody;
+                                            using (StreamReader streamReader = File.OpenText(pathToFile))
+                                            {
+                                                assignBody = await streamReader.ReadToEndAsync();
+                                                assignBody = assignBody?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reconciliation_Assign).Result.Data?.Value);
+                                                assignBody = assignBody?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                                            }
                                             var assignApplicationNotification = new List<SysNotificationDto>();
                                             var reAssignApplicationNotification = new List<SysNotificationDto>();
                                             assignApplicationNotification.Add(new SysNotificationDto()
@@ -282,7 +308,7 @@ namespace REAC.Application.AppServices.Litigation
                                                 {
                                                     To = new List<string>() { reformer.Email, deptAdminInfoReconciliation.Data.Email },
                                                     Subject = "Arbitraor Assign Task",
-                                                    Body = assignMsg
+                                                    Body = assignBody
                                                 },
                                                 new SMSRequestDto()
                                                 {
@@ -299,7 +325,7 @@ namespace REAC.Application.AppServices.Litigation
                                                 {
                                                     To = new List<string>() { citizenInfo.Email, deptAdminInfoReconciliation.Data.Email },
                                                     Subject = "Arbitraor Accept Task",
-                                                    Body = reAssignMsg
+                                                    Body = reAssignBody
                                                 },
                                                 new SMSRequestDto()
                                                 {
@@ -328,6 +354,14 @@ namespace REAC.Application.AppServices.Litigation
                             msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reconciliation_Reconciliator_RejectTask).Result.Data?.Value;
                             msg = msg.Replace("{ReconciliatorName}", litigationRequestReformerAssigningRequest.ReformerCitizen.FullName);
                             msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
+                            var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                            using (StreamReader streamReader = File.OpenText(pathToFile))
+                            {
+                                body = await streamReader.ReadToEndAsync();
+                                body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reconciliation_Reconciliator_RejectTask).Result.Data?.Value);
+                                body = body.Replace("{ReconciliatorName}", litigationRequestReformerAssigningRequest.ReformerCitizen.FullName);
+                                body = body.Replace("{LitigationCode}", litigationRequest.RequestCode);
+                            }
                             applicationNotifications.Add(new SysNotificationDto()
                             {
                                 ActorId = citizenInfo.Id,
@@ -357,7 +391,7 @@ namespace REAC.Application.AppServices.Litigation
                                 {
                                     To = new List<string>() { citizenInfo.Email, deptAdminInfoReconciliation.Data.Email },
                                     Subject = "Arbitraor Accept Task",
-                                    Body = msg
+                                    Body = body
                                 },
                                 new SMSRequestDto()
                                 {

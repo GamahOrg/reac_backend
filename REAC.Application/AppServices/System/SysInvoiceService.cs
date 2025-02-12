@@ -177,13 +177,20 @@ namespace REAC.Application.AppServices.System
                     if (arbitrationAdmin.IsDone && arbitrationAdmin.Data != null)
                     {
                         var invoice_PaidInvoiceMessage = _settingService.GetBySettingKey(SysSettingKeyConstants.Invoice_ArbitrationInvoicePaidMessage).Result.Data?.Value;
+                        var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                        string body;
+                        using (StreamReader streamReader = File.OpenText(pathToFile))
+                        {
+                            body = await streamReader.ReadToEndAsync();
+                            body = body?.Replace("{content}", _settingService.GetBySettingKey(SysSettingKeyConstants.Invoice_ArbitrationInvoicePaidMessage).Result.Data?.Value);
+                        }
                         if (!string.IsNullOrWhiteSpace(invoice_PaidInvoiceMessage))
                         {
                             invoice_PaidInvoiceMessage = invoice_PaidInvoiceMessage?
                                 .Replace("{LitigationCode}", litigationRequest.RequestCode);
-
+                            body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
                             if (!string.IsNullOrWhiteSpace(invoice_PaidInvoiceMessage))
-                                await SendNotification(litigationRequest, RequestType.Invoices, arbitrationAdmin.Data, "سداد رسوم التحكيم", invoice_PaidInvoiceMessage, false);
+                                await SendNotification(litigationRequest, RequestType.Invoices, arbitrationAdmin.Data, "سداد رسوم التحكيم", invoice_PaidInvoiceMessage, body, false);
                         }
                     }
                     #endregion
@@ -218,7 +225,7 @@ namespace REAC.Application.AppServices.System
         }
 
 
-        public async Task SendNotification(LitigationRequest litigationRequest, RequestType requestType, SysEmployee arbitrationAdmin, string subject, string message, bool defendant)
+        public async Task SendNotification(LitigationRequest litigationRequest, RequestType requestType, SysEmployee arbitrationAdmin, string subject, string message, string mailMsg, bool defendant)
         {
             List<SysNotificationDto> notifications = new List<SysNotificationDto>()
             {
@@ -320,7 +327,7 @@ namespace REAC.Application.AppServices.System
             {
                 To = emails,
                 Subject = subject,
-                Body = message
+                Body = mailMsg
             }, new Contracts.Dtos.Integration.GEE.SMSRequestDto()
             {
                 message_text = message,

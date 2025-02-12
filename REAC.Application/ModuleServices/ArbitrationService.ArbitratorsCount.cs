@@ -103,7 +103,15 @@ namespace REAC.Application.ModuleServices
                             #region تم الإنتهاء من تحديد عدد المحكمين النهائي
                             var msg = _settingService.GetBySettingKey(SysSettingKeyConstants.Arbitrators_Count_Added).Result.Data?.Value;
                             msg = msg?.Replace("{LitigationCode}", litigationRequest.RequestCode);
-                            await SendNotification(litigationRequest, RequestType.LitigationRequest, arbitrationAdmin.Data, "عدد المحكمين النهائي", msg, true);
+                            var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                            string body;
+                            using (StreamReader streamReader = File.OpenText(pathToFile))
+                            {
+                                body = await streamReader.ReadToEndAsync();
+                                body = body?.Replace("{content}", _settingService.GetBySettingKey(SysSettingKeyConstants.Arbitrators_Count_Added).Result.Data?.Value);
+                                body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                            }
+                            await SendNotification(litigationRequest, RequestType.LitigationRequest, arbitrationAdmin.Data, "عدد المحكمين النهائي", msg,body , true);
                             #endregion
 
 
@@ -114,7 +122,13 @@ namespace REAC.Application.ModuleServices
                                 invoice_CreatedInvoiceMessage = invoice_CreatedInvoiceMessage?
                                     .Replace("{LitigationCode}", litigationRequest.RequestCode)
                                     .Replace("{InvoiceCode}", addInvoice.Data.InvoiceCode);
-                                await SendNotification(litigationRequest, RequestType.Invoices, arbitrationAdmin.Data, "فاتورة رسوم التحكيم", invoice_CreatedInvoiceMessage, false);
+                                using (StreamReader streamReader = File.OpenText(pathToFile))
+                                {
+                                    body = await streamReader.ReadToEndAsync();
+                                    body = body?.Replace("{content}", _settingService.GetBySettingKey(SysSettingKeyConstants.Invoice_CreatedInvoiceMessage).Result.Data?.Value);
+                                    body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode).Replace("{InvoiceCode}", addInvoice.Data.InvoiceCode); ;
+                                }
+                                await SendNotification(litigationRequest, RequestType.Invoices, arbitrationAdmin.Data, "فاتورة رسوم التحكيم", invoice_CreatedInvoiceMessage, body, false);
                             }
                             #endregion
                         }
@@ -187,7 +201,7 @@ namespace REAC.Application.ModuleServices
         }
 
 
-        async Task SendNotification(LitigationRequest litigationRequest, RequestType requestType, SysEmployee arbitrationAdmin, string subject, string message, bool defendant)
+        async Task SendNotification(LitigationRequest litigationRequest, RequestType requestType, SysEmployee arbitrationAdmin, string subject, string message,string mailMsg, bool defendant)
         {
             List<SysNotificationDto> notifications = new List<SysNotificationDto>()
             {
@@ -289,7 +303,7 @@ namespace REAC.Application.ModuleServices
             {
                 To = emails,
                 Subject = subject,
-                Body = message
+                Body = mailMsg
             }, new Contracts.Dtos.Integration.GEE.SMSRequestDto()
             {
                 message_text = message,
@@ -947,6 +961,14 @@ namespace REAC.Application.ModuleServices
                         var arbitrationAdmin = await _sysEmployeeService.GetAdminsByDepartmentType(DepartmentType.Arbitration);
                         var msg = _settingService.GetBySettingKey(SysSettingKeyConstants.Arbitrators_Count_FromBothSides).Result.Data?.Value;
                         msg = msg?.Replace("{LitigationCode}", litigationRequest.RequestCode);
+                        var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                        string body;
+                        using (StreamReader streamReader = File.OpenText(pathToFile))
+                        {
+                            body = await streamReader.ReadToEndAsync();
+                            body = body?.Replace("{content}", _settingService.GetBySettingKey(SysSettingKeyConstants.Arbitrators_Count_FromBothSides).Result.Data?.Value);
+                            body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                        }
                         //if (litigationRequest?.Contract?.FirstPartyCitizen != null)
                         //    msg = msg?.Replace("{FirstParty}", litigationRequest?.Contract?.FirstPartyCitizen.FullName);
                         //if (litigationRequest?.Contract?.SecondPartyCitizen != null)
@@ -966,8 +988,14 @@ namespace REAC.Application.ModuleServices
                                 invoice_CreatedInvoiceMessage = invoice_CreatedInvoiceMessage?
                                     .Replace("{LitigationCode}", litigationRequest.RequestCode)
                                     .Replace("{InvoiceCode}", addInvoice.Data.InvoiceCode);
-
-                                await SendNotification(litigationRequest, RequestType.Invoices, arbitrationAdmin.Data, "فاتورة رسوم التحكيم", invoice_CreatedInvoiceMessage, false);
+                                 pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                using (StreamReader streamReader = File.OpenText(pathToFile))
+                                {
+                                    body = await streamReader.ReadToEndAsync();
+                                    body = body?.Replace("{content}", _settingService.GetBySettingKey(SysSettingKeyConstants.Invoice_CreatedInvoiceMessage).Result.Data?.Value);
+                                    body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode).Replace("{InvoiceCode}", addInvoice.Data.InvoiceCode);
+                                }
+                                await SendNotification(litigationRequest, RequestType.Invoices, arbitrationAdmin.Data, "فاتورة رسوم التحكيم", invoice_CreatedInvoiceMessage,body , false);
                             }
                             #endregion
 
@@ -1023,6 +1051,14 @@ namespace REAC.Application.ModuleServices
                         var arbitrationAdmin = await _sysEmployeeService.GetAdminsByDepartmentType(DepartmentType.Arbitration);
                         var msg = _settingService.GetBySettingKey(SysSettingKeyConstants.Arbitrators_Count_Added_AfterAgreement).Result.Data?.Value;
                         msg = msg?.Replace("{LitigationCode}", litigationRequest.RequestCode);
+                        var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                        string body;
+                        using (StreamReader streamReader = File.OpenText(pathToFile))
+                        {
+                            body = await streamReader.ReadToEndAsync();
+                            body = body?.Replace("{content}", _settingService.GetBySettingKey(SysSettingKeyConstants.Arbitrators_Count_Added_AfterAgreement).Result.Data?.Value);
+                            body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                        }
 
                         if (arbitrationAdmin.IsDone)
                         {
@@ -1048,7 +1084,7 @@ namespace REAC.Application.ModuleServices
                             {
                                 To = emails,
                                 Subject = "الإنتهاء من تحديد عدد المحكمين",
-                                Body = msg
+                                Body = body
                             }, new Contracts.Dtos.Integration.GEE.SMSRequestDto()
                             {
                                 message_text = msg,

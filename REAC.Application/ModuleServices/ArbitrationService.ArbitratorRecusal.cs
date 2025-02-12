@@ -163,6 +163,15 @@ namespace REAC.Application.ModuleServices
                         msg = _settingService.GetBySettingKey(SysSettingKeyConstants.ArbitraorRecusal_AddRequest).Result.Data?.Value;
                         msg = msg?.Replace("{ArbitratorName}", arbitratorInfo?.FullName);
                         msg = msg?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                        var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                        string body;
+                        using (StreamReader streamReader = File.OpenText(pathToFile))
+                        {
+                            body = await streamReader.ReadToEndAsync();
+                            body = body?.Replace("{content}", _settingService.GetBySettingKey(SysSettingKeyConstants.ArbitraorRecusal_AddRequest).Result.Data?.Value);
+                            body = body?.Replace("{ArbitratorName}", arbitratorInfo?.FullName);
+                            body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                        }
 
                         List<SysNotificationDto> notifications = new List<SysNotificationDto>() {
                         new SysNotificationDto{
@@ -187,7 +196,7 @@ namespace REAC.Application.ModuleServices
                         {
                             To = new List<string>() { applicantInfo.Email, arbitrationAdmin.Data?.Email },
                             Subject = "أضافة طلب رد محكم",
-                            Body = msg
+                            Body = body
                         }, null, notifications);
 
                     }
@@ -687,6 +696,7 @@ namespace REAC.Application.ModuleServices
                     {
 
                         var msg = "";
+                        string body = "";
                         var arbitratorInfo = (await _repository.GetQueryable<Citizen, Guid>()).FirstOrDefault(c => c.Id == arbitrationReportExplanationRequest.ArbitratorCitizenId);
                         var litigationRequest = arbitrationReportExplanationRequest.LitigationRequest;
                         switch (requestPayload.Response)
@@ -696,15 +706,29 @@ namespace REAC.Application.ModuleServices
                                 // Send Notification
                                 // تم الموافقة على طلب رد محكم
                                 msg = _settingService.GetBySettingKey(SysSettingKeyConstants.ArbitraorRecusal_AddRequest_Approve).Result.Data?.Value;
+                                var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                using (StreamReader streamReader = File.OpenText(pathToFile))
+                                {
+                                    body = await streamReader.ReadToEndAsync();
+                                    body = body?.Replace("{content}", _settingService.GetBySettingKey(SysSettingKeyConstants.ArbitraorRecusal_AddRequest_Approve).Result.Data?.Value);
+                                }
                                 break;
                             case ApproveRejectStatus.Reject:
                                 // Send Notification
                                 // تم رفض طلب رد محكم
                                 msg = _settingService.GetBySettingKey(SysSettingKeyConstants.ArbitraorRecusal_AddRequest_Reject).Result.Data?.Value;
+                                pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                using (StreamReader streamReader = File.OpenText(pathToFile))
+                                {
+                                    body = await streamReader.ReadToEndAsync();
+                                    body = body?.Replace("{content}", _settingService.GetBySettingKey(SysSettingKeyConstants.ArbitraorRecusal_AddRequest_Reject).Result.Data?.Value);
+                                }
                                 break;
                         }
                         msg = msg?.Replace("{ArbitratorName}", arbitratorInfo?.FullName);
+                        body = body?.Replace("{ArbitratorName}", arbitratorInfo?.FullName);
                         msg = msg?.Replace("{LitigationCode}", arbitrationReportExplanationRequest.LitigationRequest?.RequestCode);
+                        body = body?.Replace("{LitigationCode}", arbitrationReportExplanationRequest.LitigationRequest?.RequestCode);
                         List<SysNotificationDto> notifications = new List<SysNotificationDto>() {
                         new SysNotificationDto{
                         ActorId = litigationRequest.ApplicantCitizen.Id,

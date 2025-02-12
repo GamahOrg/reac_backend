@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using REAC.Application.Contracts.Dtos.Delegator;
 using REAC.Application.Contracts.Dtos.Integration.GEE;
+using REAC.Application.Contracts.Dtos.Litigation.CreateUpdate.Litigation;
 using REAC.Application.Contracts.Dtos.Notification;
 using REAC.Application.Contracts.IAppServices;
 using REAC.Application.Contracts.IAppServices.Integration;
@@ -326,9 +327,25 @@ namespace REAC.Application.AppServices
 
                     var citizenMsg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Citizen_AddAgent).Result.Data?.Value;
                     citizenMsg = citizenMsg.Replace("{CitizenName}", agentInfo.FullName);
+                    var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                    string citizenody;
+                    using (StreamReader streamReader = File.OpenText(pathToFile))
+                    {
+                        citizenody = await streamReader.ReadToEndAsync();
+                        citizenody = citizenody?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Citizen_AddAgent).Result.Data?.Value);
+                        citizenody = citizenody?.Replace("{CitizenName}", agentInfo.FullName);
+                    }
 
                     var agentMsg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Delegator_AddAgent).Result.Data?.Value;
                     agentMsg = agentMsg.Replace("{CitizenName}", sourceCitizen.FullName);
+                    string agentBody;
+                    pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                    using (StreamReader streamReader = File.OpenText(pathToFile))
+                    {
+                        agentBody = await streamReader.ReadToEndAsync();
+                        agentBody = agentBody?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Delegator_AddAgent).Result.Data?.Value);
+                        agentBody = agentBody?.Replace("{CitizenName}", sourceCitizen.FullName); ;
+                    }
 
 
                     _notificationService.SendNotifications(null, null, new List<Contracts.Dtos.Notification.SysNotificationDto>()

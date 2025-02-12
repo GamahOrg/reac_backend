@@ -4,6 +4,7 @@ using Core.GenericRepository.Shared.Pagging;
 using Core.Shared.Responses;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using REAC.Application.AppServices.System;
 using REAC.Application.Contracts.Dtos.Arbitration;
 using REAC.Application.Contracts.Dtos.Notification;
 using REAC.Application.Contracts.Dtos.Reconciliation;
@@ -403,6 +404,14 @@ namespace REAC.Application.ModuleServices
                             var msg = "";
                             msg = _settingService.GetBySettingKey(SysSettingKeyConstants.ArbitraorRecusal_InformArbitrator_Reject).Result.Data?.Value;
                             msg = msg?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                            var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                            string body;
+                            using (StreamReader streamReader = File.OpenText(pathToFile))
+                            {
+                                body = await streamReader.ReadToEndAsync();
+                                body = body?.Replace("{content}", _settingService.GetBySettingKey(SysSettingKeyConstants.ArbitraorRecusal_InformArbitrator_Reject).Result.Data?.Value);
+                                body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                            }
 
                             var arbitrationAdmin = await _sysEmployeeService.GetAdminsByDepartmentType(DepartmentType.Arbitration);
 
@@ -441,7 +450,7 @@ namespace REAC.Application.ModuleServices
                                 {
                                     To = emails,
                                     Subject = "إلغاء مهمتك كمحكم على الدعوى",
-                                    Body = msg
+                                    Body = body
                                 }, new Contracts.Dtos.Integration.GEE.SMSRequestDto()
                                 {
                                     message_text = msg,
@@ -469,6 +478,13 @@ namespace REAC.Application.ModuleServices
                             var boosMsg = "";
                             boosMsg = _settingService.GetBySettingKey(SysSettingKeyConstants.ArbitraorRecusal_InformArbitratorChairman_Rejected).Result.Data?.Value;
                             boosMsg = boosMsg?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                            pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                            using (StreamReader streamReader = File.OpenText(pathToFile))
+                            {
+                                body = await streamReader.ReadToEndAsync();
+                                body = body?.Replace("{content}", _settingService.GetBySettingKey(SysSettingKeyConstants.ArbitraorRecusal_InformArbitratorChairman_Rejected).Result.Data?.Value);
+                                body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                            }
 
                             var admin = await _sysEmployeeService.GetAdminsByDepartmentType(DepartmentType.Arbitration);
 
@@ -507,7 +523,7 @@ namespace REAC.Application.ModuleServices
                                 {
                                     To = emails,
                                     Subject = "إلغاء مهمتك كرأيس محكمين على الدعوى",
-                                    Body = boosMsg
+                                    Body = body
                                 }, new Contracts.Dtos.Integration.GEE.SMSRequestDto()
                                 {
                                     message_text = boosMsg,
@@ -563,7 +579,14 @@ namespace REAC.Application.ModuleServices
                             var msg = "";
                             msg = _settingService.GetBySettingKey(SysSettingKeyConstants.Arbitration_Arbitraor_Assigned).Result.Data?.Value;
                             msg = msg?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
-
+                            var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                            string body;
+                            using (StreamReader streamReader = File.OpenText(pathToFile))
+                            {
+                                body = await streamReader.ReadToEndAsync();
+                                body = body?.Replace("{content}", _settingService.GetBySettingKey(SysSettingKeyConstants.Arbitration_Arbitraor_Assigned).Result.Data?.Value);
+                                body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                            }
 
 
                             List<SysNotificationDto> notifications = new List<SysNotificationDto>() {
@@ -591,7 +614,7 @@ namespace REAC.Application.ModuleServices
                             {
                                 To = emails,
                                 Subject = " طلب مهمه جديد كمحكم على الدعوي",
-                                Body = msg
+                                Body = body
                             }, new Contracts.Dtos.Integration.GEE.SMSRequestDto()
                             {
                                 message_text = msg,
@@ -620,7 +643,14 @@ namespace REAC.Application.ModuleServices
 
                             var bossMsg = "";
                             bossMsg = _settingService.GetBySettingKey(SysSettingKeyConstants.Arbitration_ArbitraorChairman_Assigned).Result.Data?.Value;
-                            bossMsg = bossMsg?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                            bossMsg = bossMsg?.Replace("{LitigationCode}", litigationRequest?.RequestCode); 
+                            pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                            using (StreamReader streamReader = File.OpenText(pathToFile))
+                            {
+                                body = await streamReader.ReadToEndAsync();
+                                body = body?.Replace("{content}", _settingService.GetBySettingKey(SysSettingKeyConstants.Arbitration_ArbitraorChairman_Assigned).Result.Data?.Value);
+                                body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                            }
 
                             List<SysNotificationDto> notificationList = new List<SysNotificationDto>() {
 
@@ -647,7 +677,7 @@ namespace REAC.Application.ModuleServices
                             {
                                 To = emailList,
                                 Subject = " طلب مهمه جديد كرأيس هيئة محكمين على الدعوي",
-                                Body = bossMsg
+                                Body = body
                             }, new Contracts.Dtos.Integration.GEE.SMSRequestDto()
                             {
                                 message_text = bossMsg,

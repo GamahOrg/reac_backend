@@ -99,6 +99,14 @@ namespace REAC.Application.ModuleServices
                         {
                             var msg = _settingService.GetBySettingKey(SysSettingKeyConstants.ArbitrationService_JudgmentAdded).Result.Data?.Value;
                             msg = msg?.Replace("{LitigationCode}", litigationRequest.RequestCode);
+                            var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                            string body;
+                            using (StreamReader streamReader = File.OpenText(pathToFile))
+                            {
+                                body = await streamReader.ReadToEndAsync();
+                                body = body?.Replace("{content}", _settingService.GetBySettingKey(SysSettingKeyConstants.ArbitrationService_JudgmentAdded).Result.Data?.Value);
+                                body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                            }
 
 
                             List<SysNotificationDto> notifications = new List<SysNotificationDto>() {
@@ -216,7 +224,7 @@ namespace REAC.Application.ModuleServices
                             {
                                 To = emails,
                                 Subject = "حكم هيئة التحكيم",
-                                Body = msg
+                                Body = body
                             }, new Contracts.Dtos.Integration.GEE.SMSRequestDto()
                             {
                                 message_text = msg,

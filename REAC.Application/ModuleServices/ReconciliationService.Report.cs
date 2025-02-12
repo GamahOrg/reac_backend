@@ -44,6 +44,7 @@ namespace REAC.Application.ModuleServices
 
                 bool allowAdd = true;
                 var msg = string.Empty;
+                string body;
                 if (litigationRequest.LitigationRequestReconciliationReports.Count() > 0)
                     allowAdd = false;
 
@@ -68,7 +69,14 @@ namespace REAC.Application.ModuleServices
                             //msg = (await _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reconciliation_Report_Creation)).Data?.ToString();
                             msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reconciliation_Request_Added).Result.Data?.Value;
                             msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
-                            await SendNotificationMSWithAllTypes(msg, litigationRequest, "Reconciliation Request Added");
+                            var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                            using (StreamReader streamReader = File.OpenText(pathToFile))
+                            {
+                                body = await streamReader.ReadToEndAsync();
+                                body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reconciliation_Request_Added).Result.Data?.Value);
+                                body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                            }
+                            await SendNotificationMSWithAllTypes(body, msg, litigationRequest, "Reconciliation Request Added");
                         }
                         catch (Exception e)
                         { }
@@ -84,7 +92,14 @@ namespace REAC.Application.ModuleServices
                         {
                             msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Decision_WaiverOfRight).Result.Data?.Value;
                             msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
-                            await SendNotificationMSWithAllTypes(msg, litigationRequest, "Reconciliation Litigation Request For defientive Report Reply Added");
+                            var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                            using (StreamReader streamReader = File.OpenText(pathToFile))
+                            {
+                                body = await streamReader.ReadToEndAsync();
+                                body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Decision_WaiverOfRight).Result.Data?.Value);
+                                body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                            }
+                            await SendNotificationMSWithAllTypes(body, msg, litigationRequest, "Reconciliation Litigation Request For defientive Report Reply Added");
                         }
                         catch (Exception e)
                         { }
@@ -103,7 +118,14 @@ namespace REAC.Application.ModuleServices
                         {
                             msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Decision_WaiverOfTheLitigation).Result.Data?.Value;
                             msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
-                            await SendNotificationMSWithAllTypes(msg, litigationRequest, "Reconciliation Litigation Request For defientive Report Reply Added");
+                            var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                            using (StreamReader streamReader = File.OpenText(pathToFile))
+                            {
+                                body = await streamReader.ReadToEndAsync();
+                                body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Decision_WaiverOfTheLitigation).Result.Data?.Value);
+                                body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                            }
+                            await SendNotificationMSWithAllTypes(body, msg, litigationRequest, "Reconciliation Litigation Request For defientive Report Reply Added");
                         }
                         catch (Exception e)
                         { }
@@ -122,7 +144,14 @@ namespace REAC.Application.ModuleServices
                         {
                             msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.ReconciliationOnTradyPlatform).Result.Data?.Value;
                             msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
-                            await SendNotificationMSWithAllTypes(msg, litigationRequest, "Reconciliation Litigation Request For Report Reply Added");
+                            var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                            using (StreamReader streamReader = File.OpenText(pathToFile))
+                            {
+                                body = await streamReader.ReadToEndAsync();
+                                body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.ReconciliationOnTradyPlatform).Result.Data?.Value);
+                                body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                            }
+                            await SendNotificationMSWithAllTypes(body, msg, litigationRequest, "Reconciliation Litigation Request For Report Reply Added");
                         }
                         catch (Exception e)
                         {
@@ -143,8 +172,14 @@ namespace REAC.Application.ModuleServices
                             try
                             {
                                 msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Decision_ReconciliationWasNotMadeAndMoveToArbitration).Result.Data?.Value;
-                                msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
-                                await SendNotificationMSWithAllTypes(msg, litigationRequest, "Reconciliation Litigation Request For Report Reply Added");
+                                msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode); var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                using (StreamReader streamReader = File.OpenText(pathToFile))
+                                {
+                                    body = await streamReader.ReadToEndAsync();
+                                    body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Decision_ReconciliationWasNotMadeAndMoveToArbitration).Result.Data?.Value);
+                                    body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                                }
+                                await SendNotificationMSWithAllTypes(body, msg, litigationRequest, "Reconciliation Litigation Request For Report Reply Added");
                             }
                             catch (Exception e)
                             {
@@ -166,7 +201,14 @@ namespace REAC.Application.ModuleServices
                             {
                                 msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Decision_ReconciliationWasNotMade).Result.Data?.Value;
                                 msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
-                                await SendNotificationMSWithAllTypes(msg, litigationRequest, "Reconciliation Litigation Request For Report Reply Added");
+                                var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                using (StreamReader streamReader = File.OpenText(pathToFile))
+                                {
+                                    body = await streamReader.ReadToEndAsync();
+                                    body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Decision_ReconciliationWasNotMade).Result.Data?.Value);
+                                    body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                                }
+                                await SendNotificationMSWithAllTypes(body, msg, litigationRequest, "Reconciliation Litigation Request For Report Reply Added");
                             }
                             catch (Exception e)
                             { }

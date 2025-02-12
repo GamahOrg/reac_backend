@@ -81,10 +81,25 @@ namespace REAC.Application.ModuleServices
                         {
                             var msg = _settingService.GetBySettingKey(SysSettingKeyConstants.ArbitratorSelectionDuration_Added).Result.Data?.Value;
                             msg = msg?.Replace("{LitigationCode}", litigationRequest.RequestCode);
+                            var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                            string body;
+                            using (StreamReader streamReader = File.OpenText(pathToFile))
+                            {
+                                body = await streamReader.ReadToEndAsync();
+                                body = body?.Replace("{content}", _settingService.GetBySettingKey(SysSettingKeyConstants.ArbitratorSelectionDuration_Added).Result.Data?.Value);
+                                body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                            }
 
                             var adminMsg = _settingService.GetBySettingKey(SysSettingKeyConstants.ArbitratorSelectionDuration_Added_Admin).Result.Data?.Value;
                             adminMsg = adminMsg?.Replace("{LitigationCode}", litigationRequest.RequestCode);
-
+                            pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                            string adminBody;
+                            using (StreamReader streamReader = File.OpenText(pathToFile))
+                            {
+                                adminBody = await streamReader.ReadToEndAsync();
+                                adminBody = adminBody?.Replace("{content}", _settingService.GetBySettingKey(SysSettingKeyConstants.ArbitratorSelectionDuration_Added_Admin).Result.Data?.Value);
+                                adminBody = adminBody?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                            }
 
                             List<SysNotificationDto> notifications = new List<SysNotificationDto>() {
                         new SysNotificationDto{
@@ -167,7 +182,7 @@ namespace REAC.Application.ModuleServices
                             {
                                 To = emails,
                                 Subject = "تحديد مدة أختيار المحكمين",
-                                Body = msg
+                                Body = body
                             }, new Contracts.Dtos.Integration.GEE.SMSRequestDto()
                             {
                                 message_text = msg,
@@ -180,7 +195,7 @@ namespace REAC.Application.ModuleServices
                             {
                                 To = emails,
                                 Subject = "تحديد مدة أختيار المحكمين",
-                                Body = adminMsg
+                                Body = adminBody
                             }, new Contracts.Dtos.Integration.GEE.SMSRequestDto()
                             {
                                 message_text = adminMsg,

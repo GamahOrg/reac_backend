@@ -18,6 +18,8 @@ using Wafi.Application.Hubs.Contracts;
 using Wafi.Application.Hubs;
 using REAC.Domain.Shared.Enum;
 using REAC.Application.Contracts.IAppServices.Notification;
+using REAC.EntityFrameworkCore.Entities.Litigation;
+using REAC.Application.Contracts.Dtos.Litigation.CreateUpdate.Litigation;
 
 namespace REAC.Application.AppServices
 {
@@ -93,6 +95,14 @@ namespace REAC.Application.AppServices
                 {
                     var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Citizen_AddBankAccount).Result.Data?.Value;
                     msg = msg.Replace("{CitizenName}", citizenInfo.FullName);
+                    var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                    string body;
+                    using (StreamReader streamReader = File.OpenText(pathToFile))
+                    {
+                        body = await streamReader.ReadToEndAsync();
+                        body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Citizen_AddBankAccount).Result.Data?.Value);
+                        body = body?.Replace("{CitizenName}", citizenInfo.FullName);
+                    }
 
                     var applicationNotifications = new List<SysNotificationDto>();
 
@@ -130,7 +140,7 @@ namespace REAC.Application.AppServices
                             {
                                 To = new List<string>() { citizenInfo.Email, deptAdminInfoReconciliation.Data.Email },
                                 Subject = "Bank Account Added",
-                                Body = msg
+                                Body = body
                             },
                             new SMSRequestDto()
                             {
@@ -237,6 +247,14 @@ namespace REAC.Application.AppServices
                 {
                     var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Citizen_EditBankAccount).Result.Data?.Value;
                     msg = msg.Replace("{CitizenName}", citizenInfo.FullName);
+                    var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                    string body;
+                    using (StreamReader streamReader = File.OpenText(pathToFile))
+                    {
+                        body = await streamReader.ReadToEndAsync();
+                        body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Citizen_EditBankAccount).Result.Data?.Value);
+                        body = body?.Replace("{CitizenName}", citizenInfo.FullName);
+                    }
 
                     var applicationNotifications = new List<SysNotificationDto>();
 
@@ -274,7 +292,7 @@ namespace REAC.Application.AppServices
                             {
                                 To = new List<string>() { citizenInfo.Email, deptAdminInfoReconciliation.Data.Email },
                                 Subject = "Bank Account Updated",
-                                Body = msg
+                                Body = body
                             },
                             new SMSRequestDto()
                             {

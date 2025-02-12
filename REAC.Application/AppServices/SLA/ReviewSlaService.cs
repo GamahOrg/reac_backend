@@ -100,6 +100,14 @@ namespace REAC.Application.AppServices.SLA
                                             {
                                                 var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_FinishLitigation_ReviewerEmployee).Result.Data?.Value;
                                                 msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
+                                                var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                                string body;
+                                                using (StreamReader streamReader = File.OpenText(pathToFile))
+                                                {
+                                                    body = await streamReader.ReadToEndAsync();
+                                                    body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_FinishLitigation_ReviewerEmployee).Result.Data?.Value);
+                                                    body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                                                }
 
                                                 var applicationNotifications = new List<SysNotificationDto>();
 
@@ -118,7 +126,7 @@ namespace REAC.Application.AppServices.SLA
                                                 var notificationResult = await _notificationService.SendNotifications(
                                                     new SendEmailDto()
                                                     {
-                                                        Body = msg,
+                                                        Body = body,
                                                         Subject = "يرجي اتمام مراجعة الدعوي",
                                                         To = new List<string>() { employeeWorkFlowProcessingLog.Employee.Email }
 
@@ -220,6 +228,14 @@ namespace REAC.Application.AppServices.SLA
                                                     {
                                                         var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_WithdrewLitigation_OldReviewerEmployee).Result.Data?.Value;
                                                         msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
+                                                        var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                                        string body;
+                                                        using (StreamReader streamReader = File.OpenText(pathToFile))
+                                                        {
+                                                            body = await streamReader.ReadToEndAsync();
+                                                            body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_WithdrewLitigation_OldReviewerEmployee).Result.Data?.Value);
+                                                            body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                                                        }
 
                                                         var applicationNotifications = new List<SysNotificationDto>();
 
@@ -238,7 +254,7 @@ namespace REAC.Application.AppServices.SLA
                                                         var notificationResult = await _notificationService.SendNotifications(
                                                             new SendEmailDto()
                                                             {
-                                                                Body = msg,
+                                                                Body = body,
                                                                 Subject = "تم سحب دعوى جديدة لتخطى مدة التدقيق الفصوى",
                                                                 To = new List<string>() { employee.Email }
 
@@ -266,6 +282,14 @@ namespace REAC.Application.AppServices.SLA
                                                     {
                                                         var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_AssignLitigation_NewReviewerEmployee).Result.Data?.Value;
                                                         msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
+                                                        var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                                        string body;
+                                                        using (StreamReader streamReader = File.OpenText(pathToFile))
+                                                        {
+                                                            body = await streamReader.ReadToEndAsync();
+                                                            body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_AssignLitigation_NewReviewerEmployee).Result.Data?.Value);
+                                                            body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                                                        }
 
                                                         var employeeInfo = (await _repository.GetQueryable<SysEmployee, Guid>()).Where(e => e.Id == newEmployeeId).FirstOrDefault();
 
@@ -286,7 +310,7 @@ namespace REAC.Application.AppServices.SLA
                                                         var notificationResult = await _notificationService.SendNotifications(
                                                             new SendEmailDto()
                                                             {
-                                                                Body = msg,
+                                                                Body = body,
                                                                 Subject = "تم ارسال دعوى جديدة  للتدقيق",
                                                                 To = new List<string>() { employeeInfo.Email }
 
@@ -314,6 +338,14 @@ namespace REAC.Application.AppServices.SLA
                                                     {
                                                         var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_AssignLitigation_ReviewerAdmin).Result.Data?.Value;
                                                         msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
+                                                        var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                                        string body;
+                                                        using (StreamReader streamReader = File.OpenText(pathToFile))
+                                                        {
+                                                            body = await streamReader.ReadToEndAsync();
+                                                            body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_AssignLitigation_ReviewerAdmin).Result.Data?.Value);
+                                                            body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                                                        }
 
                                                         var employeeInfo = (await _repository.GetQueryable<SysEmployee, Guid>()).Where(e => e.Id == newEmployeeId).FirstOrDefault();
 
@@ -334,7 +366,7 @@ namespace REAC.Application.AppServices.SLA
                                                         var notificationResult = await _notificationService.SendNotifications(
                                                             new SendEmailDto()
                                                             {
-                                                                Body = msg,
+                                                                Body = body,
                                                                 Subject = "تم ارسال دعوى  إلى مدقق جديد لتخطى المدقق السابق مدة التدقيق الفصوى",
                                                                 To = new List<string>() { employeeInfo.Email }
 
@@ -368,6 +400,14 @@ namespace REAC.Application.AppServices.SLA
                                             {
                                                 var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_AssignLitigation_ReviewerAdmin).Result.Data?.Value;
                                                 msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
+                                                var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                                string body;
+                                                using (StreamReader streamReader = File.OpenText(pathToFile))
+                                                {
+                                                    body = await streamReader.ReadToEndAsync();
+                                                    body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_AssignLitigation_ReviewerAdmin).Result.Data?.Value);
+                                                    body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                                                }
 
                                                 var deptAdminInfoReview = await _employeeService.GetAdminsByDepartmentType(DepartmentType.Review);
 
@@ -388,7 +428,7 @@ namespace REAC.Application.AppServices.SLA
                                                 var notificationResult = await _notificationService.SendNotifications(
                                                     new SendEmailDto()
                                                     {
-                                                        Body = msg,
+                                                        Body = body,
                                                         Subject = "تم ارسال دعوى  إلى مدقق جديد لتخطى المدقق السابق مدة التدقيق الفصوى",
                                                         To = new List<string>() { deptAdminInfoReview.Data.Email }
 
@@ -464,6 +504,16 @@ namespace REAC.Application.AppServices.SLA
                                             msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
                                             msg = msg.Replace("{ExpirationDate}", $"{(reminderForApplicantSecondPeriod - (int)totalReviewHours) / 24}");
 
+                                            msg = msg.Replace("{ExpirationDate}", $"{(reminderForApplicantSecondPeriod - (int)totalReviewHours)/24}");
+                                            var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                            string body;
+                                            using (StreamReader streamReader = File.OpenText(pathToFile))
+                                            {
+                                                body = await streamReader.ReadToEndAsync();
+                                                body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_FinishNotes).Result.Data?.Value);
+                                                body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                                                body = body.Replace("{ExpirationDate}", $"{(reminderForApplicantSecondPeriod - (int)totalReviewHours) / 24}");
+                                            }
 
                                             List<SysNotificationDto> notifications = new List<SysNotificationDto>()
                                             {
@@ -523,7 +573,7 @@ namespace REAC.Application.AppServices.SLA
                                             var notificationResult = await _notificationService.SendNotifications(
                                                 new SendEmailDto()
                                                 {
-                                                    Body = msg,
+                                                    Body = body,
                                                     Subject = "يرجى سرعة معالجة كافة الملاحظات على الدعوى",
                                                     To = emails
 
@@ -561,7 +611,14 @@ namespace REAC.Application.AppServices.SLA
                                     {
                                         var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_LitigationCancelled).Result.Data?.Value;
                                         msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
-
+                                        var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                        string body;
+                                        using (StreamReader streamReader = File.OpenText(pathToFile))
+                                        {
+                                            body = await streamReader.ReadToEndAsync();
+                                            body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_LitigationCancelled).Result.Data?.Value);
+                                            body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                                        }
                                         var deptAdminInfoReview = await _employeeService.GetAdminsByDepartmentType(DepartmentType.Review);
                                         var deptEmployeeInfoReview = litigationRequest.WorkFlowProcessingLogs.Where(w => w.EmployeeId != null).OrderBy(x => x.CreatedOn).LastOrDefault()?.Employee;
 
@@ -644,7 +701,7 @@ namespace REAC.Application.AppServices.SLA
                                         var notificationResult = await _notificationService.SendNotifications(
                                             new SendEmailDto()
                                             {
-                                                Body = msg,
+                                                Body = body,
                                                 Subject = "تم إلفاء الدعوى لعدم الرد على الملاحظات المرسلة",
                                                 To = emails
 
@@ -713,7 +770,14 @@ namespace REAC.Application.AppServices.SLA
                                         {
                                             var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_FinishAgreementRequest).Result.Data?.Value;
                                             msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
-
+                                            var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                            string body;
+                                            using (StreamReader streamReader = File.OpenText(pathToFile))
+                                            {
+                                                body = await streamReader.ReadToEndAsync();
+                                                body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_FinishAgreementRequest).Result.Data?.Value);
+                                                body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                                            }
                                             List<SysNotificationDto> notifications = new List<SysNotificationDto>();
                                             List<string> emails = new List<string>();
                                             List<string> recipients = new List<string>();
@@ -752,7 +816,7 @@ namespace REAC.Application.AppServices.SLA
                                             var notificationResult = await _notificationService.SendNotifications(
                                                 new SendEmailDto()
                                                 {
-                                                    Body = msg,
+                                                    Body = body,
                                                     Subject = "يرجى سرعة الرد على طلب المشارطة المرسل على الدعوى",
                                                     To = emails
 
@@ -782,6 +846,14 @@ namespace REAC.Application.AppServices.SLA
                                         {
                                             var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_FinishAgreementRequest).Result.Data?.Value;
                                             msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
+                                            var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                            string body;
+                                            using (StreamReader streamReader = File.OpenText(pathToFile))
+                                            {
+                                                body = await streamReader.ReadToEndAsync();
+                                                body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_FinishAgreementRequest).Result.Data?.Value);
+                                                body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                                            }
 
 
                                             List<SysNotificationDto> notifications = new List<SysNotificationDto>()
@@ -870,7 +942,7 @@ namespace REAC.Application.AppServices.SLA
                                             var notificationResult = await _notificationService.SendNotifications(
                                                 new SendEmailDto()
                                                 {
-                                                    Body = msg,
+                                                    Body = body,
                                                     Subject = "يرجى سرعة الرد على طلب المشارطة المرسل على الدعوى",
                                                     To = emails
 
@@ -911,6 +983,14 @@ namespace REAC.Application.AppServices.SLA
                                 {
                                     var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_AgreementCancelled).Result.Data?.Value;
                                     msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
+                                    var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                    string body;
+                                    using (StreamReader streamReader = File.OpenText(pathToFile))
+                                    {
+                                        body = await streamReader.ReadToEndAsync();
+                                        body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_AgreementCancelled).Result.Data?.Value);
+                                        body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                                    }
 
                                     await _repository.AddAsync<WorkFlowLog, Guid>(new WorkFlowLog()
                                     {
@@ -1022,7 +1102,7 @@ namespace REAC.Application.AppServices.SLA
                                     var notificationResult = await _notificationService.SendNotifications(
                                         new SendEmailDto()
                                         {
-                                            Body = msg,
+                                            Body = body,
                                             Subject = "تم إلفاء الدعوى لعدم الرد على الملاحظات المرسلة",
                                             To = emails
 

@@ -238,6 +238,7 @@ namespace Bpf.Application.ModuleServices
                 var deptAdminInfoArbitration = await _employeeService.GetAdminsByDepartmentType(DepartmentType.Arbitration);
                 var deptAdminInfoReconciliation = await _employeeService.GetAdminsByDepartmentType(DepartmentType.Reconciliation);
                 var msg = "";
+                string body;
 
                 switch (litigationRequest.InternalStatusId)
                 {
@@ -252,7 +253,14 @@ namespace Bpf.Application.ModuleServices
                         {
                             msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_CollectionOfLitigationFeesRequestIsBeingSent).Result.Data?.Value;
                             msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
-                            SendNotificationMSPlaintiff(msg, litigationRequest, RequestType.LitigationRequest, "Collection Of Litigation Fees Request Is Being Sent");
+                            var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                            using (StreamReader streamReader = File.OpenText(pathToFile))
+                            {
+                                body = await streamReader.ReadToEndAsync();
+                                body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_CollectionOfLitigationFeesRequestIsBeingSent).Result.Data?.Value);
+                                body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                            }
+                            SendNotificationMSPlaintiff(body, msg, litigationRequest, RequestType.LitigationRequest, "Collection Of Litigation Fees Request Is Being Sent");
                         }
                         catch (Exception e)
                         {
@@ -269,7 +277,14 @@ namespace Bpf.Application.ModuleServices
                         {
                             msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_LitigationFeesHaveBeenCollected).Result.Data?.Value;
                             msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
-                            SendNotificationMSPlaintiff(msg, litigationRequest, RequestType.LitigationRequest, "Collection Of Litigation Fees Request Is Being Sent");
+                            var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                            using (StreamReader streamReader = File.OpenText(pathToFile))
+                            {
+                                body = await streamReader.ReadToEndAsync();
+                                body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_LitigationFeesHaveBeenCollected).Result.Data?.Value);
+                                body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                            }
+                            SendNotificationMSPlaintiff(body, msg, litigationRequest, RequestType.LitigationRequest, "Collection Of Litigation Fees Request Is Being Sent");
                         }
                         catch (Exception e)
                         {
@@ -286,7 +301,14 @@ namespace Bpf.Application.ModuleServices
                         {
                             msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_CollectionOfReconciliationFeesRequestIsBeingSent).Result.Data?.Value;
                             msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
-                            SendNotificationMSPlaintiff(msg, litigationRequest, RequestType.LitigationRequest, "Collection Of Reconciliation Fees Request Is Being Sent");
+                            var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                            using (StreamReader streamReader = File.OpenText(pathToFile))
+                            {
+                                body = await streamReader.ReadToEndAsync();
+                                body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_CollectionOfReconciliationFeesRequestIsBeingSent).Result.Data?.Value);
+                                body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                            }
+                            SendNotificationMSPlaintiff(body, msg, litigationRequest, RequestType.LitigationRequest, "Collection Of Reconciliation Fees Request Is Being Sent");
                         }
                         catch (Exception e)
                         {
@@ -304,7 +326,14 @@ namespace Bpf.Application.ModuleServices
                         {
                             msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_ReconciliationFeesHaveBeenCollected).Result.Data?.Value;
                             msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
-                            SendNotificationMSPlaintiff(msg, litigationRequest, RequestType.LitigationRequest, "Reconciliation Fees Have Been Collected");
+                            var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                            using (StreamReader streamReader = File.OpenText(pathToFile))
+                            {
+                                body = await streamReader.ReadToEndAsync();
+                                body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_ReconciliationFeesHaveBeenCollected).Result.Data?.Value);
+                                body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                            }
+                            SendNotificationMSPlaintiff(body, msg, litigationRequest, RequestType.LitigationRequest, "Reconciliation Fees Have Been Collected");
                         }
                         catch (Exception e)
                         {
@@ -319,7 +348,14 @@ namespace Bpf.Application.ModuleServices
                         {
                             msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Creation_Reject).Result.Data?.Value;
                             msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
-                            SendNotificationMSPlaintiff(msg, litigationRequest, RequestType.LitigationRequest, "Litigation Request Rejected");
+                            var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                            using (StreamReader streamReader = File.OpenText(pathToFile))
+                            {
+                                body = await streamReader.ReadToEndAsync();
+                                body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Creation_Reject).Result.Data?.Value);
+                                body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                            }
+                            SendNotificationMSPlaintiff(body, msg, litigationRequest, RequestType.LitigationRequest, "Litigation Request Rejected");
                         }
                         catch (Exception e)
                         {
@@ -339,7 +375,15 @@ namespace Bpf.Application.ModuleServices
                             int.TryParse(_sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_SecondEditReminderForForRequestApplicant).Result.Data?.Value, out reminderForApplicantSecondPeriod);
                             msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
                             msg = msg.Replace("{ExpirationDate}", $"{reminderForApplicantSecondPeriod / 24}");
-                            SendNotificationMSPlaintiff(msg, litigationRequest, RequestType.LitigationRequest, "Litigation Request Resent");
+                            var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                            using (StreamReader streamReader = File.OpenText(pathToFile))
+                            {
+                                body = await streamReader.ReadToEndAsync();
+                                body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Creation_Resent).Result.Data?.Value);
+                                body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                                msg = msg.Replace("{ExpirationDate}", $"{reminderForApplicantSecondPeriod / 24}");
+                            }
+                            SendNotificationMSPlaintiff(body, msg, litigationRequest, RequestType.LitigationRequest, "Litigation Request Resent");
                         }
                         catch (Exception)
                         {
@@ -483,6 +527,13 @@ namespace Bpf.Application.ModuleServices
                                                 {
                                                     msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reconciliation_NewRequest).Result.Data?.Value;
                                                     msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
+                                                    var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                                    using (StreamReader streamReader = File.OpenText(pathToFile))
+                                                    {
+                                                        body = await streamReader.ReadToEndAsync();
+                                                        body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reconciliation_NewRequest).Result.Data?.Value);
+                                                        body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                                                    }
 
                                                     var lstNotification = new List<SysNotificationDto>();
                                                     lstNotification.Add(new SysNotificationDto()
@@ -500,7 +551,7 @@ namespace Bpf.Application.ModuleServices
 
                                                     await _notificationService.SendNotifications(new SendEmailDto()
                                                     {
-                                                        Body = msg,
+                                                        Body = body,
                                                         Subject = "يوجد طلب مهمه جديدة كمصلح",
                                                         To = new List<string>() { reformers.FirstOrDefault()?.Email }
                                                     }, new SMSRequestDto()
@@ -532,7 +583,14 @@ namespace Bpf.Application.ModuleServices
                         {
                             msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Creation_Accept).Result.Data?.Value;
                             msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
-                            SendNotificationMSWithDefendant(msg, msg, litigationRequest, RequestType.LitigationRequest, "Litigation Request Accepted", true);
+                            var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                            using (StreamReader streamReader = File.OpenText(pathToFile))
+                            {
+                                body = await streamReader.ReadToEndAsync();
+                                body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Creation_Accept).Result.Data?.Value);
+                                body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                            }
+                            SendNotificationMSWithDefendant(body, msg, msg, litigationRequest, RequestType.LitigationRequest, "Litigation Request Accepted", true);
                         }
                         catch (Exception)
                         {
@@ -548,7 +606,14 @@ namespace Bpf.Application.ModuleServices
                         {
                             msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.ProcessWorkflow_Edited).Result.Data?.Value;
                             msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
-                            SendNotificationMSPlaintiff(msg, litigationRequest, RequestType.LitigationRequest, "Litigation Request Updated and Resent");
+                            var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                            using (StreamReader streamReader = File.OpenText(pathToFile))
+                            {
+                                body = await streamReader.ReadToEndAsync();
+                                body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.ProcessWorkflow_Edited).Result.Data?.Value);
+                                body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                            }
+                            SendNotificationMSPlaintiff(body, msg, litigationRequest, RequestType.LitigationRequest, "Litigation Request Updated and Resent");
                         }
                         catch (Exception e)
                         {
@@ -575,7 +640,14 @@ namespace Bpf.Application.ModuleServices
                             msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
                             string msgReview = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.WorkFlow_Condition_Review).Result.Data?.Value;
                             msgReview = msgReview.Replace("{LitigationCode}", litigationRequest.RequestCode);
-                            SendNotificationMSWithDefendant(msg, msgReview, litigationRequest, RequestType.LitigationAgreementRequest, "Litigation Request Resent");
+                            var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                            using (StreamReader streamReader = File.OpenText(pathToFile))
+                            {
+                                body = await streamReader.ReadToEndAsync();
+                                body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.WorkFlow_Condition_Review).Result.Data?.Value);
+                                body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                            }
+                            SendNotificationMSWithDefendant(body, msg, msgReview, litigationRequest, RequestType.LitigationAgreementRequest, "Litigation Request Resent");
                         }
                         catch (Exception e)
                         {
@@ -604,7 +676,7 @@ namespace Bpf.Application.ModuleServices
             };
         }
         //المدعى -مدير ادارة التدقيق
-        private async Task SendNotificationMSPlaintiff(string msg, LitigationRequest litigationRequest, RequestType requestTypeId, string subject)
+        private async Task SendNotificationMSPlaintiff(string mailMsg, string msg, LitigationRequest litigationRequest, RequestType requestTypeId, string subject)
         {
             var deptAdminInfoReview = await _employeeService.GetAdminsByDepartmentType(DepartmentType.Review);
             var employee = litigationRequest.WorkFlowProcessingLogs.Where(w => w.EmployeeId != null).OrderBy(x => x.CreatedOn).LastOrDefault()?.Employee;
@@ -612,7 +684,7 @@ namespace Bpf.Application.ModuleServices
             //ApplicantCitizen
             var objEmail = new SendEmailDto()
             {
-                Body = msg,
+                Body = mailMsg,
                 Subject = subject,
                 To = new List<string>() { litigationRequest.ApplicantCitizen?.Email }
 
@@ -715,14 +787,14 @@ namespace Bpf.Application.ModuleServices
 
         }
         //المدعى -مدير ادارة التدقيق -المدعى عليه
-        private async Task SendNotificationMSWithDefendant(string msg, string msgReview, LitigationRequest litigationRequest, RequestType requestTypeId, string subject, bool? sendToArbitratorAdmin = null)
+        private async Task SendNotificationMSWithDefendant(string mailMsg, string msg, string msgReview, LitigationRequest litigationRequest, RequestType requestTypeId, string subject, bool? sendToArbitratorAdmin = null)
         {
             var deptAdminInfoReview = await _employeeService.GetAdminsByDepartmentType(DepartmentType.Review);
             var deptAdminInfoArbitrator = await _employeeService.GetAdminsByDepartmentType(DepartmentType.Arbitration);
             //ApplicantCitizen
             var objEmail = new SendEmailDto()
             {
-                Body = msg,
+                Body = mailMsg,
                 Subject = subject,
                 To = new List<string>() { litigationRequest.ApplicantCitizen?.Email }
 

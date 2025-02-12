@@ -4,6 +4,7 @@ using Core.Log.Application.Contracts.Dto;
 using Core.Log.Application.Contracts.IAppServices;
 using Core.Shared.Responses;
 using Microsoft.EntityFrameworkCore;
+using REAC.Application.Contracts.Dtos.Litigation.CreateUpdate.Litigation;
 using REAC.Application.Contracts.Dtos.Notification;
 using REAC.Application.Contracts.IAppServices.Notification;
 using REAC.Application.Contracts.IAppServices.System;
@@ -86,8 +87,15 @@ namespace REAC.Application.AppServices.SLA
                                     {
                                         var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_FinishReconciliation).Result.Data?.Value;
                                         msg = msg?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
-
-                                        await SendNotificationMS(msg, litigationRequest, "سرعة اتمام عملية الصلح", NotificationActorType.Reformer, RequestType.ReformerTaskrequests,
+                                        var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                        string body;
+                                        using (StreamReader streamReader = File.OpenText(pathToFile))
+                                        {
+                                            body = await streamReader.ReadToEndAsync();
+                                            body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_FinishReconciliation).Result.Data?.Value);
+                                            body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                                        }
+                                        await SendNotificationMS(body, msg, litigationRequest, "سرعة اتمام عملية الصلح", NotificationActorType.Reformer, RequestType.ReformerTaskrequests,
                                            false, true);
                                     }
                                     catch (Exception e)
@@ -118,8 +126,16 @@ namespace REAC.Application.AppServices.SLA
                                     var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_FinishReconciliation_WarnReconciliationAdmin).Result.Data?.Value;
                                     msg = msg?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
                                     msg = msg?.Replace("{ReformerName}", litigationRequest?.ReformerCitizen?.FullName);
-
-                                    await SendNotificationMS(msg, litigationRequest, "المصلح تجاوز الفترة المسموح بها", NotificationActorType.Employee, RequestType.LitigationRequest,
+                                    var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                    string body;
+                                    using (StreamReader streamReader = File.OpenText(pathToFile))
+                                    {
+                                        body = await streamReader.ReadToEndAsync();
+                                        body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_FinishReconciliation_WarnReconciliationAdmin).Result.Data?.Value);
+                                        body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                                        body = body?.Replace("{ReformerName}", litigationRequest?.ReformerCitizen?.FullName);
+                                    }
+                                    await SendNotificationMS(body, msg, litigationRequest, "المصلح تجاوز الفترة المسموح بها", NotificationActorType.Employee, RequestType.LitigationRequest,
                                        false, false, true);
                                 }
                                 catch (Exception e)
@@ -182,8 +198,15 @@ namespace REAC.Application.AppServices.SLA
                                         {
                                             var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_ReconciliationReport_PleaseReply).Result.Data?.Value;
                                             msg = msg?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
-
-                                            await SendNotificationMS(msg, litigationRequest, " سرعة الرد على محضر الصلح", NotificationActorType.Plaintiff, RequestType.ReformationReport,
+                                            var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                            string body;
+                                            using (StreamReader streamReader = File.OpenText(pathToFile))
+                                            {
+                                                body = await streamReader.ReadToEndAsync();
+                                                body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_ReconciliationReport_PleaseReply).Result.Data?.Value);
+                                                body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                                            }
+                                            await SendNotificationMS(body, msg, litigationRequest, " سرعة الرد على محضر الصلح", NotificationActorType.Plaintiff, RequestType.ReformationReport,
                                                true, false, false, true, false, true);//المدعى  سواء فرد او شركة
                                         }
                                         catch (Exception e)
@@ -200,8 +223,15 @@ namespace REAC.Application.AppServices.SLA
                                         {
                                             var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_ReconciliationReport_PleaseReply).Result.Data?.Value;
                                             msg = msg?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
-
-                                            await SendNotificationMS(msg, litigationRequest, " سرعة الرد على محضر الصلح", NotificationActorType.Defendant, RequestType.ReformationReport,
+                                            var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                            string body;
+                                            using (StreamReader streamReader = File.OpenText(pathToFile))
+                                            {
+                                                body = await streamReader.ReadToEndAsync();
+                                                body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_ReconciliationReport_PleaseReply).Result.Data?.Value);
+                                                body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                                            }
+                                            await SendNotificationMS(body,msg, litigationRequest, " سرعة الرد على محضر الصلح", NotificationActorType.Defendant, RequestType.ReformationReport,
                                                false, false, false, false, true, false, true);//المدعى عليه سواء فرد او شركة
                                         }
                                         catch (Exception e)
@@ -227,8 +257,15 @@ namespace REAC.Application.AppServices.SLA
                                 {
                                     var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_ReconciliationReport_WarnReformer).Result.Data?.Value;
                                     msg = msg?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
-
-                                    await SendNotificationMS(msg, litigationRequest, "الرد على محضر الصلح", NotificationActorType.Reformer, RequestType.ReformationReport,
+                                    var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                    string body;
+                                    using (StreamReader streamReader = File.OpenText(pathToFile))
+                                    {
+                                        body = await streamReader.ReadToEndAsync();
+                                        body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_ReconciliationReport_WarnReformer).Result.Data?.Value);
+                                        body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                                    }
+                                    await SendNotificationMS(body, msg, litigationRequest, "الرد على محضر الصلح", NotificationActorType.Reformer, RequestType.ReformationReport,
                                        false, true);
                                 }
                                 catch (Exception e)
@@ -281,9 +318,17 @@ namespace REAC.Application.AppServices.SLA
 
                                         var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_ReconciliationTask_PleaseReply).Result.Data?.Value;
                                         msg = msg?.Replace("{LitigationCode}", litigationRequestReformerAssigningRequest.LitigationRequest?.RequestCode);
+                                        var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                        string body;
+                                        using (StreamReader streamReader = File.OpenText(pathToFile))
+                                        {
+                                            body = await streamReader.ReadToEndAsync();
+                                            body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_ReconciliationTask_PleaseReply).Result.Data?.Value);
+                                            body = body?.Replace("{LitigationCode}", litigationRequestReformerAssigningRequest.LitigationRequest?.RequestCode);
+                                        }
                                         var objEmail = new SendEmailDto()
                                         {
-                                            Body = msg,
+                                            Body = body,
                                             Subject = "سرعة الرد على طلب مهمة الصلح",
                                             To = new List<string>()
                                         {
@@ -341,9 +386,17 @@ namespace REAC.Application.AppServices.SLA
 
                                     var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_ReconciliationTaskCancelled).Result.Data?.Value;
                                     msg = msg?.Replace("{LitigationCode}", litigationRequestReformerAssigningRequest.LitigationRequest?.RequestCode);
+                                    var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                    string body;
+                                    using (StreamReader streamReader = File.OpenText(pathToFile))
+                                    {
+                                        body = await streamReader.ReadToEndAsync();
+                                        body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_ReconciliationTaskCancelled).Result.Data?.Value);
+                                        body = body?.Replace("{LitigationCode}", litigationRequestReformerAssigningRequest.LitigationRequest?.RequestCode);
+                                    }
                                     var objEmail = new SendEmailDto()
                                     {
-                                        Body = msg,
+                                        Body = body,
                                         Subject = "إلغاء طلب مهمة الصلح",
                                         To = new List<string>()
                                         {
@@ -472,8 +525,17 @@ namespace REAC.Application.AppServices.SLA
                                                     msg = msg?.Replace("{LitigationCode}", litigationRequestReformerAssigningRequest.LitigationRequest?.RequestCode);
                                                     msg = msg?.Replace("{PreviousReformer}", litigationRequestReformerAssigningRequest.ReformerCitizen.FullName);
                                                     msg = msg?.Replace("{CurrentReformer}", reformer.FullName);
-
-                                                    await SendNotificationMS(msg, litigationRequestReformerAssigningRequest.LitigationRequest, "الرد على مهمة الصلح للمصلح", NotificationActorType.Employee, RequestType.LitigationRequest,
+                                                    var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                                    string body;
+                                                    using (StreamReader streamReader = File.OpenText(pathToFile))
+                                                    {
+                                                        body = await streamReader.ReadToEndAsync();
+                                                        body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_ReconciliationTask_ReAssigned).Result.Data?.Value);
+                                                        body = body?.Replace("{LitigationCode}", litigationRequestReformerAssigningRequest.LitigationRequest?.RequestCode);
+                                                        body = body?.Replace("{PreviousReformer}", litigationRequestReformerAssigningRequest.ReformerCitizen.FullName);
+                                                        body = body?.Replace("{CurrentReformer}", reformer.FullName);
+                                                    }
+                                                    await SendNotificationMS(body, msg, litigationRequestReformerAssigningRequest.LitigationRequest, "الرد على مهمة الصلح للمصلح", NotificationActorType.Employee, RequestType.LitigationRequest,
                                                        false, false, true);
                                                 }
                                                 catch (Exception e)
@@ -506,12 +568,12 @@ namespace REAC.Application.AppServices.SLA
             return new BaseResponse() { IsDone = true };
         }
 
-        private async Task  SendNotificationMS(string msg, LitigationRequest litigationRequest, string subject, NotificationActorType notificationActorType, RequestType requestType, bool notifyApplicant = false, bool notifyReformer = false, bool notifyDeptAdmin = false, bool notifyFirstParty = false, bool notifySecondParty = false, bool notifyFirstPartyFacility = false, bool notifySecondPartyFacility = false)
+        private async Task  SendNotificationMS(string mailMsg, string msg, LitigationRequest litigationRequest, string subject, NotificationActorType notificationActorType, RequestType requestType, bool notifyApplicant = false, bool notifyReformer = false, bool notifyDeptAdmin = false, bool notifyFirstParty = false, bool notifySecondParty = false, bool notifyFirstPartyFacility = false, bool notifySecondPartyFacility = false)
         {
             var deptAdminInfoReconciliation = await _employeeService.GetAdminsByDepartmentType(DepartmentType.Reconciliation);
             var objEmail = new SendEmailDto()
             {
-                Body = msg,
+                Body = mailMsg,
                 Subject = subject,
                 To = new List<string>()
             };

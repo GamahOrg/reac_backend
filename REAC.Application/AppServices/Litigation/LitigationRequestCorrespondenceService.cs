@@ -123,8 +123,16 @@ namespace REAC.Application.AppServices.Litigation
                     var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequestCorrespondenceAdded).Result.Data?.Value;
                     msg = msg?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
                     msg = msg?.Replace("{CorrespondenceCode}", correspondanceObject?.SerialCode);
-
-                    await SendNotificationMS(msg, litigationRequest, "Message Added", NotificationActorType.Applicant, RequestType.LitigationRequestCorrespondence, null, true, false, false, true, true);
+                    var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                    string body;
+                    using (StreamReader streamReader = File.OpenText(pathToFile))
+                    {
+                        body = await streamReader.ReadToEndAsync();
+                        body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequestCorrespondenceAdded).Result.Data?.Value);
+                        body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                        msg = msg?.Replace("{CorrespondenceCode}", correspondanceObject?.SerialCode);
+                    }
+                    await SendNotificationMS(body, msg, litigationRequest, "Message Added", NotificationActorType.Applicant, RequestType.LitigationRequestCorrespondence, null, true, false, false, true, true);
                 }
 
 
@@ -505,15 +513,24 @@ namespace REAC.Application.AppServices.Litigation
                     var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequestCorrespondenceReplyAdded).Result.Data?.Value;
                     msg = msg?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
                     msg = msg?.Replace("{CorrespondenceCode}", litigationRequest.LitigationRequestCorrespondences.First()?.SerialCode);
+                    var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                    string body;
+                    using (StreamReader streamReader = File.OpenText(pathToFile))
+                    {
+                        body = await streamReader.ReadToEndAsync();
+                        body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequestCorrespondenceReplyAdded).Result.Data?.Value);
+                        body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                        body = body?.Replace("{CorrespondenceCode}", litigationRequest.LitigationRequestCorrespondences.First()?.SerialCode);
+                    }
 
                     if (litigationRequest.LitigationRequestStage == LitigationRequestStage.Reconciliation)
                     {
 
-                        await SendNotificationMS(msg, litigationRequest, "Message Reply Added", NotificationActorType.Reformer, RequestType.LitigationRequestCorrespondence, null, true, false, false, true, true);
+                        await SendNotificationMS(body, msg, litigationRequest, "Message Reply Added", NotificationActorType.Reformer, RequestType.LitigationRequestCorrespondence, null, true, false, false, true, true);
                     }
                     else
                     {
-                        await SendNotificationMS(msg, litigationRequest, "Message Reply Added", NotificationActorType.Arbitrator, RequestType.LitigationRequestCorrespondence, null, true, false, false, true, true);
+                        await SendNotificationMS(body, msg, litigationRequest, "Message Reply Added", NotificationActorType.Arbitrator, RequestType.LitigationRequestCorrespondence, null, true, false, false, true, true);
 
                     }
 
@@ -846,12 +863,12 @@ namespace REAC.Application.AppServices.Litigation
         #endregion
 
         #region Notifications
-        private async Task SendNotificationMS(string msg, LitigationRequest litigationRequest, string subject, NotificationActorType notificationActorType, RequestType requestType, LitigationRequestArbitratorList? arbitrator = null, bool notifyApplicant = false, bool notifyArbitrators = false, bool notifyDeptAdmin = false, bool notifyFirstParty = false, bool notifySecondParty = false)
+        private async Task SendNotificationMS(string mailMsg,string msg, LitigationRequest litigationRequest, string subject, NotificationActorType notificationActorType, RequestType requestType, LitigationRequestArbitratorList? arbitrator = null, bool notifyApplicant = false, bool notifyArbitrators = false, bool notifyDeptAdmin = false, bool notifyFirstParty = false, bool notifySecondParty = false)
         {
             var deptAdminInfoArbitration = await _employeeService.GetAdminsByDepartmentType(DepartmentType.Arbitration);
             var objEmail = new SendEmailDto()
             {
-                Body = msg,
+                Body = mailMsg,
                 Subject = subject,
                 To = new List<string>()
             };

@@ -6,6 +6,7 @@ using Core.Shared.Responses;
 using Microsoft.EntityFrameworkCore;
 using REAC.Application.Contracts.Dtos.CitizenRequests;
 using REAC.Application.Contracts.Dtos.Integration.GEE;
+using REAC.Application.Contracts.Dtos.Litigation.CreateUpdate.Litigation;
 using REAC.Application.Contracts.Dtos.Notification;
 using REAC.Application.Contracts.IAppServices;
 using REAC.Application.Contracts.IAppServices.Notification;
@@ -13,6 +14,7 @@ using REAC.Application.Contracts.IAppServices.System;
 using REAC.Domain.Shared.Constants;
 using REAC.Domain.Shared.Enum;
 using REAC.EntityFrameworkCore.Entities.Actor;
+using REAC.EntityFrameworkCore.Entities.Litigation;
 
 namespace REAC.Application.AppServices
 {
@@ -416,6 +418,7 @@ namespace REAC.Application.AppServices
             var deptAdminInfoArbitration = await _employeeService.GetAdminsByDepartmentType(DepartmentType.Arbitration);
             var deptAdminInfoReconciliation = await _employeeService.GetAdminsByDepartmentType(DepartmentType.Reconciliation);
             var msg = "";
+            string body;
             var applicationNotifications = new List<SysNotificationDto>();
 
             switch (citizenRequestAction)
@@ -436,6 +439,13 @@ namespace REAC.Application.AppServices
                             {
                                 msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Arbitrator_JoiningRequest).Result.Data?.Value;
                                 msg = msg?.Replace("{CitizenName}", citizenInfo.FullName);
+                                var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                using (StreamReader streamReader = File.OpenText(pathToFile))
+                                {
+                                    body = await streamReader.ReadToEndAsync();
+                                    body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Arbitrator_JoiningRequest).Result.Data?.Value);
+                                    body = body?.Replace("{CitizenName}", citizenInfo.FullName);
+                                }
                                 applicationNotifications.Add(new SysNotificationDto()
                                 {
                                     ActorId = citizenInfo.Id,
@@ -465,7 +475,7 @@ namespace REAC.Application.AppServices
                                     {
                                         To = new List<string>() { citizenInfo.Email, deptAdminInfoArbitration.Data.Email },
                                         Subject = "Arbitrator Joining Request Added",
-                                        Body = msg
+                                        Body = body
                                     },
                                     new SMSRequestDto()
                                     {
@@ -493,6 +503,13 @@ namespace REAC.Application.AppServices
                             {
                                 msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reformer_JoiningRequest).Result.Data?.Value;
                                 msg = msg?.Replace("{CitizenName}", citizenInfo.FullName);
+                                var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                using (StreamReader streamReader = File.OpenText(pathToFile))
+                                {
+                                    body = await streamReader.ReadToEndAsync();
+                                    body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reformer_JoiningRequest).Result.Data?.Value);
+                                    body = body?.Replace("{CitizenName}", citizenInfo.FullName);
+                                }
                                 applicationNotifications.Add(new SysNotificationDto()
                                 {
                                     ActorId = citizenInfo.Id,
@@ -522,7 +539,7 @@ namespace REAC.Application.AppServices
                                     {
                                         To = new List<string>() { citizenInfo.Email, deptAdminInfoReconciliation.Data.Email },
                                         Subject = "Reformer Joining Request Added",
-                                        Body = msg
+                                        Body = body
                                     },
                                     new SMSRequestDto()
                                     {
@@ -566,6 +583,13 @@ namespace REAC.Application.AppServices
                             {
                                 msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Arbitrator_JoiningRequest_Updated).Result.Data?.Value;
                                 msg = msg.Replace("{CitizenName}", citizenInfo.FullName);
+                                var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                using (StreamReader streamReader = File.OpenText(pathToFile))
+                                {
+                                    body = await streamReader.ReadToEndAsync();
+                                    body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Arbitrator_JoiningRequest_Updated).Result.Data?.Value);
+                                    body = body?.Replace("{CitizenName}", citizenInfo.FullName);
+                                }
                                 applicationNotifications.Add(new SysNotificationDto()
                                 {
                                     ActorId = citizenInfo.Id,
@@ -595,7 +619,7 @@ namespace REAC.Application.AppServices
                                     {
                                         To = new List<string>() { citizenInfo.Email, deptAdminInfoArbitration.Data.Email },
                                         Subject = "Arbitrator Joining Request Updated",
-                                        Body = msg
+                                        Body = body
                                     },
                                     new SMSRequestDto()
                                     {
@@ -621,6 +645,13 @@ namespace REAC.Application.AppServices
                             {
                                 msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reformer_JoiningRequest_Updated).Result.Data?.Value;
                                 msg = msg.Replace("{CitizenName}", citizenInfo.FullName);
+                                var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                using (StreamReader streamReader = File.OpenText(pathToFile))
+                                {
+                                    body = await streamReader.ReadToEndAsync();
+                                    body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reformer_JoiningRequest_Updated).Result.Data?.Value);
+                                    body = body?.Replace("{CitizenName}", citizenInfo.FullName);
+                                }
                                 applicationNotifications.Add(new SysNotificationDto()
                                 {
                                     ActorId = citizenInfo.Id,
@@ -650,7 +681,7 @@ namespace REAC.Application.AppServices
                                     {
                                         To = new List<string>() { citizenInfo.Email, deptAdminInfoReconciliation.Data.Email },
                                         Subject = "Reformer Joining Request Updated",
-                                        Body = msg
+                                        Body = body
                                     },
                                     new SMSRequestDto()
                                     {
@@ -684,6 +715,13 @@ namespace REAC.Application.AppServices
                             {
                                 msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Arbitrator_RejectJoiningRequest).Result.Data?.Value;
                                 msg = msg.Replace("{CitizenName}", citizenRequests.Citizen.FullName);
+                                var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                using (StreamReader streamReader = File.OpenText(pathToFile))
+                                {
+                                    body = await streamReader.ReadToEndAsync();
+                                    body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Arbitrator_RejectJoiningRequest).Result.Data?.Value);
+                                    body = body?.Replace("{CitizenName}", citizenRequests.Citizen.FullName);
+                                }
                                 applicationNotifications.Add(new SysNotificationDto()
                                 {
                                     ActorId = citizenRequests.Citizen.Id,
@@ -713,7 +751,7 @@ namespace REAC.Application.AppServices
                                     {
                                         To = new List<string>() { citizenRequests.Citizen.Email, deptAdminInfoArbitration.Data.Email },
                                         Subject = "Arbitrator Joining Request Updated",
-                                        Body = msg
+                                        Body = body
                                     },
                                     new SMSRequestDto()
                                     {
@@ -739,6 +777,13 @@ namespace REAC.Application.AppServices
                             {
                                 msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reformer_RejectJoiningRequest).Result.Data?.Value;
                                 msg = msg.Replace("{CitizenName}", citizenRequests.Citizen.FullName);
+                                var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                using (StreamReader streamReader = File.OpenText(pathToFile))
+                                {
+                                    body = await streamReader.ReadToEndAsync();
+                                    body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reformer_RejectJoiningRequest).Result.Data?.Value);
+                                    body = body?.Replace("{CitizenName}", citizenRequests.Citizen.FullName);
+                                }
                                 applicationNotifications.Add(new SysNotificationDto()
                                 {
                                     ActorId = citizenRequests.Citizen.Id,
@@ -768,7 +813,7 @@ namespace REAC.Application.AppServices
                                     {
                                         To = new List<string>() { citizenRequests.Citizen.Email, deptAdminInfoReconciliation.Data.Email },
                                         Subject = "Reformer Joining Request Updated",
-                                        Body = msg
+                                        Body = body
                                     },
                                     new SMSRequestDto()
                                     {
@@ -941,6 +986,13 @@ namespace REAC.Application.AppServices
                             {
                                 msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Arbitrator_AcceptJoiningRequest_NoFees).Result.Data?.Value;
                                 msg = msg.Replace("{CitizenName}", citizenRequests.Citizen.FullName);
+                                var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                using (StreamReader streamReader = File.OpenText(pathToFile))
+                                {
+                                    body = await streamReader.ReadToEndAsync();
+                                    body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Arbitrator_AcceptJoiningRequest_NoFees).Result.Data?.Value);
+                                    body = body?.Replace("{CitizenName}", citizenRequests.Citizen.FullName);
+                                }
                                 applicationNotifications.Add(new SysNotificationDto()
                                 {
                                     ActorId = citizenRequests.Citizen.Id,
@@ -970,7 +1022,7 @@ namespace REAC.Application.AppServices
                                     {
                                         To = new List<string>() { citizenRequests.Citizen.Email, deptAdminInfoArbitration.Data.Email },
                                         Subject = "Arbitrator AcceptJoiningRequest and No Fees",
-                                        Body = msg
+                                        Body = body
                                     },
                                     new SMSRequestDto()
                                     {
@@ -997,6 +1049,13 @@ namespace REAC.Application.AppServices
                                 var t = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reformer_AcceptJoiningRequest_NoFees);
                                 msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reformer_AcceptJoiningRequest_NoFees).Result.Data?.Value;
                                 msg = msg.Replace("{CitizenName}", citizenRequests.Citizen.FullName);
+                                var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                using (StreamReader streamReader = File.OpenText(pathToFile))
+                                {
+                                    body = await streamReader.ReadToEndAsync();
+                                    body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reformer_AcceptJoiningRequest_NoFees).Result.Data?.Value);
+                                    body = body?.Replace("{CitizenName}", citizenRequests.Citizen.FullName);
+                                }
                                 applicationNotifications.Add(new SysNotificationDto()
                                 {
                                     ActorId = citizenRequests.Citizen.Id,
@@ -1026,7 +1085,7 @@ namespace REAC.Application.AppServices
                                     {
                                         To = new List<string>() { citizenRequests.Citizen.Email, deptAdminInfoReconciliation.Data.Email },
                                         Subject = "Reformer AcceptJoiningRequest and No Fees",
-                                        Body = msg
+                                        Body = body
                                     },
                                     new SMSRequestDto()
                                     {
@@ -1070,6 +1129,13 @@ namespace REAC.Application.AppServices
                             {
                                 msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Arbitrator_UpdateJoiningRequest_WithFees).Result.Data?.Value;
                                 msg = msg.Replace("{CitizenName}", citizenRequests.Citizen.FullName);
+                                var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                using (StreamReader streamReader = File.OpenText(pathToFile))
+                                {
+                                    body = await streamReader.ReadToEndAsync();
+                                    body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Arbitrator_UpdateJoiningRequest_WithFees).Result.Data?.Value);
+                                    body = body?.Replace("{CitizenName}", citizenRequests.Citizen.FullName);
+                                }
                                 applicationNotifications.Add(new SysNotificationDto()
                                 {
                                     ActorId = citizenRequests.Citizen.Id,
@@ -1099,7 +1165,7 @@ namespace REAC.Application.AppServices
                                     {
                                         To = new List<string>() { citizenRequests.Citizen.Email, deptAdminInfoArbitration.Data.Email },
                                         Subject = "Arbitrator Update Joining Request WithFees",
-                                        Body = msg
+                                        Body = body
                                     },
                                     new SMSRequestDto()
                                     {
@@ -1125,6 +1191,13 @@ namespace REAC.Application.AppServices
                             {
                                 msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reformer_UpdateJoiningRequest_WithFees).Result.Data?.Value;
                                 msg = msg.Replace("{CitizenName}", citizenRequests.Citizen.FullName);
+                                var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                using (StreamReader streamReader = File.OpenText(pathToFile))
+                                {
+                                    body = await streamReader.ReadToEndAsync();
+                                    body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reformer_UpdateJoiningRequest_WithFees).Result.Data?.Value);
+                                    body = body?.Replace("{CitizenName}", citizenRequests.Citizen.FullName);
+                                }
                                 applicationNotifications.Add(new SysNotificationDto()
                                 {
                                     ActorId = citizenInfo.Id,
@@ -1154,7 +1227,7 @@ namespace REAC.Application.AppServices
                                     {
                                         To = new List<string>() { citizenInfo.Email, deptAdminInfoReconciliation.Data.Email },
                                         Subject = "Reformer Update JoiningRequest and No Fees",
-                                        Body = msg
+                                        Body = body
                                     },
                                     new SMSRequestDto()
                                     {
@@ -1191,6 +1264,13 @@ namespace REAC.Application.AppServices
 
                                 msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Arbitrator_UpdateJoiningRequest_ToPayFees).Result.Data?.Value;
                                 msg = msg.Replace("{CitizenName}", citizenRequests.Citizen.FullName);
+                                var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                using (StreamReader streamReader = File.OpenText(pathToFile))
+                                {
+                                    body = await streamReader.ReadToEndAsync();
+                                    body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Arbitrator_UpdateJoiningRequest_ToPayFees).Result.Data?.Value);
+                                    body = body?.Replace("{CitizenName}", citizenRequests.Citizen.FullName);
+                                }
                                 applicationNotifications.Add(new SysNotificationDto()
                                 {
                                     ActorId = citizenRequests.Citizen.Id,
@@ -1205,6 +1285,13 @@ namespace REAC.Application.AppServices
 
                                 msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Employee_Arbitrator_UpdateJoiningRequest_ToPayFees).Result.Data?.Value;
                                 msg = msg.Replace("{CitizenName}", citizenRequests.Citizen.FullName);
+                                pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                using (StreamReader streamReader = File.OpenText(pathToFile))
+                                {
+                                    body = await streamReader.ReadToEndAsync();
+                                    body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Employee_Arbitrator_UpdateJoiningRequest_ToPayFees).Result.Data?.Value);
+                                    body = body?.Replace("{CitizenName}", citizenRequests.Citizen.FullName);
+                                }
                                 applicationNotifications.Add(new SysNotificationDto()
                                 {
                                     ActorId = deptAdminInfoArbitration.Data.Id,
@@ -1222,7 +1309,7 @@ namespace REAC.Application.AppServices
                                     {
                                         To = new List<string>() { citizenRequests.Citizen.Email, deptAdminInfoArbitration.Data.Email },
                                         Subject = "Arbitrator Update Joining Request To Pay Fees",
-                                        Body = msg
+                                        Body = body
                                     },
                                     new SMSRequestDto()
                                     {
@@ -1247,6 +1334,13 @@ namespace REAC.Application.AppServices
                             {
                                 msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reformer_UpdateJoiningRequest_ToPayFees).Result.Data?.Value;
                                 msg = msg.Replace("{CitizenName}", citizenRequests.Citizen.FullName);
+                                var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                using (StreamReader streamReader = File.OpenText(pathToFile))
+                                {
+                                    body = await streamReader.ReadToEndAsync();
+                                    body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reformer_UpdateJoiningRequest_ToPayFees).Result.Data?.Value);
+                                    body = body?.Replace("{CitizenName}", citizenRequests.Citizen.FullName);
+                                }
                                 applicationNotifications.Add(new SysNotificationDto()
                                 {
                                     ActorId = citizenInfo.Id,
@@ -1261,6 +1355,12 @@ namespace REAC.Application.AppServices
 
                                 msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Employee_Reformer_UpdateJoiningRequest_ToPayFees).Result.Data?.Value;
                                 msg = msg.Replace("{CitizenName}", citizenRequests.Citizen.FullName);
+                                using (StreamReader streamReader = File.OpenText(pathToFile))
+                                {
+                                    body = await streamReader.ReadToEndAsync();
+                                    body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Employee_Reformer_UpdateJoiningRequest_ToPayFees).Result.Data?.Value);
+                                    body = body?.Replace("{CitizenName}", citizenRequests.Citizen.FullName);
+                                }
                                 applicationNotifications.Add(new SysNotificationDto()
                                 {
                                     ActorId = deptAdminInfoArbitration.Data.Id,
@@ -1278,7 +1378,7 @@ namespace REAC.Application.AppServices
                                     {
                                         To = new List<string>() { citizenInfo.Email, deptAdminInfoReconciliation.Data.Email },
                                         Subject = "Reformer Update JoiningRequest To Pay Fees",
-                                        Body = msg
+                                        Body = body
                                     },
                                     new SMSRequestDto()
                                     {
@@ -1316,6 +1416,13 @@ namespace REAC.Application.AppServices
                             {
                                 msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Arbitrator_UpdateJoiningRequest_PaidFees).Result.Data?.Value;
                                 msg = msg.Replace("{CitizenName}", citizenRequests.Citizen.FullName);
+                                var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                using (StreamReader streamReader = File.OpenText(pathToFile))
+                                {
+                                    body = await streamReader.ReadToEndAsync();
+                                    body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Arbitrator_UpdateJoiningRequest_PaidFees).Result.Data?.Value);
+                                    body = body?.Replace("{CitizenName}", citizenRequests.Citizen.FullName);
+                                }
                                 applicationNotifications.Add(new SysNotificationDto()
                                 {
                                     ActorId = citizenRequests.Citizen.Id,
@@ -1330,6 +1437,13 @@ namespace REAC.Application.AppServices
 
                                 msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Employee_Arbitrator_UpdateJoiningRequest_PaidFees).Result.Data?.Value;
                                 msg = msg.Replace("{CitizenName}", citizenRequests.Citizen.FullName);
+                                pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                using (StreamReader streamReader = File.OpenText(pathToFile))
+                                {
+                                    body = await streamReader.ReadToEndAsync();
+                                    body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Employee_Arbitrator_UpdateJoiningRequest_PaidFees).Result.Data?.Value);
+                                    body = body?.Replace("{CitizenName}", citizenRequests.Citizen.FullName);
+                                }
                                 applicationNotifications.Add(new SysNotificationDto()
                                 {
                                     ActorId = deptAdminInfoArbitration.Data.Id,
@@ -1347,7 +1461,7 @@ namespace REAC.Application.AppServices
                                     {
                                         To = new List<string>() { citizenRequests.Citizen.Email, deptAdminInfoArbitration.Data.Email },
                                         Subject = "Arbitrator  Update JoiningRequest and Fees Paid",
-                                        Body = msg
+                                        Body = body
                                     },
                                     new SMSRequestDto()
                                     {
@@ -1372,6 +1486,13 @@ namespace REAC.Application.AppServices
                             {
                                 msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reformer_UpdateJoiningRequest_PaidFees).Result.Data?.Value;
                                 msg = msg.Replace("{CitizenName}", citizenRequests.Citizen.FullName);
+                                var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                using (StreamReader streamReader = File.OpenText(pathToFile))
+                                {
+                                    body = await streamReader.ReadToEndAsync();
+                                    body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reformer_UpdateJoiningRequest_PaidFees).Result.Data?.Value);
+                                    body = body?.Replace("{CitizenName}", citizenRequests.Citizen.FullName);
+                                }
                                 applicationNotifications.Add(new SysNotificationDto()
                                 {
                                     ActorId = citizenInfo.Id,
@@ -1386,6 +1507,13 @@ namespace REAC.Application.AppServices
 
                                 msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Employee_Reformer_UpdateJoiningRequest_PaidFees).Result.Data?.Value;
                                 msg = msg.Replace("{CitizenName}", citizenRequests.Citizen.FullName);
+                                pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                using (StreamReader streamReader = File.OpenText(pathToFile))
+                                {
+                                    body = await streamReader.ReadToEndAsync();
+                                    body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Employee_Reformer_UpdateJoiningRequest_PaidFees).Result.Data?.Value);
+                                    body = body?.Replace("{CitizenName}", citizenRequests.Citizen.FullName);
+                                }
                                 applicationNotifications.Add(new SysNotificationDto()
                                 {
                                     ActorId = deptAdminInfoArbitration.Data.Id,
@@ -1403,7 +1531,7 @@ namespace REAC.Application.AppServices
                                     {
                                         To = new List<string>() { citizenInfo.Email, deptAdminInfoReconciliation.Data.Email },
                                         Subject = "Reformer Update JoiningRequest and Fees Paid",
-                                        Body = msg
+                                        Body = body
                                     },
                                     new SMSRequestDto()
                                     {
