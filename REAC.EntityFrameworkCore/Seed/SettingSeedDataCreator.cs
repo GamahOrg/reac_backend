@@ -804,6 +804,12 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                         Key = "Reconciliation.NewRequest",
                         Value = "يوجد طلب مهمة جديدة كمصلح على الدعوى رقم {LitigationCode}",
 
+                    }, new SysSetting
+                    {
+                        Id = Guid.NewGuid(),
+                        Key = "Reconciliation.NewRequest.ManualDistripution",
+                        Value = "يوجد دعوي جديده رقم {LitigationCode} , برجاء تعيين مصلح عليها",
+
                     },new SysSetting
                     {
                         Id = Guid.NewGuid(),

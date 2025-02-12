@@ -387,6 +387,60 @@ namespace Bpf.Application.ModuleServices
                                 {
                                     switch (department.DistributionMode)
                                     {
+                                        case DepartmentDistributionMode.ManualDistribution:
+
+                                            // Send Notification
+                                            // يوجد مهمه جديده برقم, برجاء تعيين مصلح عليها
+
+                                            await _repository.AddAsync<WorkFlowLog, Guid>(new WorkFlowLog()
+                                            {
+                                                Id = Guid.NewGuid(),
+                                                CreatedOn = DateTime.Now,
+                                                RequestId = litigationRequest.Id,
+                                                ShowForApplicant = false,
+                                                LogMessage = "تم اضافة الدعوي و بأنتظار تعيين مصلح من طرف مدير الصلح" 
+                                            });
+
+                                            try
+                                            {
+                                                msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reconciliation_NewRequest_ManualDistripution).Result.Data?.Value;
+                                                msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
+
+                                                var lstNotification = new List<SysNotificationDto>();
+                                                lstNotification.Add(new SysNotificationDto()
+                                                {
+                                                    ActorId = deptAdminInfoReconciliation.Data.Id,
+                                                    CreatedOn = DateTime.Now,
+                                                    ActorTypeId = NotificationActorType.Reformer,
+                                                    IsViewed = false,
+                                                    ViewedOn = null,
+                                                    RequestId = litigationRequest.Id,
+                                                    RequestTypeId = RequestType.ReformerTaskrequests,
+                                                    Message = msg
+                                                });
+
+
+                                                await _notificationService.SendNotifications(new SendEmailDto()
+                                                {
+                                                    Body = msg,
+                                                    Subject = "يوجد مهمه جديده , برجاء تعيين مصلح عليها",
+                                                    To = new List<string>() { deptAdminInfoReconciliation.Data.Email }
+                                                }, new SMSRequestDto()
+                                                {
+                                                    message_text = msg,
+                                                    notification_type = "SMS",
+                                                    recipients = new List<string>() { deptAdminInfoReconciliation.Data.Email }
+                                                }, lstNotification);
+
+
+                                            }
+                                            catch (Exception)
+                                            {
+
+                                            }
+
+                                            break;
+
                                         case DepartmentDistributionMode.AutoDistribution:
                                             var reformers = (await _repository.GetQueryable<Citizen, Guid>())?
                                                             .Include(x => x.ReformerLitigationRequests)
@@ -444,7 +498,7 @@ namespace Bpf.Application.ModuleServices
                                                     });
 
 
-                                                    _notificationService.SendNotifications(new SendEmailDto()
+                                                    await _notificationService.SendNotifications(new SendEmailDto()
                                                     {
                                                         Body = msg,
                                                         Subject = "يوجد طلب مهمه جديدة كمصلح",

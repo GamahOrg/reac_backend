@@ -14,6 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Log\Core.Log.Application.Contracts\Core.Log.Application.Contracts.csproj" />
     <ProjectReference Include="..\Core.GenericRepository.Shared\Core.GenericRepository.Shared.csproj" />
   </ItemGroup>
 

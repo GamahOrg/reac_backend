@@ -345,7 +345,8 @@ namespace REAC.Application.Contracts
             CreateMap<SysLitigationRequestAmount, SysLitigationRequestAmountGetDto>();
             CreateMap<SysExemptionReductionCategory, SysExemptionReductionCategoryDto>();
 
-          //  CreateMap<SysEmployee, SysEmployeeListDto>();
+            CreateMap<SysDepartment, SysDepartmentDistributionModeDto>()
+                .ForMember(des => des.DistributionMode, opt => opt.MapFrom(src => src.DistributionMode));
 
             CreateMap<SysEmployee, SysEmployeeListDto>()
                 .ForMember(des => des.DepartmentName, opt => opt.MapFrom(src => src.Department.DepartmentName));

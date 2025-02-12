@@ -53,7 +53,7 @@ namespace REAC.Application.AppServices.Notification
             query = query.Where(x => x.ActorId == referenceId);
 
             var notifications = await query.Include(x => x.SysNotificationActorType)
-                .Include(x => x.SysRequestType).OrderByDescending(x => x.CreatedOn).ToListAsync();
+                .Include(x => x.SysRequestType).OrderByDescending(x => x.CreatedOn).Take(20).ToListAsync();
             var notViewNotificationCount = await query.CountAsync(x => x.IsViewed == false);
 
             return new DataResponse<NotificationListDto>
@@ -76,8 +76,9 @@ namespace REAC.Application.AppServices.Notification
             query = query.Where(x => x.ActorId == referenceId);
 
             var notifications = await query.Include(x => x.SysNotificationActorType)
-                .Include(x => x.SysRequestType).OrderByDescending(x => x.CreatedOn).ToListAsync();
+                .Include(x => x.SysRequestType).OrderByDescending(x => x.CreatedOn).Take(20).ToListAsync();
             var notViewNotificationCount = await query.CountAsync(x => x.IsViewed == false);
+
 
             var response = _mapper.Map<List<NotificationDto>>(notifications).OrderByDescending(x => x.CreatedOn).ToList();
 
@@ -190,7 +191,7 @@ namespace REAC.Application.AppServices.Notification
             {
                 if (email is not null)
                 {
-                    var emailResultCitizen = _emailService.SendMail(email.To, email.Subject, email.Body);
+                    var emailResultCitizen = await _emailService.SendMail(email.To, email.Subject, email.Body);
                 }
 
                 if (sms is not null)
@@ -203,7 +204,7 @@ namespace REAC.Application.AppServices.Notification
                     }
 
                     sms.recipients = recipiants;
-                    var smsResultCitizen =  _smsService.SendSMS(sms);
+                    var smsResultCitizen = await  _smsService.SendSMS(sms);
                 }
 
                 if (notifications.Any())

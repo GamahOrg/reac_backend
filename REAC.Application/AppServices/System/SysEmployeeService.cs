@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using REAC.Application.Contracts.Dtos.Citizen;
 using REAC.Application.Contracts.Dtos.Integration.GEE;
 using REAC.Application.Contracts.Dtos.Notification;
+using REAC.Application.Contracts.Dtos.System.DepartmentDtos;
 using REAC.Application.Contracts.Dtos.System.EmployeeDtos;
 using REAC.Application.Contracts.Dtos.UserManage;
 using REAC.Application.Contracts.IAppServices;
@@ -66,6 +67,59 @@ namespace REAC.Application.AppServices.System
                 return new DataResponse<List<SysEmployee>> { Data = DeptObj, IsDone = true };
             else
                 return new DataResponse<List<SysEmployee>> { Data = null, IsDone = false };
+        }
+
+        public async Task<DataResponse<List<SysDepartmentDistributionModeDto>>> GetDistributioonMode()
+        {
+            var DeptObj = (await _repository.GetQueryable<SysDepartment, Guid>())
+                             .Where(x => x.DepartmentType == DepartmentType.Reconciliation)
+                             .Select(d => new SysDepartmentDistributionModeDto { DistributionMode = d.DistributionMode }).ToList();
+                             
+                             
+            if (DeptObj != null)
+                return new DataResponse<List<SysDepartmentDistributionModeDto>> { Data = DeptObj, IsDone = true };
+            else
+                return new DataResponse<List<SysDepartmentDistributionModeDto>> { Data = null, IsDone = false };
+        }
+
+        public async Task<BaseResponse> UpdateDistributioonMode(DepartmentDistributionMode distributionMode)
+        {
+            try
+            {
+                var DeptObj = (await _repository.GetQueryable<SysDepartment, Guid>())
+                               .Where(x => x.DepartmentType == DepartmentType.Reconciliation)
+                               .SingleOrDefault();
+
+                if (DeptObj == null)
+                    return new BaseResponse()
+                    {
+                        IsDone = false,
+                        Message = ""
+                    };
+
+                DeptObj.DistributionMode = distributionMode;
+
+                await _repository.SaveChangesAsync();
+
+                if (distributionMode == DepartmentDistributionMode.AutoDistribution)
+                    return new BaseResponse() { IsDone = true, Message = "تم تفعيل وضع التوزيع التلقائي" };
+                else if(distributionMode == DepartmentDistributionMode.ManualDistribution)
+                    return new BaseResponse() { IsDone = true, Message = "تم تفعيل وضع التوزيع اليدوي" };
+                else 
+                    return new BaseResponse() { IsDone = true, Message = "تم ايقاف توزيع الدعاوي على المصلحين" };
+
+            }
+            catch (Exception ex)
+            {
+                return new ExceptionResponse()
+                {
+                    IsDone = false,
+                    Exception = ex.ToString(),
+                    Message = ex.Message
+                };
+            }
+
+
         }
 
         public async Task<BaseResponse> CreateEmployee(SysEmployeeDto sysEmployeeDto)

@@ -102,6 +102,15 @@ namespace REAC.Application.AppServices.Litigation
 
                 if (model.LitigationRequestAmountId != Guid.Empty)
                     litigationRequest.LitigationRequestAmountId = model.LitigationRequestAmountId;
+                else
+                {
+                    var lowestFeesId = (await _repository.GetQueryable<SysLitigationRequestAmount, Guid>())
+                        .AsNoTracking().OrderBy(x => x.Fees).First().Id;
+
+                    litigationRequest.LitigationRequestAmountId = lowestFeesId;
+
+                }
+
 
                 if (model.AreaId != Guid.Empty)
                     litigationRequest.AreaId = model.AreaId;
@@ -161,6 +170,22 @@ namespace REAC.Application.AppServices.Litigation
                                 }
                             }
                             litigationRequest.LitigationRequestGrounds.Add(litigationRequestGround);
+                        }
+
+                        if(litigationRequest.LitigationRequestGrounds.Any(l => l.Id == reference.ReferenceId) 
+                            & litigationRequest.LitigationRequestGrounds.Any(l => l.LitigationRequestGroundFiles == null || l.LitigationRequestGroundFiles.Count == 0)
+                            & reference.ReferenceAttachments is not null
+                            )
+                        {
+                            foreach (var file in reference.ReferenceAttachments)
+                            {
+                                litigationRequest.LitigationRequestGrounds.FirstOrDefault(l => l.Id == reference.ReferenceId).LitigationRequestGroundFiles.Add(new LitigationRequestGroundFile()
+                                {
+                                    LitigationRequestGroundId = litigationRequest.LitigationRequestGrounds.FirstOrDefault(l => l.Id == reference.ReferenceId).Id,
+                                    Id = Guid.NewGuid(),
+                                    FileManagerId = file
+                                });
+                            }
                         }
 
                     }
