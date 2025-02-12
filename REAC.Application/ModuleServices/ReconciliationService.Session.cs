@@ -173,11 +173,18 @@ namespace REAC.Application.ModuleServices
                             try
                             {
                                 msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.ReconciliationSession_set).Result.Data?.Value;
-
                                 msg = msg?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
                                 msg = msg?.Replace("{SessionLink}", sessionUrl);
-
-                                await SendNotificationMS(msg, litigationRequest);
+                                var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                string body;
+                                using (StreamReader streamReader = File.OpenText(pathToFile))
+                                {
+                                    body = await streamReader.ReadToEndAsync();
+                                    body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.ReconciliationSession_set).Result.Data?.Value);
+                                    body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                                    body = body?.Replace("{SessionLink}", sessionUrl);
+                                }
+                                await SendNotificationMS(body, msg, litigationRequest);
                             }
                             catch (Exception e)
                             {
@@ -205,8 +212,18 @@ namespace REAC.Application.ModuleServices
                                 msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.ReconciliationSession_Reset).Result.Data?.Value;
                                 msg = msg?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
                                 msg = msg?.Replace("{SessionLink}", sessionUrl);
+                                var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                string body;
+                                using (StreamReader streamReader = File.OpenText(pathToFile))
+                                {
+                                    body = await streamReader.ReadToEndAsync();
+                                    body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.ReconciliationSession_Reset).Result.Data?.Value);
+                                    body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                                    body = body?.Replace("{SessionLink}", sessionUrl);
+                                }
 
-                                await SendNotificationMS(msg, litigationRequest);
+
+                                    await SendNotificationMS(body, msg, litigationRequest);
                             }
                             catch (Exception e)
                             {
@@ -261,17 +278,19 @@ namespace REAC.Application.ModuleServices
             return await GetLitigationRequestForSession(requestPayload.RequestId, cancellationToken);
 
         }
-        private async Task SendNotificationMS(string msg, LitigationRequest litigationRequest)
+        private async Task SendNotificationMS(string emailMsg, string msg, LitigationRequest litigationRequest)
         {
             var deptAdminInfoReconciliation = await _employeeService.GetAdminsByDepartmentType(DepartmentType.Reconciliation);
             //ApplicantCitizen
-            var objEmail = new SendEmailDto()
-            {
-                Body = msg,
-                Subject = "Litigation Request Session Added",
-                To = new List<string>() { litigationRequest.ApplicantCitizen?.Email }
 
-            };
+
+                var objEmail = new SendEmailDto()
+                {
+                    Body = emailMsg,
+                    Subject = "Litigation Request Session Added",
+                    To = new List<string>() {litigationRequest.ApplicantCitizen?.Email}
+
+                };
             var objSms = new Contracts.Dtos.Integration.GEE.SMSRequestDto()
             {
                 message_text = msg,

@@ -96,12 +96,25 @@ namespace REAC.Application.ModuleServices
                         var msg = "";
                         msg = _settingService.GetBySettingKey(SysSettingKeyConstants.Arbitration_ExtendRequest_Added).Result.Data?.Value;
                         msg = msg?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                        var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                        string body;
+                        using (StreamReader streamReader = File.OpenText(pathToFile))
+                        {
+                            body = await streamReader.ReadToEndAsync();
+                            body = body?.Replace("{content}", _settingService.GetBySettingKey(SysSettingKeyConstants.Arbitration_ExtendRequest_Added).Result.Data?.Value);
+                            body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);  
+                        }
                         var arbitrationAdmin = await _sysEmployeeService.GetAdminsByDepartmentType(DepartmentType.Arbitration);
                         if (arbitrationAdmin.IsDone)
                         {
                              msg = _settingService.GetBySettingKey(SysSettingKeyConstants.ArbitratorSelectionDuration_Added).Result.Data?.Value;
                             msg = msg?.Replace("{LitigationCode}", litigationRequest.RequestCode);
-
+                            using (StreamReader streamReader = File.OpenText(pathToFile))
+                            {
+                                body = await streamReader.ReadToEndAsync();
+                                body = body?.Replace("{content}", _settingService.GetBySettingKey(SysSettingKeyConstants.ArbitratorSelectionDuration_Added).Result.Data?.Value);
+                                body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                            }
 
                             List<SysNotificationDto> notifications = new List<SysNotificationDto>() {
                                  new SysNotificationDto{
@@ -204,7 +217,7 @@ namespace REAC.Application.ModuleServices
                             {
                                 To = emails,
                                 Subject = "اضافة  الرد علي طلب مد مدة التحكيم",
-                                Body = msg
+                                Body = body
                             }, new Contracts.Dtos.Integration.GEE.SMSRequestDto()
                             {
                                 message_text = msg,
@@ -285,6 +298,7 @@ namespace REAC.Application.ModuleServices
                         return savePeriodResponse;
                 }
                 var msg = "";
+                string body = "";
                 switch (requestPayload.LitigationRequestExtendPeriodRequestStatusId)
                 {
                     case LitigationRequestExtendPeriodRequestStatus.Approve:
@@ -301,7 +315,13 @@ namespace REAC.Application.ModuleServices
                         // Send Notification
                         // تم قبول  الرد علي طلب مد مدة التحكيم 
                         msg = _settingService.GetBySettingKey(SysSettingKeyConstants.Arbitration_ExtendRequest_Accepted).Result.Data?.Value;
-
+                        var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                        using (StreamReader streamReader = File.OpenText(pathToFile))
+                        {
+                            body = await streamReader.ReadToEndAsync();
+                            body = body?.Replace("{content}", _settingService.GetBySettingKey(SysSettingKeyConstants.Arbitration_ExtendRequest_Accepted).Result.Data?.Value);
+                            body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                        }
                         break;
                     case LitigationRequestExtendPeriodRequestStatus.Reject:
                         await _repository.AddAsync<WorkFlowLog, Guid>(new WorkFlowLog()
@@ -315,6 +335,13 @@ namespace REAC.Application.ModuleServices
                         // Send Notification
                         // تم رفض  الرد علي طلب مد مدة التحكيم 
                         msg = _settingService.GetBySettingKey(SysSettingKeyConstants.Arbitration_ExtendRequest_Rejected).Result.Data?.Value;
+                        pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                        using (StreamReader streamReader = File.OpenText(pathToFile))
+                        {
+                            body = await streamReader.ReadToEndAsync();
+                            body = body?.Replace("{content}", _settingService.GetBySettingKey(SysSettingKeyConstants.Arbitration_ExtendRequest_Rejected).Result.Data?.Value);
+                            body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                        }
                         break;
 
 
@@ -324,6 +351,7 @@ namespace REAC.Application.ModuleServices
                 try
                 {
                     msg = msg?.Replace("{LitigationCode}", litigationRequest.RequestCode);
+                    body = body?.Replace("{LitigationCode}", litigationRequest.RequestCode);
                     var arbitrationAdmin = await _sysEmployeeService.GetAdminsByDepartmentType(DepartmentType.Arbitration);
                     // مدير التحكيم
                     if (arbitrationAdmin.IsDone)
@@ -432,7 +460,7 @@ namespace REAC.Application.ModuleServices
                         {
                             To = emails,
                             Subject = "الرد علي طلب مد مدة التحكيم",
-                            Body = msg
+                            Body = body
                         }, new Contracts.Dtos.Integration.GEE.SMSRequestDto()
                         {
                             message_text = msg,

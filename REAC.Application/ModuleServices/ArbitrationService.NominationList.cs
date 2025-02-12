@@ -114,7 +114,15 @@ namespace REAC.Application.ModuleServices
                         msg = msg?.Replace("{LitigationCode}", litigationRequest.RequestCode);
                         var expirationDateHours = int.Parse(_settingService.GetBySettingKey(SysSettingKeyConstants.Arbitration_ExpirationDateHours).Result.Data?.Value);
                         msg = msg?.Replace("{ExpirationDate}", DateTime.Now.AddHours(expirationDateHours).ToString("MM/dd/yyyy hh:mm tt", new CultureInfo("en-US")));
-
+                        var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                        string body;
+                        using (StreamReader streamReader = File.OpenText(pathToFile))
+                        {
+                            body = await streamReader.ReadToEndAsync();
+                            body = body?.Replace("{content}", _settingService.GetBySettingKey(SysSettingKeyConstants.ArbitratorsNominationList_Added).Result.Data?.Value);
+                            body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                            body = body?.Replace("{ExpirationDate}", DateTime.Now.AddHours(expirationDateHours).ToString("MM/dd/yyyy hh:mm tt", new CultureInfo("en-US")));
+                        }
                         List<SysNotificationDto> notifications = new List<SysNotificationDto>() {
                         new SysNotificationDto{
                         ActorId = litigationRequest.ApplicantCitizen.Id,
@@ -192,7 +200,7 @@ namespace REAC.Application.ModuleServices
                         {
                             To = emails,
                             Subject = "تم إضافة قائمة تعيين هيئة التحكيم برجاء الاختيار",
-                            Body = msg
+                            Body = body
                         }, new Contracts.Dtos.Integration.GEE.SMSRequestDto()
                         {
                             message_text = msg,
@@ -203,6 +211,14 @@ namespace REAC.Application.ModuleServices
                         // تم إضافة قائمة تعيين هيئة التحكيم
                         var bossMsg = _settingService.GetBySettingKey(SysSettingKeyConstants.ArbitratorsNominationList_AddedForAdmin).Result.Data?.Value;
                         bossMsg = bossMsg?.Replace("{LitigationCode}", litigationRequest.RequestCode);
+                        pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                        string bossBody;
+                        using (StreamReader streamReader = File.OpenText(pathToFile))
+                        {
+                            bossBody = await streamReader.ReadToEndAsync();
+                            bossBody = bossBody?.Replace("{content}", _settingService.GetBySettingKey(SysSettingKeyConstants.ArbitratorsNominationList_AddedForAdmin).Result.Data?.Value);
+                            bossBody = bossBody?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                        }
                         var arbitrationAdmin = await _sysEmployeeService.GetAdminsByDepartmentType(DepartmentType.Arbitration);
                         if (arbitrationAdmin.IsDone)
                         {
@@ -227,7 +243,7 @@ namespace REAC.Application.ModuleServices
                             {
                                 To = emailList,
                                 Subject = "إضافة قائمة تعيين هيئة التحكيم",
-                                Body = bossMsg
+                                Body = bossBody
                             }, new Contracts.Dtos.Integration.GEE.SMSRequestDto()
                             {
                                 message_text = bossMsg,
@@ -1033,6 +1049,14 @@ namespace REAC.Application.ModuleServices
                             {
                                 var Fmsg = _settingService.GetBySettingKey(SysSettingKeyConstants.Arbitration_Arbitraor_Assigned).Result.Data?.Value;
                                 Fmsg = Fmsg?.Replace("{LitigationCode}", litigationRequest.RequestCode);
+                                var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                string body;
+                                using (StreamReader streamReader = File.OpenText(pathToFile))
+                                {
+                                    body = await streamReader.ReadToEndAsync();
+                                    body = body?.Replace("{content}", _settingService.GetBySettingKey(SysSettingKeyConstants.Arbitration_Arbitraor_Assigned).Result.Data?.Value);
+                                    body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                                }
                                 var citizenInfo = (await _repository.GetQueryable<Citizen, Guid>())
                                                     .Where(c => c.Id == litigationRequestArbitratorAssigningRequest.CitizenId)
                                                     .FirstOrDefault();
@@ -1063,7 +1087,7 @@ namespace REAC.Application.ModuleServices
                                 {
                                     To = emailList,
                                     Subject = "طلب مهمة جديدة كمحكم علي الدعوي",
-                                    Body = Fmsg
+                                    Body = body
                                 }, new Contracts.Dtos.Integration.GEE.SMSRequestDto()
                                 {
                                     message_text = Fmsg,
@@ -1101,6 +1125,14 @@ namespace REAC.Application.ModuleServices
                 {
                     var msg = _settingService.GetBySettingKey(SysSettingKeyConstants.ArbitratorsNominationList_AssignedAndSent).Result.Data?.Value;
                     msg = msg?.Replace("{LitigationCode}", litigationRequest.RequestCode);
+                    var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                    string body;
+                    using (StreamReader streamReader = File.OpenText(pathToFile))
+                    {
+                        body = await streamReader.ReadToEndAsync();
+                        body = body?.Replace("{content}", _settingService.GetBySettingKey(SysSettingKeyConstants.ArbitratorsNominationList_AssignedAndSent).Result.Data?.Value);
+                        body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                    }
                     var arbitrationAdmin = await _sysEmployeeService.GetAdminsByDepartmentType(DepartmentType.Arbitration);
                     if (arbitrationAdmin.IsDone)
                     {
@@ -1129,7 +1161,7 @@ namespace REAC.Application.ModuleServices
                         {
                             To = emailList,
                             Subject = "تم تعيين هيئة التحكيم وإرسال طلبات المهام",
-                            Body = msg
+                            Body = body
                         }, new Contracts.Dtos.Integration.GEE.SMSRequestDto()
                         {
                             message_text = msg,

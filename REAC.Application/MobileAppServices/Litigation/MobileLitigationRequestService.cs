@@ -513,8 +513,16 @@
                     {
                         var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Reject_Agreement).Result.Data?.Value;
                         msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
+                        var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                        string body;
+                        using (StreamReader streamReader = File.OpenText(pathToFile))
+                        {
+                            body = await streamReader.ReadToEndAsync();
+                            body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Reject_Agreement).Result.Data?.Value);
+                            body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                        }
 
-                        SendNotificationMSWithDefendant(msg, litigationRequest, RequestType.LitigationAgreementRequest, "رفض طلب المشارطة");
+                        SendNotificationMSWithDefendant(body, msg, litigationRequest, RequestType.LitigationAgreementRequest, "رفض طلب المشارطة");
                     }
                     catch { }
                 }
@@ -532,8 +540,16 @@
                     {
                         var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Accept_Agreement).Result.Data?.Value;
                         msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
+                        var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                        string body;
+                        using (StreamReader streamReader = File.OpenText(pathToFile))
+                        {
+                            body = await streamReader.ReadToEndAsync();
+                            body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Accept_Agreement).Result.Data?.Value);
+                            body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                        }
 
-                        await SendNotificationMSWithDefendant(msg, litigationRequest, RequestType.LitigationAgreementRequest, "قبول طلب المشارطة");
+                        await SendNotificationMSWithDefendant(body, msg, litigationRequest, RequestType.LitigationAgreementRequest, "قبول طلب المشارطة");
                     }
                     catch { }
                 }
@@ -558,14 +574,14 @@
 
         #region Notifications
 
-        private async Task SendNotificationMSWithDefendant(string msg, LitigationRequest litigationRequest, RequestType requestTypeId, string subject)
+        private async Task SendNotificationMSWithDefendant(string mailMsg, string msg, LitigationRequest litigationRequest, RequestType requestTypeId, string subject)
         {
             var deptAdminInfoReview = await _employeeService.GetAdminsByDepartmentType(DepartmentType.Review);
 
             //ApplicantCitizen
             var objEmail = new SendEmailDto()
             {
-                Body = msg,
+                Body = mailMsg,
                 Subject = subject,
                 To = new List<string>() { litigationRequest.ApplicantCitizen?.Email }
 

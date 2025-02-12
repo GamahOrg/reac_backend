@@ -284,7 +284,15 @@ namespace REAC.Application.AppServices.Litigation
                     {
                         msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Decision_ReconciliationWasMade).Result.Data?.Value;
                         msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
-                        await SendNotificationMSWithAllTypes(msg, litigationRequest, "Citizen Litigation Request For Report Reply Added");
+                        var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                        string body;
+                        using (StreamReader streamReader = File.OpenText(pathToFile))
+                        {
+                            body = await streamReader.ReadToEndAsync();
+                            body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Decision_ReconciliationWasMade).Result.Data?.Value);
+                            body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                        }
+                        await SendNotificationMSWithAllTypes(body, msg, litigationRequest, "Citizen Litigation Request For Report Reply Added");
                     }
                     catch (Exception e)
                     {
@@ -319,7 +327,15 @@ namespace REAC.Application.AppServices.Litigation
                             bool isAdminArbitrator = true;
                             msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Decision_ReconciliationWasNotMadeAndMoveToArbitration).Result.Data?.Value;
                             msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
-                            await SendNotificationMSWithAllTypes(msg, litigationRequest, "Citizen Litigation Request For Report Reply Refused", isAdminArbitrator);
+                            var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                            string body;
+                            using (StreamReader streamReader = File.OpenText(pathToFile))
+                            {
+                                body = await streamReader.ReadToEndAsync();
+                                body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Decision_ReconciliationWasNotMadeAndMoveToArbitration).Result.Data?.Value);
+                                body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                            }
+                            await SendNotificationMSWithAllTypes(body, msg, litigationRequest, "Citizen Litigation Request For Report Reply Refused", isAdminArbitrator);
                         }
                         catch (Exception e)
                         {
@@ -344,7 +360,15 @@ namespace REAC.Application.AppServices.Litigation
                         {
                             msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Decision_ReconciliationWasNotMade).Result.Data?.Value;
                             msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
-                            await SendNotificationMSWithAllTypes(msg, litigationRequest, "Citizen Litigation Request For Report Reply Refused");
+                            var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                            string body;
+                            using (StreamReader streamReader = File.OpenText(pathToFile))
+                            {
+                                body = await streamReader.ReadToEndAsync();
+                                body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Decision_ReconciliationWasNotMade).Result.Data?.Value);
+                                body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                            }
+                            await SendNotificationMSWithAllTypes(body, msg, litigationRequest, "Citizen Litigation Request For Report Reply Refused");
 
                         }
                         catch (Exception e)
@@ -483,7 +507,7 @@ namespace REAC.Application.AppServices.Litigation
         }
 
 
-        private async Task SendNotificationMSWithAllTypes(string msg, LitigationRequest litigationRequest, string Subject, bool? isAdminArbitrator = null)
+        private async Task SendNotificationMSWithAllTypes(string mailMsg, string msg, LitigationRequest litigationRequest, string Subject, bool? isAdminArbitrator = null)
         {
             var deptAdminInfoReconciliation = await _employeeService.GetAdminsByDepartmentType(DepartmentType.Reconciliation);
             var deptAdminInfoArbitration = await _employeeService.GetAdminsByDepartmentType(DepartmentType.Arbitration);
@@ -491,7 +515,7 @@ namespace REAC.Application.AppServices.Litigation
             //ApplicantCitizen
             var objEmail = new SendEmailDto()
             {
-                Body = msg,
+                Body = mailMsg,
                 Subject = Subject,
                 To = new List<string>() { litigationRequest.ApplicantCitizen.Email }
 

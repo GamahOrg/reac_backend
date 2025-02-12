@@ -405,6 +405,7 @@ namespace REAC.Application.AppServices
                      .SingleOrDefault();
                 var deptAdminInfoArbitration = await _employeeService.GetAdminsByDepartmentType(DepartmentType.Arbitration);
                 var msg = "";
+                string body;
                 var applicationNotifications = new List<SysNotificationDto>();
 
                 if (citizen == null)
@@ -432,6 +433,13 @@ namespace REAC.Application.AppServices
                 {
                     msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Arbitrator_Activate).Result.Data?.Value;
                     msg = msg.Replace("{CitizenName}", citizen.FullName);
+                    var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                    using (StreamReader streamReader = File.OpenText(pathToFile))
+                    {
+                        body = await streamReader.ReadToEndAsync();
+                        body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Arbitrator_Activate).Result.Data?.Value);
+                        body = body?.Replace("{CitizenName}", citizen.FullName);
+                    }
                     applicationNotifications.Add(new SysNotificationDto()
                     {
                         ActorId = citizen.Id,
@@ -461,7 +469,7 @@ namespace REAC.Application.AppServices
                         {
                             To = new List<string>() { citizen.Email, deptAdminInfoArbitration.Data.Email },
                             Subject = "Arbitrator Activated",
-                            Body = msg
+                            Body = body
                         },
                         new SMSRequestDto()
                         {
@@ -499,6 +507,7 @@ namespace REAC.Application.AppServices
                       .SingleOrDefault();
                 var deptAdminInfoArbitration = await _employeeService.GetAdminsByDepartmentType(DepartmentType.Arbitration);
                 var msg = "";
+                string body;
                 var applicationNotifications = new List<SysNotificationDto>();
                 if (citizen == null)
                     return new BaseResponse()
@@ -528,6 +537,13 @@ namespace REAC.Application.AppServices
                 {
                     msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Arbitrator_DeActivate).Result.Data?.Value;
                     msg = msg.Replace("{CitizenName}", citizen.FullName);
+                    var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                    using (StreamReader streamReader = File.OpenText(pathToFile))
+                    {
+                        body = await streamReader.ReadToEndAsync();
+                        body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Arbitrator_DeActivate).Result.Data?.Value);
+                        body = body?.Replace("{CitizenName}", citizen.FullName);
+                    }
                     applicationNotifications.Add(new SysNotificationDto()
                     {
                         ActorId = citizen.Id,
@@ -557,7 +573,7 @@ namespace REAC.Application.AppServices
                         {
                             To = new List<string>() { citizen.Email, deptAdminInfoArbitration.Data.Email },
                             Subject = "Arbitrator DeActivated",
-                            Body = msg
+                            Body = body
                         },
                         new SMSRequestDto()
                         {
@@ -598,6 +614,7 @@ namespace REAC.Application.AppServices
                     .SingleOrDefault();
                 var deptAdminInfoReconciliation = await _employeeService.GetAdminsByDepartmentType(DepartmentType.Reconciliation);
                 var msg = "";
+                string body;
                 var applicationNotifications = new List<SysNotificationDto>();
                 if (citizen == null)
                     return new BaseResponse()
@@ -624,6 +641,13 @@ namespace REAC.Application.AppServices
                 {
                     msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reformer_Activate).Result.Data?.Value;
                     msg = msg.Replace("{CitizenName}", citizen.FullName);
+                    var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                    using (StreamReader streamReader = File.OpenText(pathToFile))
+                    {
+                        body = await streamReader.ReadToEndAsync();
+                        body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reformer_Activate).Result.Data?.Value);
+                        body = body?.Replace("{CitizenName}", citizen.FullName);
+                    }
                     applicationNotifications.Add(new SysNotificationDto()
                     {
                         ActorId = citizen.Id,
@@ -653,7 +677,7 @@ namespace REAC.Application.AppServices
                         {
                             To = new List<string>() { citizen.Email, deptAdminInfoReconciliation.Data.Email },
                             Subject = "Reformer Activated",
-                            Body = msg
+                            Body = body
                         },
                         new SMSRequestDto()
                         {
@@ -703,6 +727,7 @@ namespace REAC.Application.AppServices
 
                 var deptAdminInfoReconciliation = await _employeeService.GetAdminsByDepartmentType(DepartmentType.Reconciliation);
                 var msg = "";
+                string body;
                 var applicationNotifications = new List<SysNotificationDto>();
                 if (citizen == null)
                     return new BaseResponse()
@@ -731,6 +756,13 @@ namespace REAC.Application.AppServices
                 {
                     msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reformer_DeActivate).Result.Data?.Value;
                     msg = msg.Replace("{CitizenName}", citizen.FullName);
+                    var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                    using (StreamReader streamReader = File.OpenText(pathToFile))
+                    {
+                        body = await streamReader.ReadToEndAsync();
+                        body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reformer_DeActivate).Result.Data?.Value);
+                        body = body?.Replace("{CitizenName}", citizen.FullName);
+                    }
                     applicationNotifications.Add(new SysNotificationDto()
                     {
                         ActorId = citizen.Id,
@@ -760,7 +792,7 @@ namespace REAC.Application.AppServices
                         {
                             To = new List<string>() { citizen.Email, deptAdminInfoReconciliation.Data.Email },
                             Subject = "Reformer DeActivated",
-                            Body = msg
+                            Body = body
                         },
                         new SMSRequestDto()
                         {
@@ -804,6 +836,7 @@ namespace REAC.Application.AppServices
                      .SingleOrDefault();
                 var deptAdminInfoArbitration = await _employeeService.GetAdminsByDepartmentType(DepartmentType.Arbitration);
                 var msg = "";
+                string body;
                 var applicationNotifications = new List<SysNotificationDto>();
 
                 if (citizen == null)
@@ -831,6 +864,13 @@ namespace REAC.Application.AppServices
                 {
                     msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Arbitrator_Activate).Result.Data?.Value;
                     msg = msg.Replace("{CitizenName}", citizen.FullName);
+                    var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                    using (StreamReader streamReader = File.OpenText(pathToFile))
+                    {
+                        body = await streamReader.ReadToEndAsync();
+                        body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Arbitrator_Activate).Result.Data?.Value);
+                        body = body?.Replace("{CitizenName}", citizen.FullName);
+                    }
                     applicationNotifications.Add(new SysNotificationDto()
                     {
                         ActorId = citizen.Id,
@@ -860,7 +900,7 @@ namespace REAC.Application.AppServices
                         {
                             To = new List<string>() { citizen.Email, deptAdminInfoArbitration.Data.Email },
                             Subject = "Arbitrator Activated",
-                            Body = msg
+                            Body = body
                         },
                         new SMSRequestDto()
                         {
@@ -896,6 +936,7 @@ namespace REAC.Application.AppServices
                       .SingleOrDefault();
                 var deptAdminInfoArbitration = await _employeeService.GetAdminsByDepartmentType(DepartmentType.Arbitration);
                 var msg = "";
+                string body;
                 var applicationNotifications = new List<SysNotificationDto>();
                 if (citizen == null)
                     return new BaseResponse()
@@ -935,6 +976,13 @@ namespace REAC.Application.AppServices
                 {
                     msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Arbitrator_DeActivate).Result.Data?.Value;
                     msg = msg.Replace("{CitizenName}", citizen.FullName);
+                    var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                    using (StreamReader streamReader = File.OpenText(pathToFile))
+                    {
+                        body = await streamReader.ReadToEndAsync();
+                        body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Arbitrator_DeActivate).Result.Data?.Value);
+                        body = body?.Replace("{CitizenName}", citizen.FullName);
+                    }
                     applicationNotifications.Add(new SysNotificationDto()
                     {
                         ActorId = citizen.Id,
@@ -1019,6 +1067,7 @@ namespace REAC.Application.AppServices
 
                 var deptAdminInfoReconciliation = await _employeeService.GetAdminsByDepartmentType(DepartmentType.Reconciliation);
                 var msg = "";
+                string body;
                 var applicationNotifications = new List<SysNotificationDto>();
                 
 
@@ -1044,6 +1093,13 @@ namespace REAC.Application.AppServices
                 {
                     msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reformer_DeActivate).Result.Data?.Value;
                     msg = msg.Replace("{CitizenName}", citizen.FullName);
+                    var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                    using (StreamReader streamReader = File.OpenText(pathToFile))
+                    {
+                        body = await streamReader.ReadToEndAsync();
+                        body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reformer_DeActivate).Result.Data?.Value);
+                        body = body?.Replace("{CitizenName}", citizen.FullName);
+                    }
                     applicationNotifications.Add(new SysNotificationDto()
                     {
                         ActorId = citizen.Id,
@@ -1073,7 +1129,7 @@ namespace REAC.Application.AppServices
                         {
                             To = new List<string>() { citizen.Email, deptAdminInfoReconciliation.Data.Email },
                             Subject = "Reformer DeActivated",
-                            Body = msg
+                            Body = body
                         },
                         new SMSRequestDto()
                         {
@@ -1109,6 +1165,7 @@ namespace REAC.Application.AppServices
                     .SingleOrDefault();
                 var deptAdminInfoReconciliation = await _employeeService.GetAdminsByDepartmentType(DepartmentType.Reconciliation);
                 var msg = "";
+                string body;
                 var applicationNotifications = new List<SysNotificationDto>();
                 if (citizen == null)
                     return new BaseResponse()
@@ -1135,6 +1192,13 @@ namespace REAC.Application.AppServices
                 {
                     msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reformer_Activate).Result.Data?.Value;
                     msg = msg.Replace("{CitizenName}", citizen.FullName);
+                    var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                    using (StreamReader streamReader = File.OpenText(pathToFile))
+                    {
+                        body = await streamReader.ReadToEndAsync();
+                        body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reformer_Activate).Result.Data?.Value);
+                        body = body?.Replace("{CitizenName}", citizen.FullName);
+                    }
                     applicationNotifications.Add(new SysNotificationDto()
                     {
                         ActorId = citizen.Id,
@@ -1164,7 +1228,7 @@ namespace REAC.Application.AppServices
                         {
                             To = new List<string>() { citizen.Email, deptAdminInfoReconciliation.Data.Email },
                             Subject = "Reformer Activated",
-                            Body = msg
+                            Body = body
                         },
                         new SMSRequestDto()
                         {

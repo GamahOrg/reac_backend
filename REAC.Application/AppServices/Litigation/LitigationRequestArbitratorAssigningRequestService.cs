@@ -83,6 +83,7 @@ namespace REAC.Application.AppServices.Litigation
                     .Where(c => c.Id == referenceId)
                     .FirstOrDefault();
                 var msg = "";
+                string body;
                 var deptAdminInfoArbitration = await _employeeService.GetAdminsByDepartmentType(DepartmentType.Arbitration);
 
                 var applicationNotifications = new List<SysNotificationDto>();
@@ -156,6 +157,14 @@ namespace REAC.Application.AppServices.Litigation
                             msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Arbitration_Arbitraor_AcceptTask).Result.Data?.Value;
                             msg = msg.Replace("{ArbitratorName}", litigationRequestArbitratorAssigningRequest.ArbitratorCitizen.FullName);
                             msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
+                            var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                            using (StreamReader streamReader = File.OpenText(pathToFile))
+                            {
+                                body = await streamReader.ReadToEndAsync();
+                                body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Arbitration_Arbitraor_AcceptTask).Result.Data?.Value);
+                                body = body.Replace("{ArbitratorName}", litigationRequestArbitratorAssigningRequest.ArbitratorCitizen.FullName);
+                                body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                            }
                             applicationNotifications.Add(new SysNotificationDto()
                             {
                                 ActorId = citizenInfo.Id,
@@ -184,7 +193,7 @@ namespace REAC.Application.AppServices.Litigation
                                {
                                    To = new List<string>() { citizenInfo.Email, deptAdminInfoArbitration.Data.Email },
                                    Subject = "Arbitraor Accept Task",
-                                   Body = msg
+                                   Body = body
                                },
                                new SMSRequestDto()
                                {
@@ -287,6 +296,14 @@ namespace REAC.Application.AppServices.Litigation
                             msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Arbitration_Arbitraor_RejectTask).Result.Data?.Value;
                             msg = msg.Replace("{ArbitratorName}", litigationRequestArbitratorAssigningRequest.ArbitratorCitizen.FullName);
                             msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
+                            var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                            using (StreamReader streamReader = File.OpenText(pathToFile))
+                            {
+                                body = await streamReader.ReadToEndAsync();
+                                body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Arbitration_Arbitraor_RejectTask).Result.Data?.Value);
+                                body = body.Replace("{ArbitratorName}", litigationRequestArbitratorAssigningRequest.ArbitratorCitizen.FullName);
+                                body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                            }
                             applicationNotifications.Add(new SysNotificationDto()
                             {
                                 ActorId = citizenInfo.Id,
@@ -316,7 +333,7 @@ namespace REAC.Application.AppServices.Litigation
                                {
                                    To = new List<string>() { citizenInfo.Email, deptAdminInfoArbitration.Data.Email },
                                    Subject = "Arbitraor Reject Task",
-                                   Body = msg
+                                   Body = body
                                },
                                new SMSRequestDto()
                                {

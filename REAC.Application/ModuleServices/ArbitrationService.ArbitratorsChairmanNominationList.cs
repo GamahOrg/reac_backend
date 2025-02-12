@@ -100,10 +100,16 @@ namespace REAC.Application.ModuleServices
 
                             var msg = "";
                             msg = _settingService.GetBySettingKey(SysSettingKeyConstants.ArbitratorsChairmanNominationList_Added).Result.Data?.Value;
-
-
-
                             msg = msg?.Replace("{LitigationCode}", litigationRequest.RequestCode);
+                            var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                            string body;
+                            using (StreamReader streamReader = File.OpenText(pathToFile))
+                            {
+                                body = await streamReader.ReadToEndAsync();
+                                body = body?.Replace("{content}", _settingService.GetBySettingKey(SysSettingKeyConstants.ArbitratorsChairmanNominationList_Added).Result.Data?.Value);
+                                body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                            }
+
                             List<SysNotificationDto> notifications = new List<SysNotificationDto>() {
                            new SysNotificationDto{
                         ActorId = (Guid)arbitrationAdmin.Data?.Id,
@@ -137,7 +143,7 @@ namespace REAC.Application.ModuleServices
                             {
                                 To = emails,
                                 Subject = "تم إضافة قائمة مرشحى رئيس هيئة التحكيم ",
-                                Body = msg
+                                Body = body
                             }, null, notifications);
 
 
@@ -245,6 +251,14 @@ namespace REAC.Application.ModuleServices
 
                     var msg = _settingService.GetBySettingKey(SysSettingKeyConstants.ArbitratorChairman_NewTask_Admin).Result.Data?.Value;
                     msg = msg?.Replace("{LitigationCode}", litigationRequest.RequestCode);
+                    var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                    string body;
+                    using (StreamReader streamReader = File.OpenText(pathToFile))
+                    {
+                        body = await streamReader.ReadToEndAsync();
+                        body = body?.Replace("{content}", _settingService.GetBySettingKey(SysSettingKeyConstants.ArbitratorChairman_NewTask_Admin).Result.Data?.Value);
+                        body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                    }
 
 
                     List<SysNotificationDto> notifications = new List<SysNotificationDto>() {
@@ -284,7 +298,7 @@ namespace REAC.Application.ModuleServices
                     {
                         To = emails,
                         Subject = "تحديد رئيس هيئة التحكيم",
-                        Body = msg
+                        Body = body
                     }, new Contracts.Dtos.Integration.GEE.SMSRequestDto() { message_text = msg, notification_type = "SMS", recipients = recepiant }
                     , notifications);
 
@@ -300,6 +314,14 @@ namespace REAC.Application.ModuleServices
 
                     var msg = _settingService.GetBySettingKey(SysSettingKeyConstants.ArbitratorChairman_NewTask).Result.Data?.Value;
                     msg = msg?.Replace("{LitigationCode}", litigationRequest.RequestCode);
+                    var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                    string body;
+                    using (StreamReader streamReader = File.OpenText(pathToFile))
+                    {
+                        body = await streamReader.ReadToEndAsync();
+                        body = body?.Replace("{content}", _settingService.GetBySettingKey(SysSettingKeyConstants.ArbitratorChairman_NewTask).Result.Data?.Value);
+                        body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                    }
 
                     var citizenInfo = (await _repository.GetQueryable<Citizen, Guid>())
                         .FirstOrDefault(x => x.Id == litigationRequestArbitratorAssigningRequest.CitizenId);
@@ -327,7 +349,7 @@ namespace REAC.Application.ModuleServices
                     {
                         To = emails,
                         Subject = "طلب مهمة جديد كرئيس هيئة تحكيم ",
-                        Body = msg
+                        Body = body
                     }, new Contracts.Dtos.Integration.GEE.SMSRequestDto() { message_text = msg, notification_type = "SMS", recipients = recepiant }
                     , notifications);
 
@@ -1050,10 +1072,15 @@ namespace REAC.Application.ModuleServices
 
                                 var msg = "";
                                 msg = _settingService.GetBySettingKey(SysSettingKeyConstants.ArbitratorsChairmanNominationList_MakeDecision).Result.Data?.Value;
-
-
-
                                 msg = msg?.Replace("{LitigationCode}", litigationRequest.RequestCode);
+                                var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                string body;
+                                using (StreamReader streamReader = File.OpenText(pathToFile))
+                                {
+                                    body = await streamReader.ReadToEndAsync();
+                                    body = body?.Replace("{content}", _settingService.GetBySettingKey(SysSettingKeyConstants.ArbitratorsChairmanNominationList_MakeDecision).Result.Data?.Value);
+                                    body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                                }
                                 List<SysNotificationDto> notifications = new List<SysNotificationDto>() {
                            new SysNotificationDto{
                         ActorId = (Guid)arbitrationAdmin.Data?.Id,
@@ -1074,7 +1101,7 @@ namespace REAC.Application.ModuleServices
                                 {
                                     To = emails,
                                     Subject = "اتخاذ قرار",
-                                    Body = msg
+                                    Body = body
                                 }, null, notifications);
 
 
@@ -1115,10 +1142,17 @@ namespace REAC.Application.ModuleServices
                                 msg = _settingService.GetBySettingKey(SysSettingKeyConstants.ArbitratorsChairmanNominationList_TaskSubmited).Result.Data?.Value;
                                 msg = msg?.Replace("{LitigationCode}", litigationRequest.RequestCode);
                                 msg = msg?.Replace("{ArbitratorName}", litigationRequest.LitigationRequestArbitratorsChairmanNominationLists.OrderBy(x => x.TotalPriority).ToList()[0].ArbitratorChairmanCitizen.FullName);
+                                var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                string body;
+                                using (StreamReader streamReader = File.OpenText(pathToFile))
+                                {
+                                    body = await streamReader.ReadToEndAsync();
+                                    body = body?.Replace("{content}", _settingService.GetBySettingKey(SysSettingKeyConstants.ArbitratorsChairmanNominationList_TaskSubmited).Result.Data?.Value);
+                                    body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                                    body = body?.Replace("{ArbitratorName}", litigationRequest.LitigationRequestArbitratorsChairmanNominationLists.OrderBy(x => x.TotalPriority).ToList()[0].ArbitratorChairmanCitizen.FullName);
+                                }
 
-
-
-                                List<SysNotificationDto> notifications = new List<SysNotificationDto>() {
+                                    List<SysNotificationDto> notifications = new List<SysNotificationDto>() {
                            new SysNotificationDto{
                         ActorId = (Guid)arbitrationAdmin.Data?.Id,
                         RequestId=litigationRequest.Id,
@@ -1138,7 +1172,7 @@ namespace REAC.Application.ModuleServices
                                 {
                                     To = emails,
                                     Subject = "إعلام بأرسال طلب مهمة",
-                                    Body = msg
+                                    Body = body
                                 }, null, notifications);
 
 
@@ -1161,6 +1195,14 @@ namespace REAC.Application.ModuleServices
                             var msg = "";
                             msg = _settingService.GetBySettingKey(SysSettingKeyConstants.ArbitratorsChairmanNominationList_TaskSubmitedToArbitrator).Result.Data?.Value;
                             msg = msg?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                            var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                            string body;
+                            using (StreamReader streamReader = File.OpenText(pathToFile))
+                            {
+                                body = await streamReader.ReadToEndAsync();
+                                body = body?.Replace("{content}", _settingService.GetBySettingKey(SysSettingKeyConstants.ArbitratorsChairmanNominationList_TaskSubmitedToArbitrator).Result.Data?.Value);
+                                body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                            }
 
                             List<SysNotificationDto> notifications = new List<SysNotificationDto>() {
                         new SysNotificationDto{
@@ -1178,7 +1220,7 @@ namespace REAC.Application.ModuleServices
                             {
                                 To = new List<string>() { arbitratorInfo.Email },
                                 Subject = "طلب مهمة جديدة",
-                                Body = msg
+                                Body = body
                             }, null, notifications);
 
                         }

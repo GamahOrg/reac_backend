@@ -16,6 +16,7 @@ using REAC.EntityFrameworkCore.Entities.Notification;
 using System.Text.RegularExpressions;
 using Wafi.Application.Hubs;
 using Wafi.Application.Hubs.Contracts;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace REAC.Application.AppServices.Notification
 {
@@ -128,6 +129,9 @@ namespace REAC.Application.AppServices.Notification
                                    .Include(x => x.SysNotificationActorType)
                                    .Include(x => x.SysRequestType);
 
+            var notViewNotificationCount = await entitiesQuerable.CountAsync(x => x.ActorId == referenceId & x.IsViewed == false);
+
+
             entities = entitiesQuerable.Where(x => x.ActorId == referenceId)
                                        .OrderByDescending(x => x.CreatedOn)
                                        .AsSplitQuery()
@@ -143,7 +147,7 @@ namespace REAC.Application.AppServices.Notification
                         CurrentPage = entities.CurrentPage,
                         PageCount = entities.PageCount,
                         PageSize = entities.PageSize,
-                        TotalCount = entities.TotalCount
+                        TotalCount = notViewNotificationCount
                     },
                 IsDone = true
             };
@@ -160,6 +164,7 @@ namespace REAC.Application.AppServices.Notification
             var entitiesQuerable = (await _repository.GetQueryable<SysNotification, Guid>())
                                    .Include(x => x.SysNotificationActorType)
                                    .Include(x => x.SysRequestType);
+            var notViewNotificationCount = await entitiesQuerable.CountAsync(x => x.ActorId == referenceId & x.IsViewed == false);
 
 
             entities = entitiesQuerable.Where(x => x.ActorId == referenceId)
@@ -178,7 +183,7 @@ namespace REAC.Application.AppServices.Notification
                         CurrentPage = entities.CurrentPage,
                         PageCount = entities.PageCount,
                         PageSize = entities.PageSize,
-                        TotalCount = entities.TotalCount
+                        TotalCount = notViewNotificationCount
                     },
                 IsDone = true
             };

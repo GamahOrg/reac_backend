@@ -53,13 +53,21 @@ namespace Bpf.Application.ModuleServices
                     // تم إرسال الدعوى
 
                     string msg = "";
+                    string body;
                     msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.ExcuteWorkflow).Result.Data?.Value;
                     msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
+                    var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                    using (StreamReader streamReader = File.OpenText(pathToFile))
+                    {
+                        body = await streamReader.ReadToEndAsync();
+                        body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.ExcuteWorkflow).Result.Data?.Value);
+                        body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                    }
 
                     litigationRequest.WorkFlowProcessingLogs = (await _repository.GetQueryable<WorkFlowProcessingLog, Guid>())
                     .Include(x => x.Employee).ToList();
 
-                    await SendNotificationMSPlaintiff(msg, litigationRequest, RequestType.LitigationRequest, "Litigation Request Sent");
+                    await SendNotificationMSPlaintiff(body, msg, litigationRequest, RequestType.LitigationRequest, "Litigation Request Sent");
                 }
                 catch (Exception e)
                 {
