@@ -8,5 +8,6 @@ namespace REAC.Application.Contracts.IAppServices.System
     {
         Task<BaseResponse> GetListAsync(CancellationToken cancellationToken);
         Task<BaseResponse> GetTermsConditionsAsync(string contractNumber, CancellationToken cancellationToken);
+        Task<BaseResponse> GetAll();
     }
 }

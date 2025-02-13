@@ -57,4 +57,7 @@ public partial class CitizenCreateUpdateDto
     public string UnitNumber { get; set; } = null!;
 
     public DateTime BirthDate { get; set; }
+    public string AdditionalNumber { get; set; } = null!;
+    public string NationalAddress { get; set; } = null!;
+    
 }

@@ -3,12 +3,15 @@ using Core.GenericRepository.BaseRepository;
 using Core.Security.Entities;
 using Core.Shared.Responses;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using REAC.Application.Contracts.Dtos.Citizen;
 using REAC.Application.Contracts.Dtos.UserManage;
 using REAC.Application.Contracts.IAppServices;
+using REAC.Application.Contracts.IAppServices.System;
 using REAC.Application.Contracts.IAppServices.UserManage;
 using REAC.Domain.Shared.Enum;
 using REAC.EntityFrameworkCore.Entities.Actor;
+using REAC.EntityFrameworkCore.Entities.System;
 using System.Diagnostics.Eventing.Reader;
 using System.IdentityModel.Tokens.Jwt;
 
@@ -110,18 +113,21 @@ namespace REAC.Application.AppServices.UserManage
                 PassAccountId = Guid.NewGuid(),
                 Employer = string.Empty,
                 BirthDate = userRegisterDto.UserInfo.DateOfBirth.Value,
+                AdditionalNumber = userRegisterDto.additionalNumber
             };
 
 
             if (userRegisterDto.UserInfo.IsDraftAccount)
             {
                 var draftCitizen = (await _repository.GetQueryable<Citizen, Guid>())
+                    .Include(x=>x.City)
                     .FirstOrDefault(x => x.IdentityNumber == userRegisterDto.UserInfo.NationalId);
                 citizenCreateUpdateDto.Id = draftCitizen.Id;
                 citizenCreateUpdateDto.UserId = draftCitizen.UserId;
                 citizenCreateUpdateDto.Employer = draftCitizen.Employer;
                 citizenCreateUpdateDto.SubNumber = draftCitizen.SubNumber;
                 citizenCreateUpdateDto.Code = await _delegatorService.GenerateCitizenCode();
+                citizenCreateUpdateDto.NationalAddress = string.Concat(draftCitizen.BuildingNumber, ",", draftCitizen.Street, ",", draftCitizen.District, ",", draftCitizen.City?.CityName, ",", draftCitizen.PostalCode, ",", userRegisterDto.additionalNumber);
                 var updateCitizen = _mapper.Map(citizenCreateUpdateDto, draftCitizen);
                 updateCitizen.IsDraftAccount = false;
                 _repository.Update<Citizen, Guid>(updateCitizen);
@@ -130,6 +136,7 @@ namespace REAC.Application.AppServices.UserManage
             {
                 var citizen = _mapper.Map<Citizen>(citizenCreateUpdateDto);
                 citizen.IsDraftAccount = false;
+                citizen.NationalAddress = string.Concat(citizen.BuildingNumber,",", citizen.Street, ",", citizen.District, ",", citizen.City?.CityName, ",", citizen.PostalCode, ",", userRegisterDto.additionalNumber);
                 citizen.Code = await _delegatorService.GenerateCitizenCode();
                 await _repository.AddAsync<Citizen, Guid>(citizen);
                 user.ReferenceId = citizen.Id;

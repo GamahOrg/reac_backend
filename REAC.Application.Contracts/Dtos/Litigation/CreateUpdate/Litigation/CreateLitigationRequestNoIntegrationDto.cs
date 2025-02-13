@@ -8,6 +8,7 @@ namespace REAC.Application.Contracts.Dtos.Litigation.CreateUpdate.Litigation
         public string SubKey { get; set; } = null!;
         public LitigationRequestContractType ContractType { get; set; }
         public LitigationRequestOwnerType LitigationRequestOwnerType { get; set; }
+        public Guid? IncorporationContractFileId { get; set; }
         public string? FirstPartyCapacity { get; set; }
         public string? ContractAddress { get; set; }
         public Guid? FirstPartyFacilityId { get; set; }

@@ -2517,6 +2517,7 @@ namespace REAC.Application.AppServices.Litigation
                     LitigationRequestContractTypeId = litigationRequestDto.ContractType,
                     ContractKey = litigationRequestDto.key,
                     VersionNumber = litigationRequestDto.SubKey,
+                    IncorporationContractFileId = litigationRequestDto.IncorporationContractFileId,
                     FirstPartyCitizenId = (litigationRequestDto.FirstPartyIndividualId == Guid.Empty) ? referenceId : litigationRequestDto.FirstPartyIndividualId,
                     FirstPartyFacilityId = (litigationRequestDto.FirstPartyFacilityId != Guid.Empty) ? litigationRequestDto.FirstPartyFacilityId : null,
                     FirstPartyCapacity = litigationRequestDto.FirstPartyCapacity,

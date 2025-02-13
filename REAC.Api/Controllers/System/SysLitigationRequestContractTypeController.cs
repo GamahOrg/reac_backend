@@ -49,4 +49,16 @@ public class SysLitigationRequestContractTypeController : BaseController<SysLiti
 
         return BadRequest();
     }
+    
+    [HttpGet("GetAll")]
+    public async Task<IActionResult> GetAll()
+    {
+        if (ModelState.IsValid)
+        {
+            var returnValue = await _typeService.GetAll();
+            return Ok(returnValue);
+        }
+
+        return BadRequest();
+    }
 }

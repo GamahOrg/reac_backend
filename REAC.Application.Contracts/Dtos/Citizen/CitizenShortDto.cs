@@ -20,6 +20,8 @@ namespace REAC.Application.Contracts.Dtos.Citizen
 
         public string Email { get; set; } = null!;
         public string SigntureFile { get; set; } = null!;
+        public string? NationalAddress { get; set; }
+        public DateTime? BirthDate { get; set; }
 
     }
 

@@ -967,6 +967,12 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                             Key = "SLA.SecondAgreementRequestForForRequest",
                             Value = "72"
 
+                        },new SysSetting
+                        {
+                            Id = Guid.NewGuid(),
+                            Key = "SLA.LitigationRequestFeesNotPaidReminderFirstPeriod",
+                            Value = "72"
+
                         },
                     #endregion
                     #region Reconciliation
@@ -1016,6 +1022,11 @@ namespace Ticketing.EntityFrameworkCore.SeedData
 
                     #region Sla NotificationMessages
                         new SysSetting
+                        {
+                            Id = Guid.NewGuid(),
+                            Key = "SLA.PayLitigationFees.Applicant",
+                            Value = "تم الغاء الدعوي رقم {LitigationCode} لعدم دفع الرسوم  "
+                        },new SysSetting
                         {
                             Id = Guid.NewGuid(),
                             Key = "SLA.FinishLitigation.ReviewerEmployee",

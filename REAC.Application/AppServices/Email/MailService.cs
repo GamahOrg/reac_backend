@@ -8,6 +8,7 @@ using System.Net.Mail;
 using REAC.EntityFrameworkCore.Entities.System;
 using System.Net;
 using Microsoft.EntityFrameworkCore;
+using REAC.EntityFrameworkCore.Entities.Arbitration;
 
 namespace REAC.Application.AppServices.Email
 {
@@ -42,7 +43,14 @@ namespace REAC.Application.AppServices.Email
                     };
                     mail.Subject = subject;
                     mail.From = new MailAddress(emailSetting.Result.From);
-                    mail.Body = body;
+                /*    var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                    using (StreamReader streamReader = File.OpenText(pathToFile))
+                    {
+                        body = await streamReader.ReadToEndAsync();
+                        body = body?.Replace("{content}", body);
+                    }
+                */
+                    mail.Body = body; 
                     mail.IsBodyHtml = true;
 
                     foreach (var toAddress in toAddressList)

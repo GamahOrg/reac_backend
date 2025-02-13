@@ -227,6 +227,7 @@
         public const string LitigationRequest_CollectionOfReconciliationFeesRequestIsBeingSent = "LitigationRequest.CollectionOfReconciliationFeesRequestIsBeingSent";
         public const string LitigationRequest_ReconciliationFeesHaveBeenCollected = "LitigationRequest.ReconciliationFeesHaveBeenCollected";
 
+        public const string SLA_LitigationRequestFeesNotPaidReminderFirstPeriod = "SLA.LitigationRequestFeesNotPaidReminderFirstPeriod";
         public const string SLA_ReminderForReviewer = "SLA.ReminderForReviewer";
         public const string SLA_ReminderForReviewerManager = "SLA.ReminderForReviewerManager";
         public const string SLA_FirstEditReminderForRequestApplicant = "SLA.FirstEditReminderForRequestApplicant";
@@ -262,6 +263,7 @@
 
         #region Sla Notification Messages
 
+        public const string SLA_PayLitigationFees_Applicant = "SLA.PayLitigationFees.Applicant";
         public const string SLA_FinishLitigation_ReviewerEmployee = "SLA.FinishLitigation.ReviewerEmployee";
         public const string SLA_WithdrewLitigation_OldReviewerEmployee = "SLA.WithdrewLitigation.OldReviewerEmployee";
         public const string SLA_AssignLitigation_NewReviewerEmployee = "SLA.AssignLitigation.NewReviewerEmployee";

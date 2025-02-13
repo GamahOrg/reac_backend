@@ -113,34 +113,40 @@ namespace REAC.Application.AppServices.SLA
 
                         if (ReformerReminderForReconciliationSecondPeriod > 0)
                         {
-                            double totalReviewHours = 0;
-
-                            totalReviewHours += (DateTime.Now - litigationRequest.StartReconciliationDate).Value.TotalHours;
-                            if (totalReviewHours >= ReformerReminderForReconciliationSecondPeriod)
+                            if (litigationRequest.IsReformerReminderForReconciliationSecondPeriodSent != true)
                             {
-                                // Send Notification for Reconciliation admin (employee actorType),RequestType(ReformerTaskrequests)
-                                // Mail - Sms - Application Notification
-                                // يرجى العلم أن المصلح تجاوز الفترة المسموح بها للصلح على الدعوى رقم .....
-                                try
-                                {
-                                    var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_FinishReconciliation_WarnReconciliationAdmin).Result.Data?.Value;
-                                    msg = msg?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
-                                    msg = msg?.Replace("{ReformerName}", litigationRequest?.ReformerCitizen?.FullName);
-                                    var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
-                                    string body;
-                                    using (StreamReader streamReader = File.OpenText(pathToFile))
-                                    {
-                                        body = await streamReader.ReadToEndAsync();
-                                        body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_FinishReconciliation_WarnReconciliationAdmin).Result.Data?.Value);
-                                        body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
-                                        body = body?.Replace("{ReformerName}", litigationRequest?.ReformerCitizen?.FullName);
-                                    }
-                                    await SendNotificationMS(body, msg, litigationRequest, "المصلح تجاوز الفترة المسموح بها", NotificationActorType.Employee, RequestType.LitigationRequest,
-                                       false, false, true);
-                                }
-                                catch (Exception e)
-                                {
 
+
+                                double totalReviewHours = 0;
+
+                                totalReviewHours += (DateTime.Now - litigationRequest.StartReconciliationDate).Value.TotalHours;
+                                if (totalReviewHours >= ReformerReminderForReconciliationSecondPeriod)
+                                {
+                                    litigationRequest.IsReformerReminderForReconciliationSecondPeriodSent = true;
+                                    // Send Notification for Reconciliation admin (employee actorType),RequestType(ReformerTaskrequests)
+                                    // Mail - Sms - Application Notification
+                                    // يرجى العلم أن المصلح تجاوز الفترة المسموح بها للصلح على الدعوى رقم .....
+                                    try
+                                    {
+                                        var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_FinishReconciliation_WarnReconciliationAdmin).Result.Data?.Value;
+                                        msg = msg?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                                        msg = msg?.Replace("{ReformerName}", litigationRequest?.ReformerCitizen?.FullName);
+                                        var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                        string body;
+                                        using (StreamReader streamReader = File.OpenText(pathToFile))
+                                        {
+                                            body = await streamReader.ReadToEndAsync();
+                                            body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_FinishReconciliation_WarnReconciliationAdmin).Result.Data?.Value);
+                                            body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                                            body = body?.Replace("{ReformerName}", litigationRequest?.ReformerCitizen?.FullName);
+                                        }
+                                        await SendNotificationMS(body, msg, litigationRequest, "المصلح تجاوز الفترة المسموح بها", NotificationActorType.Employee, RequestType.LitigationRequest,
+                                           false, false, true);
+                                    }
+                                    catch (Exception e)
+                                    {
+
+                                    }
                                 }
                             }
                         }
@@ -245,11 +251,16 @@ namespace REAC.Application.AppServices.SLA
 
                         if (LitigationRequestReconciliationReportDecisionPeriod > 0)
                         {
-                            double totalReviewHours = 0;
+                            if (litigationRequest.IsLitigationRequestReconciliationReportResponsePeriodSent != true)
+                            {
+
+                           
+                                double totalReviewHours = 0;
 
                             totalReviewHours += (DateTime.Now - litigationRequest.LitigationRequestReconciliationReports.FirstOrDefault().ReportDate).TotalHours;
                             if (totalReviewHours >= LitigationRequestReconciliationReportDecisionPeriod)
                             {
+                                 litigationRequest.IsLitigationRequestReconciliationReportResponsePeriodSent = true;
                                 //Send Notification for reformer
                                 // Mail - Sms - Application Notification
                                 // يرجى العلم أن الرد على محضر الصلح الصادر على الدعوى رقم ..... قد تجاوز مهلته القصوى
@@ -272,6 +283,7 @@ namespace REAC.Application.AppServices.SLA
                                 {
 
                                 }
+                            }
                             }
                         }
 
@@ -369,49 +381,54 @@ namespace REAC.Application.AppServices.SLA
 
                         if (LitigationRequestReformerAssigningRequestDecisionPeriod > 0)
                         {
-                            double totalHours = 0;
-
-                            totalHours += (DateTime.Now - litigationRequestReformerAssigningRequest.RequestOn).Value.TotalHours;
-                            if (totalHours >= LitigationRequestReformerAssigningRequestDecisionPeriod)
+                            if (litigationRequestReformerAssigningRequest.LitigationRequest.IsReformerReminderForCancelReconciliationSent != true)
                             {
-                                litigationRequestReformerAssigningRequest.Response = LitigationRequestReformerAssigningRequestStatus.Cancelled;
-                                litigationRequestReformerAssigningRequest.ResponseOn = DateTime.Now;
 
-                                // Send Notification for old reformer
-                                // old reformer = litigationRequestReformerAssigningRequest.CitizenId
-                                // Mail - Sms - Application Notification
-                                // تم إلغاء طلب مهمة الصلح على الدعوى رقم ..... لتجاوز الرد على المهمة مهلته القصوى 
-                                try
+
+                                double totalHours = 0;
+
+                                totalHours += (DateTime.Now - litigationRequestReformerAssigningRequest.RequestOn).Value.TotalHours;
+                                if (totalHours >= LitigationRequestReformerAssigningRequestDecisionPeriod)
                                 {
+                                    litigationRequestReformerAssigningRequest.Response = LitigationRequestReformerAssigningRequestStatus.Cancelled;
+                                    litigationRequestReformerAssigningRequest.ResponseOn = DateTime.Now;
+                                    litigationRequestReformerAssigningRequest.LitigationRequest.IsReformerReminderForCancelReconciliationSent = true;
 
-                                    var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_ReconciliationTaskCancelled).Result.Data?.Value;
-                                    msg = msg?.Replace("{LitigationCode}", litigationRequestReformerAssigningRequest.LitigationRequest?.RequestCode);
-                                    var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
-                                    string body;
-                                    using (StreamReader streamReader = File.OpenText(pathToFile))
+                                    // Send Notification for old reformer
+                                    // old reformer = litigationRequestReformerAssigningRequest.CitizenId
+                                    // Mail - Sms - Application Notification
+                                    // تم إلغاء طلب مهمة الصلح على الدعوى رقم ..... لتجاوز الرد على المهمة مهلته القصوى 
+                                    try
                                     {
-                                        body = await streamReader.ReadToEndAsync();
-                                        body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_ReconciliationTaskCancelled).Result.Data?.Value);
-                                        body = body?.Replace("{LitigationCode}", litigationRequestReformerAssigningRequest.LitigationRequest?.RequestCode);
-                                    }
-                                    var objEmail = new SendEmailDto()
-                                    {
-                                        Body = body,
-                                        Subject = "إلغاء طلب مهمة الصلح",
-                                        To = new List<string>()
+
+                                        var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_ReconciliationTaskCancelled).Result.Data?.Value;
+                                        msg = msg?.Replace("{LitigationCode}", litigationRequestReformerAssigningRequest.LitigationRequest?.RequestCode);
+                                        var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                        string body;
+                                        using (StreamReader streamReader = File.OpenText(pathToFile))
+                                        {
+                                            body = await streamReader.ReadToEndAsync();
+                                            body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_ReconciliationTaskCancelled).Result.Data?.Value);
+                                            body = body?.Replace("{LitigationCode}", litigationRequestReformerAssigningRequest.LitigationRequest?.RequestCode);
+                                        }
+                                        var objEmail = new SendEmailDto()
+                                        {
+                                            Body = body,
+                                            Subject = "إلغاء طلب مهمة الصلح",
+                                            To = new List<string>()
                                         {
                                             litigationRequestReformerAssigningRequest.ReformerCitizen.Email
                                         }
-                                    };
+                                        };
 
-                                    var objSms = new Contracts.Dtos.Integration.GEE.SMSRequestDto()
-                                    {
-                                        message_text = msg,
-                                        recipients = new List<string>() { litigationRequestReformerAssigningRequest.ReformerCitizen.Mobile },
-                                        notification_type = "SMS",
-                                    };
+                                        var objSms = new Contracts.Dtos.Integration.GEE.SMSRequestDto()
+                                        {
+                                            message_text = msg,
+                                            recipients = new List<string>() { litigationRequestReformerAssigningRequest.ReformerCitizen.Mobile },
+                                            notification_type = "SMS",
+                                        };
 
-                                    var lstNotification = new List<SysNotificationDto>()
+                                        var lstNotification = new List<SysNotificationDto>()
                                     {
                                         new SysNotificationDto()
                                         {
@@ -425,77 +442,77 @@ namespace REAC.Application.AppServices.SLA
                                             Message = msg
                                         }
                                     };
-                                    await _notificationService.SendNotifications(objEmail, objSms, lstNotification);
-                                }
-                                catch (Exception e)
-                                {
-
-                                }
-
-
-
-                                await _repository.AddAsync<WorkFlowLog, Guid>(new WorkFlowLog()
-                                {
-                                    Id = Guid.NewGuid(),
-                                    CreatedOn = DateTime.Now,
-                                    RequestId = litigationRequestReformerAssigningRequest.LitigationRequestId,
-                                    ShowForApplicant = false,
-                                    LogMessage = "تم إلغاء طلب مهمة الصلح للمصلح " + litigationRequestReformerAssigningRequest.ReformerCitizen.FullName
-                                });
-
-                                var department = (await _repository.GetQueryable<SysDepartment, Guid>())?
-                                .Where(x => x.DepartmentType == DepartmentType.Reconciliation)
-                                .SingleOrDefault();
-                                if (department != null)
-                                {
-                                    switch (department.DistributionMode)
+                                        await _notificationService.SendNotifications(objEmail, objSms, lstNotification);
+                                    }
+                                    catch (Exception e)
                                     {
-                                        case DepartmentDistributionMode.AutoDistribution:
-                                            var reformer = (await _repository.GetQueryable<Citizen, Guid>())?
-                                                .Include(x => x.ReformerLitigationRequests)
-                                                        .Where(x => x.IsReformer == true & x.ReformerStatusId == ReformerStatus.Certified & x.Id != litigationRequestReformerAssigningRequest.CitizenId)
-                                                        .OrderBy(x => x.ReformerLitigationRequests
-                                                        .Count(t => t.IsFinished == false))
-                                                        .FirstOrDefault();
-                                            if (reformer != null)
-                                            {
 
-                                                LitigationRequestReformerAssigningRequest newLitigationRequestReformerAssigningRequest = new LitigationRequestReformerAssigningRequest();
-                                                newLitigationRequestReformerAssigningRequest.CitizenId = reformer.Id;
-                                                newLitigationRequestReformerAssigningRequest.RequestOn = DateTime.Now;
-                                                newLitigationRequestReformerAssigningRequest.LitigationRequestId = litigationRequestReformerAssigningRequest.LitigationRequestId;
-                                                newLitigationRequestReformerAssigningRequest.Response = LitigationRequestReformerAssigningRequestStatus.None;
-                                                await _repository.AddAsync<LitigationRequestReformerAssigningRequest, Guid>(newLitigationRequestReformerAssigningRequest);
+                                    }
 
-                                                litigationRequestReformerAssigningRequest.LitigationRequest.IsLitigationRequestReformerAssigningRequestResponsePeriodSent = false;
 
-                                                // Send Notification for new reformer
-                                                // new reformer = reformer.Id
-                                                // Mail - Sms - Application Notification
-                                                // يوجد طلب مهمة صلح جديد على الدعوى رقم  ..........
-                                                try
+
+                                    await _repository.AddAsync<WorkFlowLog, Guid>(new WorkFlowLog()
+                                    {
+                                        Id = Guid.NewGuid(),
+                                        CreatedOn = DateTime.Now,
+                                        RequestId = litigationRequestReformerAssigningRequest.LitigationRequestId,
+                                        ShowForApplicant = false,
+                                        LogMessage = "تم إلغاء طلب مهمة الصلح للمصلح " + litigationRequestReformerAssigningRequest.ReformerCitizen.FullName
+                                    });
+
+                                    var department = (await _repository.GetQueryable<SysDepartment, Guid>())?
+                                    .Where(x => x.DepartmentType == DepartmentType.Reconciliation)
+                                    .SingleOrDefault();
+                                    if (department != null)
+                                    {
+                                        switch (department.DistributionMode)
+                                        {
+                                            case DepartmentDistributionMode.AutoDistribution:
+                                                var reformer = (await _repository.GetQueryable<Citizen, Guid>())?
+                                                    .Include(x => x.ReformerLitigationRequests)
+                                                            .Where(x => x.IsReformer == true & x.ReformerStatusId == ReformerStatus.Certified & x.Id != litigationRequestReformerAssigningRequest.CitizenId)
+                                                            .OrderBy(x => x.ReformerLitigationRequests
+                                                            .Count(t => t.IsFinished == false))
+                                                            .FirstOrDefault();
+                                                if (reformer != null)
                                                 {
 
-                                                    var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_ReconciliationTask_New).Result.Data?.Value;
-                                                    msg = msg?.Replace("{LitigationCode}", litigationRequestReformerAssigningRequest.LitigationRequest?.RequestCode);
-                                                    var objEmail = new SendEmailDto()
+                                                    LitigationRequestReformerAssigningRequest newLitigationRequestReformerAssigningRequest = new LitigationRequestReformerAssigningRequest();
+                                                    newLitigationRequestReformerAssigningRequest.CitizenId = reformer.Id;
+                                                    newLitigationRequestReformerAssigningRequest.RequestOn = DateTime.Now;
+                                                    newLitigationRequestReformerAssigningRequest.LitigationRequestId = litigationRequestReformerAssigningRequest.LitigationRequestId;
+                                                    newLitigationRequestReformerAssigningRequest.Response = LitigationRequestReformerAssigningRequestStatus.None;
+                                                    await _repository.AddAsync<LitigationRequestReformerAssigningRequest, Guid>(newLitigationRequestReformerAssigningRequest);
+
+                                                    litigationRequestReformerAssigningRequest.LitigationRequest.IsLitigationRequestReformerAssigningRequestResponsePeriodSent = false;
+
+                                                    // Send Notification for new reformer
+                                                    // new reformer = reformer.Id
+                                                    // Mail - Sms - Application Notification
+                                                    // يوجد طلب مهمة صلح جديد على الدعوى رقم  ..........
+                                                    try
                                                     {
-                                                        Body = msg,
-                                                        Subject = "طلب مهمة صلح جديد على الدعوى",
-                                                        To = new List<string>()
+
+                                                        var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_ReconciliationTask_New).Result.Data?.Value;
+                                                        msg = msg?.Replace("{LitigationCode}", litigationRequestReformerAssigningRequest.LitigationRequest?.RequestCode);
+                                                        var objEmail = new SendEmailDto()
+                                                        {
+                                                            Body = msg,
+                                                            Subject = "طلب مهمة صلح جديد على الدعوى",
+                                                            To = new List<string>()
                                                         {
                                                             reformer.Email
                                                         }
-                                                    };
+                                                        };
 
-                                                    var objSms = new Contracts.Dtos.Integration.GEE.SMSRequestDto()
-                                                    {
-                                                        message_text = msg,
-                                                        recipients = new List<string>() { reformer.Mobile },
-                                                        notification_type = "SMS",
-                                                    };
+                                                        var objSms = new Contracts.Dtos.Integration.GEE.SMSRequestDto()
+                                                        {
+                                                            message_text = msg,
+                                                            recipients = new List<string>() { reformer.Mobile },
+                                                            notification_type = "SMS",
+                                                        };
 
-                                                    var lstNotification = new List<Contracts.Dtos.Notification.SysNotificationDto>()
+                                                        var lstNotification = new List<Contracts.Dtos.Notification.SysNotificationDto>()
                                                     {
                                                         new Contracts.Dtos.Notification.SysNotificationDto()
                                                         {
@@ -509,50 +526,51 @@ namespace REAC.Application.AppServices.SLA
                                                             Message = msg
                                                         }
                                                     };
-                                                    await _notificationService.SendNotifications(objEmail, objSms, lstNotification);
-                                                }
-                                                catch (Exception e)
-                                                {
-
-                                                }
-
-                                                // Send Notification for Reconciliation admin
-                                                // Mail - Sms - Application Notification
-                                                // يرجى العلم أن الرد على مهمة الصلح للمصلح على الدعوى رقم ..... قد تجاوز مهلته القصوى وتم إلغاؤها وارسال مهمة جديدة للمصلح reformer.FullName
-                                                try
-                                                {
-                                                    var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_ReconciliationTask_ReAssigned).Result.Data?.Value;
-                                                    msg = msg?.Replace("{LitigationCode}", litigationRequestReformerAssigningRequest.LitigationRequest?.RequestCode);
-                                                    msg = msg?.Replace("{PreviousReformer}", litigationRequestReformerAssigningRequest.ReformerCitizen.FullName);
-                                                    msg = msg?.Replace("{CurrentReformer}", reformer.FullName);
-                                                    var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
-                                                    string body;
-                                                    using (StreamReader streamReader = File.OpenText(pathToFile))
-                                                    {
-                                                        body = await streamReader.ReadToEndAsync();
-                                                        body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_ReconciliationTask_ReAssigned).Result.Data?.Value);
-                                                        body = body?.Replace("{LitigationCode}", litigationRequestReformerAssigningRequest.LitigationRequest?.RequestCode);
-                                                        body = body?.Replace("{PreviousReformer}", litigationRequestReformerAssigningRequest.ReformerCitizen.FullName);
-                                                        body = body?.Replace("{CurrentReformer}", reformer.FullName);
+                                                        await _notificationService.SendNotifications(objEmail, objSms, lstNotification);
                                                     }
-                                                    await SendNotificationMS(body, msg, litigationRequestReformerAssigningRequest.LitigationRequest, "الرد على مهمة الصلح للمصلح", NotificationActorType.Employee, RequestType.LitigationRequest,
-                                                       false, false, true);
-                                                }
-                                                catch (Exception e)
-                                                {
+                                                    catch (Exception e)
+                                                    {
 
-                                                }
+                                                    }
 
-                                                await _repository.AddAsync<WorkFlowLog, Guid>(new WorkFlowLog()
-                                                {
-                                                    Id = Guid.NewGuid(),
-                                                    CreatedOn = DateTime.Now,
-                                                    RequestId = litigationRequestReformerAssigningRequest.LitigationRequestId,
-                                                    ShowForApplicant = false,
-                                                    LogMessage = "تم إرسال طلب مهمة الصلح للمصلح " + reformer.FullName
-                                                });
-                                            }
-                                            break;
+                                                    // Send Notification for Reconciliation admin
+                                                    // Mail - Sms - Application Notification
+                                                    // يرجى العلم أن الرد على مهمة الصلح للمصلح على الدعوى رقم ..... قد تجاوز مهلته القصوى وتم إلغاؤها وارسال مهمة جديدة للمصلح reformer.FullName
+                                                    try
+                                                    {
+                                                        var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_ReconciliationTask_ReAssigned).Result.Data?.Value;
+                                                        msg = msg?.Replace("{LitigationCode}", litigationRequestReformerAssigningRequest.LitigationRequest?.RequestCode);
+                                                        msg = msg?.Replace("{PreviousReformer}", litigationRequestReformerAssigningRequest.ReformerCitizen.FullName);
+                                                        msg = msg?.Replace("{CurrentReformer}", reformer.FullName);
+                                                        var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                                        string body;
+                                                        using (StreamReader streamReader = File.OpenText(pathToFile))
+                                                        {
+                                                            body = await streamReader.ReadToEndAsync();
+                                                            body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_ReconciliationTask_ReAssigned).Result.Data?.Value);
+                                                            body = body?.Replace("{LitigationCode}", litigationRequestReformerAssigningRequest.LitigationRequest?.RequestCode);
+                                                            body = body?.Replace("{PreviousReformer}", litigationRequestReformerAssigningRequest.ReformerCitizen.FullName);
+                                                            body = body?.Replace("{CurrentReformer}", reformer.FullName);
+                                                        }
+                                                        await SendNotificationMS(body, msg, litigationRequestReformerAssigningRequest.LitigationRequest, "الرد على مهمة الصلح للمصلح", NotificationActorType.Employee, RequestType.LitigationRequest,
+                                                           false, false, true);
+                                                    }
+                                                    catch (Exception e)
+                                                    {
+
+                                                    }
+
+                                                    await _repository.AddAsync<WorkFlowLog, Guid>(new WorkFlowLog()
+                                                    {
+                                                        Id = Guid.NewGuid(),
+                                                        CreatedOn = DateTime.Now,
+                                                        RequestId = litigationRequestReformerAssigningRequest.LitigationRequestId,
+                                                        ShowForApplicant = false,
+                                                        LogMessage = "تم إرسال طلب مهمة الصلح للمصلح " + reformer.FullName
+                                                    });
+                                                }
+                                                break;
+                                        }
                                     }
                                 }
                             }

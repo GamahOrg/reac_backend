@@ -22,6 +22,7 @@ public partial class LitigationRequestContract : BaseEntity<Guid>
     public Guid? FoundingLetterFileId { get; set; }
 
     public Guid? InternalRegulationsFileId { get; set; }
+    public Guid? IncorporationContractFileId { get; set; }
 
     public Guid? FirstPartyCitizenId { get; set; }
 
@@ -57,6 +58,7 @@ public partial class LitigationRequestContract : BaseEntity<Guid>
     public virtual SysFileManager? FoundingLetterFile { get; set; }
 
     public virtual SysFileManager? InternalRegulationsFile { get; set; }
+    public virtual SysFileManager? IncorporationContractFile { get; set; }
 
     public virtual SysLitigationRequestContractType LitigationRequestContractType { get; set; } = null!;
 
