@@ -12,6 +12,7 @@ namespace REAC.Domain.Shared.Constants
     {
         "SLA_ReformerReminderForReconciliationFirstPeriod",
         "SLA.ReformerReminderForReconciliationSecondPeriod" ,
+        "SLA.LitigationRequestFeesNotPaidReminderFirstPeriod" ,
         "Reconciliation.Period" ,
         "SLA.LitigationRequestReconciliationReportResponsePeriod" ,
         "SLA.LitigationRequestReconciliationReportDecisionPeriod" ,

@@ -938,6 +938,7 @@ public partial class REACDBContext : DbContext
             entity.Property(e => e.SubNumber).HasMaxLength(20);
             entity.Property(e => e.UnitNumber).HasMaxLength(10);
             entity.Property(e => e.WorkTelephone).HasMaxLength(20);
+            entity.Property(e => e.AdditionalNumber).HasMaxLength(20);
 
             entity.HasOne(d => d.City).WithMany(p => p.Citizens)
                 .HasForeignKey(d => d.CityId)
@@ -1253,6 +1254,10 @@ public partial class REACDBContext : DbContext
                 .HasForeignKey(d => d.InternalRegulationsFileId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FKInternalRegulationsFile807894");
+            entity.HasOne(d => d.IncorporationContractFile).WithMany(p => p.IncorporationContractFiles)
+                 .HasForeignKey(d => d.IncorporationContractFileId)
+                 .OnDelete(DeleteBehavior.ClientSetNull)
+                 .HasConstraintName("FKIncorporationContractFileId807894");
 
 
 

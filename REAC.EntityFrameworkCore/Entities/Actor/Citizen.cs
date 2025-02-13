@@ -35,6 +35,7 @@ public partial class Citizen : BaseEntity<Guid>
     public string? Street { get; set; } = null!;
     public string? PostalCode { get; set; }
     public string? SubNumber { get; set; }
+    public string? AdditionalNumber { get; set; }
     public string? BuildingNumber { get; set; } = null!;
     public string? UnitNumber { get; set; } = null!;
     public bool? IsLawyer { get; set; } = false;

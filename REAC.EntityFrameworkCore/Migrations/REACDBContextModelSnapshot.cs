@@ -27,6 +27,10 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("AdditionalNumber")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
                     b.Property<int?>("ArbitratorStatusId")
                         .HasColumnType("int");
 
@@ -1174,7 +1178,13 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Property<bool?>("IsArbitratorNominationListResponsePeriodSent")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("IsArbitratorReminderForCancelArbitrationSent")
+                        .HasColumnType("bit");
+
                     b.Property<bool?>("IsArbitratorsChairmanDecisionRequired")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsAssignNewReformerForCancelReconciliationSent")
                         .HasColumnType("bit");
 
                     b.Property<bool>("IsCollectionOfArbitrationFeesRequestIsBeingSent")
@@ -1201,6 +1211,9 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Property<bool>("IsLitigationFeesHaveBeenCollected")
                         .HasColumnType("bit");
 
+                    b.Property<bool?>("IsLitigationRequestFeesNotPaidFirstReminderSent")
+                        .HasColumnType("bit");
+
                     b.Property<bool?>("IsLitigationRequestReconciliationReportResponsePeriodSent")
                         .HasColumnType("bit");
 
@@ -1219,13 +1232,28 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Property<bool>("IsReconciliationFeesHaveBeenCollected")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("IsReformerFinalReminderForReconciliationSent")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsReformerReminderForCancelReconciliationSent")
+                        .HasColumnType("bit");
+
                     b.Property<bool?>("IsReformerReminderForReconciliationFirstPeriodSent")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsReformerReminderForReconciliationSecondPeriodSent")
                         .HasColumnType("bit");
 
                     b.Property<bool?>("IsReminderForAgreementRequestForRequestSent")
                         .HasColumnType("bit");
 
                     b.Property<bool?>("IsReminderForApplicantSent")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsReminderForCancelLitigationForAgreementSent")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsReminderForCancelLitigationForNotesSent")
                         .HasColumnType("bit");
 
                     b.Property<bool?>("IsReminderForReviewerManagerSent")
@@ -1384,6 +1412,9 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Property<Guid?>("FoundingLetterFileId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("IncorporationContractFileId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<Guid?>("InternalRegulationsFileId")
                         .HasColumnType("uniqueidentifier");
 
@@ -1434,6 +1465,8 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.HasIndex("FirstPartyFacilityId");
 
                     b.HasIndex("FoundingLetterFileId");
+
+                    b.HasIndex("IncorporationContractFileId");
 
                     b.HasIndex("InternalRegulationsFileId");
 
@@ -4823,6 +4856,11 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasForeignKey("FoundingLetterFileId")
                         .HasConstraintName("FKFoundingLetterFile807894");
 
+                    b.HasOne("REAC.EntityFrameworkCore.Entities.System.SysFileManager", "IncorporationContractFile")
+                        .WithMany("IncorporationContractFiles")
+                        .HasForeignKey("IncorporationContractFileId")
+                        .HasConstraintName("FKIncorporationContractFileId807894");
+
                     b.HasOne("REAC.EntityFrameworkCore.Entities.System.SysFileManager", "InternalRegulationsFile")
                         .WithMany("InternalRegulationsContracts")
                         .HasForeignKey("InternalRegulationsFileId")
@@ -4858,6 +4896,8 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Navigation("FirstPartyFacility");
 
                     b.Navigation("FoundingLetterFile");
+
+                    b.Navigation("IncorporationContractFile");
 
                     b.Navigation("InternalRegulationsFile");
 
@@ -7067,6 +7107,8 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Navigation("ExemptionReductionCategoryFiles");
 
                     b.Navigation("FoundingLetterContracts");
+
+                    b.Navigation("IncorporationContractFiles");
 
                     b.Navigation("IndentityCitizens");
 

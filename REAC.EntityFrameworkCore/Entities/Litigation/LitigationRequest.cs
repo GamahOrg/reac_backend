@@ -66,6 +66,14 @@ public partial class LitigationRequest : BaseEntity<Guid>
 
     public bool? IsPlaintiffArbitratorNominationListDone { get; set; }
     public bool? IsDefendantArbitratorNominationListDone { get; set; }
+    public bool IsReformerReminderForReconciliationSecondPeriodSent { get; set; }
+    public bool IsReformerFinalReminderForReconciliationSent { get; set; }
+    public bool IsReformerReminderForCancelReconciliationSent { get; set; }
+    public bool IsAssignNewReformerForCancelReconciliationSent { get; set; }
+    public bool IsArbitratorReminderForCancelArbitrationSent { get; set; }
+    public bool IsReminderForCancelLitigationForNotesSent { get; set; }
+    public bool IsReminderForCancelLitigationForAgreementSent { get; set; }
+    public bool? IsLitigationRequestFeesNotPaidFirstReminderSent { get; set; }
 
     public bool? IsAgreementRequestRequired { get; set; }
     public DateTime? AgreementRequestRequiredOn { get; set; }

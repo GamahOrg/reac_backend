@@ -48,7 +48,8 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                         SubNumber = "S123456",
                         BuildingNumber = "185",
                         NationalityId = context.SysNationalities.ToList().LastOrDefault().Id,
-                        UnitNumber = "U-125"
+                        UnitNumber = "U-125",
+                        NationalAddress="مكه المكرمه -ش 22 - 1200"
                     },
                     new Citizen
                     {

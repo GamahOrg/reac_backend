@@ -20,6 +20,19 @@ namespace REAC.Application.AppServices.System
         {
             _contractservice = contractservice;
         }
+
+        public async Task<BaseResponse> GetAll()
+        {
+            var litigationRequestContractTypes = (await _repository.GetQueryable<SysLitigationRequestContractType, LitigationRequestContractType>())
+                 .ToList();
+                
+            if(litigationRequestContractTypes.Any()) 
+                return new DataResponse<List<SysLitigationRequestContractType>>() { IsDone = true , Data = litigationRequestContractTypes };
+
+            return new DataResponse<List<SysLitigationRequestContractType>>() { IsDone = false, Data = null };
+
+        }
+
         public async Task<BaseResponse> GetListAsync(CancellationToken cancellationToken)
         {
             return await base.GetListAsync<SysLitigationRequestContractTypeGetDto>(cancellationToken);
