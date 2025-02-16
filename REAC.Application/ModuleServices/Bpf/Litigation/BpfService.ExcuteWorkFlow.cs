@@ -67,7 +67,7 @@ namespace Bpf.Application.ModuleServices
                     litigationRequest.WorkFlowProcessingLogs = (await _repository.GetQueryable<WorkFlowProcessingLog, Guid>())
                     .Include(x => x.Employee).ToList();
 
-                    await SendNotificationMSPlaintiff(body, msg, litigationRequest, RequestType.LitigationRequest, "Litigation Request Sent");
+                     SendNotificationMSPlaintiff(body, msg, litigationRequest, RequestType.LitigationRequest, "Litigation Request Sent");
                 }
                 catch (Exception e)
                 {
