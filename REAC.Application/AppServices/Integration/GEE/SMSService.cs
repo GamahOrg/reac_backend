@@ -12,6 +12,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using REAC.Domain.Shared.Helpers;
+using Core.Log.Application.Contracts.Dto;
+using Core.Log.Application.Contracts.IAppServices;
 
 namespace REAC.Application.AppServices.Integration.GEE
 {
@@ -19,11 +21,13 @@ namespace REAC.Application.AppServices.Integration.GEE
     {
         private readonly ISysSettingService _sysSetting;
         private readonly IGEELoginService _gEELoginService;
+        private readonly ILoggerManager _loggerManager;
 
-        public SMSService(ISysSettingService sysSetting, IGEELoginService gEELoginService)
+        public SMSService(ISysSettingService sysSetting, IGEELoginService gEELoginService, ILoggerManager loggerManager)
         {
             _sysSetting = sysSetting;
             _gEELoginService = gEELoginService;
+            _loggerManager = loggerManager;
         }
 
 
@@ -64,19 +68,37 @@ namespace REAC.Application.AppServices.Integration.GEE
                 else if (response.StatusCode == HttpStatusCode.Unauthorized)
                 {
                     responseDto.SMSUnauthorized = await response.Content.ReadFromJsonAsync<GeneralGEEErrorDto>();
+
+                    _loggerManager.Log(Core.Log.Domain.Shared.Enums.LoggerType.Database
+                       , new LogDto()
+                       {
+                           Type = Core.Log.Domain.Shared.Enums.LogType.Trace,
+                           Message = $"Sms Unauthorized ===> {responseDto.SMSUnauthorized}"
+                       });
                     return new DataResponse<SMSResponseDto> { IsDone = false, Data = responseDto };
                 }
                 else
                 {
                     responseDto.SMSError = await response.Content.ReadFromJsonAsync<SMSErrorDto>();
-                    
 
+                    _loggerManager.Log(Core.Log.Domain.Shared.Enums.LoggerType.Database
+                       , new LogDto()
+                       {
+                           Type = Core.Log.Domain.Shared.Enums.LogType.Trace,
+                           Message = $"Sms Unauthorized ===> {responseDto.SMSError}"
+                       });
 
                     return new DataResponse<SMSResponseDto> { IsDone = false, Data = responseDto };
                 }
             }
             catch (Exception e)
             {
+                _loggerManager.Log(Core.Log.Domain.Shared.Enums.LoggerType.Database
+                       , new LogDto()
+                       {
+                           Type = Core.Log.Domain.Shared.Enums.LogType.Exception,
+                           Message = $"Sms Unauthorized ===> {e.ToString()}"
+                       });
                 return new DataResponse<SMSResponseDto> { IsDone = false, Message = e.Message + e.InnerException?.Message };
             }
         }
