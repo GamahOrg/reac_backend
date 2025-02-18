@@ -33,7 +33,7 @@ namespace Core.Log.Application.Manager
                 switch (type)
                 {
                     case LoggerType.Console:
-                        _mailLogger.Log(logDto);
+                        _dbLogger.Log(logDto);
                         break;
                     case LoggerType.Database:
                         _dbLogger.Log(logDto);
