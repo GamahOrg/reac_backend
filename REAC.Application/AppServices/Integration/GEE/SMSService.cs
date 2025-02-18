@@ -3,15 +3,10 @@ using REAC.Application.Contracts.Dtos.Integration.GEE;
 using REAC.Application.Contracts.IAppServices.Integration;
 using REAC.Application.Contracts.IAppServices.System;
 using REAC.Domain.Shared.Constants;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http.Json;
 using System.Net;
 using System.Text;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
-using REAC.Domain.Shared.Helpers;
 using Core.Log.Application.Contracts.Dto;
 using Core.Log.Application.Contracts.IAppServices;
 
@@ -39,6 +34,12 @@ namespace REAC.Application.AppServices.Integration.GEE
                     return new DataResponse<SMSResponseDto> { IsDone = false, Message = "" };
 
                 var token = (await _gEELoginService.Login()).Data?.Access_token;
+                _loggerManager.Log(Core.Log.Domain.Shared.Enums.LoggerType.Database
+                      , new LogDto()
+                      {
+                          Type = Core.Log.Domain.Shared.Enums.LogType.Trace,
+                          Message = $"SMS Service Token ===> {token}"
+                      });
                 if (token is null)
                     return new DataResponse<SMSResponseDto> { IsDone = false, Message = "" };
 
@@ -73,7 +74,8 @@ namespace REAC.Application.AppServices.Integration.GEE
                        , new LogDto()
                        {
                            Type = Core.Log.Domain.Shared.Enums.LogType.Trace,
-                           Message = $"Sms Unauthorized ===> {responseDto.SMSUnauthorized}"
+                           Message = $"SMS Service Request ===> {JsonConvert.SerializeObject(request)}" +
+                           $"; SMS Service Response ===> {JsonConvert.SerializeObject(response)}"
                        });
                     return new DataResponse<SMSResponseDto> { IsDone = false, Data = responseDto };
                 }
@@ -85,7 +87,8 @@ namespace REAC.Application.AppServices.Integration.GEE
                        , new LogDto()
                        {
                            Type = Core.Log.Domain.Shared.Enums.LogType.Trace,
-                           Message = $"Sms Unauthorized ===> {responseDto.SMSError}"
+                           Message = $"SMS Service Request ===> {JsonConvert.SerializeObject(request)}" +
+                           $"; SMS Service Response ===> {JsonConvert.SerializeObject(response)}"
                        });
 
                     return new DataResponse<SMSResponseDto> { IsDone = false, Data = responseDto };
@@ -97,7 +100,7 @@ namespace REAC.Application.AppServices.Integration.GEE
                        , new LogDto()
                        {
                            Type = Core.Log.Domain.Shared.Enums.LogType.Exception,
-                           Message = $"Sms Unauthorized ===> {e.ToString()}"
+                           Message = $"SMS Service ===> {e.ToString()}"
                        });
                 return new DataResponse<SMSResponseDto> { IsDone = false, Message = e.Message + e.InnerException?.Message };
             }
