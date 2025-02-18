@@ -209,7 +209,7 @@ namespace REAC.Application.AppServices.Notification
                     }
 
                     sms.recipients = recipiants;
-                    var smsResultCitizen = await  _smsService.SendSMS(sms);
+                    var smsResultCitizen = await _smsService.SendSMS(sms);
                 }
 
                 if (notifications.Any())

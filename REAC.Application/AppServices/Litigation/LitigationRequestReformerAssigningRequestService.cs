@@ -157,7 +157,7 @@ namespace REAC.Application.AppServices.Litigation
                                 Message = msg
                             });
 
-                            await _notificationService.SendNotifications(
+                             _notificationService.SendNotifications(
                                  new SendEmailDto()
                                  {
                                      To = new List<string>() { citizenInfo.Email,litigationRequest.Contract.FirstPartyCitizen is not null ? litigationRequest.Contract.FirstPartyCitizen.Email : litigationRequest.Contract.FirstPartyFacility.Citizen.Email,
@@ -303,7 +303,7 @@ namespace REAC.Application.AppServices.Litigation
                                                 Message = reAssignMsg
                                             });
 
-                                            var notificationResultReformerAssign = await _notificationService.SendNotifications(
+                                            var notificationResultReformerAssign =  _notificationService.SendNotifications(
                                                 new SendEmailDto()
                                                 {
                                                     To = new List<string>() { reformer.Email, deptAdminInfoReconciliation.Data.Email },
@@ -320,7 +320,7 @@ namespace REAC.Application.AppServices.Litigation
                                                 assignApplicationNotification
                                                 );
 
-                                            await _notificationService.SendNotifications(
+                                             _notificationService.SendNotifications(
                                                 new SendEmailDto()
                                                 {
                                                     To = new List<string>() { citizenInfo.Email, deptAdminInfoReconciliation.Data.Email },
@@ -386,7 +386,7 @@ namespace REAC.Application.AppServices.Litigation
                                 Message = msg
                             });
 
-                            await _notificationService.SendNotifications(
+                             _notificationService.SendNotifications(
                                 new SendEmailDto()
                                 {
                                     To = new List<string>() { citizenInfo.Email, deptAdminInfoReconciliation.Data.Email },
@@ -446,7 +446,7 @@ namespace REAC.Application.AppServices.Litigation
                          .Include(x => x.Contract.SecondPartyCitizen)
                          .Include(x => x.Contract.LitigationRequestContractType)
                          .Where(x => x.LitigationRequestReformerAssigningRequests
-                         .Where(t => t.CitizenId == referenceId).Count() > 0).OrderByDescending(x => x.CreatedOn).ToList();
+                         .Where(t => t.CitizenId == referenceId).Count() > 0).OrderByDescending(x => x.CreatedOn).AsNoTracking().ToList();
 
             List<CustomLitigationRequestMircoDto> litigationRequestMircoDtos = new List<CustomLitigationRequestMircoDto>();
             if (litigationRequests != null)
@@ -504,7 +504,6 @@ namespace REAC.Application.AppServices.Litigation
                 IsDone = true
             };
 
-            throw new NotImplementedException();
         }
         public async Task<BaseResponse> GetLitigationRequestReformerAssigningRequestsAll(int pageIndex, int pageSize, CancellationToken cancellationToken)
         {
