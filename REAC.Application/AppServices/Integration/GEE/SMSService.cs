@@ -57,12 +57,26 @@ namespace REAC.Application.AppServices.Integration.GEE
                 var body = JsonConvert.SerializeObject(sMSRequest);
                 var content = new StringContent(body, Encoding.UTF8, "application/json");
                 request.Content = content;
+
+                _loggerManager.Log(Core.Log.Domain.Shared.Enums.LoggerType.Database
+                       , new LogDto()
+                       {
+                           Type = Core.Log.Domain.Shared.Enums.LogType.Trace,
+                           Message = $"SMS Service Send Request ===> {JsonConvert.SerializeObject(request)}"                          
+                       });
                 var response = await client.SendAsync(request);
 
                 var x = await response.Content.ReadAsStringAsync();
                 SMSResponseDto responseDto = new SMSResponseDto();
                 if (response.IsSuccessStatusCode)
                 {
+                    _loggerManager.Log(Core.Log.Domain.Shared.Enums.LoggerType.Database
+                       , new LogDto()
+                       {
+                           Type = Core.Log.Domain.Shared.Enums.LogType.Trace,
+                           Message = $"SMS Service Request ===> {JsonConvert.SerializeObject(request)}" +  "\r\n" +
+                           $"; SMS Service Response ===> {JsonConvert.SerializeObject(response)}"
+                       });
                     responseDto.Data = await response.Content.ReadFromJsonAsync<SMSDataDto>();
                     return new DataResponse<SMSResponseDto> { IsDone = true, Data = responseDto };
                 }
@@ -74,7 +88,7 @@ namespace REAC.Application.AppServices.Integration.GEE
                        , new LogDto()
                        {
                            Type = Core.Log.Domain.Shared.Enums.LogType.Trace,
-                           Message = $"SMS Service Request ===> {JsonConvert.SerializeObject(request)}" +
+                           Message = $"SMS Service Request ===> {JsonConvert.SerializeObject(request)}"+  "\r\n" +
                            $"; SMS Service Response ===> {JsonConvert.SerializeObject(response)}"
                        });
                     return new DataResponse<SMSResponseDto> { IsDone = false, Data = responseDto };
@@ -87,7 +101,7 @@ namespace REAC.Application.AppServices.Integration.GEE
                        , new LogDto()
                        {
                            Type = Core.Log.Domain.Shared.Enums.LogType.Trace,
-                           Message = $"SMS Service Request ===> {JsonConvert.SerializeObject(request)}" +
+                           Message = $"SMS Service Request ===> {JsonConvert.SerializeObject(request)}" + "\r\n" +
                            $"; SMS Service Response ===> {JsonConvert.SerializeObject(response)}"
                        });
 
