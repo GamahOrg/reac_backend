@@ -219,12 +219,12 @@ namespace REAC.Application.AppServices.Notification
                         switch (notification.ActorTypeId)
                         {
                             case Domain.Shared.Enum.NotificationActorType.Employee:
-                                var notificationResultEmployee = _notificationHub.Clients.All.NotifyEmployee(notification);
+                                //var notificationResultEmployee = _notificationHub.Clients.All.NotifyEmployee(notification);
                                 break;
 
 
                             default:
-                                var notificationResultCitizen = _notificationHub.Clients.All.NotifyCitizen(notification);
+                                //var notificationResultCitizen = _notificationHub.Clients.All.NotifyCitizen(notification);
 
                                 break;
                         }
