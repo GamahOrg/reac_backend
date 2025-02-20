@@ -877,7 +877,7 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                         {
                             Id = Guid.NewGuid(),
                             Key = "EmailConfiguration_Host",
-                            Value = "smtp.office365.com",
+                            Value = "smtp.gmail.com",
 
                         },
                           new SysSetting
@@ -891,7 +891,7 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                         {
                             Id = Guid.NewGuid(),
                             Key = "EmailConfiguration_FromEmail",
-                            Value = "asgatech.test1@outlook.com",
+                            Value = "asgatech602@gmail.com",
 
                         },
                         new SysSetting
@@ -905,7 +905,7 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                         {
                             Id = Guid.NewGuid(),
                             Key = "EmailConfiguration_Passowrd",
-                            Value = "asgatechmailtest2024",
+                            Value = "rftl tfex qlrf zsay",
 
                         },
                             new SysSetting
@@ -915,13 +915,13 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                             Value = "false",
 
                         },
-                            new SysSetting
-                        {
-                            Id = Guid.NewGuid(),
-                            Key = "EmailConfirmation_URL",
-                            Value = "https://wafiservices.rega.gov.sa/wafi/confirmemail?token={0}&email={1}",
+                        //    new SysSetting
+                        //{
+                        //    Id = Guid.NewGuid(),
+                        //    Key = "EmailConfirmation_URL",
+                        //    Value = "https://wafiservices.rega.gov.sa/wafi/confirmemail?token={0}&email={1}",
 
-                        },
+                        //},
                     #endregion
 
                     #region SLA
