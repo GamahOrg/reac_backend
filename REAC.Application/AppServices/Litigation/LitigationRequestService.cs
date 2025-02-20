@@ -453,6 +453,16 @@ namespace REAC.Application.AppServices.Litigation
 
             litigationRequests = litigations.Where(x => x.Contract.FirstPartyCitizenId == citizenId
                                                | x.Contract.SecondPartyCitizenId == citizenId
+                                               & x.InternalStatusId != RequestStatus.SaveAsDraft
+                                               & x.InternalStatusId != RequestStatus.New
+                                               & x.InternalStatusId != RequestStatus.SentBackForEdit
+                                               & x.InternalStatusId != RequestStatus.Edited
+                                               & x.InternalStatusId != RequestStatus.Rejected
+                                               & x.InternalStatusId != RequestStatus.CollectionOfLitigationFeesRequestIsBeingSent
+                                               & x.InternalStatusId != RequestStatus.LitigationFeesHaveBeenCollected
+                                               & x.InternalStatusId != RequestStatus.LitigationApprovedCollectionOfReconciliationFeesRequestIsBeingSend
+                                               & x.InternalStatusId != RequestStatus.CollectionOfReconciliationFeesRequestIsBeingSent
+                                               & x.InternalStatusId != RequestStatus.ReconciliationFeesHaveBeenCollected
                                                | x.ApplicantCitizenId == citizenId)
                                                .OrderByDescending(x => x.CreatedOn)
                                                .AsSplitQuery()
