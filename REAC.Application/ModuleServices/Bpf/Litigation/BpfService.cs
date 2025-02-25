@@ -66,7 +66,7 @@ namespace Bpf.Application.ModuleServices
                     .Include(x => x.WorkFlowSteps.Where(t => t.Order == order))
                     .ThenInclude(x => x.Department)
                     .ThenInclude(x => x.SysEmployees
-                    .OrderBy(x => x.WorkFlowProcessingLogs.Count(x => x.IsFinished)).ThenBy(x => x.IsAdmin))
+                    .OrderBy(x => x.WorkFlowProcessingLogs.Count(x => !x.IsFinished)).ThenBy(x => x.IsAdmin))
                     .ThenInclude(x => x.EmployeeVacationRequests)
                     .FirstOrDefault();
 

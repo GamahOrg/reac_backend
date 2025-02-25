@@ -194,6 +194,20 @@ namespace REAC.Application.AppServices.Notification
         {
             try
             {
+                List<SysNotificationDto> newNotificationsList = new List<SysNotificationDto>();
+                foreach (var notification in notifications)
+                {
+                    var isExist = (await _repository.GetQueryable<SysNotification, Guid>())
+                        .Any(x => x.ActorId == notification.ActorId
+                        && x.RequestId == notification.RequestId
+                        && (int)x.NotificationActorTypeId == (int)notification.ActorTypeId
+                        && (int)x.RequestTypeId == (int)notification.RequestTypeId
+                        && x.Message == notification.Message);
+
+                    if (!isExist)
+                        newNotificationsList.Add(notification);
+                }
+
                 if (email is not null)
                 {
                     //var emailResultCitizen = await _emailService.SendMail(email.To, email.Subject, email.Body);
@@ -212,9 +226,9 @@ namespace REAC.Application.AppServices.Notification
                     var smsResultCitizen = await _smsService.SendSMS(sms);
                 }
 
-                if (notifications.Any())
+                if (newNotificationsList.Any())
                 {
-                    foreach (var notification in notifications)
+                    foreach (var notification in newNotificationsList)
                     {
                         switch (notification.ActorTypeId)
                         {
@@ -247,7 +261,6 @@ namespace REAC.Application.AppServices.Notification
             {
                 return new BaseResponse() { IsDone = false, Message = ex.Message };
             }
-
         }
     }
 }

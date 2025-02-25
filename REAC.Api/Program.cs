@@ -59,6 +59,7 @@ builder.Services.AddGenericRepository<REACDBContext>();
 
 builder.Services.AddHostedService<NafathBackgroundTaskService>();
 builder.Services.AddHostedService<SLABackgroundTaskService>();
+builder.Services.AddHostedService<SLANotificationBackgroundTaskService>();
 
 #endregion
 

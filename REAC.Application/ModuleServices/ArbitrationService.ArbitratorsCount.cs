@@ -320,11 +320,11 @@ namespace REAC.Application.ModuleServices
 
             var litigationRequestFees = (await _repository.GetQueryable<LitigationRequestFees, Guid>())
                .FirstOrDefault(x => x.ArbitratorsCount == arbitratorsCount &&
-               x.FromAmount == litigationRequestAmount.FromAmount && x.ToAmount == litigationRequestAmount.ToAmount);
+               x.AmountId == litigationRequestAmount.Id);
 
             if (litigationRequestFees != null)
             {
-                amount = litigationRequestFees.Fees;
+                amount = litigationRequestFees.ArbitrationFees;
                 //if (litigationRequestFees.PercentageExtraAmount.HasValue)
                 //{
                 //    decimal exteraAmount = disputeAmount - litigationRequestFees.ExtraAmount;

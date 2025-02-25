@@ -13,4 +13,5 @@ public partial class SysLitigationRequestAmount : BaseEntity<Guid>
     public decimal? ToAmount { get; set; }
 
     public virtual ICollection<LitigationRequest> LitigationRequests { get; set; } = new List<LitigationRequest>();
+    public virtual ICollection<LitigationRequestFees> LitigationRequestFees { get; set; } = new List<LitigationRequestFees>();
 }

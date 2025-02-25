@@ -44,6 +44,27 @@ namespace REAC.Application.AppServices.System
                 return new DataResponse<List<SysSetting>> { Data = null, IsDone = false };
 
         }
+        public async Task<DataResponse<List<SysSetting>>> GetArbitrationSetting()
+        {
+            var SettingObj = (_repository.GetQueryable<SysSetting, Guid>())
+                            .Result?.Where(x => SystemSettingsConfiguration.ArbitrationSystemSettings.Contains(x.Key))?.ToList();
+            if (SettingObj != null)
+                return new DataResponse<List<SysSetting>> { Data = SettingObj, IsDone = true };
+            else
+                return new DataResponse<List<SysSetting>> { Data = null, IsDone = false };
+
+        }
+
+        public async Task<DataResponse<List<SysSetting>>> GetReviewSetting()
+        {
+            var SettingObj = (_repository.GetQueryable<SysSetting, Guid>())
+                            .Result?.Where(x => SystemSettingsConfiguration.ReviewSystemSetting.Contains(x.Key))?.ToList();
+            if (SettingObj != null)
+                return new DataResponse<List<SysSetting>> { Data = SettingObj, IsDone = true };
+            else
+                return new DataResponse<List<SysSetting>> { Data = null, IsDone = false };
+
+        }
         public async Task<DataResponse<SysSetting>> UpdateSettingsAsync(Dictionary<string, string> settingsToUpdate)
         {
             foreach (var setting in settingsToUpdate)
@@ -75,6 +96,18 @@ namespace REAC.Application.AppServices.System
            
             var SettingObj = (await _repository.GetQueryable<SysSetting, Guid>())
                 .Where(x => SystemSettingsConfiguration.ReconciliationFeesSystemSettings.Contains(x.Key))?
+                .ToList();
+            if (SettingObj != null)
+                return new DataResponse<List<SysSetting>> { Data = SettingObj, IsDone = true };
+            else
+                return new DataResponse<List<SysSetting>> { Data = null, IsDone = false };
+        }
+        
+        public async Task<DataResponse<List<SysSetting>>> GetArbitrationFeesSettings()
+        {
+           
+            var SettingObj = (await _repository.GetQueryable<SysSetting, Guid>())
+                .Where(x => SystemSettingsConfiguration.ArbitrationFeesSystemSettings.Contains(x.Key))?
                 .ToList();
             if (SettingObj != null)
                 return new DataResponse<List<SysSetting>> { Data = SettingObj, IsDone = true };

@@ -8,6 +8,13 @@ namespace REAC.Application.Contracts.Dtos.Wpf.Business
 
         public Guid ReformerId { get; set; }
     }
+
+    public class AssignReviewerRequestPayload
+    {
+        public Guid RequestId { get; set; }
+
+        public Guid EmployeeId { get; set; }
+    }
     public class AssignArbitratorRequestPayload
     {
         public Guid RequestId { get; set; }

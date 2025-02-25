@@ -1,18 +1,20 @@
 ﻿using Core.GenericRepository.BaseRepository;
 using Core.Shared.Responses;
+using REAC.Application.Contracts.Dtos.Integration.GEE;
 using REAC.Application.Contracts.Dtos.Reports;
 using REAC.Application.Contracts.IAppServices.Reports;
 using REAC.EntityFrameworkCore.Entities.Reports;
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace REAC.Application.AppServices.Reports
 {
-    public class ReportService:IReportService
+    public class ReportService : IReportService
     {
         private IEntityRepository _entityRepository;
         public ReportService(IEntityRepository repository)
@@ -23,24 +25,25 @@ namespace REAC.Application.AppServices.Reports
         public async Task<BaseResponse> GetListOfLitigationReviewReport(GetListOfLitigationReviewReportFilter filter)
         {
             var inputParms = BuildMainFilterParam(filter);
-            inputParms.Add("EmployeeNames", filter.EmployeeNames?? Convert.DBNull);
+            inputParms.Add("EmployeeNames", filter.EmployeeNames ?? Convert.DBNull);
             //var out=new Dictionary(){{"id","int"}};for example
             var baseResponseStaticsResult = await GetLitigationStatisticsReviewReport(filter);
             var (resultList, outPut) = await _entityRepository.ExecuteStoredProcedureAsync<GetListOfLitigationReviewReportResult>("[dbo].[GetListOfLitigationReviewReport]", inputParms);
-            if(baseResponseStaticsResult.IsDone && resultList.IsDone)
+            if (baseResponseStaticsResult.IsDone && resultList.IsDone)
             {
-                
+
                 dynamic obj = new ExpandoObject();
-                obj.LitigationStatisticsReview = (baseResponseStaticsResult as DataResponse<List<GetLitigationStatisticsMainReportResult>>)?.Data;              
-                    obj.LitigationListReview = (resultList as DataResponse<List<GetListOfLitigationReviewReportResult>>)?.Data;
+                obj.LitigationStatisticsReview = (baseResponseStaticsResult as DataResponse<List<GetLitigationStatisticsMainReportResult>>)?.Data;
+                obj.LitigationListReview = (resultList as DataResponse<List<GetListOfLitigationReviewReportResult>>)?.Data;
                 return new DataResponse<object>()
                 {
                     IsDone = true,
                     Data = obj
                 };
             }
-            return new BaseResponse() { 
-                IsDone=false,
+            return new BaseResponse()
+            {
+                IsDone = false,
                 Message = string.Join(", ",
                             new[] { resultList?.Message, baseResponseStaticsResult?.Message }
                             .Where(msg => !string.IsNullOrEmpty(msg)))
@@ -51,7 +54,7 @@ namespace REAC.Application.AppServices.Reports
         public async Task<BaseResponse> GetLitigationStatisticsReviewReport(GetLitigationStatisticsMainReportFilter filter)
         {
             var inputParms = BuildMainFilterParam(filter);
-            var (result, outPut) = await _entityRepository.ExecuteStoredProcedureAsync<GetLitigationStatisticsMainReportResult>("[dbo].[GetLitigationStatisticsReviewReport]",inputParms);
+            var (result, outPut) = await _entityRepository.ExecuteStoredProcedureAsync<GetLitigationStatisticsMainReportResult>("[dbo].[GetLitigationStatisticsReviewReport]", inputParms);
             return result;
         }
         public async Task<BaseResponse> GetListOfLitigationReformerReport(GetListOfLitigationReformerReportFilter filter)
@@ -156,6 +159,55 @@ namespace REAC.Application.AppServices.Reports
         {
             var inputParms = BuildMainFilterParam(filter);
             var (result, outPut) = await _entityRepository.ExecuteStoredProcedureAsync<GetLitigationStatisticsMainReportResult>("[dbo].[GetLitigationStatisticsGeneralReport]", inputParms);
+            return result;
+        }
+
+        public async Task<BaseResponse> GetLitigationStatisticsForAllStages(GetLitigationStatisticsMainReportFilter filter)
+        {
+            try
+            {
+                CultureInfo provider = new CultureInfo("en-US");
+                CultureInfo.CurrentCulture = provider;
+                //var ss = DateTime.ParseExact("2025-02-25", "yyyy-MM-dd", provider);
+
+                var inputParms = new Dictionary<string, object>()
+            {
+                { "FromDate", filter.FromDate != null ? DateTime.ParseExact( filter.FromDate.ToString(),  "yyyy-MM-dd", provider ) : Convert.DBNull},
+                { "ToDate", filter.ToDate  != null ? DateTime.ParseExact( filter.ToDate.ToString(),  "yyyy-MM-dd", provider) :Convert.DBNull }
+            };
+
+                var (resultList, outPut) = await _entityRepository.ExecuteStoredProcedureAsync<GetLitigationStatisticsForAllStagesReportResult>("[dbo].[GetLitigationStatisticsForAllStages]", inputParms);
+                if (resultList.IsDone)
+                {
+
+                    dynamic obj = new ExpandoObject();
+                    obj.LitigationStatisticsForAllStages = (resultList as DataResponse<List<GetLitigationStatisticsForAllStagesReportResult>>)?.Data;
+                    return new DataResponse<object>()
+                    {
+                        IsDone = true,
+                        Data = obj
+                    };
+                }
+                return new BaseResponse()
+                {
+                    IsDone = false,
+                    Message = string.Join(", ",
+                                new[] { resultList?.Message }
+                                .Where(msg => !string.IsNullOrEmpty(msg)))
+
+                };
+
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+        public async Task<BaseResponse> GetLitigationStatisticsForAllStagesProc(GetLitigationStatisticsMainReportFilter filter)
+        {
+            var inputParms = BuildMainFilterParam(filter);
+            var (result, outPut) = await _entityRepository.ExecuteStoredProcedureAsync<GetLitigationStatisticsForAllStagesReportResult>("[dbo].[GetLitigationStatisticsForAllStages]", inputParms);
             return result;
         }
         private Dictionary<string, object> BuildMainFilterParam(GetLitigationStatisticsMainReportFilter filter)

@@ -11,7 +11,10 @@ namespace REAC.Application.Contracts.IAppServices.System
         Task<DataResponse<List<SysSetting>>> GetByIntegrationKey(string key);
         Task<DataResponse<bool>> CheckIntegrationDisabledAsync(string sysSettingKeyConstants);
         Task<DataResponse<List<SysSetting>>> GetReconciliationSetting();
+        Task<DataResponse<List<SysSetting>>> GetReviewSetting();
         Task<DataResponse<List<SysSetting>>> GetReconciliationFeesSettings();
         Task<DataResponse<SysSetting>> UpdateSettingsAsync(Dictionary<string, string> settingsToUpdate);
+        Task<DataResponse<List<SysSetting>>> GetArbitrationSetting();
+        Task<DataResponse<List<SysSetting>>> GetArbitrationFeesSettings();
     }
 }

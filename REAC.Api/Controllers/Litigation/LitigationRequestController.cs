@@ -8,6 +8,7 @@ using REAC.Application.Contracts.Dtos.Litigation.CreateUpdate.Litigation;
 using REAC.Application.Contracts.Dtos.Litigation.Get;
 using REAC.Application.Contracts.Dtos.Litigation.List;
 using REAC.Application.Contracts.Dtos.Reconciliation.Process;
+using REAC.Application.Contracts.Dtos.Wpf.Business;
 using REAC.Application.Contracts.IAppServices.Litigation;
 using REAC.Application.Contracts.IMobileAppServices.Litigation;
 using REAC.Domain.Shared.Constants;
@@ -98,6 +99,18 @@ public class LitigationRequestController : BaseController<LitigationRequest,
         return BadRequest();
     }
 
+    [HttpPost("Assign")]
+    public async Task<IActionResult> Assign(AssignReviewerRequestPayload assignRequestPayload, CancellationToken cancellationToken)
+    {
+        if (ModelState.IsValid)
+        {
+            var returnValue = await _litigationService.Assign(assignRequestPayload, cancellationToken);
+            return Ok(returnValue);
+        }
+
+        return BadRequest();
+    }
+
     [HttpGet(nameof(List))]
     public async Task<ActionResult<IEnumerable<LitigationListDto>>> List([FromQuery] int pageIndex, [FromQuery] int pageSize, [FromQuery] string? searchKey, [FromQuery] LitigationListDto model)
     {
@@ -128,6 +141,33 @@ public class LitigationRequestController : BaseController<LitigationRequest,
         if (ModelState.IsValid)
         {
             var returnValue = await _litigationService.AuditngList(pageIndex, pageSize, searchKey, model);
+            return Ok(returnValue);
+        }
+
+        return BadRequest();
+    }
+
+
+    [HttpGet(nameof(GetReviewersLookup))]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetReviewersLookup(Guid requestId)
+
+    {
+        if (ModelState.IsValid)
+        {
+            var returnValue = await _litigationService.GetReviewersLookup(requestId);
+            return Ok(returnValue);
+        }
+
+        return BadRequest();
+    }
+    [HttpGet(nameof(GetLitigationRequestForFullAllReviewer))]
+    [AllowAnonymous]
+    public async Task<ActionResult<IEnumerable<LitigationRequestMircoForRequestReviewerDto>>> GetLitigationRequestForFullAllReviewer(int pageIndex, int pageSize, CancellationToken cancellationToken)
+    {
+        if (ModelState.IsValid)
+        {
+            var returnValue = await _litigationService.GetLitigationRequestForFullAllReviewer(pageIndex, pageSize, cancellationToken);
             return Ok(returnValue);
         }
 

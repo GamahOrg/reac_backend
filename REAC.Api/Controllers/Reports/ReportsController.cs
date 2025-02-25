@@ -1,7 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using REAC.Application.Contracts.Dtos.Litigation.Rating;
 using REAC.Application.Contracts.Dtos.Reports;
 using REAC.Application.Contracts.IAppServices.Reports;
 using REAC.Domain.Shared.Constants;
@@ -10,7 +8,7 @@ namespace REAC.Api.Controllers.Reports
 {
     [Route("api/[controller]")]
     [ApiController]
-    [ApiExplorerSettings(GroupName = APISections.Reports)]
+    [ApiExplorerSettings(GroupName = APISections.Security)]
     [AllowAnonymous]
 
     public class ReportsController : ControllerBase
@@ -91,6 +89,16 @@ namespace REAC.Api.Controllers.Reports
         {
 
             var response = await _IReportService.GetListOfLitigationGeneralReport(filter);
+            return Ok(response);
+
+        }
+        
+        [HttpPost(nameof(GetLitigationStatisticsForAllStages))]
+        [AllowAnonymous]
+        public async Task<ActionResult> GetLitigationStatisticsForAllStages([FromBody] GetLitigationStatisticsMainReportFilter filter)
+        {
+
+            var response = await _IReportService.GetLitigationStatisticsForAllStages(filter);
             return Ok(response);
 
         }

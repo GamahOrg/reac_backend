@@ -212,8 +212,11 @@ namespace REAC.Application.Contracts
             CreateMap<LitigationRequestReconciliationReport, LitigationRequestReconciliationReportCreateUpdateDto>().ReverseMap();
             CreateMap<Dtos.Litigation.CreateUpdate.Litigation.LitigationRequestRequest, LitigationRequestRequestCreateUpdateDto>().ReverseMap();
             CreateMap<LitigationRequestRequestFile, LitigationRequestRequestFileCreateUpdateDto>().ReverseMap();
+            CreateMap<LitigationRequestFees, LitigationRequestAmountCreateUpdateDto>().ReverseMap();
             CreateMap<SysFileManager, SysFileManagerCreateUpdateDto>().ReverseMap();
-            CreateMap<SysLitigationRequestAmount, SysLitigationRequestAmountCreateUpdateDto>().ReverseMap();
+            CreateMap<SysLitigationRequestAmount, SysLitigationRequestAmountCreateUpdateDto>()
+             .ForMember(dest => dest.LitigationRequestFees, opt => opt.MapFrom(src => src.LitigationRequestFees)).ReverseMap();
+
             CreateMap<SysSetting, SysSettingCreateUpdateDto>().ReverseMap();
             CreateMap<SysVacationRequest, SysVacationRequestCreateUpdateDto>()
                 .ForMember(des => des.ApprovedBy, opt => opt.MapFrom(src => src.SysApprovedByEmployee.EmployeeName))

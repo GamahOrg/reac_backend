@@ -221,6 +221,8 @@
         public const string WorkFlow_Condition = "Workflow.Condition";
         public const string WorkFlow_Condition_Review = "Workflow.Condition.Review";
         public const string Reconciliation_Request_Added = "Reconciliation.Request.Added";
+        public const string Review_Cancelled = "Review.Cancelled";
+        public const string Review_ReAssigned = "Review.ReAssigned";
 
         public const string LitigationRequest_CollectionOfLitigationFeesRequestIsBeingSent = "LitigationRequest.CollectionOfLitigationFeesRequestIsBeingSent";
         public const string LitigationRequest_LitigationFeesHaveBeenCollected = "LitigationRequest.LitigationFeesHaveBeenCollected";
@@ -258,6 +260,23 @@
         public const string SLA_LitigationRequestArbitratorAssigningRequestResponseSecondPeriod = "SLA.LitigationRequestArbitratorAssigningRequestResponseSecondPeriod";
         public const string SLA_LitigationRequestArbitratorAssigningRequestDecisionPeriod = "SLA.LitigationRequestArbitratorAssigningRequestDecisionPeriod";
         public const string SLA_LitigationRequestArbitrationReportExplanationRequestResponsePeriod = "SLA.LitigationRequestArbitrationReportExplanationRequestResponsePeriod";
+
+        #region Arbitrator Registeration
+        public const string SLA_ArbitratorRegisterationFees = "Configurable.ArbitratorRegisterationFees";
+        public const string SLA_ArbitratorRegisterationFeesPeriod = "SLA.ArbitratorRegisterationFeesPeriod";
+        public const string SLA_ArbitratorRegisterationFeesFirstNotificationPeriod = "SLA.ArbitratorRegisterationFeesFirstNotificationPeriod";
+        public const string SLA_ArbitratorRegisterationFeesNotification = "SLA.ArbitratorRegisterationFeesNotification";
+
+        #endregion
+        
+        #region Arbitrator Membership
+        public const string SLA_ArbitratorMembershipFees = "Configurable.ArbitratorMembershipFees";
+        public const string SLA_ArbitratorMembershipFeesPeriod = "SLA.ArbitratorMembershipFeesPeriod";
+        public const string SLA_ArbitratorMembershipFeesFirstNotificationPeriod = "SLA.ArbitratorMembershipFeesFirstNotificationPeriod";
+        public const string SLA_ArbitratorMembershipFeesNotification = "SLA.ArbitratorMembershipFeesNotification";
+        public const string SLA_ArbitratorMembershipRenewalFeesNotification = "SLA.ArbitratorMembershipRenewalFeesNotification";
+
+        #endregion
 
         #endregion
 
@@ -304,6 +323,7 @@
 
         #endregion
 
+        
 
         #region Email
         public const string PrefexEmailConfiguration = "EmailConfiguration_";

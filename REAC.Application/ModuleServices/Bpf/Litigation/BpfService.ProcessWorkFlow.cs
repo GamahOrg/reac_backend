@@ -219,7 +219,7 @@ namespace Bpf.Application.ModuleServices
                                                            .Include(x => x.Department)
                                                            .ThenInclude(x => x.SysEmployees
                                                            .OrderBy(x => x.WorkFlowProcessingLogs
-                                                           .Count(x => x.IsFinished))
+                                                           .Count(x => !x.IsFinished))
                                                            .ThenBy(x => x.IsAdmin))
                                                            .ThenInclude(x => x.EmployeeVacationRequests)
                                                            .Single();

@@ -8,6 +8,8 @@ using REAC.EntityFrameworkCore.Entities.System;
 using static Dapper.SqlMapper;
 using System.Threading;
 using System.Runtime.InteropServices;
+using REAC.EntityFrameworkCore.Entities.Litigation;
+using Microsoft.EntityFrameworkCore;
 
 
 namespace REAC.Application.AppServices.System
@@ -44,6 +46,7 @@ namespace REAC.Application.AppServices.System
         public async Task<BaseResponse> GetOrderedListAsync()
         {
             var response = (await _repository.GetQueryable<SysLitigationRequestAmount, Guid>())
+                .Include(x => x.LitigationRequestFees)
                 .OrderBy(x => x.Fees).ToList();
 
             List<SysLitigationRequestAmountCreateUpdateDto> entityDtos
@@ -68,6 +71,18 @@ namespace REAC.Application.AppServices.System
                     return new BaseResponse() { IsDone = false, Message = "هذه الرسوم الأدارية موجودة مسبقا" };
 
                 SysLitigationRequestAmount originalEntity = _mapper.Map<SysLitigationRequestAmount>(sysLitigationRequestAmountCreateUpdateDto);
+            
+
+                if (sysLitigationRequestAmountCreateUpdateDto.LitigationRequestFees != null)
+                {
+                    foreach (var litigationRequestAmountDto in sysLitigationRequestAmountCreateUpdateDto.LitigationRequestFees)
+                    {
+                        var litigationRequestAmount = _mapper.Map<LitigationRequestFees>(litigationRequestAmountDto);
+                        litigationRequestAmount.Id = Guid.NewGuid();
+                        litigationRequestAmount.AmountId = originalEntity.Id; 
+                      //  await _repository.AddAsync<LitigationRequestFees, Guid>(litigationRequestAmount, cancellationToken);
+                    }
+                }
                 await _repository.AddAsync<SysLitigationRequestAmount, Guid>(originalEntity, cancellationToken);
                 var response = await _repository.SaveChangesAsync(cancellationToken);
                 if (response.IsDone)
@@ -87,6 +102,69 @@ namespace REAC.Application.AppServices.System
 
             }
 
+        }
+        public async Task<BaseResponse> UpdateAsync(Guid id, SysLitigationRequestAmountCreateUpdateDto sysLitigationRequestAmountCreateUpdateDto, CancellationToken cancellationToken)
+        {
+            try
+            {
+                
+                var getByIdResponse = (await _repository.GetQueryable<SysLitigationRequestAmount, Guid>())
+                .Include(x => x.LitigationRequestFees)
+                .FirstOrDefault(x => x.Id == id);
+                if (getByIdResponse == null)
+                    return new DataResponse<SysLitigationRequestAmountCreateUpdateDto> { IsDone = false, Message = "غير موجود" };
+
+                getByIdResponse.Fees = sysLitigationRequestAmountCreateUpdateDto.Fees;
+                getByIdResponse.FromAmount = sysLitigationRequestAmountCreateUpdateDto.FromAmount;
+                getByIdResponse.ToAmount = sysLitigationRequestAmountCreateUpdateDto.ToAmount;
+                getByIdResponse.LitigationAmount = sysLitigationRequestAmountCreateUpdateDto.LitigationAmount;
+
+                if (sysLitigationRequestAmountCreateUpdateDto.LitigationRequestFees != null)
+                {
+                    getByIdResponse.LitigationRequestFees.Clear();
+                    var litigationRequestFeesList = new List<LitigationRequestFees>();
+                    foreach (var litigationRequestAmountDto in sysLitigationRequestAmountCreateUpdateDto.LitigationRequestFees)
+                    {
+                        var litigationRequestFeesObj = _mapper.Map<LitigationRequestFees>(litigationRequestAmountDto);
+                        litigationRequestFeesObj.Id = Guid.NewGuid();
+                        litigationRequestFeesList.Add(litigationRequestFeesObj);
+
+                    }
+                    await  _repository.AddRangeAsync<LitigationRequestFees, Guid>(litigationRequestFeesList);
+                }
+
+               var response = await _repository.SaveChangesAsync(cancellationToken);
+               if (response.IsDone)
+                {
+                    return new DataResponse<SysLitigationRequestAmount>()
+                    {
+                        IsDone = true,
+                        Data = getByIdResponse,
+                        Message = response.Message
+                    };
+                }
+                return response;
+            }
+            catch (Exception ex)
+            {
+                return new BaseResponse() { IsDone = false, Message = "خطأ داخلي" };
+            }
+        }
+        public async Task<DataResponse<SysLitigationRequestAmountCreateUpdateDto>> GetByIdAsync(Guid id)
+        {
+            var entity = (await _repository.GetQueryable<SysLitigationRequestAmount, Guid>())
+                .Include(x => x.LitigationRequestFees)
+                .FirstOrDefault(x => x.Id == id);
+            if (entity == null)
+                return new DataResponse<SysLitigationRequestAmountCreateUpdateDto> { IsDone = false, Message = "غير موجود" };
+
+            var entityDto = _mapper.Map<SysLitigationRequestAmountCreateUpdateDto>(entity);
+
+            return new DataResponse<SysLitigationRequestAmountCreateUpdateDto>()
+            {
+                IsDone = true,
+                Data = entityDto,
+            };
         }
     }
 }

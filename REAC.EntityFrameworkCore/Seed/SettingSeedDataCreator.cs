@@ -973,6 +973,16 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                             Key = "SLA.LitigationRequestFeesNotPaidReminderFirstPeriod",
                             Value = "72"
 
+                        },new SysSetting
+                        {
+                        Id = Guid.NewGuid(),
+                        Key = "Review.Cancelled",
+                        Value = "تم إلغاء المهمة  رقم {LitigationCode}",
+                        },new SysSetting
+                        {
+                        Id = Guid.NewGuid(),
+                        Key = "Review.ReAssigned",
+                        Value = "تم إرسال مهمة مدقق الى مدقق اّخر المهمة  رقم {LitigationCode}",
                         },
                     #endregion
                     #region Reconciliation
@@ -1019,7 +1029,90 @@ namespace Ticketing.EntityFrameworkCore.SeedData
 
                         },
                     #endregion
+                    #region Arbitrator Registeration
+                        new SysSetting
+                        {
+                            Id = Guid.NewGuid(),
+                            Key = "Configurable.ArbitratorRegisterationFees.A",
+                            Value = "300"
 
+                        },new SysSetting
+                        {
+                            Id = Guid.NewGuid(),
+                            Key = "Configurable.ArbitratorRegisterationFees.B",
+                            Value = "200"
+
+                        },new SysSetting
+                        {
+                            Id = Guid.NewGuid(),
+                            Key = "Configurable.ArbitratorRegisterationFees.C",
+                            Value = "100"
+
+                        },new SysSetting
+                        {
+                            Id = Guid.NewGuid(),
+                            Key = "SLA.ArbitratorRegisterationFeesPeriod",
+                            Value = "72"
+
+                        },new SysSetting
+                        {
+                            Id = Guid.NewGuid(),
+                            Key = "SLA.ArbitratorRegisterationFeesFirstNotificationPeriod",
+                            Value = "48"
+
+                        },new SysSetting
+                        {
+                            Id = Guid.NewGuid(),
+                            Key = "SLA.ArbitratorRegisterationFeesNotification",
+                            Value = "برجاء دفع رسوم التسجيل كمحكم قبل انتهاء المدة المحددة لذلك"
+
+                        },
+	                #endregion
+                    #region Arbitrator Membership
+                        new SysSetting
+                        {
+                            Id = Guid.NewGuid(),
+                            Key = "Configurable.ArbitratorMembershipFees.A",
+                            Value = "300"
+
+                        },new SysSetting
+                        {
+                            Id = Guid.NewGuid(),
+                            Key = "Configurable.ArbitratorMembershipFees.B",
+                            Value = "200"
+
+                        },new SysSetting
+                        {
+                            Id = Guid.NewGuid(),
+                            Key = "Configurable.ArbitratorMembershipFees.C",
+                            Value = "100"
+
+                        },new SysSetting
+                        {
+                            Id = Guid.NewGuid(),
+                            Key = "SLA.ArbitratorMembershipFeesPeriod",
+                            Value = "72"
+
+                        },new SysSetting
+                        {
+                            Id = Guid.NewGuid(),
+                            Key = "SLA.ArbitratorMembershipFeesFirstNotificationPeriod",
+                            Value = "48"
+
+                        },new SysSetting
+                        {
+                            Id = Guid.NewGuid(),
+                            Key = "SLA.ArbitratorMembershipFeesNotification",
+                            Value = "برجاء دفع رسوم العضوية كمحكم قبل انتهاء المدة المحددة لذلك"
+
+                        },new SysSetting
+                        {
+                            Id = Guid.NewGuid(),
+                            Key = "SLA.ArbitratorMembershipRenewalFeesNotification",
+                            Value = "برجاء دفع رسوم تجديد العضوية كمحكم قبل انتهاء المدة المحددة لذلك"
+
+                        },
+	                #endregion
                     #region Sla NotificationMessages
                         new SysSetting
                         {
@@ -1374,7 +1467,7 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                         },new SysSetting
                         {
                             Id = Guid.NewGuid(),
-                            Key = "Configurable.ArbitratorJoiningRequestFees",
+                            Key = "Configurable.ArbitratorRegistrationFees",
                             Value = "30"
                         },
                         #endregion

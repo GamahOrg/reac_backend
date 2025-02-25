@@ -112,6 +112,24 @@ public partial class LitigationRequestMircoForRequestReformerDto : BaseEntity<Gu
     public string? ReformerName { get; set; }
 }
 
+public partial class LitigationRequestMircoForRequestReviewerDto : BaseEntity<Guid>
+{
+    public string? RequestCode { get; set; }
+    public DateTime RequestDate { get; set; }
+    public string FirstPartyName { get; set; } = null!;
+    public string SecondPartyName { get; set; } = null!;
+    public string RequestTypeName { get; set; } = null!;
+    public Guid? EmployeeId { get; set; }
+
+    public string? EmployeeName { get; set; }
+}
+
+public partial class EmployeeReviewerDto : BaseEntity<Guid>
+{
+    public string? EmployeeName { get; set; }
+    public int RequestsCount { get; set; }
+}
+
 public partial class LitigationRequestMircoForRequestArbitratorDto : BaseEntity<Guid>
 {
     public string? RequestCode { get; set; }
