@@ -18,6 +18,8 @@
         Lawyer = 7,
         ///<summary>وكيل</summary>
         Agent = 8,
+        ///<summary>مدقق</summary>
+        Reviewer = 8,
 
     }
 }

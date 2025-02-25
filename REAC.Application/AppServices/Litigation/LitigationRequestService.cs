@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
+using REAC.Application.Contracts.Dtos.Citizen;
 using REAC.Application.Contracts.Dtos.Integration.GEE;
 using REAC.Application.Contracts.Dtos.Integration.Party;
 using REAC.Application.Contracts.Dtos.Integration.Rent;
@@ -38,6 +39,7 @@ using REAC.EntityFrameworkCore.Entities.System;
 using REAC.EntityFrameworkCore.Entities.Wpf.Business;
 using REAC.EntityFrameworkCore.Seed.Integration;
 using System.Globalization;
+using System.Linq;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
@@ -605,6 +607,338 @@ namespace REAC.Application.AppServices.Litigation
             };
 
         }
+
+        public async Task<BaseResponse> GetLitigationRequestForFullAllReviewer(int pageIndex, int pageSize, CancellationToken cancellationToken)
+        {
+            Guid referenceId = Guid.Empty;
+            _jwtReader.GetReferenceId(ref referenceId);
+
+            PagedResult<LitigationRequest> litigationRequests = null;
+            var entitiesQuerable = (await _repository.GetQueryable<LitigationRequest, Guid>())
+
+                                      .Include(x => x.Area)
+                                      .Include(x => x.City)
+                                      .Include(x => x.ApplicantCitizen)
+                                      .Include(x => x.InternalStatus)
+                                      .Include(x => x.ExternalStatus)
+                                      .Include(x => x.LitigationRequestAmount)
+                                      .Include(x => x.LitigationRequestCategory)
+                                      .Include(x => x.SysExemptionReductionCategory)
+                                      .Include(x => x.LitigationRequestOwnerType)
+                                      .Include(x => x.Contract)
+                                      .Include(x => x.Contract.LitigationRequestContractType)
+                                      .Include(x => x.Contract.ContractFile)
+                                      .Include(x => x.Contract.AssociationRegistrationCertificateFile)
+                                      .Include(x => x.Contract.FoundingLetterFile)
+                                      .Include(x => x.Contract.InternalRegulationsFile)
+                                      .Include(x => x.Contract.FirstPartyFacility)
+                                      .Include(x => x.Contract.FirstPartyCitizen)
+                                      .Include(x => x.Contract.SecondPartyFacility)
+                                      .Include(x => x.Contract.SecondPartyCitizen)
+                                      .Include(x => x.Contract.LitigationRequestContractType)
+                                      .Include(x => x.WorkFlowProcessingLogs.OrderByDescending(c => c.CreatedOn))
+                                      .ThenInclude(x => x.Employee);
+
+            litigationRequests = entitiesQuerable.Where(x => 
+                x.RequestCode != null & x.LitigationRequestStage == LitigationRequestStage.Review & x.InternalStatusId != RequestStatus.Rejected)
+                
+                .OrderByDescending(x => x.CreatedOn)
+              .AsSplitQuery()
+              .AsNoTracking()
+              .GetPaged(pageIndex, pageSize);
+
+
+            List<LitigationRequestMircoForRequestReviewerDto> litigationRequestMircoDtos = new List<LitigationRequestMircoForRequestReviewerDto>();
+            if (litigationRequests != null)
+            {
+                foreach (var litigationRequest in litigationRequests.Results)
+                {
+                    
+                    LitigationRequestMircoForRequestReviewerDto litigationRequestMircoDto = new LitigationRequestMircoForRequestReviewerDto();
+                    litigationRequestMircoDto.Id = litigationRequest.Id;
+                    litigationRequestMircoDto.RequestDate = litigationRequest.CreatedOn;
+                    litigationRequestMircoDto.RequestCode = litigationRequest.RequestCode;
+                    litigationRequestMircoDto.FirstPartyName = (litigationRequest.Contract.FirstPartyCitizen == null) ? litigationRequest.Contract.FirstPartyFacility.ArabicFacilityName : litigationRequest.Contract.FirstPartyCitizen.FullName;
+                    litigationRequestMircoDto.SecondPartyName = (litigationRequest.Contract.SecondPartyCitizen == null) ? litigationRequest.Contract.SecondPartyFacility.ArabicFacilityName : litigationRequest.Contract.SecondPartyCitizen.FullName;
+                    litigationRequestMircoDto.RequestTypeName = litigationRequest.Contract.LitigationRequestContractType.TypeName;
+                    litigationRequestMircoDto.EmployeeId = litigationRequest.WorkFlowProcessingLogs.Last(z => z.EmployeeId != null).EmployeeId;
+                    litigationRequestMircoDto.EmployeeName = litigationRequest.WorkFlowProcessingLogs.Last(z => z.EmployeeId != null).Employee.EmployeeName;
+                    litigationRequestMircoDtos.Add(litigationRequestMircoDto);
+                }
+            }
+
+            return new DataResponse<PagedResult<LitigationRequestMircoForRequestReviewerDto>>
+            {
+                Data =
+                   new PagedResult<LitigationRequestMircoForRequestReviewerDto>
+                   {
+                       Results = litigationRequestMircoDtos,
+                       CurrentPage = litigationRequests.CurrentPage,
+                       PageCount = litigationRequests.PageCount,
+                       PageSize = litigationRequests.PageSize,
+                       TotalCount = litigationRequests.TotalCount
+                   },
+                IsDone = true
+            };
+
+        }
+
+        public async Task<BaseResponse> GetReviewersLookup(Guid requestId)
+        {
+            var litigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>())
+              .Include(x => x.Contract)
+              .Include(X => X.WorkFlowProcessingLogs)
+              .Where(x => x.Id == requestId).SingleOrDefault();
+
+            if (litigationRequest == null)
+                return new BaseResponse() { IsDone = false, Message = "طلب غير موجود" };
+
+            var Reviewers = (await _repository.GetQueryable<SysEmployee, Guid>())
+                             .Where(x => x.Department.DepartmentType == DepartmentType.Review & x.IsAdmin != true).ToList();
+            List<EmployeeReviewerDto> employeeReviewers = new List<EmployeeReviewerDto>();
+            Reviewers.ForEach(t =>
+            {
+                if (t.Id != litigationRequest.ApplicantCitizenId & t.Id != litigationRequest.Contract.FirstPartyCitizenId & t.Id != litigationRequest.Contract.SecondPartyCitizenId)
+                {
+                    employeeReviewers.Add(new EmployeeReviewerDto()
+                    {
+                        EmployeeName = t.EmployeeName,
+                        Id = t.Id,
+                        RequestsCount = t.WorkFlowProcessingLogs.Where(x => !x.IsFinished).Count()
+                    });
+                }
+            });
+            return new DataResponse<List<EmployeeReviewerDto>>()
+            {
+                IsDone = true,
+                Data = employeeReviewers.ToList()
+            };
+        }
+
+        public async Task<BaseResponse> Assign(AssignReviewerRequestPayload assignRequestPayload, CancellationToken cancellationToken)
+        {
+            var msg = "";
+            string body;
+            var litigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>()).Include(x => x.Area).Include(x => x.City)
+                          .Include(x => x.ApplicantCitizen)
+                          .Include(x => x.Contract)
+                          .Include(x => x.Contract.FirstPartyFacility)
+                          .Include(x => x.Contract.FirstPartyCitizen)
+                          .Include(x => x.Contract.SecondPartyFacility)
+                          .Include(x => x.Contract.SecondPartyCitizen)
+                          .Include(x => x.WorkFlowProcessingLogs.Where(z => z.RequestId == assignRequestPayload.RequestId & !z.IsFinished))
+                          .Where(x => x.Id == assignRequestPayload.RequestId).ToList().FirstOrDefault();
+            var deptAdminInfoReview = await _employeeService.GetAdminsByDepartmentType(DepartmentType.Review);
+            var deptEmployeeInfoReview = await _employeeService.GetEmployeeByDepartmentType(DepartmentType.Review);
+            try
+            {
+                Guid referenceId = Guid.Empty;
+                _jwtReader.GetReferenceId(ref referenceId);
+
+                if (referenceId == Guid.Empty)
+                    return new BaseResponse()
+                    {
+                        IsDone = false,
+                        Message = "موظف غير معروف"
+                    };
+                var admin = (await _repository.GetQueryable<SysEmployee, Guid>())?
+                        .Where(x => x.Id == Guid.Parse("17840AB6-B134-4C5F-9273-5C97345010A3")).SingleOrDefault();
+
+                if (admin == null)
+                    return new BaseResponse()
+                    {
+                        IsDone = false,
+                        Message = "موظف غير معروف"
+                    };
+
+                if (!admin.AllowAssign)
+                    return new BaseResponse()
+                    {
+                        IsDone = false,
+                        Message = "موظف غير مسموح له"
+                    };
+
+                litigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>())?
+                      .Where(x => x.Id == assignRequestPayload.RequestId).Single();
+
+                if (litigationRequest == null)
+                    return new BaseResponse()
+                    {
+                        IsDone = false,
+                        Message = "طلب دعوى غير موجود"
+                    };
+
+
+                if (litigationRequest.IsFinished.HasValue)
+                {
+                    if (litigationRequest.IsFinished.Value)
+                        return new BaseResponse()
+                        {
+                            IsDone = false,
+                            Message = "دعوى مغلقة"
+                        };
+                }
+
+                if (litigationRequest.LitigationRequestStage != LitigationRequestStage.Review)
+                    return new BaseResponse()
+                    {
+                        IsDone = false,
+                        Message = "الدعوى ليست بمرحلة التدقيق"
+                    };
+
+
+
+                if (litigationRequest.WorkFlowProcessingLogs.Any())
+                {
+
+                    foreach (var request in litigationRequest.WorkFlowProcessingLogs.ToList())
+                    {
+                        if (request.RequestId == assignRequestPayload.RequestId)
+                        {
+                            request.EmployeeId = assignRequestPayload.EmployeeId;  
+                        }
+                        
+                        var saveResponse = await _repository.SaveChangesAsync(new CancellationToken());
+                        if (!saveResponse.IsDone)
+                            return saveResponse;
+
+                        await _repository.AddAsync<WorkFlowLog, Guid>(new WorkFlowLog()
+                        {
+                            Id = Guid.NewGuid(),
+                            CreatedOn = DateTime.Now,
+                            RequestId = litigationRequest.Id,
+                            ShowForApplicant = false,
+                            LogMessage = "تم إعادة تعيين المدقق " + request.Employee?.EmployeeName
+                        });
+                        // Send Notification
+                        // تم إلغاء المهمة (دعوى صلح)
+                        try
+                        {
+                            msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Review_Cancelled).Result.Data?.Value;
+                            msg = msg?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                            var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                            using (StreamReader streamReader = File.OpenText(pathToFile))
+                            {
+                                body = await streamReader.ReadToEndAsync();
+                                body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Review_Cancelled).Result.Data?.Value);
+                                body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                            }
+                            var currentReviewerEmail = deptEmployeeInfoReview.Data.Email;
+                            var currentReviewerMobile = deptEmployeeInfoReview.Data.Mobile;
+
+
+                            await _notificationService.SendNotifications(
+                            new SendEmailDto()
+                            {
+                                To = new List<string>() { currentReviewerEmail, deptAdminInfoReview.Data.Email },
+                                Subject = "Review cancelled",
+                                Body = body
+                            },
+                            new SMSRequestDto()
+                            {
+                                message_text = msg,
+                                recipients = new List<string>() { currentReviewerMobile, deptAdminInfoReview.Data.Mobile },
+                                notification_type = "SMS",
+                            },
+                            new List<SysNotificationDto>()
+                            {
+                               new SysNotificationDto()
+                               {
+                                    ActorId = deptEmployeeInfoReview.Data.Id,
+                                    CreatedOn = DateTime.Now,
+                                    ActorTypeId = NotificationActorType.Reviewer,
+                                    IsViewed = false,
+                                    ViewedOn = null,
+                                    RequestId = request.Id,
+                                    RequestTypeId = RequestType.LitigationRequestCorrespondence,
+                                    Message = msg,
+                               },
+                               new SysNotificationDto()
+                               {
+                                    ActorId = deptAdminInfoReview.Data.Id,
+                                    CreatedOn = DateTime.Now,
+                                    ActorTypeId = NotificationActorType.Employee,
+                                    IsViewed = false,
+                                    ViewedOn = null,
+                                    RequestId = request.Id,
+                                    RequestTypeId = RequestType.LitigationRequestCorrespondence,
+                                    Message = msg,
+                               }
+                            }
+                            );
+                        }
+                        catch (Exception ex)
+                        {
+
+                        }
+
+                    }
+                }
+
+
+                // Send Notification
+                // تم إرسال مهمة مدقق الى مدقق أخر
+                try
+                {
+                    msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Review_ReAssigned).Result.Data?.Value;
+                    msg = msg?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                    var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                    using (StreamReader streamReader = File.OpenText(pathToFile))
+                    {
+                        body = await streamReader.ReadToEndAsync();
+                        body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Review_ReAssigned).Result.Data?.Value);
+                        body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                    }
+
+                    await _notificationService.SendNotifications(
+                           new SendEmailDto()
+                           {
+                               To = new List<string>() { deptAdminInfoReview.Data.Email },
+                               Subject = "Reviewer ReAssigned",
+                               Body = msg
+                           },
+                           new Contracts.Dtos.Integration.GEE.SMSRequestDto()
+                           {
+                               message_text = msg,
+                               recipients = new List<string>() { deptAdminInfoReview.Data.Mobile },
+                               notification_type = "SMS",
+                           },
+                           new List<SysNotificationDto>()
+                           {
+
+                               new SysNotificationDto()
+                               {
+                                    ActorId = deptAdminInfoReview.Data.Id,
+                                    CreatedOn = DateTime.Now,
+                                    ActorTypeId = NotificationActorType.Employee,
+                                    IsViewed = false,
+                                    ViewedOn = null,
+                                    RequestId = litigationRequest.Id,
+                                    RequestTypeId = RequestType.ReformerTaskrequests,
+                                    Message = msg,
+                               }
+                           }
+                           );
+                }
+                catch (Exception ex)
+                {
+
+                }
+
+                var repositorySaveResponse = await _repository.SaveChangesAsync(new CancellationToken());
+                return repositorySaveResponse;
+            }
+            catch (Exception ex)
+            {
+                return new ExceptionResponse()
+                {
+                    Exception = ex.Message + "\n" + ex.ToString(),
+                };
+            }
+        }
+
+
+
         public async Task<BaseResponse> AuditngListArbitration(int pageIndex, int pageSize, string? searchKey, AuditingListDto model)
         {
             //var logdenUser = Guid.Parse("1c1b6018-69c8-43f5-b5b1-72cea64d0f9f");/*_jwtReader.GetUserId();*/

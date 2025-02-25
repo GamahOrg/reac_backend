@@ -66,6 +66,7 @@ public partial class REACDBContext : DbContext
     public virtual DbSet<LitigationRequestArbitratorAssigningRequest> LitigationRequestArbitratorAssigningRequest { get; set; }
     public virtual DbSet<SysNotificationPlanItemDestination> SysNotificationPlanItemDestinations { get; set; }
     public virtual DbSet<SysNotificationPlan> SysNotificationPlans { get; set; }
+    public virtual DbSet<SysNotificationEmail> SysNotificationEmails { get; set; }
     public virtual DbSet<SysNotification> SysNotifications { get; set; }
     public virtual DbSet<SysNotificationActorType> SysNotificationActorTypes { get; set; }
     public virtual DbSet<SysRequestType> SysRequestTypes { get; set; }
@@ -1880,6 +1881,12 @@ public partial class REACDBContext : DbContext
             entity.Property(e => e.NotificationPlanName).HasMaxLength(100);
 
         });
+        
+        modelBuilder.Entity<SysNotificationEmail>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__SysNotificationEmail__E0743341C99");
+
+        });
 
         modelBuilder.Entity<SysArbitratorClass>(entity =>
         {
@@ -2163,6 +2170,7 @@ public partial class REACDBContext : DbContext
         modelBuilder.Entity<GetListOfLitigationReformerReportResult>().HasNoKey().ToView(null);
         modelBuilder.Entity<GetListOfLitigationArbitrationReportResult>().HasNoKey().ToView(null);
         modelBuilder.Entity<GetListOfLitigationGeneralReportResult>().HasNoKey().ToView(null);
+        modelBuilder.Entity<GetLitigationStatisticsForAllStagesReportResult>().HasNoKey().ToView(null);
 
     }
 }

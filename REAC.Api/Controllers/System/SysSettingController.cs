@@ -103,4 +103,41 @@ public class SysSettingController : BaseController<SysSetting,
 
         return BadRequest();
     }
+    
+    [HttpGet("GetArbitrationSettings")]
+    public async Task<IActionResult> GetArbitrationSettings()
+    {
+        if (ModelState.IsValid)
+        {
+            var returnValue = await _settingService.GetArbitrationSetting();
+            return Ok(returnValue);
+        }
+
+        return BadRequest();
+    }
+
+    [HttpGet("GetArbitrationFeesSettings")]
+    public async Task<IActionResult> GetArbitrationFeesSettings()
+    {
+        if (ModelState.IsValid)
+        {
+            var returnValue = await _settingService.GetArbitrationFeesSettings();
+            return Ok(returnValue);
+        }
+
+        return BadRequest();
+    }
+
+    [HttpGet("GetReviewSetting")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetReviewSetting()
+    {
+        if (ModelState.IsValid)
+        {
+            var returnValue = await _settingService.GetReviewSetting();
+            return Ok(returnValue);
+        }
+
+        return BadRequest();
+    }
 }

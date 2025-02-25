@@ -1625,25 +1625,24 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid>("AmountId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("ArbitrationFees")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<int>("ArbitratorsCount")
                         .HasColumnType("int");
 
                     b.Property<decimal?>("ExtraAmount")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<decimal>("Fees")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("FromAmount")
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<decimal?>("PercentageExtraAmount")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<decimal?>("ToAmount")
-                        .HasColumnType("decimal(18,2)");
-
                     b.HasKey("Id");
+
+                    b.HasIndex("AmountId");
 
                     b.ToTable("LitigationRequestFees");
                 });
@@ -1980,6 +1979,42 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .IsUnique();
 
                     b.ToTable("SysNotificationActorType", (string)null);
+                });
+
+            modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Notification.SysNotificationEmail", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Body")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Error")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsSent")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("RetryAttempt")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Subject")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ToAddressList")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id")
+                        .HasName("PK__SysNotificationEmail__E0743341C99");
+
+                    b.ToTable("SysNotificationEmails");
                 });
 
             modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Notification.SysNotificationPlan", b =>
@@ -5006,6 +5041,17 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Navigation("LitigationRequestCorrespondenceReply");
                 });
 
+            modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Litigation.LitigationRequestFees", b =>
+                {
+                    b.HasOne("REAC.EntityFrameworkCore.Entities.System.SysLitigationRequestAmount", "Amounts")
+                        .WithMany("LitigationRequestFees")
+                        .HasForeignKey("AmountId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Amounts");
+                });
+
             modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Litigation.LitigationRequestGround", b =>
                 {
                     b.HasOne("REAC.EntityFrameworkCore.Entities.Litigation.LitigationRequest", "LitigationRequest")
@@ -7151,6 +7197,8 @@ namespace REAC.EntityFrameworkCore.Migrations
 
             modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.System.SysLitigationRequestAmount", b =>
                 {
+                    b.Navigation("LitigationRequestFees");
+
                     b.Navigation("LitigationRequests");
                 });
 

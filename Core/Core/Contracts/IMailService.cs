@@ -12,5 +12,6 @@ namespace Core.Contracts
         /// <param name="body"></param>
         /// <returns></returns>
         Task<BaseResponse> SendMail(List<string> to, string subject, string body);
+        Task SendMailToSLA(List<string> toAddressList, string subject, string body);
     }
 }

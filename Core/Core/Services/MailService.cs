@@ -8,7 +8,7 @@ using System.Net.Mail;
 
 namespace Core.Services
 {
-    public class MailService : IMailService
+    public class MailService
     {
         private readonly SendEmailOptions options;
         private readonly IEntityRepository _repository;

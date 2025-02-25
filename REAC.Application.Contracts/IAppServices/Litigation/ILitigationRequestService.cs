@@ -3,6 +3,7 @@ using REAC.Application.Contracts.Dtos.Integration.Wafi;
 using REAC.Application.Contracts.Dtos.Litigation.Create.Litigation;
 using REAC.Application.Contracts.Dtos.Litigation.CreateUpdate.Litigation;
 using REAC.Application.Contracts.Dtos.Litigation.List;
+using REAC.Application.Contracts.Dtos.Wpf.Business;
 using REAC.Domain.Shared.Enum;
 using REAC.EntityFrameworkCore.Entities.Litigation;
 
@@ -19,11 +20,16 @@ namespace REAC.Application.Contracts.IAppServices.Litigation
         Task<BaseResponse> SendLitigationFeesRequestPaid(Guid litigationId);
         Task<BaseResponse> SendReconciliationFeesRequestPaid(Guid litigationId);
 
+        Task<BaseResponse> Assign(AssignReviewerRequestPayload assignRequestPayload, CancellationToken cancellationToken);
+
         Task<BaseResponse> ApproveArbitrationFeesPaid(Guid litigationId, CancellationToken cancellationToken);
         Task<BaseResponse> List(int pageIndex, int pageSize, string? searchKey, LitigationListDto model);
         Task<BaseResponse> ReformerList(int pageIndex, int pageSize, string? searchKey, LitigationListDto model);
 
+        Task<BaseResponse> GetReviewersLookup(Guid requestId);
+
         Task<BaseResponse> AuditngList(int pageIndex, int pageSize, string? searchKey, AuditingListDto model);
+        Task<BaseResponse> GetLitigationRequestForFullAllReviewer(int pageIndex, int pageSize, CancellationToken cancellationToken);
         Task<BaseResponse> Get(Guid litigationId);
         Task<BaseResponse> GetLitigationArbitrationTaskAcceptanceOrRejectDocumentData(Guid litigationId, Guid? requestId);
         Task<BaseResponse> GetLitigationArbitrationTaskAcceptanceOrRejectDocumentData(Guid litigationId);

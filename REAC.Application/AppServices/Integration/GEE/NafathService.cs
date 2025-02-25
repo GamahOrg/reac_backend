@@ -878,19 +878,21 @@ namespace REAC.Application.AppServices.Integration.GEE
         {
             try
             {
-                var token = (await _gEELoginService.Login()).Data?.Access_token;
-                if (token is null)
-                    _loggerManager.Log(Core.Log.Domain.Shared.Enums.LoggerType.Database
-                       , new LogDto()
-                       {
-                           Type = Core.Log.Domain.Shared.Enums.LogType.Error,
-                           Message = "get access token from API GEE error"
-                       });
+                
 
                 var nafathCheckList = _nafathAgreementRequestService.GetAll();
                 var removeList = new List<NafathAgreementRequestTransactionsDto>();
                 if (nafathCheckList is not null && nafathCheckList.Any())
                 {
+                    var token = (await _gEELoginService.Login()).Data?.Access_token;
+                    if (token is null)
+                        _loggerManager.Log(Core.Log.Domain.Shared.Enums.LoggerType.Database
+                           , new LogDto()
+                           {
+                               Type = Core.Log.Domain.Shared.Enums.LogType.Error,
+                               Message = "get access token from API GEE error"
+                           });
+
                     foreach (var nafathTransaction in nafathCheckList)
                     {
                         if (nafathTransaction.RequestExpired < DateTime.Now)
@@ -1042,18 +1044,20 @@ namespace REAC.Application.AppServices.Integration.GEE
         {
             try
             {
-                var token = (await _gEELoginService.Login()).Data?.Access_token;
-                if (token is null)
-                    _loggerManager.Log(Core.Log.Domain.Shared.Enums.LoggerType.Database
-                       , new LogDto()
-                       {
-                           Type = Core.Log.Domain.Shared.Enums.LogType.Error,
-                           Message = "get access token from API GEE error"
-                       });
+                
                 var nafathCheckList = _nafathReconciliationReportService.GetAll();
                 var removeList = new List<NafathReconciliationReportTransactionDto>();
                 if (nafathCheckList is not null && nafathCheckList.Any())
                 {
+                    var token = (await _gEELoginService.Login()).Data?.Access_token;
+                    if (token is null)
+                        _loggerManager.Log(Core.Log.Domain.Shared.Enums.LoggerType.Database
+                           , new LogDto()
+                           {
+                               Type = Core.Log.Domain.Shared.Enums.LogType.Error,
+                               Message = "get access token from API GEE error"
+                           });
+
                     foreach (var nafathTransaction in nafathCheckList)
                     {
                         if (nafathTransaction.RequestExpired < DateTime.Now)

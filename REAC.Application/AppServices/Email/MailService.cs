@@ -9,6 +9,9 @@ using REAC.EntityFrameworkCore.Entities.System;
 using System.Net;
 using Microsoft.EntityFrameworkCore;
 using REAC.EntityFrameworkCore.Entities.Arbitration;
+using REAC.EntityFrameworkCore.Entities.Notification;
+using Core.Log.Application.Contracts.IAppServices;
+using Core.Log.Application.Contracts.Dto;
 
 namespace REAC.Application.AppServices.Email
 {
@@ -16,6 +19,7 @@ namespace REAC.Application.AppServices.Email
     {
         private readonly SendEmailOptions options;
         private readonly IEntityRepository _repository;
+        private SendEmailOptions sendEmail;
 
         public MailService(IOptions<SendEmailOptions> options, IEntityRepository repository)
         {
@@ -26,7 +30,7 @@ namespace REAC.Application.AppServices.Email
         {
             try
             {
-                var emailSetting =  GetEmailSettings();
+                var emailSetting = GetEmailSettings();
 
                 if (emailSetting != null && emailSetting.Result != null && emailSetting.Result.SendEmail)
                 {
@@ -43,20 +47,20 @@ namespace REAC.Application.AppServices.Email
                     };
                     mail.Subject = subject;
                     mail.From = new MailAddress(emailSetting.Result.From);
-                /*    var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
-                    using (StreamReader streamReader = File.OpenText(pathToFile))
-                    {
-                        body = await streamReader.ReadToEndAsync();
-                        body = body?.Replace("{content}", body);
-                    }
-                */
-                    mail.Body = body; 
+                    /*    var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                        using (StreamReader streamReader = File.OpenText(pathToFile))
+                        {
+                            body = await streamReader.ReadToEndAsync();
+                            body = body?.Replace("{content}", body);
+                        }
+                    */
+                    mail.Body = body;
                     mail.IsBodyHtml = true;
 
                     foreach (var toAddress in toAddressList)
                     {
-                        if(toAddress is not null)
-                        mail.To.Add(new MailAddress(toAddress));
+                        if (toAddress is not null)
+                            mail.To.Add(new MailAddress(toAddress));
                     }
 
                     try
@@ -74,8 +78,44 @@ namespace REAC.Application.AppServices.Email
                     return new BaseResponse { IsDone = true };
                 }
             }
-            catch(Exception e) {
+            catch (Exception e)
+            {
                 return new BaseResponse { IsDone = false, Message = e.Message };
+
+            }
+
+
+        }
+
+        public async Task SendMailToSLA(List<string> toAddressList, string subject, string body)
+        {
+            try
+            {
+                foreach (var toAddress in toAddressList)
+                {
+
+                    await _repository.AddAsync<SysNotificationEmail, Guid>(new SysNotificationEmail()
+                    {
+                        Subject = subject,
+                        Body = body,
+                        CreatedOn = DateTime.Now,
+                        Id = Guid.NewGuid(),
+                        IsSent = false,
+                        RetryAttempt = 0,
+                        ToAddressList = toAddress
+                    });
+                }
+
+                await _repository.SaveChangesAsync();
+            }
+            catch (Exception e)
+            {
+                //_loggerManager.Log(Core.Log.Domain.Shared.Enums.LoggerType.Database
+                //      , new LogDto()
+                //      {
+                //          Type = Core.Log.Domain.Shared.Enums.LogType.Trace,
+                //          Message = $"SendMailToSLA Exception ===> {e.ToString()}"
+                //      });
 
             }
 
@@ -85,13 +125,13 @@ namespace REAC.Application.AppServices.Email
 
         async Task<SendEmailOptions?> GetEmailSettings()
         {
-            SendEmailOptions? sendEmail = null;
+            //SendEmailOptions? sendEmail = null;
 
             var query = (await _repository.GetQueryable<SysSetting, Guid>());
             var sysSettings = query.Where(x => x.Key.StartsWith(SysSettingKeyConstants.PrefexEmailConfiguration)).AsNoTracking().ToList();
             if (sysSettings.Any())
             {
-                sendEmail = new SendEmailOptions();
+                //sendEmail = new SendEmailOptions();
                 var disable_Email_APIs = sysSettings.FirstOrDefault(x => x.Key == SysSettingKeyConstants.EmailConfiguration_SendEmail);
                 if (disable_Email_APIs != null)
                 {

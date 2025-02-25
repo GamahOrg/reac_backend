@@ -5,7 +5,7 @@ using Core.Shared.Responses;
 
 namespace REAC.Application.AppServices.Integration;
 
-public class EmailService : IMailService
+public class EmailService 
 {
     private readonly IEntityRepository _repository;
     public EmailService(IEntityRepository entityRepository)

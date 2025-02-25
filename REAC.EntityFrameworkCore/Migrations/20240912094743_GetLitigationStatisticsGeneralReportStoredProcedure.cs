@@ -16,7 +16,7 @@ namespace REAC.EntityFrameworkCore.Migrations
               */
             migrationBuilder.Sql($@"
                 --تقرير اعداد الدعاوى                
-             CREATE PROCEDURE [dbo].[GetLitigationStatisticsGeneralReport] 
+             Create PROCEDURE [dbo].[GetLitigationStatisticsGeneralReport] 
             @EmployeeId NVARCHAR(50) = NULL,
             @LitigationRequestStageId INT = NULL,--(فى اى مرحلة فيها الدعوى (تدقيق/صلح/صلح وتحكيم
             @FromDate DATETIME = NULL,
@@ -26,13 +26,14 @@ namespace REAC.EntityFrameworkCore.Migrations
             @FromFees DECIMAL(10, 3) = NULL, 
             @ToFees DECIMAL(10, 3) = NULL,
             @LitigationRequestCategoryIds NVARCHAR(MAX) = NULL --(نوع الدعوى المقدمة(تدقيق/صلح/صلح وتحكيم     
-            
     AS
     BEGIN
             -- Declare necessary variables
             DECLARE @TotalLitigation INT;--عدد الدعاوى الكلية
             DECLARE @NotFinishedCount INT;--عدد الدعاوى الغير منتهية
             DECLARE @FinishedCount INT;--عدد الدعاوى المنتهية
+			DECLARE @DueDateReconciliationCount INT;--عدد الدعاوى المتأخره في مرحلة الصلح 
+			DECLARE @DueDateArbitrationCount INT;--عدد الدعاوى المتأخره في مرحلة التحكيم
             DECLARE @RealEstateBrokerageCount INT;--عدد الدعاوى من نوع وساطة عقارية
             DECLARE @WafiCount INT;--عدد الدعاوى من نوع وافى
             DECLARE @OtherServicesCount INT;--عدد الدعاوى من نوع اخرى
@@ -46,7 +47,6 @@ namespace REAC.EntityFrameworkCore.Migrations
             DECLARE @OtherServicesCountRatio DECIMAL(5, 2);
             DECLARE @RentCountRatio DECIMAL(5, 2);
             DECLARE @PropertiesCountRatio DECIMAL(5, 2);
-
             -- Handle default dates if @ToDate is NULL
             SET @ToDate = ISNULL(@ToDate, GETDATE());
     -- Calculate total litigation count with filters
@@ -60,7 +60,6 @@ namespace REAC.EntityFrameworkCore.Migrations
           AND (@FromDate IS NULL OR L.SentOn >= @FromDate)
           AND (L.SentOn <= @ToDate)
           AND (@FromFees IS NULL OR L.Fees BETWEEN @FromFees AND @ToFees);
-
     -- Calculate not finished count
         SELECT @NotFinishedCount = COUNT(*)  
         FROM LitigationRequest L 
@@ -73,7 +72,6 @@ namespace REAC.EntityFrameworkCore.Migrations
           AND (@FromDate IS NULL OR L.SentOn >= @FromDate)
           AND (L.SentOn <= @ToDate)
           AND (@FromFees IS NULL OR L.Fees BETWEEN @FromFees AND @ToFees);
-
     -- Calculate finished count
         SELECT @FinishedCount = COUNT(*)  
         FROM LitigationRequest L 
@@ -85,26 +83,46 @@ namespace REAC.EntityFrameworkCore.Migrations
           AND (@FromDate IS NULL OR L.SentOn >= @FromDate)
           AND (L.SentOn <= @ToDate)
           AND (@FromFees IS NULL OR L.Fees BETWEEN @FromFees AND @ToFees);
-
+	-- Calculate due date Reconciliation count
+        SELECT @DueDateReconciliationCount = COUNT(*)  
+        FROM LitigationRequest L 
+        WHERE 
+           L.IsFinished = 0 AND L.LitigationRequestStage = 2 And L.ReconciliationPeriod = 0
+          AND (@AreaIds IS NULL OR L.AreaId IN (SELECT value FROM STRING_SPLIT(@AreaIds, ',')))
+          AND (@CitiesIds IS NULL OR L.CityId IN (SELECT value FROM STRING_SPLIT(@CitiesIds, ',')))
+          AND (@LitigationRequestCategoryIds IS NULL OR L.LitigationRequestCategoryId IN (SELECT value FROM STRING_SPLIT(@LitigationRequestCategoryIds, ',')))
+          AND (@FromDate IS NULL OR L.StartReconciliationDate >= @FromDate)
+          AND (L.StartReconciliationDate <= @ToDate)
+          AND (@FromFees IS NULL OR L.Fees BETWEEN @FromFees AND @ToFees);
+	-- Calculate due date Arbitration count
+        SELECT @DueDateArbitrationCount = COUNT(*)  
+        FROM LitigationRequest L 
+        WHERE 
+           L.IsFinished = 0 AND L.LitigationRequestStage = 3 And L.ArbitrationPeriod = 0
+          AND (@AreaIds IS NULL OR L.AreaId IN (SELECT value FROM STRING_SPLIT(@AreaIds, ',')))
+          AND (@CitiesIds IS NULL OR L.CityId IN (SELECT value FROM STRING_SPLIT(@CitiesIds, ',')))
+          AND (@LitigationRequestCategoryIds IS NULL OR L.LitigationRequestCategoryId IN (SELECT value FROM STRING_SPLIT(@LitigationRequestCategoryIds, ',')))
+          AND (@FromDate IS NULL OR L.StartArbitrationDate >= @FromDate)
+          AND (L.StartArbitrationDate <= @ToDate)
+          AND (@FromFees IS NULL OR L.Fees BETWEEN @FromFees AND @ToFees);
     -- Calculate RealEstateBrokerageCount(وساطة)
         SELECT @RealEstateBrokerageCount = COUNT(*)  
         FROM LitigationRequestContract C 
         INNER JOIN LitigationRequest L ON C.Id = L.ContractId
         WHERE 
-           C.LitigationRequestContractTypeId = {(int)LitigationRequestContractType.RealEstateBrokerage}
+           C.LitigationRequestContractTypeId = 66
           AND (@AreaIds IS NULL OR L.AreaId IN (SELECT value FROM STRING_SPLIT(@AreaIds, ',')))
           AND (@CitiesIds IS NULL OR L.CityId IN (SELECT value FROM STRING_SPLIT(@CitiesIds, ',')))
           AND (@LitigationRequestCategoryIds IS NULL OR L.LitigationRequestCategoryId IN (SELECT value FROM STRING_SPLIT(@LitigationRequestCategoryIds, ',')))
           AND (@FromDate IS NULL OR L.SentOn >= @FromDate)
           AND (L.SentOn <= @ToDate)
           AND (@FromFees IS NULL OR L.Fees BETWEEN @FromFees AND @ToFees);
-
     -- Similar pattern for WafiCount (وافى)
         SELECT @WafiCount = COUNT(*)  
         FROM LitigationRequestContract C 
         INNER JOIN LitigationRequest L ON C.Id = L.ContractId
         WHERE
-           C.LitigationRequestContractTypeId = {(int)LitigationRequestContractType.Wafi}
+           C.LitigationRequestContractTypeId = 87
           AND (@AreaIds IS NULL OR L.AreaId IN (SELECT value FROM STRING_SPLIT(@AreaIds, ',')))
           AND (@CitiesIds IS NULL OR L.CityId IN (SELECT value FROM STRING_SPLIT(@CitiesIds, ',')))
           AND (@LitigationRequestCategoryIds IS NULL OR L.LitigationRequestCategoryId IN (SELECT value FROM STRING_SPLIT(@LitigationRequestCategoryIds, ',')))
@@ -116,7 +134,7 @@ namespace REAC.EntityFrameworkCore.Migrations
         FROM LitigationRequestContract C 
         INNER JOIN LitigationRequest L ON C.Id = L.ContractId
         WHERE 
-           C.LitigationRequestContractTypeId = {(int)LitigationRequestContractType.OtherServices}
+           C.LitigationRequestContractTypeId = 78
           AND (@AreaIds IS NULL OR L.AreaId IN (SELECT value FROM STRING_SPLIT(@AreaIds, ',')))
           AND (@CitiesIds IS NULL OR L.CityId IN (SELECT value FROM STRING_SPLIT(@CitiesIds, ',')))
           AND (@LitigationRequestCategoryIds IS NULL OR L.LitigationRequestCategoryId IN (SELECT value FROM STRING_SPLIT(@LitigationRequestCategoryIds, ',')))
@@ -128,7 +146,7 @@ namespace REAC.EntityFrameworkCore.Migrations
         FROM LitigationRequestContract C 
         INNER JOIN LitigationRequest L ON C.Id = L.ContractId
         WHERE 
-           C.LitigationRequestContractTypeId = {(int)LitigationRequestContractType.Rent}
+           C.LitigationRequestContractTypeId = 82
           AND (@AreaIds IS NULL OR L.AreaId IN (SELECT value FROM STRING_SPLIT(@AreaIds, ',')))
           AND (@CitiesIds IS NULL OR L.CityId IN (SELECT value FROM STRING_SPLIT(@CitiesIds, ',')))
           AND (@LitigationRequestCategoryIds IS NULL OR L.LitigationRequestCategoryId IN (SELECT value FROM STRING_SPLIT(@LitigationRequestCategoryIds, ',')))
@@ -140,7 +158,7 @@ namespace REAC.EntityFrameworkCore.Migrations
         FROM LitigationRequestContract C 
         INNER JOIN LitigationRequest L ON C.Id = L.ContractId
         WHERE 
-           C.LitigationRequestContractTypeId = {(int)LitigationRequestContractType.Properties}
+           C.LitigationRequestContractTypeId = 79
           AND (@AreaIds IS NULL OR L.AreaId IN (SELECT value FROM STRING_SPLIT(@AreaIds, ',')))
           AND (@CitiesIds IS NULL OR L.CityId IN (SELECT value FROM STRING_SPLIT(@CitiesIds, ',')))
           AND (@LitigationRequestCategoryIds IS NULL OR L.LitigationRequestCategoryId IN (SELECT value FROM STRING_SPLIT(@LitigationRequestCategoryIds, ',')))
@@ -158,12 +176,13 @@ namespace REAC.EntityFrameworkCore.Migrations
             SELECT @RentCountRatio = (@RentCount * 100.0) / @TotalLitigation;
             SELECT @PropertiesCountRatio = (@PropertiesCount * 100.0) / @TotalLitigation;
         END
-
     -- Output counts and ratios
             SELECT 
                 @TotalLitigation AS TotalLitigationCount,
                 @NotFinishedCount AS NotFinishedCount,
                 @FinishedCount AS FinishedCount,
+                @DueDateReconciliationCount AS DueDateReconciliationCount,
+                @DueDateArbitrationCount AS DueDateArbitrationCount,
                 @RealEstateBrokerageCount AS RealEstateBrokerageCount,
                 @WafiCount AS WafiCount,
                 @OtherServicesCount AS OtherServicesCount,

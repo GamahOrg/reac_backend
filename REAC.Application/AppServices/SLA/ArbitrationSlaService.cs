@@ -85,7 +85,7 @@ namespace REAC.Application.AppServices.SLA
                                                 body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_ArbitratorsCount_FirstWarning).Result.Data?.Value);
                                                 body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
                                             }
-                                            await SendNotificationMS(body, msg, litigationRequest, "سرعة اتمام عملية الصلح", NotificationActorType.Plaintiff, RequestType.ArbitratorNominationList
+                                            await SendNotificationMS(body, msg, litigationRequest, "سرعة اتمام عملية إختيار عدد المحكمين", NotificationActorType.Plaintiff, RequestType.ArbitratorNominationList
                                                , notifyFirstParty: true, notifyApplicant: true);
                                         }
                                         catch (Exception e)
@@ -109,7 +109,7 @@ namespace REAC.Application.AppServices.SLA
                                             body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_ArbitratorsCount_SecondWarning).Result.Data?.Value);
                                             body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
                                         }
-                                        await SendNotificationMS(body, msg, litigationRequest, "تذكيرسرعة اتمام عملية الصلح", NotificationActorType.Defendant, RequestType.ArbitratorNominationList
+                                        await SendNotificationMS(body, msg, litigationRequest, "تذكير سرعة اتمام عملية إختيار عدد المحكمين", NotificationActorType.Defendant, RequestType.ArbitratorNominationList
                                           , notifySecondParty: true);
                                     }
                                 }
