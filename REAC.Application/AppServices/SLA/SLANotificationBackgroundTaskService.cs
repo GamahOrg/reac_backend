@@ -25,9 +25,9 @@ namespace REAC.Application.AppServices.SLA
         {
             _timer = new Timer(async t =>
             {
-                await DoWork(stoppingToken);
+                await DoWork(stoppingToken); 
             }
-           , null, TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10));
+           , null, TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(3600));
         }
 
 
