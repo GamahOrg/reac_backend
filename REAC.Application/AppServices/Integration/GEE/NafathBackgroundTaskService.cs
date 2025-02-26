@@ -47,9 +47,9 @@ namespace REAC.Application.AppServices.Integration.GEE
                             if (nafathAgreementRequestService is not null)
                                 await nafathAgreementRequestService.CheckNafathAgreementRequestStatus();
                             
-                            var nafathReconciliationReportService = scope.ServiceProvider.GetRequiredService<INafathService>();
-                            if (nafathReconciliationReportService is not null)
-                                await nafathReconciliationReportService.CheckNafathReconciliationReportStatus();
+                            //var nafathReconciliationReportService = scope.ServiceProvider.GetRequiredService<INafathService>();
+                            //if (nafathReconciliationReportService is not null)
+                            //    await nafathReconciliationReportService.CheckNafathReconciliationReportStatus();
 
                             canExecute = true;
                         }

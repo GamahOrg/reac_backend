@@ -175,7 +175,7 @@ namespace REAC.Application.AppServices.Litigation
                             litigationRequest.LitigationRequestGrounds.Add(litigationRequestGround);
                         }
 
-                        if(litigationRequest.LitigationRequestGrounds.Any(l => l.Id == reference.ReferenceId) 
+                        if (litigationRequest.LitigationRequestGrounds.Any(l => l.Id == reference.ReferenceId)
                             & litigationRequest.LitigationRequestGrounds.Any(l => l.LitigationRequestGroundFiles == null || l.LitigationRequestGroundFiles.Count == 0)
                             & reference.ReferenceAttachments is not null
                             )
@@ -639,9 +639,9 @@ namespace REAC.Application.AppServices.Litigation
                                       .Include(x => x.WorkFlowProcessingLogs.OrderByDescending(c => c.CreatedOn))
                                       .ThenInclude(x => x.Employee);
 
-            litigationRequests = entitiesQuerable.Where(x => 
+            litigationRequests = entitiesQuerable.Where(x =>
                 x.RequestCode != null & x.LitigationRequestStage == LitigationRequestStage.Review & x.InternalStatusId != RequestStatus.Rejected)
-                
+
                 .OrderByDescending(x => x.CreatedOn)
               .AsSplitQuery()
               .AsNoTracking()
@@ -653,7 +653,7 @@ namespace REAC.Application.AppServices.Litigation
             {
                 foreach (var litigationRequest in litigationRequests.Results)
                 {
-                    
+
                     LitigationRequestMircoForRequestReviewerDto litigationRequestMircoDto = new LitigationRequestMircoForRequestReviewerDto();
                     litigationRequestMircoDto.Id = litigationRequest.Id;
                     litigationRequestMircoDto.RequestDate = litigationRequest.CreatedOn;
@@ -685,29 +685,32 @@ namespace REAC.Application.AppServices.Litigation
 
         public async Task<BaseResponse> GetReviewersLookup(Guid requestId)
         {
-            var litigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>())
-              .Include(x => x.Contract)
-              .Include(X => X.WorkFlowProcessingLogs)
-              .Where(x => x.Id == requestId).SingleOrDefault();
-
-            if (litigationRequest == null)
-                return new BaseResponse() { IsDone = false, Message = "طلب غير موجود" };
 
             var Reviewers = (await _repository.GetQueryable<SysEmployee, Guid>())
+                .Include(x => x.WorkFlowProcessingLogs.Where(y => y.LitigationRequest.IsFinished == false && y.LitigationRequest.LitigationRequestStage == LitigationRequestStage.Review))
+                .ThenInclude(x => x.LitigationRequest)
                              .Where(x => x.Department.DepartmentType == DepartmentType.Review & x.IsAdmin != true).ToList();
+
             List<EmployeeReviewerDto> employeeReviewers = new List<EmployeeReviewerDto>();
-            Reviewers.ForEach(t =>
+
+            foreach (var reviewr in Reviewers)
             {
-                if (t.Id != litigationRequest.ApplicantCitizenId & t.Id != litigationRequest.Contract.FirstPartyCitizenId & t.Id != litigationRequest.Contract.SecondPartyCitizenId)
+
+                var reqCount = reviewr.WorkFlowProcessingLogs
+                    .GroupBy(x => x.LitigationRequest.Id)
+                    .Select(x => x.Key)
+                    .Count();
+
+                employeeReviewers.Add(new EmployeeReviewerDto()
                 {
-                    employeeReviewers.Add(new EmployeeReviewerDto()
-                    {
-                        EmployeeName = t.EmployeeName,
-                        Id = t.Id,
-                        RequestsCount = t.WorkFlowProcessingLogs.Where(x => !x.IsFinished).Count()
-                    });
-                }
-            });
+                    EmployeeName = reviewr.EmployeeName,
+                    Id = reviewr.Id,
+                    RequestsCount = reqCount
+                });
+
+            }
+
+
             return new DataResponse<List<EmployeeReviewerDto>>()
             {
                 IsDone = true,
@@ -729,7 +732,14 @@ namespace REAC.Application.AppServices.Litigation
                           .Include(x => x.WorkFlowProcessingLogs.Where(z => z.RequestId == assignRequestPayload.RequestId & !z.IsFinished))
                           .Where(x => x.Id == assignRequestPayload.RequestId).ToList().FirstOrDefault();
             var deptAdminInfoReview = await _employeeService.GetAdminsByDepartmentType(DepartmentType.Review);
-            var deptEmployeeInfoReview = await _employeeService.GetEmployeeByDepartmentType(DepartmentType.Review);
+            var deptEmployeeInfoReview = (await _repository.GetQueryable<SysEmployee, Guid>())
+                             .Include(e => e.Department)
+                             .Where(x => x.Department.DepartmentType == DepartmentType.Review & x.IsAdmin == false & x.Id != assignRequestPayload.EmployeeId)
+                             .FirstOrDefault();
+            var deptNewEmployeeInfoReview = (await _repository.GetQueryable<SysEmployee, Guid>())
+                             .Include(e => e.Department)
+                             .Where(x => x.Department.DepartmentType == DepartmentType.Review & x.IsAdmin == false & x.Id == assignRequestPayload.EmployeeId)
+                             .FirstOrDefault();
             try
             {
                 Guid referenceId = Guid.Empty;
@@ -795,9 +805,9 @@ namespace REAC.Application.AppServices.Litigation
                     {
                         if (request.RequestId == assignRequestPayload.RequestId)
                         {
-                            request.EmployeeId = assignRequestPayload.EmployeeId;  
+                            request.EmployeeId = assignRequestPayload.EmployeeId;
                         }
-                        
+
                         var saveResponse = await _repository.SaveChangesAsync(new CancellationToken());
                         if (!saveResponse.IsDone)
                             return saveResponse;
@@ -811,7 +821,7 @@ namespace REAC.Application.AppServices.Litigation
                             LogMessage = "تم إعادة تعيين المدقق " + request.Employee?.EmployeeName
                         });
                         // Send Notification
-                        // تم إلغاء المهمة (دعوى صلح)
+                        // تم إلغاء المهمة (دعوى تدقيق)
                         try
                         {
                             msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Review_Cancelled).Result.Data?.Value;
@@ -823,8 +833,8 @@ namespace REAC.Application.AppServices.Litigation
                                 body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Review_Cancelled).Result.Data?.Value);
                                 body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
                             }
-                            var currentReviewerEmail = deptEmployeeInfoReview.Data.Email;
-                            var currentReviewerMobile = deptEmployeeInfoReview.Data.Mobile;
+                            var currentReviewerEmail = deptEmployeeInfoReview.Email;
+                            var currentReviewerMobile = deptEmployeeInfoReview.Mobile;
 
 
                             await _notificationService.SendNotifications(
@@ -844,7 +854,66 @@ namespace REAC.Application.AppServices.Litigation
                             {
                                new SysNotificationDto()
                                {
-                                    ActorId = deptEmployeeInfoReview.Data.Id,
+                                    ActorId = deptEmployeeInfoReview.Id,
+                                    CreatedOn = DateTime.Now,
+                                    ActorTypeId = NotificationActorType.Reviewer,
+                                    IsViewed = false,
+                                    ViewedOn = null,
+                                    RequestId = request.Id,
+                                    RequestTypeId = RequestType.LitigationRequestCorrespondence,
+                                    Message = msg,
+                               },
+                               new SysNotificationDto()
+                               {
+                                    ActorId = deptAdminInfoReview.Data.Id,
+                                    CreatedOn = DateTime.Now,
+                                    ActorTypeId = NotificationActorType.Employee,
+                                    IsViewed = false,
+                                    ViewedOn = null,
+                                    RequestId = request.Id,
+                                    RequestTypeId = RequestType.LitigationRequestCorrespondence,
+                                    Message = msg,
+                               }
+                            }
+                            );
+                        }
+                        catch (Exception ex)
+                        {
+
+                        }
+                        try
+                        {
+                            msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.ExcuteWorkflow).Result.Data?.Value;
+                            msg = msg?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                            var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                            using (StreamReader streamReader = File.OpenText(pathToFile))
+                            {
+                                body = await streamReader.ReadToEndAsync();
+                                body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.ExcuteWorkflow).Result.Data?.Value);
+                                body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                            }
+                            var newReviewerEmail = deptNewEmployeeInfoReview.Email;
+                            var newReviewerMobile = deptNewEmployeeInfoReview.Mobile;
+
+
+                            await _notificationService.SendNotifications(
+                            new SendEmailDto()
+                            {
+                                To = new List<string>() { newReviewerEmail },
+                                Subject = "Review cancelled",
+                                Body = body
+                            },
+                            new SMSRequestDto()
+                            {
+                                message_text = msg,
+                                recipients = new List<string>() { newReviewerMobile },
+                                notification_type = "SMS",
+                            },
+                            new List<SysNotificationDto>()
+                            {
+                               new SysNotificationDto()
+                               {
+                                    ActorId = deptEmployeeInfoReview.Id,
                                     CreatedOn = DateTime.Now,
                                     ActorTypeId = NotificationActorType.Reviewer,
                                     IsViewed = false,

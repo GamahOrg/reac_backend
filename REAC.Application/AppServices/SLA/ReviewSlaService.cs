@@ -301,17 +301,21 @@ namespace REAC.Application.AppServices.SLA
                                                     litigationRequest.IsReminderForReviewerSent = false;
                                                     litigationRequest.IsReminderForReviewerManagerSent = false;
 
-                                                    employeeWorkFlowProcessingLogs.LastOrDefault().IsFinished = true;
-                                                    employeeWorkFlowProcessingLogs.LastOrDefault().FinishedOn = DateTime.Now;
+                                                   //employeeWorkFlowProcessingLogs.LastOrDefault().IsFinished = true;
+                                                   //employeeWorkFlowProcessingLogs.LastOrDefault().FinishedOn = DateTime.Now;
 
-                                                    WorkFlowProcessingLog workFlowProcessingLog = new WorkFlowProcessingLog();
-                                                    workFlowProcessingLog.Id = Guid.NewGuid();
-                                                    workFlowProcessingLog.EmployeeId = newEmployeeId;
-                                                    workFlowProcessingLog.IsFinished = false;
-                                                    workFlowProcessingLog.RequestId = litigationRequest.Id;
-                                                    workFlowProcessingLog.CreatedOn = DateTime.Now;
-                                                    workFlowProcessingLog.WorkFlowStepId = employeeWorkFlowProcessingLogs.LastOrDefault().WorkFlowStepId;
-                                                    await _repository.AddAsync<WorkFlowProcessingLog, Guid>(workFlowProcessingLog);
+                                                    //WorkFlowProcessingLog workFlowProcessingLog = new WorkFlowProcessingLog();
+                                                    //workFlowProcessingLog.Id = Guid.NewGuid();
+                                                    //workFlowProcessingLog.EmployeeId = newEmployeeId;
+                                                    //workFlowProcessingLog.IsFinished = false;
+                                                    //workFlowProcessingLog.RequestId = litigationRequest.Id;
+                                                    //workFlowProcessingLog.CreatedOn = DateTime.Now;
+                                                    //workFlowProcessingLog.WorkFlowStepId = employeeWorkFlowProcessingLogs.LastOrDefault().WorkFlowStepId;
+                                                    //await _repository.AddAsync<WorkFlowProcessingLog, Guid>(workFlowProcessingLog);
+                                                    foreach (var workFlowProcessingLog in workFlowProcessingLogs.Where(x => x.EmployeeId == employeeId))
+                                                    {
+                                                        workFlowProcessingLog.EmployeeId = newEmployeeId;
+                                                    }
 
                                                     litigationRequest.IsReminderForReviewerManagerSent = false;
 
@@ -441,13 +445,13 @@ namespace REAC.Application.AppServices.SLA
                                                             body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
                                                         }
 
-                                                        var employeeInfo = (await _repository.GetQueryable<SysEmployee, Guid>()).Where(e => e.Id == newEmployeeId).FirstOrDefault();
+                                                        var adminInfo = await _employeeService.GetAdminsByDepartmentType(DepartmentType.Review);
 
                                                         var applicationNotifications = new List<SysNotificationDto>();
 
                                                         applicationNotifications.Add(new SysNotificationDto()
                                                         {
-                                                            ActorId = (Guid)newEmployeeId,
+                                                            ActorId = adminInfo.Data.Id,
                                                             CreatedOn = DateTime.Now,
                                                             ActorTypeId = NotificationActorType.Employee,
                                                             IsViewed = false,
@@ -462,14 +466,14 @@ namespace REAC.Application.AppServices.SLA
                                                             {
                                                                 Body = body,
                                                                 Subject = "تم ارسال دعوى  إلى مدقق جديد لتخطى المدقق السابق مدة التدقيق الفصوى",
-                                                                To = new List<string>() { employeeInfo.Email }
+                                                                To = new List<string>() { adminInfo.Data.Email }
 
                                                             },
                                                             new Contracts.Dtos.Integration.GEE.SMSRequestDto()
                                                             {
                                                                 message_text = msg,
                                                                 notification_type = "SMS",
-                                                                recipients = new List<string>() { employeeInfo.Mobile }
+                                                                recipients = new List<string>() { adminInfo.Data.Mobile }
                                                             }, applicationNotifications
                                                             );
                                                     }
