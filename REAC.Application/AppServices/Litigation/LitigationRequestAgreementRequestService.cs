@@ -222,9 +222,9 @@ namespace REAC.Application.AppServices.Litigation
                 }
             }
 
-            if (litigationRequest.PlaintiffAgreementRequestResponse.HasValue & litigationRequest.DefendantAgreementRequestResponse.HasValue)
+            if (litigationRequest.PlaintiffAgreementRequestResponse.HasValue | litigationRequest.DefendantAgreementRequestResponse.HasValue)
             {
-                if (litigationRequest.PlaintiffAgreementRequestResponse != ApproveRejectStatus.Approve | litigationRequest.DefendantAgreementRequestResponse != ApproveRejectStatus.Approve)
+                if ((litigationRequest.PlaintiffAgreementRequestResponse.HasValue & litigationRequest.PlaintiffAgreementRequestResponse != ApproveRejectStatus.Approve) | (litigationRequest.DefendantAgreementRequestResponse.HasValue & litigationRequest.DefendantAgreementRequestResponse != ApproveRejectStatus.Approve))
                 {
                     litigationRequest.InternalStatusId = RequestStatus.AgreementRequestHasBeenRejected;
                     litigationRequest.ExternalStatusId = RequestStatus.AgreementRequestHasBeenRejected;
