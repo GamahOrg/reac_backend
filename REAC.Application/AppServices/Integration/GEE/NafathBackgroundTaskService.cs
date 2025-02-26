@@ -24,7 +24,7 @@ namespace REAC.Application.AppServices.Integration.GEE
             {
                 await DoWork(stoppingToken); 
             }
-           , null, TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(3600));
+           , null, TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(10));
 
         }
 
