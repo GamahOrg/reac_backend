@@ -25,7 +25,7 @@ namespace REAC.Domain.Shared.Constants
             "Reformer.DeActivate" ,
             "Reformer.Activate" ,
         };
-        
+
         public static readonly List<string> ArbitrationSystemSettings = new List<string>
         {
            "SLA.ArbitratorRegisterationFeesPeriod",
@@ -35,7 +35,7 @@ namespace REAC.Domain.Shared.Constants
            "SLA.ArbitratorMembershipFeesFirstNotificationPeriod",
            "SLA.ArbitratorMembershipFeesNotification",
            "SLA.ArbitratorMembershipRenewalFeesNotification",
-           
+
            "SLA.LitigationRequestArbitratorCountSelectionResponsePeriod",
            "SLA.LitigationRequestArbitratorCountSelectionDecisionPeriod",
            "SLA.ArbitratorsCount.FirstWarning",
@@ -56,14 +56,14 @@ namespace REAC.Domain.Shared.Constants
 
         };
 
-        
+
 
         public static readonly List<string> ReconciliationFeesSystemSettings = new List<string>
         {
             "Configurable.ReconciliationFees",
             "Configurable.ReformerJoiningRequestFees",
         };
-        
+
         public static readonly List<string> ArbitrationFeesSystemSettings = new List<string>
         {
             "Configurable.ArbitratorRegisterationFees.A",
@@ -74,7 +74,7 @@ namespace REAC.Domain.Shared.Constants
             "Configurable.ArbitratorMembershipFees.C"
         };
 
-       
+
 
         public static readonly List<string> ReviewSystemSetting = new List<string>
         {
@@ -93,6 +93,27 @@ namespace REAC.Domain.Shared.Constants
             "SLA.FirstAgreementRequestForRequest",
             "LitigationRequest.Accept.Agreement",
             "Arbitrators.Count.Added.AfterAgreement",
+            "SLA.SecondAgreementRequestForForRequest",
+            "SLA.AgreementCancelled",
+            "LitigationRequest.Reject.Agreement",
+        };
+
+        public static readonly List<string> ReviewSystemSettingOrder = new List<string>
+        {
+            "SLA.AssignLitigation.ReviewerAdmin",
+            "Review.Period",
+            "Review.ReAssigned",
+            "Review.Cancelled",
+            "SLA.WithdrewLitigation.OldReviewerEmployee",
+            "SLA.AssignLitigation.NewReviewerEmployee",
+            "SLA.ReminderForReviewer",
+            "SLA.ReminderForReviewerManager",
+            "SLA.FinishLitigation.ReviewerEmployee",           
+            "Arbitrators.Count.Added.AfterAgreement",
+            "Workflow.Condition.Review",
+            "SLA.FinishAgreementRequest",
+            "SLA.FirstAgreementRequestForRequest",
+            "LitigationRequest.Accept.Agreement",
             "SLA.SecondAgreementRequestForForRequest",
             "SLA.AgreementCancelled",
             "LitigationRequest.Reject.Agreement",

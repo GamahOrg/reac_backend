@@ -1,5 +1,6 @@
 ﻿using Core.Security.Attributes;
 using Core.Security.Authorization;
+using Core.Shared.Responses;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using REAC.Application.Contracts.Dtos.System;
@@ -135,7 +136,21 @@ public class SysSettingController : BaseController<SysSetting,
         if (ModelState.IsValid)
         {
             var returnValue = await _settingService.GetReviewSetting();
-            return Ok(returnValue);
+            var returnOrderValue = new DataResponse<List<SysSetting>>();
+            var OrderListValue = new List<SysSetting>();
+            for (int i = 0; i < SystemSettingsConfiguration.ReviewSystemSettingOrder.Count(); i++)
+            {
+                var index = returnValue?.Data?.FindIndex(x => x.Key == SystemSettingsConfiguration.ReviewSystemSettingOrder[i]);
+                if (index != null)
+                {
+                    var obj = returnValue?.Data?[index.Value];
+                    if(obj != null)
+                        OrderListValue.Add(obj);
+                }
+            }
+            returnOrderValue.Data = OrderListValue;
+            returnOrderValue.IsDone = true;
+            return Ok(returnOrderValue);
         }
 
         return BadRequest();
