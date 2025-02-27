@@ -1877,16 +1877,22 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<int?>("ActorType")
+                        .HasColumnType("int");
+
                     b.Property<Guid>("CreatedBy")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedOn")
                         .HasColumnType("datetime2");
 
+                    b.Property<bool?>("IsApproved")
+                        .HasColumnType("bit");
+
                     b.Property<Guid>("LitigationRequestId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("LitigationRequestSessionId")
+                    b.Property<Guid?>("LitigationRequestSessionId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("ModificationRequest")
@@ -2461,6 +2467,94 @@ namespace REAC.EntityFrameworkCore.Migrations
 
                     b.Property<string>("SecondParty")
                         .HasColumnType("nvarchar(max)");
+
+                    b.ToTable((string)null);
+
+                    b.ToView(null, (string)null);
+                });
+
+            modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Reports.GetLitigationStatisticsForAllStagesReportResult", b =>
+                {
+                    b.Property<int>("TotalArbitrationAllCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TotalArbitrationDueDateCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TotalArbitrationFinishedCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TotalArbitrationNotFinishedCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TotalArbitrationOtherServicesCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TotalArbitrationPropertiesCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TotalArbitrationRealEstateBrokerageCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TotalArbitrationRentCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TotalArbitrationWafiCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TotalReconciliationAllCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TotalReconciliationDueDateCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TotalReconciliationFinishedCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TotalReconciliationNotFinishedCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TotalReconciliationOtherServicesCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TotalReconciliationPropertiesCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TotalReconciliationRealEstateBrokerageCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TotalReconciliationRentCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TotalReconciliationWafiCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TotalReviewAllCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TotalReviewDueDateCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TotalReviewFinishedCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TotalReviewNotFinishedCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TotalReviewOtherServicesCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TotalReviewPropertiesCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TotalReviewRealEstateBrokerageCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TotalReviewRentCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TotalReviewWafiCount")
+                        .HasColumnType("int");
 
                     b.ToTable((string)null);
 
@@ -5202,9 +5296,7 @@ namespace REAC.EntityFrameworkCore.Migrations
 
                     b.HasOne("REAC.EntityFrameworkCore.Entities.Litigation.LitigationRequestSession", "LitigationRequestSession")
                         .WithMany("LitigationRequestModificationRequests")
-                        .HasForeignKey("LitigationRequestSessionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("LitigationRequestSessionId");
 
                     b.Navigation("Citizen");
 

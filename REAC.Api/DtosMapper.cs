@@ -73,7 +73,7 @@ namespace REAC.Application.Contracts
                                                    opt => opt.MapFrom(src => (src.Translations.FirstOrDefault(x => x.LanguageCode == CultureInfo.CurrentUICulture.Name) == null ||
                                                    string.IsNullOrEmpty(src.Translations.FirstOrDefault(x => x.LanguageCode == CultureInfo.CurrentUICulture.Name).Gender)) ?
                                                    src.Gender : src.Translations.FirstOrDefault(x => x.LanguageCode == CultureInfo.CurrentUICulture.Name).Gender)).ReverseMap();
-
+            CreateMap<SysEmployee, SysEmployeeGetUpdateDto>();
             CreateMap<SysEmployee, SysEmployeeDto>()
                                        .ForMember(des => des.EmployeeName,
                                        opt => opt.MapFrom(src => (src.Translations.FirstOrDefault(x => x.LanguageCode == CultureInfo.CurrentUICulture.Name) == null ||

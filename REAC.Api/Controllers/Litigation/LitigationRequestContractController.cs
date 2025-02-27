@@ -1,5 +1,6 @@
 ﻿using Core.Security.Attributes;
 using Core.Security.Authorization;
+using Core.Shared.Responses;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using REAC.Application.Contracts.Dtos.Litigation;
@@ -124,6 +125,32 @@ public class LitigationRequestContractController : BaseController<LitigationRequ
         if (ModelState.IsValid)
         {
             var returnValue = await _contractService.AddModificationRequest(litigationModificationRequestDto);
+            return Ok(returnValue);
+        }
+
+        return BadRequest();
+    }
+    
+    [HttpGet(nameof(GetModificationRequestForEmployee))]
+    [AllowAnonymous]
+    public async Task<ActionResult<LitigationModificationRequestDto>> GetModificationRequestForEmployee(int pageIndex, int pageSize)
+    {
+        if (ModelState.IsValid)
+        {
+            var returnValue = await _contractService.GetModificationRequestForEmployee(pageIndex,pageSize);
+            return Ok(returnValue);
+        }
+
+        return BadRequest();
+    }
+    
+    [HttpPost(nameof(AddModificationRequestAction))]
+    [AllowAnonymous]
+    public async Task<ActionResult<BaseResponse>> AddModificationRequestAction(AddModificationRequestActionDto addModificationRequestActionDto)
+    {
+        if (ModelState.IsValid)
+        {
+            var returnValue = await _contractService.AddModificationRequestAction(addModificationRequestActionDto);
             return Ok(returnValue);
         }
 
