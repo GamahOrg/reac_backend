@@ -734,7 +734,7 @@ namespace REAC.Application.AppServices.Litigation
             var deptAdminInfoReview = await _employeeService.GetAdminsByDepartmentType(DepartmentType.Review);
             var deptEmployeeInfoReview = (await _repository.GetQueryable<SysEmployee, Guid>())
                              .Include(e => e.Department)
-                             .Where(x => x.Department.DepartmentType == DepartmentType.Review & x.IsAdmin == false & x.Id != assignRequestPayload.EmployeeId)
+                             .Where(x => x.Department.DepartmentType == DepartmentType.Review & x.IsAdmin == false & x.Id != assignRequestPayload.EmployeeId & litigationRequest.Id == assignRequestPayload.RequestId)
                              .FirstOrDefault();
             var deptNewEmployeeInfoReview = (await _repository.GetQueryable<SysEmployee, Guid>())
                              .Include(e => e.Department)
@@ -840,14 +840,14 @@ namespace REAC.Application.AppServices.Litigation
                             await _notificationService.SendNotifications(
                             new SendEmailDto()
                             {
-                                To = new List<string>() { currentReviewerEmail, deptAdminInfoReview.Data.Email },
+                                To = new List<string>() { currentReviewerEmail },
                                 Subject = "Review cancelled",
                                 Body = body
                             },
                             new SMSRequestDto()
                             {
                                 message_text = msg,
-                                recipients = new List<string>() { currentReviewerMobile, deptAdminInfoReview.Data.Mobile },
+                                recipients = new List<string>() { currentReviewerMobile },
                                 notification_type = "SMS",
                             },
                             new List<SysNotificationDto>()
@@ -863,17 +863,6 @@ namespace REAC.Application.AppServices.Litigation
                                     RequestTypeId = RequestType.LitigationRequestCorrespondence,
                                     Message = msg,
                                },
-                               new SysNotificationDto()
-                               {
-                                    ActorId = deptAdminInfoReview.Data.Id,
-                                    CreatedOn = DateTime.Now,
-                                    ActorTypeId = NotificationActorType.Employee,
-                                    IsViewed = false,
-                                    ViewedOn = null,
-                                    RequestId = request.Id,
-                                    RequestTypeId = RequestType.LitigationRequestCorrespondence,
-                                    Message = msg,
-                               }
                             }
                             );
                         }
@@ -913,7 +902,7 @@ namespace REAC.Application.AppServices.Litigation
                             {
                                new SysNotificationDto()
                                {
-                                    ActorId = deptEmployeeInfoReview.Id,
+                                    ActorId = deptNewEmployeeInfoReview.Id,
                                     CreatedOn = DateTime.Now,
                                     ActorTypeId = NotificationActorType.Reviewer,
                                     IsViewed = false,
@@ -922,17 +911,7 @@ namespace REAC.Application.AppServices.Litigation
                                     RequestTypeId = RequestType.LitigationRequestCorrespondence,
                                     Message = msg,
                                },
-                               new SysNotificationDto()
-                               {
-                                    ActorId = deptAdminInfoReview.Data.Id,
-                                    CreatedOn = DateTime.Now,
-                                    ActorTypeId = NotificationActorType.Employee,
-                                    IsViewed = false,
-                                    ViewedOn = null,
-                                    RequestId = request.Id,
-                                    RequestTypeId = RequestType.LitigationRequestCorrespondence,
-                                    Message = msg,
-                               }
+
                             }
                             );
                         }

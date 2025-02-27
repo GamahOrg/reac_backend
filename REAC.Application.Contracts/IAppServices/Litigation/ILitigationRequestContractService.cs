@@ -1,4 +1,5 @@
-﻿using Core.Shared.Responses;
+﻿using Core.GenericRepository.Shared.Pagging;
+using Core.Shared.Responses;
 using REAC.Application.Contracts.Dtos.Litigation;
 using REAC.Application.Contracts.Dtos.Litigation.Create.Contract;
 using REAC.Application.Contracts.Dtos.Litigation.Create.Defendant;
@@ -21,6 +22,7 @@ namespace REAC.Application.Contracts.IAppServices.Litigation
         Task<BaseResponse> WafiIntegrate(LitigationRequestOwnerType FirstPartyCapacity, string WafiLicenseNo, WafiRequestOwnerType firstPartType, WafiRequestOwnerType secondPartyType);
         Task<BaseResponse> PropertiesIntegrate(LitigationRequestOwnerType FirstPartyCapacity, string associationCode, string associationName);
         Task<int> GetContractCountByContractType(LitigationRequestContractType litigationRequestContractTypeId);
-
+        Task<DataResponse<PagedResult<LitigationRequestModificationRequestsDto>>> GetModificationRequestForEmployee(int pageIndex, int pageSize);
+        Task<BaseResponse> AddModificationRequestAction(AddModificationRequestActionDto addModificationRequestActionDto);
     }
 }

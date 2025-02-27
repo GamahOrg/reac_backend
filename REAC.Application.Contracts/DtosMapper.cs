@@ -335,7 +335,9 @@ namespace REAC.Application.Contracts
             CreateMap<SysFileManager, SysFileManagerCreateUpdateDto>().ReverseMap();
             CreateMap<SysLitigationRequestAmount, SysLitigationRequestAmountCreateUpdateDto>().ReverseMap();
             CreateMap<LitigationRequestSession, LitigationRequestSessionCreateUpdateDto>().ReverseMap();
-            CreateMap<LititgationRequestModificationRequest, LitigationRequestModificationRequestsDto>().ReverseMap();
+            CreateMap<LititgationRequestModificationRequest, LitigationRequestModificationRequestsDto>()
+                .ForMember(des => des.RequestCode, opt => opt.MapFrom(src => src.LitigationRequest.RequestCode))
+                .ReverseMap();
             CreateMap<SysSetting, SysSettingCreateUpdateDto>().ReverseMap();
             CreateMap<SysRegistrationRequest, SysRegistrationRequestCreateUpdateDto>().ReverseMap();
             CreateMap<NafathTransaction, NafathTransactionDto>().ReverseMap();

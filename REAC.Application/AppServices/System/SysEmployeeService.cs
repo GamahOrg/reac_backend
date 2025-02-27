@@ -191,6 +191,64 @@ namespace REAC.Application.AppServices.System
 
             }
         }
+        public async Task<DataResponse<SysEmployeeGetUpdateDto>> GetByIdAsync(Guid employeeId)
+        {
+            var employee = (await _repository.GetQueryable<SysEmployee, Guid>())
+                             .Include(e => e.Department)
+                             .Where(x => x.Id == employeeId)
+                             .FirstOrDefault();
+            var user = await _userManager.FindByIdAsync(employee.UserId.ToString());
+            var employeeDto = _mapper.Map<SysEmployeeGetUpdateDto>(employee);
+            employeeDto.IdentityNumber = user.UserName;
+            if (employeeDto != null)
+                return new DataResponse<SysEmployeeGetUpdateDto> { Data = employeeDto, IsDone = true };
+            else
+                return new DataResponse<SysEmployeeGetUpdateDto> { Data = null, IsDone = false };
+        }
+
+        public async Task<BaseResponse> UpdateEmployee(SysEmployeeGetUpdateDto sysEmployeeDto)
+        {
+            try
+            {
+                var employee = (await _repository.GetQueryable<SysEmployee, Guid>())
+                                 .Include(e => e.Department)
+                                 .Where(x => x.Id == sysEmployeeDto.Id)
+                                 .FirstOrDefault();
+                var user = await _userManager.FindByIdAsync(employee.UserId.ToString());
+                if (employee == null)
+                    return new BaseResponse() { IsDone = false, Message = "الموظف غير موجود" };
+
+
+                var isExistUser = _userManager.Users.Any(x => x.UserName == sysEmployeeDto.IdentityNumber && x.Id != employee.UserId);
+                if (isExistUser)
+                    return new BaseResponse() { IsDone = false, Message = "رقم الهويه موجود مسبقا" };
+
+
+                employee.EmployeeName = sysEmployeeDto.EmployeeName;
+                employee.Mobile = sysEmployeeDto.Mobile;
+                employee.Email = sysEmployeeDto.Email;
+                employee.IsActive = sysEmployeeDto.IsActive;
+                employee.DepartmentId = sysEmployeeDto.DepartmentId;
+                employee.IsAdmin = sysEmployeeDto.IsAdmin;
+                user.UserName = sysEmployeeDto.IdentityNumber;
+
+                var result = await _repository.SaveChangesAsync();
+                if (!result.IsDone)
+                    return new BaseResponse() { IsDone = false, Message = "خطأ في تحديث البيانات" };
+                // Save changes to the user
+                var userResult = await _userManager.UpdateAsync(user);
+                if (!userResult.Succeeded)
+                {
+                    return new BaseResponse() { IsDone = false, Message = "خطأ في تحديث اسم المستخدم" };
+                }
+
+                return new BaseResponse() { IsDone = true, Message = "تم تحديث الموظف بنجاح" };
+            }
+            catch (Exception ex)
+            {
+                return new BaseResponse() { IsDone = false, Message = "خطأ داخلي" };
+            }
+        }
         public async Task<BaseResponse> List(int pageIndex, int pageSize, string? searchKey, bool? isActive)
         {
             PagedResult<SysEmployee> sysEmployees = null;

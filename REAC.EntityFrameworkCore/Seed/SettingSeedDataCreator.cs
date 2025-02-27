@@ -686,6 +686,11 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                     },new SysSetting
                     {
                         Id = Guid.NewGuid(),
+                        Key = "LitigationRequest.ModificationRequest",
+                        Value = "تم أضافة طلب تعديل علي الدعوى رقم {LitigationCode}",
+                    },new SysSetting
+                    {
+                        Id = Guid.NewGuid(),
                         Key = "ProcessWorkflow.Accepted",
                         Value = "تم قبول طلب الدعوي رقم {LitigationCode} \r\nبرجاء دفع رسوم قبول الطلب في مدة اقصاها {ExpirationDays} يوم \r\n",
                     },new SysSetting

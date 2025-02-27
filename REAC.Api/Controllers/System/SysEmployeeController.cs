@@ -62,6 +62,19 @@ public class SysEmployeeController : BaseController<SysEmployee,
 
         return BadRequest();
     }
+    [AllowAnonymous]
+    [HttpGet(nameof(GetByIdAsync))]
+
+    public async Task<ActionResult<IEnumerable<SysEmployeeGetUpdateDto>>> GetByIdAsync(Guid employeeId)
+    {
+        if (ModelState.IsValid)
+        {
+            var returnValue = await _sysEmployeeService.GetByIdAsync(employeeId);
+            return Ok(returnValue);
+        }
+
+        return BadRequest();
+    }
 
     //[AllowAnonymous]
     [HttpPost(nameof(CreateEmployee))]
@@ -92,6 +105,18 @@ public class SysEmployeeController : BaseController<SysEmployee,
         if (ModelState.IsValid)
         {
             var returnValue = await _sysEmployeeService.UpdateDistributioonMode(distributionMode);
+            return Ok(returnValue);
+        }
+
+        return BadRequest();
+    }
+    [AllowAnonymous]
+    [HttpPut(nameof(UpdateEmployee))]
+    public async Task<ActionResult> UpdateEmployee(SysEmployeeGetUpdateDto sysEmployeeDto)
+    {
+        if (ModelState.IsValid)
+        {
+            var returnValue = await _sysEmployeeService.UpdateEmployee(sysEmployeeDto);
             return Ok(returnValue);
         }
 

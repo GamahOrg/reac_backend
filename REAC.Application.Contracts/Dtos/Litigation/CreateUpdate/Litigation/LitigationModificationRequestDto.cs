@@ -1,4 +1,5 @@
-﻿using System;
+﻿using REAC.Domain.Shared.Enum;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,9 +11,11 @@ namespace REAC.Application.Contracts.Dtos.Litigation.CreateUpdate.Litigation
     {
         public string ModificationRequest { get; set; }
         public Guid LitigationRequestId { get; set; }
-        public Guid LitigationRequestSessionId { get; set; }
-        public Guid CreatedBy { get; set; }
-        public DateTime CreatedOn { get; set; }
+        public Guid? LitigationRequestSessionId { get; set; }
+        public Guid? CreatedBy { get; set; }
+        public DateTime? CreatedOn { get; set; }
 
+        public bool? IsApproved { get; set; }
+        public NotificationActorType? ActorType { get; set; }
     }
 }

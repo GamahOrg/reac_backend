@@ -16,6 +16,8 @@ namespace REAC.Application.Contracts.IAppServices.System
         Task<BaseResponse> UpdateEmployeeStatus(Guid employeeId, bool isActive);
         Task<DataResponse<List<SysDepartmentDistributionModeDto>>> GetDistributioonMode();
         Task<BaseResponse> UpdateDistributioonMode(DepartmentDistributionMode distributionMode);
+        Task<DataResponse<SysEmployeeGetUpdateDto>> GetByIdAsync(Guid employeeId);
+        Task<BaseResponse> UpdateEmployee(SysEmployeeGetUpdateDto sysEmployeeDto);
 
     }
 }

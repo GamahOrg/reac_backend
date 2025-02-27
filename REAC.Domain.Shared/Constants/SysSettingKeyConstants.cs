@@ -193,6 +193,7 @@
         public const string ArbitrationSession_Added = "ArbitrationSession.Added";
         public const string ArbitrationService_JudgmentAdded = "ArbitrationService.JudgmentAdded";
         public const string ExcuteWorkflow = "ExcuteWorkflow";
+        public const string LitigationRequest_ModificationRequest = "LitigationRequest.ModificationRequest";
         public const string ProcessWorkflow_Accepted = "ProcessWorkflow.Accepted";
         public const string ProcessWorkflow_Reject = "ProcessWorkflow.Reject";
         public const string ProcessWorkflow_SentBackForEdit = "ProcessWorkflow.SentBackForEdit";

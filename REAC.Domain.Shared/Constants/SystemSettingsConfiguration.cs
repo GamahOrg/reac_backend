@@ -26,6 +26,16 @@ namespace REAC.Domain.Shared.Constants
             "Reformer.Activate" ,
         };
 
+        public static readonly List<string> ArbitrationFeesSystemSettings = new List<string>
+{
+    "Configurable.ArbitratorRegisterationFees.A",
+    "Configurable.ArbitratorRegisterationFees.B",
+    "Configurable.ArbitratorRegisterationFees.C",
+    "Configurable.ArbitratorMembershipFees.A",
+    "Configurable.ArbitratorMembershipFees.B",
+    "Configurable.ArbitratorMembershipFees.C"
+};
+
         public static readonly List<string> ArbitrationSystemSettings = new List<string>
         {
            "SLA.ArbitratorRegisterationFeesPeriod",
@@ -60,18 +70,8 @@ namespace REAC.Domain.Shared.Constants
 
         public static readonly List<string> ReconciliationFeesSystemSettings = new List<string>
         {
-            "Configurable.ReconciliationFees",
-            "Configurable.ReformerJoiningRequestFees",
-        };
-
-        public static readonly List<string> ArbitrationFeesSystemSettings = new List<string>
-        {
-            "Configurable.ArbitratorRegisterationFees.A",
-            "Configurable.ArbitratorRegisterationFees.B",
-            "Configurable.ArbitratorRegisterationFees.C",
-            "Configurable.ArbitratorMembershipFees.A",
-            "Configurable.ArbitratorMembershipFees.B",
-            "Configurable.ArbitratorMembershipFees.C"
+        "Configurable.ReconciliationFees",
+        "Configurable.ReformerJoiningRequestFees",
         };
 
 
