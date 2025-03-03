@@ -102,5 +102,15 @@ namespace REAC.Api.Controllers.Reports
             return Ok(response);
 
         }
+        
+        [HttpPost(nameof(GetLitigationStatisticsDetailsForAllStages))]
+        [AllowAnonymous]
+        public async Task<ActionResult> GetLitigationStatisticsDetailsForAllStages([FromBody] GetLitigationStatisticsMainReportFilter filter)
+        {
+
+            var response = await _IReportService.GetLitigationStatisticsDetailsForAllStages(filter);
+            return Ok(response);
+
+        }
     }
 }

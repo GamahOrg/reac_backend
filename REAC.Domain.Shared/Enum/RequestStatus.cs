@@ -71,7 +71,10 @@ public enum RequestStatus
     ///<summary>تم قبول الدعوى وجارى إرسال طلب تحصيل رسوم الصلح</summary>
     LitigationApprovedCollectionOfReconciliationFeesRequestIsBeingSend = 32,
     ///<summary>قيد دفع رسوم التحكيم</summary>
-    PendingPayment = 33
+    PendingPayment = 33,
+
+    ///<summary>تم ارسال طلب تعديل علي الدعوي</summary>
+    EditRequestHasBeenSent = 34
 
 }
 
