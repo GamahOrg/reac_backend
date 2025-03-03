@@ -201,7 +201,50 @@ namespace REAC.Application.AppServices.Reports
             catch (Exception)
             {
 
-                throw;
+                return new BaseResponse() { IsDone = false, Message = "خطأ داخلي" };
+
+            }
+        }
+        
+        public async Task<BaseResponse> GetLitigationStatisticsDetailsForAllStages(GetLitigationStatisticsMainReportFilter filter)
+        {
+            try
+            {
+                CultureInfo provider = new CultureInfo("en-US");
+                CultureInfo.CurrentCulture = provider;
+
+                var inputParms = new Dictionary<string, object>()
+            {
+                { "FromDate", filter.FromDate != null ? DateTime.ParseExact( filter.FromDate.ToString(),  "yyyy-MM-dd", provider ).ToLocalTime() : Convert.DBNull},
+                { "ToDate", filter.ToDate  != null ? DateTime.ParseExact( filter.ToDate.ToString(),  "yyyy-MM-dd", provider).ToLocalTime() :Convert.DBNull }
+            };
+
+                var (resultList, outPut) = await _entityRepository.ExecuteStoredProcedureAsync<GetLitigationStatisticsDetailsForAllStagesReportResult>("[dbo].[GetLitigationStatisticsDetailsForAllStages]", inputParms);
+                if (resultList.IsDone)
+                {
+
+                    dynamic obj = new ExpandoObject();
+                    obj.LitigationStatisticsForAllStages = (resultList as DataResponse<List<GetLitigationStatisticsDetailsForAllStagesReportResult>>)?.Data;
+                    return new DataResponse<object>()
+                    {
+                        IsDone = true,
+                        Data = obj
+                    };
+                }
+                return new BaseResponse()
+                {
+                    IsDone = false,
+                    Message = string.Join(", ",
+                                new[] { resultList?.Message }
+                                .Where(msg => !string.IsNullOrEmpty(msg)))
+
+                };
+
+            }
+            catch (Exception)
+            {
+
+                return new BaseResponse() { IsDone = false , Message = "خطأ داخلي"};
             }
         }
         public async Task<BaseResponse> GetLitigationStatisticsForAllStagesProc(GetLitigationStatisticsMainReportFilter filter)

@@ -854,6 +854,7 @@ namespace REAC.Application.AppServices.Litigation
 
                 if (model.ActorType is not null && model.ActorType == NotificationActorType.Applicant
                     && litigationRequest?.InternalStatusId != RequestStatus.New
+                    && litigationRequest?.InternalStatusId != RequestStatus.Edited
                     && litigationRequest?.InternalStatusId != RequestStatus.CollectionOfLitigationFeesRequestIsBeingSent
                     && litigationRequest?.InternalStatusId != RequestStatus.LitigationFeesHaveBeenCollected
                     && litigationRequest?.InternalStatusId != RequestStatus.CollectionOfReconciliationFeesRequestIsBeingSent
@@ -875,6 +876,7 @@ namespace REAC.Application.AppServices.Litigation
                     modifiacitonRequest.IsApproved = null;
                     modifiacitonRequest.ActorType = model.ActorType;
                 }
+                
                 var record = await _repository.AddAsync<LititgationRequestModificationRequest, Guid>(modifiacitonRequest);
                 var result = await _repository.SaveChangesAsync();
                 if (!result.IsDone)
@@ -1012,9 +1014,7 @@ namespace REAC.Application.AppServices.Litigation
         {
             try
             {
-                Guid employeeId = Guid.Empty;
-                _jwtReader.GetReferenceId(ref employeeId);
-
+               
                 var result = (await _repository.GetQueryable<LititgationRequestModificationRequest, Guid>())
                     .FirstOrDefault(x => x.Id == addModificationRequestActionDto.ModificationRequestId);
 
@@ -1025,42 +1025,49 @@ namespace REAC.Application.AppServices.Litigation
                 if (addModificationRequestActionDto.IsApproved)
                 {
                     result.IsApproved = true;
-                    var workflowStepEvents = await _bpfService.GetWorkflowStepEventsForEmployee(result.LitigationRequestId, default);
+                    await _repository.SaveChangesAsync();
+                    return new BaseResponse { IsDone = true, Message = "تم قبول الطلب" };
 
-                    if (!workflowStepEvents.IsDone)
-                        return new BaseResponse { IsDone = true, Message = "لا يمكن قبول طلب التعديل علي هذه الدعوي" };
 
-                    var workflowStepEventsObject = workflowStepEvents as DataResponse<WorkFlowStepEventForActorShortDto>;
+                    //var workflowStepEvents = await _bpfService.GetWorkflowStepEventsForEmployee(result.LitigationRequestId, default);
 
-                    if (workflowStepEventsObject?.Data is not null && workflowStepEventsObject.Data.WorkFlowStepEventShortDtos.Any(x => x.EventName == "Send Back For Edit"))
-                    {
-                        var changeLitigationToSentBackForEdit = await _bpfService.ProcessWorkFlow(new Contracts.Dtos.Wpf.Business.ProcessRequestPayload()
-                        {
-                            RequestId = result.LitigationRequestId,
-                            WorkflowStepEventId = workflowStepEventsObject.Data.WorkFlowStepEventShortDtos.First(x => x.EventName == "Send Back For Edit").Id,
-                            ProcessingLogId = workflowStepEventsObject.Data.WorkFlowStepEventShortDtos.First(x => x.EventName == "Send Back For Edit").ProcessingLogId,
-                            Notes = "تعديل الدعوي بناءا علي طلب مقدم الطلب",
-                            UploadedFilesIds = new List<Guid>()
+                    //if (!workflowStepEvents.IsDone)
+                    //    return new BaseResponse { IsDone = true, Message = "لا يمكن قبول طلب التعديل علي هذه الدعوي" };
 
-                        }, CancellationToken.None);
+                    //var workflowStepEventsObject = workflowStepEvents as DataResponse<WorkFlowStepEventForActorShortDto>;
 
-                        if (!changeLitigationToSentBackForEdit.IsDone)
-                            return new BaseResponse { IsDone = true, Message = "لا يمكن قبول طلب التعديل علي هذه الدعوي" };
+                    //if (workflowStepEventsObject?.Data is not null && workflowStepEventsObject.Data.WorkFlowStepEventShortDtos.Any(x => x.EventName.Replace(" ","") == "إعادةالدعوىللتعديل"))
+                    //{
+                    //    var changeLitigationToSentBackForEdit = await _bpfService.ProcessWorkFlow(new Contracts.Dtos.Wpf.Business.ProcessRequestPayload()
+                    //    {
+                    //        RequestId = result.LitigationRequestId,
+                    //        WorkflowStepEventId = workflowStepEventsObject.Data.WorkFlowStepEventShortDtos.First(x => x.EventName.Replace(" ", "") == "إعادةالدعوىللتعديل").Id,
+                    //        ProcessingLogId = workflowStepEventsObject.Data.WorkFlowStepEventShortDtos.First(x => x.EventName.Replace(" ","") == "إعادةالدعوىللتعديل").ProcessingLogId,
+                    //        Notes = "تعديل الدعوي بناء علي طلب مقدم الطلب",
+                    //        UploadedFilesIds = new List<Guid>()
 
-                        return new BaseResponse { IsDone = true, Message = "تم قبول الطلب" };
+                    //    }, CancellationToken.None);
 
-                    }
-                    else
-                    {
-                        return new BaseResponse { IsDone = true, Message = "لا يمكن قبول طلب التعديل علي هذه الدعوي" };
+                    //    if (!changeLitigationToSentBackForEdit.IsDone)
+                    //        return new BaseResponse { IsDone = true, Message = "لا يمكن قبول طلب التعديل علي هذه الدعوي" };
 
-                    }
+                    //    return new BaseResponse { IsDone = true, Message = "تم قبول الطلب" };
+
+                    //}
+                    //else
+                    //{
+                    //    return new BaseResponse { IsDone = true, Message = "لا يمكن قبول طلب التعديل علي هذه الدعوي" };
+
+                    //}
 
 
                 }
                 else
                 {
                     result.IsApproved = false;
+                    await _repository.SaveChangesAsync();
+
+
                     return new BaseResponse { IsDone = true, Message = "تم رفض الطلب" };
                 }
 

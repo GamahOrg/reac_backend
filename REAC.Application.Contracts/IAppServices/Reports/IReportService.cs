@@ -20,5 +20,6 @@ namespace REAC.Application.Contracts.IAppServices.Reports
         public Task<BaseResponse> GetListOfLitigationArbitrationReport(GetListOfLitigationArbitrationReportFilter filter);
         public Task<BaseResponse> GetListOfLitigationGeneralReport(GetListOfLitigationGeneralReportFilter filter);
         public Task<BaseResponse> GetLitigationStatisticsForAllStages(GetLitigationStatisticsMainReportFilter filter);
+        public Task<BaseResponse> GetLitigationStatisticsDetailsForAllStages(GetLitigationStatisticsMainReportFilter filter);
     }
 }

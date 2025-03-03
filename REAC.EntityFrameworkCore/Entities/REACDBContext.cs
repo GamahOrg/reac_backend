@@ -2171,6 +2171,7 @@ public partial class REACDBContext : DbContext
         modelBuilder.Entity<GetListOfLitigationArbitrationReportResult>().HasNoKey().ToView(null);
         modelBuilder.Entity<GetListOfLitigationGeneralReportResult>().HasNoKey().ToView(null);
         modelBuilder.Entity<GetLitigationStatisticsForAllStagesReportResult>().HasNoKey().ToView(null);
+        modelBuilder.Entity<GetLitigationStatisticsDetailsForAllStagesReportResult>().HasNoKey().ToView(null);
 
     }
 }
