@@ -57,11 +57,11 @@ public class ReconciliationController : ControllerBase
 
 
     [HttpGet(nameof(GetReconciliationRequestForSession))]
-    public async Task<IActionResult> GetReconciliationRequestForSession(CancellationToken cancellationToken)
+    public async Task<IActionResult> GetReconciliationRequestForSession(int pageIndex, int pageSize, CancellationToken cancellationToken)
     {
         if (ModelState.IsValid)
         {
-            var returnValue = await _reconciliationService.GetLitigationRequestForSession(cancellationToken);
+            var returnValue = await _reconciliationService.GetLitigationRequestForSession( pageIndex, pageSize, cancellationToken);
             return Ok(returnValue);
         }
         return BadRequest();
@@ -92,23 +92,24 @@ public class ReconciliationController : ControllerBase
         return BadRequest();
     }
     [HttpGet(nameof(GetReconciliationRequestForReport))]
-    public async Task<IActionResult> GetReconciliationRequestForReport(CancellationToken cancellationToken)
+    public async Task<IActionResult> GetReconciliationRequestForReport(int pageIndex, int pageSize, CancellationToken cancellationToken)
     {
         if (ModelState.IsValid)
         {
-            var returnValue = await _reconciliationService.GetLitigationRequestForReport(cancellationToken);
+            var returnValue = await _reconciliationService.GetLitigationRequestForReport(pageIndex,pageSize, cancellationToken);
             return Ok(returnValue);
         }
 
         return BadRequest();
     }
 
-    [HttpGet(nameof(GetLitigationRequestForFullAllReformer))]
-    public async Task<IActionResult> GetLitigationRequestForFullAllReformer(int pageIndex, int pageSize, CancellationToken cancellationToken)
+    [HttpPost(nameof(GetLitigationRequestForFullAllReformer))]
+    [AllowAnonymous]
+    public async Task<IActionResult>  GetLitigationRequestForFullAllReformer(int pageIndex, int pageSize, CancellationToken cancellationToken, LitigationRequestReconciliationAssignReformersFilter? filter, bool ascending = false)
     {
         if (ModelState.IsValid)
         {
-            var returnValue = await _reconciliationService.GetLitigationRequestForFullAllReformer(pageIndex, pageSize, cancellationToken);
+            var returnValue = await _reconciliationService.GetLitigationRequestForFullAllReformer(pageIndex, pageSize, cancellationToken,filter, ascending);
             return Ok(returnValue);
         }
         return BadRequest();

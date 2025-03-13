@@ -377,7 +377,7 @@ namespace REAC.Application.AppServices.Litigation
 
             return await GetLitigationRequestArbitratorAssigningRequests(litigationRequestArbitratorAssigningRequest.LitigationRequestId, requestPayload.Id, cancellationToken);
         }
-        public async Task<BaseResponse> GetLitigationRequestArbitratorAssigningRequests(CancellationToken cancellationToken)
+        public async Task<BaseResponse> GetLitigationRequestArbitratorAssigningRequests(int pageIndex, int pageSize,CancellationToken cancellationToken)
         {
             Guid referenceId = Guid.Empty;
             _jwtReader.GetReferenceId(ref referenceId);
@@ -407,12 +407,12 @@ namespace REAC.Application.AppServices.Litigation
                          .Include(x => x.Contract.SecondPartyCitizen)
                          .Include(x => x.Contract.LitigationRequestContractType)
                          .Where(x => x.LitigationRequestArbitratorAssigningRequests
-                         .Where(t => t.CitizenId == referenceId).Count() > 0).OrderByDescending(x => x.CreatedOn).AsNoTracking().ToList();
+                         .Where(t => t.CitizenId == referenceId).Count() > 0).OrderByDescending(x => x.CreatedOn).AsNoTracking().GetPaged(pageIndex,pageSize);
 
             List<CustomLitigationRequestMircoArbitratorDto> litigationRequestMircoDtos = new List<CustomLitigationRequestMircoArbitratorDto>();
             if (litigationRequests != null)
             {
-                foreach (var litigationRequest in litigationRequests)
+                foreach (var litigationRequest in litigationRequests.Results)
                 {
                     foreach (var litigationRequestArbitratorAssigningRequest in litigationRequest.LitigationRequestArbitratorAssigningRequests
                         .Where(x => x.CitizenId == referenceId).OrderByDescending(x => x.RequestOn).DistinctBy(x => x.LitigationRequestId))
@@ -462,13 +462,21 @@ namespace REAC.Application.AppServices.Litigation
                 }
             }
 
-            return new DataResponse<List<CustomLitigationRequestMircoArbitratorDto>>()
+            return new DataResponse<PagedResult<CustomLitigationRequestMircoArbitratorDto>>
             {
-                Data = litigationRequestMircoDtos,
+                Data =
+                              new PagedResult<CustomLitigationRequestMircoArbitratorDto>
+                              {
+                                  Results = litigationRequestMircoDtos,
+                                  CurrentPage = litigationRequests.CurrentPage,
+                                  PageCount = litigationRequests.PageCount,
+                                  PageSize = litigationRequests.PageSize,
+                                  TotalCount = litigationRequests.TotalCount
+                              },
                 IsDone = true
             };
 
-            throw new NotImplementedException();
+           
         }
         public async Task<BaseResponse> GetLitigationRequestArbitratorAssigningRequestsAll(int pageIndex, int pageSize, CancellationToken cancellationToken)
         {

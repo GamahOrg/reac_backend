@@ -1,5 +1,6 @@
 ﻿using Core.GenericRepository.Shared.BaseEntities;
 using REAC.Domain.Shared.Enum;
+using REAC.EntityFrameworkCore.Entities;
 using REAC.EntityFrameworkCore.Entities.System;
 
 namespace REAC.Application.Contracts.Dtos.Citizen
@@ -71,6 +72,7 @@ namespace REAC.Application.Contracts.Dtos.Citizen
         public virtual SysFileManagerCreateUpdateDto? LawLicenseFile { get; set; }
         public virtual ReformerStatus? ReformerStatusId { get; set; }
         public virtual ArbitratorStatus? ArbitratorStatusId { get; set; }
+        public ReformerStopFreeUpDecision? ReformerStopFreeUpDecision { get; set; }
 
     }
 

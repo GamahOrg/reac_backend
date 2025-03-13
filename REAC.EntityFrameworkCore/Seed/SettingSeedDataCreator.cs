@@ -438,7 +438,7 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                     {
                         Id = Guid.NewGuid(),
                         Key = "Reformer.UpdateJoiningRequest.NoFees",
-                        Value = "تنويه بانه تم إعادة طلب {CitizenName} للانضمام كمصلح مع عدم وجود رسوم للتعديل لوجود ملاحظات",
+                        Value = "تنويه بانه تم إعادة طلب {CitizenName} للانضمام كمصلح مع للتعديل لوجود ملاحظات",
                     },new SysSetting
                     {
                         Id = Guid.NewGuid(),
@@ -782,13 +782,13 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                     {
                         Id = Guid.NewGuid(),
                         Key = "ReconciliationSession.Set",
-                        Value = "تم تحديد موعد لجلسة الصلح\r\nرقم الدعوى: {LitigationCode} برجاء التواجد فى الموعد المحدد, رابط الجلسه {SessionLink}",
+                        Value = "تم تحديد موعد لجلسة الصلح\r\nرقم الدعوى: {LitigationCode} برجاء التواجد فى {SessionDatetime}, رابط الجلسه {SessionLink}",
 
                     },new SysSetting
                     {
                         Id = Guid.NewGuid(),
                         Key = "ReconciliationSession.Reset",
-                        Value = "تم أعادة تعيين جلسة الصلح\r\nترقم الدعوى: {LitigationCode} برجاء التواجد فى الموعد المحدد, رابط الجلسه {SessionLink}",
+                        Value = "تم أعادة تعيين جلسة الصلح\r\nترقم الدعوى: {LitigationCode} برجاء التواجد فى {SessionDatetime}, رابط الجلسه {SessionLink}",
 
                     },
                     new SysSetting

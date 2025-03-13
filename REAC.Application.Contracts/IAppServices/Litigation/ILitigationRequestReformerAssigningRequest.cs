@@ -6,8 +6,8 @@ namespace REAC.Application.Contracts.IAppServices.Litigation
 {
     public interface ILitigationRequestReformerAssigningRequest
     {
-        Task<BaseResponse> GetLitigationRequestReformerAssigningRequestsAll(int pageIndex, int pageSize, CancellationToken cancellationToken);
-        Task<BaseResponse> GetLitigationRequestReformerAssigningRequests(CancellationToken cancellationToken);
+        Task<BaseResponse> GetLitigationRequestReformerAssigningRequestsAll(int pageIndex, int pageSize, CancellationToken cancellationToken, bool ascending = false);
+        Task<BaseResponse> GetLitigationRequestReformerAssigningRequests(int pageIndex, int pageSize, CancellationToken cancellationToken, bool ascending = false);
         Task<BaseResponse> AddLitigationRequestReformerAssigningRequestsResponse(AssigningRequestsPayload requestPayload, CancellationToken cancellationToken);
     }
 

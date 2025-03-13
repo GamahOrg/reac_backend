@@ -337,13 +337,14 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Property<Guid>("CitizenRequestId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("PK_CitizenRequestCVFile3214EC0743341C99");
 
                     b.HasIndex("CitizenRequestCVFilesId");
 
                     b.HasIndex("CitizenRequestId");
 
-                    b.ToTable("CitizenRequestCVFile");
+                    b.ToTable("CitizenRequestCVFile", (string)null);
                 });
 
             modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Actor.CitizenRequestExperienceCertificate", b =>
@@ -454,19 +455,17 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Property<Guid>("CitizenRequestId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("ProgramRealEstateDocumentFileId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<Guid>("RealEstateInstituteFileId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("PK_CitizenRequestProgramRealEstateInstituteFile3214EC0743341C99");
 
                     b.HasIndex("CitizenRequestId");
 
-                    b.HasIndex("ProgramRealEstateDocumentFileId");
+                    b.HasIndex("RealEstateInstituteFileId");
 
-                    b.ToTable("CitizenRequestProgramRealEstateInstituteFiles");
+                    b.ToTable("CitizenRequestProgramRealEstateInstituteFiles", (string)null);
                 });
 
             modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Actor.CitizenRequestReconciliationCenterDegreeFile", b =>
@@ -481,16 +480,14 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Property<Guid>("ReconciliationCenterDegreeFileId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("ReconciliationCenterFileId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("PK_CitizenRequestReconciliationCenterDegreeFile3214EC0743341C99");
 
                     b.HasIndex("CitizenRequestId");
 
-                    b.HasIndex("ReconciliationCenterFileId");
+                    b.HasIndex("ReconciliationCenterDegreeFileId");
 
-                    b.ToTable("CitizenRequestReconciliationCenterDegreeFiles");
+                    b.ToTable("CitizenRequestReconciliationCenterDegreeFiles", (string)null);
                 });
 
             modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Arbitration.ArbitratorStopFreeUpDecision", b =>
@@ -1775,6 +1772,9 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Property<Guid>("LitigationRequestId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("Reason")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("RejectReason")
                         .HasColumnType("nvarchar(max)");
 
@@ -2273,6 +2273,12 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Property<Guid>("CitizenId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int?>("CreatedByRole")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("DecisionDate")
                         .HasColumnType("datetime2");
 
@@ -2467,6 +2473,148 @@ namespace REAC.EntityFrameworkCore.Migrations
 
                     b.Property<string>("SecondParty")
                         .HasColumnType("nvarchar(max)");
+
+                    b.ToTable((string)null);
+
+                    b.ToView(null, (string)null);
+                });
+
+            modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Reports.GetLitigationStatisticsDetailsForAllStagesReportResult", b =>
+                {
+                    b.Property<int?>("TotalArbitrationDueDateOtherServicesCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TotalArbitrationDueDatePropertiesCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TotalArbitrationDueDateRealEstateBrokerageCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TotalArbitrationDueDateRentCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TotalArbitrationDueDateWafiCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TotalArbitrationFinishedOtherServicesCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TotalArbitrationFinishedPropertiesCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TotalArbitrationFinishedRealEstateBrokerageCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TotalArbitrationFinishedRentCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TotalArbitrationFinishedWafiCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TotalArbitrationNotFinishedOtherServicesCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TotalArbitrationNotFinishedPropertiesCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TotalArbitrationNotFinishedRealEstateBrokerageCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TotalArbitrationNotFinishedRentCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TotalArbitrationNotFinishedWafiCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TotalReconciliationDueDateOtherServicesCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TotalReconciliationDueDatePropertiesCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TotalReconciliationDueDateRealEstateBrokerageCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TotalReconciliationDueDateRentCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TotalReconciliationDueDateWafiCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TotalReconciliationFinishedOtherServicesCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TotalReconciliationFinishedPropertiesCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TotalReconciliationFinishedRealEstateBrokerageCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TotalReconciliationFinishedRentCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TotalReconciliationFinishedWafiCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TotalReconciliationNotFinishedOtherServicesCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TotalReconciliationNotFinishedPropertiesCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TotalReconciliationNotFinishedRealEstateBrokerageCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TotalReconciliationNotFinishedRentCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TotalReconciliationNotFinishedWafiCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TotalReviewDueDateOtherServicesCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TotalReviewDueDatePropertiesCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TotalReviewDueDateRealEstateBrokerageCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TotalReviewDueDateRentCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TotalReviewDueDateWafiCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TotalReviewFinishedOtherServicesCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TotalReviewFinishedPropertiesCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TotalReviewFinishedRealEstateBrokerageCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TotalReviewFinishedRentCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TotalReviewFinishedWafiCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TotalReviewNotFinishedOtherServicesCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TotalReviewNotFinishedPropertiesCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TotalReviewNotFinishedRealEstateBrokerageCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TotalReviewNotFinishedRentCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TotalReviewNotFinishedWafiCount")
+                        .HasColumnType("int");
 
                     b.ToTable((string)null);
 
@@ -4423,7 +4571,8 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .WithMany("CitizenRequestCVFiles")
                         .HasForeignKey("CitizenRequestId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("FKCitizenRequestCVFileCitizenRequest676101");
 
                     b.Navigation("CitizenRequest");
 
@@ -4499,11 +4648,13 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .WithMany("CitizenRequestProgramRealEstateInstituteFiles")
                         .HasForeignKey("CitizenRequestId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("FKCitizenRequestProgramRealEstateCitizenRequest676101");
 
                     b.HasOne("REAC.EntityFrameworkCore.Entities.System.SysFileManager", "ProgramRealEstateDocumentFile")
                         .WithMany("CitizenRequestProgramRealEstateInstituteFiles")
-                        .HasForeignKey("ProgramRealEstateDocumentFileId");
+                        .HasForeignKey("RealEstateInstituteFileId")
+                        .HasConstraintName("CitizenRequestProgramRealEstateInstitutes616003");
 
                     b.Navigation("CitizenRequest");
 
@@ -4516,11 +4667,13 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .WithMany("CitizenRequestReconciliationCenterDegreeFiles")
                         .HasForeignKey("CitizenRequestId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("FKCitizenRequestReconciliationCenterDegreeFilesCitizenRequest676101");
 
                     b.HasOne("REAC.EntityFrameworkCore.Entities.System.SysFileManager", "ReconciliationCenterFile")
                         .WithMany("CitizenRequestReconciliationCenterDegreeFiles")
-                        .HasForeignKey("ReconciliationCenterFileId");
+                        .HasForeignKey("ReconciliationCenterDegreeFileId")
+                        .HasConstraintName("CitizenRequestReconciliationCenterDegrees616003");
 
                     b.Navigation("CitizenRequest");
 

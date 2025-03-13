@@ -20,11 +20,11 @@ public class LitigationRequestArbitratorAssigningRequestController : ControllerB
         _litigationRequestArbitratorAssigningRequest = litigationRequestArbitratorAssigningRequest;
     }
     [HttpGet(nameof(GetLitigationRequestArbitratorAssigningRequests))]
-    public async Task<IActionResult> GetLitigationRequestArbitratorAssigningRequests(CancellationToken cancellationToken)
+    public async Task<IActionResult> GetLitigationRequestArbitratorAssigningRequests(int pageIndex,int pageSize,CancellationToken cancellationToken)
     {
         if (ModelState.IsValid)
         {
-            var returnValue = await _litigationRequestArbitratorAssigningRequest.GetLitigationRequestArbitratorAssigningRequests(cancellationToken);
+            var returnValue = await _litigationRequestArbitratorAssigningRequest.GetLitigationRequestArbitratorAssigningRequests(pageIndex,pageSize, cancellationToken);
             return Ok(returnValue);
         }
 

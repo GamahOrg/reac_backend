@@ -22,6 +22,8 @@ public partial class LitigationRequestExtendPeriodRequest : BaseEntity<Guid>
 
 
     public string? FinishStatusReason { get; set; }
+    //public Guid? CreatedBy { get; set; }
+    //public DateTime? CreatedOn { get; set; }
 
     public virtual LitigationRequest LitigationRequest { get; set; } = null!;
 

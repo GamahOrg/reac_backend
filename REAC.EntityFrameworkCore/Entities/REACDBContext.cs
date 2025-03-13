@@ -77,6 +77,7 @@ public partial class REACDBContext : DbContext
     public virtual DbSet<SysArbitratorClass> SysArbitratorClasses { get; set; }
     public virtual DbSet<CitizenRequest> CitizenRequests { get; set; }
     public virtual DbSet<CitizenRequestAcademicDegreeFile> CitizenRequestAcademicDegreeFiles { get; set; }
+    public virtual DbSet<CitizenRequestCVFile> CitizenRequestCVFile { get; set; }
     public virtual DbSet<CitizenRequestFreelanceWorkDocumentFile> CitizenRequestFreelanceWorkDocumentFiles { get; set; }
     public virtual DbSet<CitizenRequestProgramRealEstateInstituteFile> CitizenRequestProgramRealEstateInstituteFiles { get; set; }
     public virtual DbSet<CitizenRequestReconciliationCenterDegreeFile> CitizenRequestReconciliationCenterDegreeFiles { get; set; }
@@ -2153,6 +2154,57 @@ public partial class REACDBContext : DbContext
 
         });
 
+        modelBuilder.Entity<CitizenRequestProgramRealEstateInstituteFile>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK_CitizenRequestProgramRealEstateInstituteFile3214EC0743341C99");
+
+            entity.ToTable("CitizenRequestProgramRealEstateInstituteFiles");
+
+            entity.HasOne(d => d.ProgramRealEstateDocumentFile).WithMany(p => p.CitizenRequestProgramRealEstateInstituteFiles)
+               .HasForeignKey(d => d.RealEstateInstituteFileId)
+               .IsRequired(false)
+               .OnDelete(DeleteBehavior.ClientSetNull)
+               .HasConstraintName("CitizenRequestProgramRealEstateInstitutes616003");
+
+
+            entity.HasOne(d => d.CitizenRequest).WithMany(p => p.CitizenRequestProgramRealEstateInstituteFiles)
+               .HasForeignKey(d => d.CitizenRequestId)
+               .OnDelete(DeleteBehavior.Cascade)
+               .HasConstraintName("FKCitizenRequestProgramRealEstateCitizenRequest676101");
+        });
+
+        modelBuilder.Entity<CitizenRequestReconciliationCenterDegreeFile>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK_CitizenRequestReconciliationCenterDegreeFile3214EC0743341C99");
+
+            entity.ToTable("CitizenRequestReconciliationCenterDegreeFiles");
+
+            entity.HasOne(d => d.ReconciliationCenterFile).WithMany(p => p.CitizenRequestReconciliationCenterDegreeFiles)
+               .HasForeignKey(d => d.ReconciliationCenterDegreeFileId)
+               .IsRequired(false)
+               .OnDelete(DeleteBehavior.ClientSetNull)
+               .HasConstraintName("CitizenRequestReconciliationCenterDegrees616003");
+
+
+            entity.HasOne(d => d.CitizenRequest).WithMany(p => p.CitizenRequestReconciliationCenterDegreeFiles)
+               .HasForeignKey(d => d.CitizenRequestId)
+               .OnDelete(DeleteBehavior.Cascade)
+               .HasConstraintName("FKCitizenRequestReconciliationCenterDegreeFilesCitizenRequest676101");
+        });
+
+        modelBuilder.Entity<CitizenRequestCVFile>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK_CitizenRequestCVFile3214EC0743341C99");
+
+            entity.ToTable("CitizenRequestCVFile");
+
+
+            entity.HasOne(d => d.CitizenRequest).WithMany(p => p.CitizenRequestCVFiles)
+               .HasForeignKey(d => d.CitizenRequestId)
+               .OnDelete(DeleteBehavior.Cascade)
+               .HasConstraintName("FKCitizenRequestCVFileCitizenRequest676101");
+        });
+        
         // By abdulrahman
         //modelBuilder.Entity<SysLitigationRequestContractType>()
         //  .HasKey(lr => new { lr.Id, lr.CodingPrefixSymbol });

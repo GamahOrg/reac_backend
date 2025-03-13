@@ -1,0 +1,11 @@
+﻿ALTER TABLE LititgationRequestModificationRequest DROP CONSTRAINT FK_LititgationRequestModificationRequest_LitigationRequestSession_LitigationRequestSessionId
+
+ALTER TABLE LititgationRequestModificationRequest ALTER COLUMN LitigationRequestSessionId Uniqueidentifier NULL
+
+ALTER TABLE LititgationRequestModificationRequest Add ActorType int NULL
+
+ALTER TABLE LititgationRequestModificationRequest Add IsApproved bit NULL
+
+ALTER TABLE LititgationRequestModificationRequest
+ADD CONSTRAINT FK_LititgationRequestModificationRequest_LitigationRequestSession_LitigationRequestSessionId FOREIGN KEY (LitigationRequestSessionId)
+REFERENCES [dbo].[LitigationRequestSession] (Id);

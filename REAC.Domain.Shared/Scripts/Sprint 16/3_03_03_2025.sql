@@ -118,6 +118,7 @@
 			DECLARE @TotalArbitrationFinishedPropertiesCount INT;
 			-- عدد الدعاوي المنتهية ايجار
 			DECLARE @TotalArbitrationFinishedRentCount INT;
+            SET @ToDate = ISNULL(@ToDate, GETDATE());
 			
 ------------------------------------------------------------------------------------------------------
 -- Review Process

@@ -2,7 +2,9 @@
 using Core.Shared.Responses;
 using Microsoft.EntityFrameworkCore;
 using REAC.Application.Contracts.Dtos.Litigation;
+using REAC.Application.Contracts.Dtos.Litigation.CreateUpdate.Litigation;
 using REAC.Application.Contracts.Dtos.Notification;
+using REAC.Application.Contracts.Dtos.Reconciliation;
 using REAC.Application.Contracts.Dtos.Reconciliation.Process;
 using REAC.Application.Contracts.Dtos.Zoom;
 using REAC.Domain.Shared.Constants;
@@ -10,6 +12,7 @@ using REAC.Domain.Shared.Enum;
 using REAC.EntityFrameworkCore.Entities.Litigation;
 using REAC.EntityFrameworkCore.Entities.Wpf.Business;
 using System.Globalization;
+using System.Linq.Expressions;
 
 namespace REAC.Application.ModuleServices
 {
@@ -25,7 +28,7 @@ namespace REAC.Application.ModuleServices
                 requestPayload.SessionDateTime = requestPayload.SessionDateTime.ToLocalTime();
                 var msg = "";
                 var sessionUrl = "";
-                var _zoomMeeting=new ZoomMeting();
+                var _zoomMeeting = new ZoomMeting();
                 var litigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>())?
                          .Include(x => x.LitigationRequestSessions.Where(x => x.LitigationRequestSessionRequestTypeId == LitigationRequestSessionRequestType.Reconciliation))
                         .Include(x => x.Contract)
@@ -38,6 +41,66 @@ namespace REAC.Application.ModuleServices
                         .Include(x => x.ApplicantCitizen)
                         .Where(x => x.Id == requestPayload.RequestId)
                         .Single();
+
+                #region Validation for reformer & citizen schadual Time sessions meeting
+                // get old session requests for reformer 
+                var OldLitigationRequests = (await _repository.GetQueryable<LitigationRequest, Guid>())?
+                       .Include(x => x.LitigationRequestSessions.Where(x => x.LitigationRequestSessionRequestTypeId == LitigationRequestSessionRequestType.Reconciliation && x.SessionDatetime.Date == requestPayload.SessionDateTime.Date))
+                       .Include(x => x.Contract);
+
+                var OldlitigationRequestForReformer = OldLitigationRequests?
+                       .Where(x =>x.LitigationRequestSessions.Any(x=>x.SessionDatetime.Date== requestPayload.SessionDateTime.Date))
+                       .Where(x => x.ReformerCitizenId == referenceId)
+                       .Where(x => x.Id != requestPayload.RequestId);
+
+                // for each all old session for reformer validation 
+                foreach (var request in OldlitigationRequestForReformer)
+                {
+                    foreach (var session in request.LitigationRequestSessions.ToList())
+                    {
+
+                        DateTime sessionEndTime = session.SessionDatetime.AddHours(1);
+                        DateTime sessionStartTime = session.SessionDatetime.AddHours(-1);
+                        // Check if the new session time falls within the period of the existing session
+                        if (requestPayload.SessionDateTime > sessionStartTime && requestPayload.SessionDateTime <= sessionEndTime)
+                        {
+                            return new BaseResponse()
+                            {
+                                IsDone = false,
+                                Message = "هذا الموعد يتعارض مع جلسة اخرى  برجاء اختيار موعد آخر"
+                            };
+
+                        }
+                    }
+                }
+
+                //get all sessions for citizens and validate time 
+                var OldlitigationRequestForCitizens = OldLitigationRequests?
+                       .Where(x => x.LitigationRequestSessions.Any(x => x.SessionDatetime.Date == requestPayload.SessionDateTime.Date))
+                       .Where(x=> x.Contract.FirstPartyCitizenId == litigationRequest.Contract.FirstPartyCitizenId || x.Contract.SecondPartyCitizenId == litigationRequest.Contract.SecondPartyCitizenId) 
+                       .Where(x => x.Id != requestPayload.RequestId);
+
+                //// for each all old session for citizens validation 
+                foreach (var request in OldlitigationRequestForCitizens)
+                {
+                    foreach (var session in request.LitigationRequestSessions.ToList())
+                    {
+
+                        DateTime sessionEndTime = session.SessionDatetime.AddHours(1);
+                        DateTime sessionStartTime = session.SessionDatetime.AddHours(-1);
+                        // Check if the new session time falls within the period of the existing session
+                        if (requestPayload.SessionDateTime > sessionStartTime && requestPayload.SessionDateTime <= sessionEndTime)
+                        {
+                            return new BaseResponse()
+                            {
+                                IsDone = false,
+                                Message = "هذا الموعد يتعارض مع جلسة اخرى لأحد الأطراف برجاء اختيار موعد آخر"
+                            };
+
+                        }
+                    }
+                }
+                #endregion
 
                 int ReformerReminderForReconciliationSecondPeriod = 0;
                 int.TryParse(_sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_ReformerReminderForReconciliationSecondPeriod).Result.Data?.Value, out ReformerReminderForReconciliationSecondPeriod);
@@ -67,7 +130,7 @@ namespace REAC.Application.ModuleServices
                     };
                 }
                 var updateResponse = new BaseResponse();
-                bool updatedSession= false;
+                bool updatedSession = false;
                 if (litigationRequest.LitigationRequestSessions != null)
                 {
                     foreach (var session in litigationRequest.LitigationRequestSessions.ToList())
@@ -80,16 +143,16 @@ namespace REAC.Application.ModuleServices
                             };
                         if (requestPayload.SessionDateTime > session.SessionDatetime || requestPayload.SessionDateTime < session.SessionDatetime)
                         {
-                            
-                            session.SessionDatetime = requestPayload.SessionDateTime;   
-                             updateResponse = _repository.Remove<LitigationRequestSession, Guid>(session);
+
+                            session.SessionDatetime = requestPayload.SessionDateTime;
+                            updateResponse = _repository.Remove<LitigationRequestSession, Guid>(session);
                             await _repository.SaveChangesAsync();
                             updatedSession = true;
                             if (!updateResponse.IsDone)
                             {
                                 return new BaseResponse { IsDone = false, Message = "لا يمكن تعديل موعد الجلسة" };
-                            } 
-                            break; 
+                            }
+                            break;
                         }
 
                         //if (requestPayload.SessionDateTime < session.SessionDatetime)
@@ -123,6 +186,7 @@ namespace REAC.Application.ModuleServices
 
 
                 int ReformerMaxSessionsCountPerDay = 0;
+               
                 int.TryParse(_sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_Reconciliation_ReformerMaxSessionsCountPerDay).Result.Data?.Value, out ReformerMaxSessionsCountPerDay);
                 if (ReformerMaxSessionsCountPerDay > 0)
                 {
@@ -152,7 +216,7 @@ namespace REAC.Application.ModuleServices
                         CultureInfo provider = new CultureInfo("en-US");
                         CultureInfo.CurrentCulture = provider;
                         var sessionDateGreg = DateTime.ParseExact(requestPayload.SessionDateTime.ToString(), "M/d/yyyy h:mm:ss tt", provider);
-                        _zoomMeeting = await _zoomService.GenerateMeeting($"{litigationRequest.RequestCode}_{requestPayload.SessionDateTime.ToString()}",sessionDateGreg);
+                        _zoomMeeting = await _zoomService.GenerateMeeting($"{litigationRequest.RequestCode}_{requestPayload.SessionDateTime.ToString()}", sessionDateGreg);
                         sessionUrl = _zoomMeeting?.join_url;
 
                         if (litigationRequest.LitigationRequestSessions.Count == 0 && updatedSession == false)
@@ -175,6 +239,7 @@ namespace REAC.Application.ModuleServices
                                 msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.ReconciliationSession_set).Result.Data?.Value;
                                 msg = msg?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
                                 msg = msg?.Replace("{SessionLink}", sessionUrl);
+                                msg = msg?.Replace("{SessionDatetime}", sessionDateGreg.ToString("M/d/yyyy h:mm:ss tt", provider));
                                 var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
                                 string body;
                                 using (StreamReader streamReader = File.OpenText(pathToFile))
@@ -183,6 +248,7 @@ namespace REAC.Application.ModuleServices
                                     body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.ReconciliationSession_set).Result.Data?.Value);
                                     body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
                                     body = body?.Replace("{SessionLink}", sessionUrl);
+                                    body = body?.Replace("{SessionDatetime}", sessionDateGreg.ToString("M/d/yyyy h:mm:ss tt", provider));
                                 }
                                 await SendNotificationMS(body, msg, litigationRequest);
                             }
@@ -212,6 +278,7 @@ namespace REAC.Application.ModuleServices
                                 msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.ReconciliationSession_Reset).Result.Data?.Value;
                                 msg = msg?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
                                 msg = msg?.Replace("{SessionLink}", sessionUrl);
+                                msg = msg?.Replace("{SessionDatetime}", sessionDateGreg.ToString("M/d/yyyy h:mm:ss tt", provider));
                                 var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
                                 string body;
                                 using (StreamReader streamReader = File.OpenText(pathToFile))
@@ -220,10 +287,11 @@ namespace REAC.Application.ModuleServices
                                     body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.ReconciliationSession_Reset).Result.Data?.Value);
                                     body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
                                     body = body?.Replace("{SessionLink}", sessionUrl);
+                                    body = body?.Replace("{SessionDatetime}", sessionDateGreg.ToString("M/d/yyyy h:mm:ss tt", provider));
                                 }
 
 
-                                    await SendNotificationMS(body, msg, litigationRequest);
+                                await SendNotificationMS(body, msg, litigationRequest);
                             }
                             catch (Exception e)
                             {
@@ -248,13 +316,13 @@ namespace REAC.Application.ModuleServices
                         MeetingId = _zoomMeeting?.id,
                     };
 
-                  
-                        await _repository.AddAsync<LitigationRequestSession, Guid>(litigationRequestSession);
 
-                        var repositorySaveResponse = await _repository.SaveChangesAsync(new CancellationToken());
-                        if (!repositorySaveResponse.IsDone)
-                            return repositorySaveResponse;
-                    
+                    await _repository.AddAsync<LitigationRequestSession, Guid>(litigationRequestSession);
+
+                    var repositorySaveResponse = await _repository.SaveChangesAsync(new CancellationToken());
+                    if (!repositorySaveResponse.IsDone)
+                        return repositorySaveResponse;
+
 
                 }
                 else
@@ -284,13 +352,13 @@ namespace REAC.Application.ModuleServices
             //ApplicantCitizen
 
 
-                var objEmail = new SendEmailDto()
-                {
-                    Body = emailMsg,
-                    Subject = "Litigation Request Session Added",
-                    To = new List<string>() {litigationRequest.ApplicantCitizen?.Email}
+            var objEmail = new SendEmailDto()
+            {
+                Body = emailMsg,
+                Subject = "Litigation Request Session Added",
+                To = new List<string>() { litigationRequest.ApplicantCitizen?.Email }
 
-                };
+            };
             var objSms = new Contracts.Dtos.Integration.GEE.SMSRequestDto()
             {
                 message_text = msg,
@@ -456,7 +524,7 @@ namespace REAC.Application.ModuleServices
                           .Include(x => x.Contract.SecondPartyCitizen)
                           .Include(x => x.Contract.LitigationRequestContractType)
                           .Where(x => x.Id == requestId &&
-                       x.LitigationRequestReformerAssigningRequests.Any( l => l.CitizenId == referenceId) & x.Id == requestId
+                       x.LitigationRequestReformerAssigningRequests.Any(l => l.CitizenId == referenceId) & x.Id == requestId
 
                           ).ToList().FirstOrDefault();
 
@@ -466,8 +534,8 @@ namespace REAC.Application.ModuleServices
             var request = _mapper.Map<LitigationRequestShortDto>(litigationRequest);
 
             var sessions = _mapper.Map<List<LitigationRequestSessionCreateUpdateDto>>(litigationRequest?.LitigationRequestSessions);
-            
-           var modifications = _mapper.Map<List<LitigationRequestModificationRequestsDto>>(litigationRequest?.LitigationRequestModificationRequests);
+
+            var modifications = _mapper.Map<List<LitigationRequestModificationRequestsDto>>(litigationRequest?.LitigationRequestModificationRequests);
 
 
             bool allowAdd = true;
@@ -528,7 +596,7 @@ namespace REAC.Application.ModuleServices
 
         }
 
-        public async Task<BaseResponse> GetLitigationRequestForSession(CancellationToken cancellationToken)
+        public async Task<BaseResponse> GetLitigationRequestForSession(int pageIndex, int pageSize, CancellationToken cancellationToken)
         {
             Guid referenceId = Guid.Empty;
             _jwtReader.GetReferenceId(ref referenceId);
@@ -557,12 +625,12 @@ namespace REAC.Application.ModuleServices
                                       .Include(x => x.Contract.SecondPartyCitizen)
                                       .Include(x => x.Contract.LitigationRequestContractType)
                                       .Where(x => x.ReformerCitizenId == referenceId & x.RequestCode != null & x.InternalStatusId != RequestStatus.Rejected
-                                      & x.LitigationRequestCategoryId != LitigationRequestCategory.Arbitration).OrderByDescending(x => x.CreatedOn).ToList();
+                                      & x.LitigationRequestCategoryId != LitigationRequestCategory.Arbitration).OrderByDescending(x => x.CreatedOn).GetPaged(pageIndex, pageSize);
 
             List<LitigationRequestMircoDto> litigationRequestMircoDtos = new List<LitigationRequestMircoDto>();
             if (litigationRequests != null)
             {
-                foreach (var litigationRequest in litigationRequests)
+                foreach (var litigationRequest in litigationRequests.Results)
                 {
                     LitigationRequestMircoDto litigationRequestMircoDto = new LitigationRequestMircoDto();
                     litigationRequestMircoDto.Id = litigationRequest.Id;
@@ -624,9 +692,17 @@ namespace REAC.Application.ModuleServices
                 }
             }
 
-            return new DataResponse<List<LitigationRequestMircoDto>>()
+            return new DataResponse<PagedResult<LitigationRequestMircoDto>>
             {
-                Data = litigationRequestMircoDtos,
+                Data =
+                              new PagedResult<LitigationRequestMircoDto>
+                              {
+                                  Results = litigationRequestMircoDtos,
+                                  CurrentPage = litigationRequests.CurrentPage,
+                                  PageCount = litigationRequests.PageCount,
+                                  PageSize = litigationRequests.PageSize,
+                                  TotalCount = litigationRequests.TotalCount
+                              },
                 IsDone = true
             };
 
@@ -882,80 +958,120 @@ namespace REAC.Application.ModuleServices
 
         }
         // تعيين ال Reformer
-        public async Task<BaseResponse> GetLitigationRequestForFullAllReformer(int pageIndex, int pageSize, CancellationToken cancellationToken)
+        public async Task<BaseResponse> GetLitigationRequestForFullAllReformer(int pageIndex, int pageSize, CancellationToken cancellationToken, LitigationRequestReconciliationAssignReformersFilter? filter, bool ascending = false)
         {
             Guid referenceId = Guid.Empty;
             _jwtReader.GetReferenceId(ref referenceId);
 
-            PagedResult<LitigationRequest> litigationRequests = null;
-            var entitiesQuerable = (await _repository.GetQueryable<LitigationRequest, Guid>())
-                                                         .Include(x => x.ReformerCitizen)
+            var entitiesQueryable = (await _repository.GetQueryable<LitigationRequest, Guid>())
+                .Include(x => x.ReformerCitizen)
+                .Include(x => x.Area)
+                .Include(x => x.City)
+                .Include(x => x.LitigationRequestSessions.Where(x => x.LitigationRequestSessionRequestTypeId == LitigationRequestSessionRequestType.Reconciliation))
+                .Include(x => x.LitigationRequestReconciliationReports)
+                .Include(x => x.LitigationRequestReformerAssigningRequests.Where(r => r.Response == 0))
+                .ThenInclude(x => x.ReformerCitizen)
+                .Include(x => x.ApplicantCitizen)
+                .Include(x => x.InternalStatus)
+                .Include(x => x.ExternalStatus)
+                .Include(x => x.LitigationRequestAmount)
+                .Include(x => x.LitigationRequestCategory)
+                .Include(x => x.SysExemptionReductionCategory)
+                .Include(x => x.LitigationRequestOwnerType)
+                .Include(x => x.Contract)
+                .Include(x => x.Contract.LitigationRequestContractType)
+                .Include(x => x.Contract.ContractFile)
+                .Include(x => x.Contract.AssociationRegistrationCertificateFile)
+                .Include(x => x.Contract.FoundingLetterFile)
+                .Include(x => x.Contract.InternalRegulationsFile)
+                .Include(x => x.Contract.FirstPartyFacility)
+                .Include(x => x.Contract.FirstPartyCitizen)
+                .Include(x => x.Contract.SecondPartyFacility)
+                .Include(x => x.Contract.SecondPartyCitizen)
+                .Include(x => x.Contract.LitigationRequestContractType);
 
-                                         .Include(x => x.Area)
-                                      .Include(x => x.City)
-                                      .Include(x => x.LitigationRequestSessions.Where(x => x.LitigationRequestSessionRequestTypeId == LitigationRequestSessionRequestType.Reconciliation))
-                                      .Include(x => x.LitigationRequestReconciliationReports)
-                                      .Include(x => x.LitigationRequestReformerAssigningRequests.Where(r => r.Response == 0))
-                                      .ThenInclude(x => x.ReformerCitizen)
-                                      .Include(x => x.ApplicantCitizen)
-                                      .Include(x => x.InternalStatus)
-                                      .Include(x => x.ExternalStatus)
-                                      .Include(x => x.LitigationRequestAmount)
-                                      .Include(x => x.LitigationRequestCategory)
-                                      .Include(x => x.SysExemptionReductionCategory)
-                                      .Include(x => x.LitigationRequestOwnerType)
-                                      .Include(x => x.Contract)
-                                      .Include(x => x.Contract.LitigationRequestContractType)
-                                      .Include(x => x.Contract.ContractFile)
-                                      .Include(x => x.Contract.AssociationRegistrationCertificateFile)
-                                      .Include(x => x.Contract.FoundingLetterFile)
-                                      .Include(x => x.Contract.InternalRegulationsFile)
-                                      .Include(x => x.Contract.FirstPartyFacility)
-                                      .Include(x => x.Contract.FirstPartyCitizen)
-                                      .Include(x => x.Contract.SecondPartyFacility)
-                                      .Include(x => x.Contract.SecondPartyCitizen)
-                                      .Include(x => x.Contract.LitigationRequestContractType);
+            var litigationRequestsQuery = entitiesQueryable
+                .Where(x => x.LitigationRequestStage != LitigationRequestStage.Review
+                             && x.LitigationRequestStage != LitigationRequestStage.Arbitration
+                             && x.RequestCode != null
+                             && x.InternalStatusId != RequestStatus.Rejected
+                             && x.InternalStatusId != RequestStatus.ReconciliationWasMade
+                             && x.InternalStatusId != RequestStatus.Cancelled
+                             && x.InternalStatusId != RequestStatus.SaveAndClose);
 
-            litigationRequests = entitiesQuerable.Where(x => x.LitigationRequestCategoryId != LitigationRequestCategory.Arbitration
-            & x.RequestCode != null & x.LitigationRequestStage != LitigationRequestStage.Review & x.InternalStatusId != RequestStatus.Rejected)
-                .OrderByDescending(x => x.CreatedOn)
-              .AsSplitQuery()
-              .AsNoTracking()
-              .GetPaged(pageIndex, pageSize);
+            if (filter is not null)
+            {
+                Expression<Func<LitigationRequest, bool>> combinedCondition = PredicateBuilder.True<LitigationRequest>();
 
+                if (filter.ReformerName is not null)
+                {
+                    combinedCondition = combinedCondition.AndAlso(x =>
+                        x.LitigationRequestReformerAssigningRequests.Any(y => y.ReformerCitizen.FullName.Contains(filter.ReformerName))
+                        || x.ReformerCitizen.FullName.Contains(filter.ReformerName));
+                }
+                if (filter.AreaId is not null)
+                {
+                    combinedCondition = combinedCondition.AndAlso(x =>
+                        x.ReformerCitizen.AreaId == filter.AreaId
+                        || x.LitigationRequestReformerAssigningRequests.Any(y => y.ReformerCitizen.AreaId == filter.AreaId));
+                }
+                if (filter.CityId is not null)
+                {
+                    combinedCondition = combinedCondition.AndAlso(x =>
+                        x.ReformerCitizen.CityId == filter.CityId
+                        || x.LitigationRequestReformerAssigningRequests.Any(y => y.ReformerCitizen.CityId == filter.CityId));
+                }
+
+                litigationRequestsQuery = entitiesQueryable.Where(combinedCondition);
+            }
+
+            litigationRequestsQuery = ascending
+                ? litigationRequestsQuery.OrderBy(x => x.CreatedOn)
+                : litigationRequestsQuery.OrderByDescending(x => x.CreatedOn);
+
+            var totalCount = await litigationRequestsQuery.CountAsync(cancellationToken);
+
+            var results = await litigationRequestsQuery
+                .AsSplitQuery()
+                .AsNoTracking()
+                .Skip((pageIndex - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync(cancellationToken);
 
             List<LitigationRequestMircoForRequestReformerDto> litigationRequestMircoDtos = new List<LitigationRequestMircoForRequestReformerDto>();
-            if (litigationRequests != null)
+
+            if (results != null)
             {
-                foreach (var litigationRequest in litigationRequests.Results)
+                foreach (var litigationRequest in results)
                 {
-                    LitigationRequestMircoForRequestReformerDto litigationRequestMircoDto = new LitigationRequestMircoForRequestReformerDto();
-                    litigationRequestMircoDto.Id = litigationRequest.Id;
-                    litigationRequestMircoDto.RequestDate = litigationRequest.CreatedOn;
-                    litigationRequestMircoDto.RequestCode = litigationRequest.RequestCode;
-                    litigationRequestMircoDto.FirstPartyName = (litigationRequest.Contract.FirstPartyCitizen == null) ? litigationRequest.Contract.FirstPartyFacility.ArabicFacilityName : litigationRequest.Contract.FirstPartyCitizen.FullName;
-                    litigationRequestMircoDto.SecondPartyName = (litigationRequest.Contract.SecondPartyCitizen == null) ? litigationRequest.Contract.SecondPartyFacility.ArabicFacilityName : litigationRequest.Contract.SecondPartyCitizen.FullName;
-                    litigationRequestMircoDto.RequestTypeName = litigationRequest.Contract.LitigationRequestContractType.TypeName;
-                    litigationRequestMircoDto.ReformerId = litigationRequest.ReformerCitizen?.Id;
-                    litigationRequestMircoDto.ReformerName = litigationRequest.ReformerCitizen is not null ? litigationRequest.ReformerCitizen?.FullName : litigationRequest.LitigationRequestReformerAssigningRequests is not null && litigationRequest.LitigationRequestReformerAssigningRequests.Count != 0 ? litigationRequest.LitigationRequestReformerAssigningRequests.OrderByDescending(l => l.RequestOn).FirstOrDefault().ReformerCitizen.FullName : null;
+                    LitigationRequestMircoForRequestReformerDto litigationRequestMircoDto = new LitigationRequestMircoForRequestReformerDto
+                    {
+                        Id = litigationRequest.Id,
+                        RequestDate = litigationRequest.CreatedOn,
+                        RequestCode = litigationRequest.RequestCode,
+                        FirstPartyName = litigationRequest.Contract.FirstPartyCitizen == null ? litigationRequest.Contract.FirstPartyFacility.ArabicFacilityName : litigationRequest.Contract.FirstPartyCitizen.FullName,
+                        SecondPartyName = litigationRequest.Contract.SecondPartyCitizen == null ? litigationRequest.Contract.SecondPartyFacility.ArabicFacilityName : litigationRequest.Contract.SecondPartyCitizen.FullName,
+                        RequestTypeName = litigationRequest.Contract.LitigationRequestContractType.TypeName,
+                        ReformerId = litigationRequest.ReformerCitizen?.Id,
+                        ReformerName = litigationRequest.ReformerCitizen != null ? litigationRequest.ReformerCitizen.FullName : litigationRequest.LitigationRequestReformerAssigningRequests?.OrderByDescending(l => l.RequestOn).FirstOrDefault()?.ReformerCitizen?.FullName
+                    };
+
                     litigationRequestMircoDtos.Add(litigationRequestMircoDto);
                 }
             }
 
             return new DataResponse<PagedResult<LitigationRequestMircoForRequestReformerDto>>
             {
-                Data =
-                   new PagedResult<LitigationRequestMircoForRequestReformerDto>
-                   {
-                       Results = litigationRequestMircoDtos,
-                       CurrentPage = litigationRequests.CurrentPage,
-                       PageCount = litigationRequests.PageCount,
-                       PageSize = litigationRequests.PageSize,
-                       TotalCount = litigationRequests.TotalCount
-                   },
+                Data = new PagedResult<LitigationRequestMircoForRequestReformerDto>
+                {
+                    Results = litigationRequestMircoDtos,
+                    CurrentPage = pageIndex,
+                    PageCount = (int)Math.Ceiling((double)totalCount / pageSize),
+                    PageSize = pageSize,
+                    TotalCount = totalCount
+                },
                 IsDone = true
             };
-
         }
         #endregion
     }

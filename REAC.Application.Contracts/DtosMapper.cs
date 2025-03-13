@@ -236,7 +236,10 @@ namespace REAC.Application.Contracts
             CreateMap<CitizenRequestProgramRealEstateInstituteFile, CitizenRequestCitizenRequestProgramRealEstateInstituteFileCreateUpdateDto>().ReverseMap();
             CreateMap<CitizenRequestCVFile, CitizenRequestCVFileCreateUpdateDto>().ReverseMap();
             CreateMap<CitizenRequestAcademicDegreeFile, CitizenRequestAcademicDegreeFileFullDataDto>().ReverseMap();
+            CreateMap<CitizenRequestReconciliationCenterDegreeFile, CitizenRequestReconciliationCenterDegreeFileFullDataDto>().ReverseMap();
             CreateMap<CitizenRequestExperienceCertificate, CitizenRequestExperienceCertificateFullDataDto>().ReverseMap();
+            CreateMap<CitizenRequestCVFile, CitizenRequestCVFileFullDataDto>().ReverseMap();
+            CreateMap<CitizenRequestProgramRealEstateInstituteFile, CitizenRequestProgramRealEstateInstituteFileFullDataDto>().ReverseMap();
             CreateMap<CitizenRequestExperienceCertificateFile, CitizenRequestExperienceCertificateFileFullDataDto>().ReverseMap();
             CreateMap<CitizenRequestExperienceCertificateFile, CitizenRequestExperienceCertificateFileCreateUpdateDto>().ReverseMap();
             CreateMap<CitizenRequestNote, CitizenRequestNoteCreateUpdateDto>().ReverseMap();
