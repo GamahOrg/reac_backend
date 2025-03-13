@@ -9,6 +9,8 @@ using REAC.EntityFrameworkCore.Entities.Actor;
 using REAC.EntityFrameworkCore.Entities.Litigation;
 using REAC.EntityFrameworkCore.Entities.Reconciliation;
 using REAC.EntityFrameworkCore.Entities.Wpf.Business;
+using Core.GenericRepository.Shared.Pagging;
+using REAC.Application.Contracts.Dtos.Litigation;
 
 namespace REAC.Application.ModuleServices
 {
@@ -425,7 +427,7 @@ namespace REAC.Application.ModuleServices
             };
 
         }
-        public async Task<BaseResponse> GetLitigationRequestForReport(CancellationToken cancellationToken)
+        public async Task<BaseResponse> GetLitigationRequestForReport(int pageIndex, int pageSize, CancellationToken cancellationToken)
         {
             Guid referenceId = Guid.Empty;
             _jwtReader.GetReferenceId(ref referenceId);
@@ -456,12 +458,12 @@ namespace REAC.Application.ModuleServices
                                       & x.RequestCode != null
                                       & x.InternalStatusId != RequestStatus.Rejected
                                       & x.LitigationRequestCategoryId != LitigationRequestCategory.Arbitration).
-                                      OrderByDescending(x => x.CreatedOn).ToList();
+                                      OrderByDescending(x => x.CreatedOn).GetPaged(pageIndex,pageSize);
 
             List<LitigationRequestMircoDto> litigationRequestMircoDtos = new List<LitigationRequestMircoDto>();
             if (litigationRequests != null)
             {
-                foreach (var litigationRequest in litigationRequests)
+                foreach (var litigationRequest in litigationRequests.Results)
                 {
                     LitigationRequestMircoDto litigationRequestMircoDto = new LitigationRequestMircoDto();
                     litigationRequestMircoDto.Id = litigationRequest.Id;
@@ -526,12 +528,20 @@ namespace REAC.Application.ModuleServices
                 }
             }
 
-
-            return new DataResponse<List<LitigationRequestMircoDto>>()
+            return new DataResponse<PagedResult<LitigationRequestMircoDto>>
             {
-                Data = litigationRequestMircoDtos,
+                Data =
+                              new PagedResult<LitigationRequestMircoDto>
+                              {
+                                  Results = litigationRequestMircoDtos,
+                                  CurrentPage = litigationRequests.CurrentPage,
+                                  PageCount = litigationRequests.PageCount,
+                                  PageSize = litigationRequests.PageSize,
+                                  TotalCount = litigationRequests.TotalCount
+                              },
                 IsDone = true
             };
+
         }
         #endregion
 

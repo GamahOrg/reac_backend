@@ -1,0 +1,2 @@
+﻿ALTER TABLE ReformerStopFreeUpDecision Add CreatedBy Uniqueidentifier NULL
+ALTER TABLE ReformerStopFreeUpDecision Add CreatedByRole int NULL

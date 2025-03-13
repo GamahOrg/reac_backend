@@ -10,7 +10,7 @@ namespace REAC.Application.Contracts.Dtos.CitizenRequests.CreateUpdate
 
     public partial class CitizenRequestCitizenRequestProgramRealEstateInstituteFileCreateUpdateDto : BaseEntity<Guid>
     {
-        public Guid ProgramRealEstateInstituteFileId { get; set; }
+        public Guid RealEstateInstituteFileId { get; set; }
 
     }
 }

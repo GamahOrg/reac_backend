@@ -12,6 +12,8 @@ namespace REAC.EntityFrameworkCore.Entities.Litigation
         public LitigationRequestReformerAssigningRequestStatus Response { get; set; }
         public DateTime? ResponseOn { get; set; }
         public string? RejectReason { get; set; }
+        public string? Reason { get; set; } 
+
 
         public virtual LitigationRequest LitigationRequest { get; set; } = null!;
         public virtual Citizen ReformerCitizen { get; set; } = null!;

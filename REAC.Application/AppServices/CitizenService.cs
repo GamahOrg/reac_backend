@@ -211,22 +211,32 @@ namespace REAC.Application.AppServices
             Guid referenceId = Guid.Empty;
             _jwtReader.GetReferenceId(ref referenceId);
 
-
             var citizen = (await _repository.GetQueryable<Citizen, Guid>())
-                    .Include(x => x.Gender).Include(x => x.City)
-                    .Include(x => x.Area)
-                    .Include(x => x.IdentityFile)
-                    .Include(x => x.SigntureFile)
-                    .Include(x => x.LawLicenseFile)
-                    .Include(x => x.Nationality)
-                    .AsNoTracking().Where(x => x.Id == referenceId)
-                              .ToList();
+                      .Include(x => x.Gender)
+                      .Include(x => x.City)
+                      .Include(x => x.Area)
+                      .Include(x => x.IdentityFile)
+                      .Include(x => x.SigntureFile)
+                      .Include(x => x.LawLicenseFile)
+                      .Include(x => x.Nationality)
+                      .AsNoTracking()
+                      .Where(x => x.Id == referenceId)
+                      .Select(x => new
+                      {
+                          Citizen = x,
+                          LatestDecision = x.ReformerStopFreeUpDecisions
+                              .OrderByDescending(y => y.DecisionDate)
+                              .FirstOrDefault() 
+                      })
+                      .FirstOrDefault(); 
 
 
-            if (citizen.ToList().Count == 0) return new BaseResponse() { IsDone = false, Message = "Not Found" };
+            if (citizen is null) return new BaseResponse() { IsDone = false, Message = "Not Found" };
 
 
-            var citizendto = _mapper.Map<GetCitizenBasicDataProfileDto>(citizen.FirstOrDefault());
+            var citizendto = _mapper.Map<GetCitizenBasicDataProfileDto>(citizen.Citizen);
+            citizendto.ReformerStopFreeUpDecision = citizen.LatestDecision;
+
             return new DataResponse<GetCitizenBasicDataProfileDto>()
             {
                 IsDone = true,
@@ -609,6 +619,9 @@ namespace REAC.Application.AppServices
         {
             try
             {
+                Guid referenceId = Guid.Empty;
+                _jwtReader.GetReferenceId(ref referenceId);
+
                 var citizen = (await _repository.GetQueryable<Citizen, Guid>())?
                     .Where(x => x.Id == reformerFreeUpDecisionCreateDto.CitizenId)
                     .SingleOrDefault();
@@ -628,7 +641,9 @@ namespace REAC.Application.AppServices
                 ReformerStopFreeUpDecision ReformerStopFreeUpDecision = new ReformerStopFreeUpDecision();
                 ReformerStopFreeUpDecision.CitizenId = reformerFreeUpDecisionCreateDto.CitizenId;
                 ReformerStopFreeUpDecision.ReformerStatusId = ReformerStatus.Certified;
-                ReformerStopFreeUpDecision.DecisionDate = reformerFreeUpDecisionCreateDto.DecisionDate;
+                ReformerStopFreeUpDecision.DecisionDate = DateTime.Now;
+                ReformerStopFreeUpDecision.CreatedBy = referenceId;
+                ReformerStopFreeUpDecision.CreatedByRole = EntityFrameworkCore.Seed.Roles.ReAdmin;
                 await _repository.AddAsync<ReformerStopFreeUpDecision, int>(ReformerStopFreeUpDecision);
                 var saveResponse = await _repository.SaveChangesAsync();
                 if (!saveResponse.IsDone)
@@ -710,6 +725,9 @@ namespace REAC.Application.AppServices
         {
             try
             {
+                Guid referenceId = Guid.Empty;
+                _jwtReader.GetReferenceId(ref referenceId);
+
                 var citizen = (await _repository.GetQueryable<Citizen, Guid>())?
                     .Where(x => x.Id == reformerStopDecisionCreateDto.CitizenId)
                     .SingleOrDefault();
@@ -741,9 +759,11 @@ namespace REAC.Application.AppServices
                 ReformerStopFreeUpDecision ReformerStopFreeUpDecision = new ReformerStopFreeUpDecision();
                 ReformerStopFreeUpDecision.CitizenId = reformerStopDecisionCreateDto.CitizenId;
                 ReformerStopFreeUpDecision.ReformerStatusId = ReformerStatus.Stopped;
-                ReformerStopFreeUpDecision.DecisionDate = reformerStopDecisionCreateDto.DecisionDate;
+                ReformerStopFreeUpDecision.DecisionDate = DateTime.Now;
                 ReformerStopFreeUpDecision.LateLitigationRequestNumber = reformerStopDecisionCreateDto.LateLitigationRequestNumber;
                 ReformerStopFreeUpDecision.StoppingReason = reformerStopDecisionCreateDto.StoppingReason;
+                ReformerStopFreeUpDecision.CreatedBy = referenceId;
+                ReformerStopFreeUpDecision.CreatedByRole = EntityFrameworkCore.Seed.Roles.ReAdmin;
                 await _repository.AddAsync<ReformerStopFreeUpDecision, int>(ReformerStopFreeUpDecision);
                 var saveResponse = await _repository.SaveChangesAsync();
                 if (!saveResponse.IsDone)
@@ -1047,6 +1067,10 @@ namespace REAC.Application.AppServices
         {
             try
             {
+
+                Guid referenceId = Guid.Empty;
+                _jwtReader.GetReferenceId(ref referenceId);
+
                 var citizen = (await _repository.GetQueryable<Citizen, Guid>())?
                     .Where(x => x.Id == reformerStopDecisionCreateDto.CitizenId)
                     .SingleOrDefault();
@@ -1081,6 +1105,8 @@ namespace REAC.Application.AppServices
                 ReformerStopFreeUpDecision.StoppingReason = reformerStopDecisionCreateDto.StoppingReason;
                 ReformerStopFreeUpDecision.DecisionFrom = reformerStopDecisionCreateDto.DecisionFrom;
                 ReformerStopFreeUpDecision.DecisionTo = reformerStopDecisionCreateDto.DecisionTo;
+                ReformerStopFreeUpDecision.CreatedBy = referenceId;
+                ReformerStopFreeUpDecision.CreatedByRole = EntityFrameworkCore.Seed.Roles.Reformer;
                 await _repository.AddAsync<ReformerStopFreeUpDecision, int>(ReformerStopFreeUpDecision);
                 var saveResponse = await _repository.SaveChangesAsync();
                 if (!saveResponse.IsDone)
@@ -1160,6 +1186,10 @@ namespace REAC.Application.AppServices
         {
             try
             {
+
+                Guid referenceId = Guid.Empty;
+                _jwtReader.GetReferenceId(ref referenceId);
+
                 var citizen = (await _repository.GetQueryable<Citizen, Guid>())?
                     .Where(x => x.Id == reformerFreeUpDecisionCreateDto.CitizenId)
                     .SingleOrDefault();
@@ -1180,6 +1210,8 @@ namespace REAC.Application.AppServices
                 ReformerStopFreeUpDecision.CitizenId = reformerFreeUpDecisionCreateDto.CitizenId;
                 ReformerStopFreeUpDecision.ReformerStatusId = ReformerStatus.Certified;
                 ReformerStopFreeUpDecision.DecisionDate = reformerFreeUpDecisionCreateDto.DecisionDate;
+                ReformerStopFreeUpDecision.CreatedBy = referenceId;
+                ReformerStopFreeUpDecision.CreatedByRole = EntityFrameworkCore.Seed.Roles.Reformer;
                 await _repository.AddAsync<ReformerStopFreeUpDecision, int>(ReformerStopFreeUpDecision);
                 var saveResponse = await _repository.SaveChangesAsync();
                 if (!saveResponse.IsDone)

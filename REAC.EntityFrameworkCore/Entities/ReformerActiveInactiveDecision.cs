@@ -15,6 +15,9 @@ namespace REAC.EntityFrameworkCore.Entities
         public StoppingReason? StoppingReason { get; set; }
         public string? LateLitigationRequestNumber { get; set; }
         public Citizen Citizen { get; set; } = null!;
+        public Guid? CreatedBy { get; set; }
+
+        public Seed.Roles? CreatedByRole { get; set; } = null!;
         public virtual SysReformerStatus? SysReformerStatus { get; set; }
 
     }

@@ -52,6 +52,10 @@ namespace REAC.Application.AppServices.SLA
                             if (slaArbitrationService is not null)
                                 await slaArbitrationService.Execute();
 
+                            var reformerArbitratorAutoActivateService = scope.ServiceProvider.GetRequiredService<IFreeUpReformerAndArbitratorService>();
+                            if (reformerArbitratorAutoActivateService is not null)
+                                await reformerArbitratorAutoActivateService.Execute();
+
                         }
                     }
                 }

@@ -21,22 +21,22 @@ public class LitigationRequestReformerAssigningRequestController : ControllerBas
     }
 
     [HttpGet(nameof(GetLitigationRequestReformerAssigningRequests))]
-    public async Task<IActionResult> GetLitigationRequestReformerAssigningRequests(CancellationToken cancellationToken)
+    public async Task<IActionResult> GetLitigationRequestReformerAssigningRequests(int pageIndex, int pageSize,  CancellationToken cancellationToken , bool ascending = false)
     {
         if (ModelState.IsValid)
         {
-            var returnValue = await _litigationRequestReformerAssigningRequest.GetLitigationRequestReformerAssigningRequests(cancellationToken);
+            var returnValue = await _litigationRequestReformerAssigningRequest.GetLitigationRequestReformerAssigningRequests(pageIndex,pageSize, cancellationToken,ascending);
             return Ok(returnValue);
         }
 
         return BadRequest();
     }
     [HttpGet(nameof(GetLitigationRequestReformerAssigningRequestsAll))]
-    public async Task<IActionResult> GetLitigationRequestReformerAssigningRequestsAll(int pageIndex, int pageSize, CancellationToken cancellationToken)
+    public async Task<IActionResult>  GetLitigationRequestReformerAssigningRequestsAll(int pageIndex, int pageSize, CancellationToken cancellationToken, bool ascending = false)
     {
         if (ModelState.IsValid)
         {
-            var returnValue = await _litigationRequestReformerAssigningRequest.GetLitigationRequestReformerAssigningRequestsAll(pageIndex, pageSize, cancellationToken);
+            var returnValue = await _litigationRequestReformerAssigningRequest.GetLitigationRequestReformerAssigningRequestsAll(pageIndex, pageSize, cancellationToken, ascending);
             return Ok(returnValue);
         }
 

@@ -14,7 +14,7 @@ namespace REAC.Application.ModuleServices
 
         Task<BaseResponse> AddLitigationRequestDecision(LitigationRequestAction requestPayload, CancellationToken cancellationToken);
 
-        Task<BaseResponse> GetLitigationRequestForSession(CancellationToken cancellationToken);
+        Task<BaseResponse> GetLitigationRequestForSession(int pageIndex, int pageSize, CancellationToken cancellationToken);
 
         Task<BaseResponse> AddReconciliationSession(ScheduleSessionProcessRequestPayload requestPayload, CancellationToken cancellationToken);
 
@@ -22,7 +22,7 @@ namespace REAC.Application.ModuleServices
 
         Task<BaseResponse> AddReconciliationReport(WritingMinutesOfTheMeetingRequestPayload requestPayload, CancellationToken cancellationToken);
         Task<BaseResponse> Assign(AssignRequestPayload assignRequestPayload, CancellationToken cancellationToken);
-        Task<BaseResponse> GetLitigationRequestForFullAllReformer(int pageIndex, int pageSize, CancellationToken cancellationToken);
+        Task<BaseResponse> GetLitigationRequestForFullAllReformer(int pageIndex, int pageSize, CancellationToken cancellationToken, LitigationRequestReconciliationAssignReformersFilter? filter, bool ascending = false);
 
         Task<BaseResponse> GetLitigationRequestForAllSessionForReformer(int pageIndex, int pageSize, CancellationToken cancellationToken);
         Task<BaseResponse> GetLitigationRequestForAllSession(int pageIndex, int pageSize, CancellationToken cancellationToken);
@@ -30,7 +30,7 @@ namespace REAC.Application.ModuleServices
 
         Task<BaseResponse> GetLitigationRequestForReport(Guid requestId, CancellationToken cancellationToken);
 
-        Task<BaseResponse> GetLitigationRequestForReport(CancellationToken cancellationToken);
+        Task<BaseResponse> GetLitigationRequestForReport(int pageIndex, int pageSize, CancellationToken cancellationToken);
 
         #region Citizen Report Reply
         Task<BaseResponse> GetCitizenLitigationRequestForReportReply(CancellationToken cancellationToken);

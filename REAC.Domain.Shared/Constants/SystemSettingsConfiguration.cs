@@ -24,6 +24,7 @@ namespace REAC.Domain.Shared.Constants
             "Reconciliation.ExtendRequest.Rejected" ,
             "Reformer.DeActivate" ,
             "Reformer.Activate" ,
+            "SLA.LitigationRequestReformerAssigningRequestResponsePeriod" ,
         };
 
         public static readonly List<string> ArbitrationFeesSystemSettings = new List<string>

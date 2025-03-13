@@ -5,6 +5,7 @@ using REAC.Application.Contracts.Dtos.Reconciliation;
 using REAC.Application.Contracts.Dtos.Reconciliation.Process;
 using REAC.Domain.Shared.Constants;
 using REAC.Domain.Shared.Enum;
+using REAC.EntityFrameworkCore.Entities;
 using REAC.EntityFrameworkCore.Entities.Litigation;
 using REAC.EntityFrameworkCore.Entities.Reconciliation;
 using REAC.EntityFrameworkCore.Entities.Wpf.Business;
@@ -20,6 +21,7 @@ namespace REAC.Application.ModuleServices
             var msg = "";
             var litigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>()).Include(x => x.Area).Include(x => x.City)
                           .Include(x => x.ApplicantCitizen)
+                          .Include(x => x.ReformerCitizen)
                           .Include(x => x.Contract)
                           .Include(x => x.Contract.FirstPartyFacility)
                           .Include(x => x.Contract.FirstPartyCitizen)
@@ -56,6 +58,8 @@ namespace REAC.Application.ModuleServices
                         LitigationRequestId = requestPayload.LitigationRequestId,
                         RequiredDays = requestPayload.RequiredDays,
                         RequestReason = requestPayload.RequestReason,
+                        //CreatedOn = DateTime.Now,
+                        //CreatedBy = referenceId,
                         LitigationRequestExtendPeriodRequestTypeId = LitigationRequestExtendPeriodRequestType.Reconciliation
                     };
 
@@ -137,6 +141,7 @@ namespace REAC.Application.ModuleServices
             var msg = "";
             var litigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>()).Include(x => x.Area).Include(x => x.City)
                           .Include(x => x.ApplicantCitizen)
+                          .Include(x => x.ReformerCitizen)
                           .Include(x => x.Contract)
                           .Include(x => x.Contract.FirstPartyFacility)
                           .Include(x => x.Contract.FirstPartyCitizen)
@@ -159,6 +164,25 @@ namespace REAC.Application.ModuleServices
                     };
                 litigationRequestExtendPeriodRequest.LitigationRequestExtendPeriodRequestStatusId = requestPayload.LitigationRequestExtendPeriodRequestStatusId;
                 litigationRequestExtendPeriodRequest.FinishStatusReason = requestPayload.FinishStatusReason;
+
+                // Check on Reformer DeActivation Period
+                //var reformerStopDecision = (await _repository.GetQueryable<ReformerStopFreeUpDecision, int>())
+                //    .OrderByDescending(y => y.DecisionDate)
+                //    .AsNoTracking()
+                //    .FirstOrDefault(x => x.CitizenId == litigationRequestExtendPeriodRequest.CreatedBy && x.ReformerStatusId == ReformerStatus.Stopped && x.DecisionTo != null);
+
+                //if(reformerStopDecision != null)
+                //{
+
+                //    var extendRequestDate = DateTime.Now.AddDays(litigationRequestExtendPeriodRequest.RequiredDays);
+
+                //    if(extendRequestDate <= reformerStopDecision.DecisionTo && extendRequestDate >= reformerStopDecision.DecisionFrom)
+                //    {
+
+                //    }
+                //}
+
+
 
                 var savePeriodResponse = await _repository.SaveChangesAsync();
                 if (!savePeriodResponse.IsDone)

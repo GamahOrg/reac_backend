@@ -9,13 +9,16 @@ namespace REAC.Application.Contracts.Dtos.Litigation
         public Guid RequestId { get; set; }
 
         public DateTime? ResponseOn { get; set; }
+        public DateTime? ReformerAssigningDate { get; set; }
         public LitigationRequestReformerAssigningRequestStatus? Response { get; set; }
     }
     public class CustomLitigationRequestMircoAllDto : LitigationRequestMircoDto
     {
         public Guid RequestId { get; set; }
         public string? ReformerName { get; set; }
-       public int? ReconciliationPeriod { get; set; } 
+        public DateTime? ReformerAssigningDate { get; set; }
+
+        public int? ReconciliationPeriod { get; set; } 
         public DateTime? ResponseOn { get; set; }
         public LitigationRequestReformerAssigningRequestStatus? Response { get; set; }
     }

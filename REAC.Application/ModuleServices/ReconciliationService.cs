@@ -244,6 +244,7 @@ namespace REAC.Application.ModuleServices
                 litigationRequestReformerAssigningRequest.LitigationRequestId = litigationRequest.Id;
                 litigationRequestReformerAssigningRequest.RequestOn = DateTime.Now;
                 litigationRequestReformerAssigningRequest.Response = LitigationRequestReformerAssigningRequestStatus.None;
+                litigationRequestReformerAssigningRequest.Reason = assignRequestPayload.Reason;
                 await _repository.AddAsync<LitigationRequestReformerAssigningRequest, Guid>(litigationRequestReformerAssigningRequest);
 
                 // Send Notification

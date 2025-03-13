@@ -39,11 +39,11 @@ public class CitizenRequestController : ControllerBase
     }
 
     [HttpGet(nameof(GetCitizenRequestsForEmployee))]
-    public async Task<ActionResult> GetCitizenRequestsForEmployee(int pageIndex, int pageSize, CitizenRequestType citizenRequestType)
+    public async Task<ActionResult> GetCitizenRequestsForEmployee(int pageIndex, int pageSize, CitizenRequestType citizenRequestType, bool ascending = false)
     {
         if (ModelState.IsValid)
         {
-            var returnValue = await _citizenRequestService.GetCitizenRequests(pageIndex, pageSize, true, citizenRequestType);
+            var returnValue = await _citizenRequestService.GetCitizenRequests(pageIndex, pageSize, true, citizenRequestType, ascending );
             return Ok(returnValue);
         }
         return BadRequest();
