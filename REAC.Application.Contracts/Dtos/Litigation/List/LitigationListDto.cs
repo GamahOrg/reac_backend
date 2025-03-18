@@ -14,6 +14,8 @@ namespace REAC.Application.Contracts.Dtos.Litigation.List
         public RequestStatus? ExternalStatusId { get; set; }
         public LitigationRequestContractType? LitigationRequestContractTypeId { get; set; }
         public string? LitigationRequestContractType { get; set; }
+        public string? DefendantAgreementRequestResponse { get; set; }
+        public string? PlaintiffAgreementRequestResponse { get; set; }
 
     }
 }

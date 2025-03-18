@@ -6,12 +6,14 @@ using Core.Shared.Responses;
 using Microsoft.EntityFrameworkCore;
 using REAC.Application.Contracts.Dtos.Litigation.CreateUpdate.Litigation;
 using REAC.Application.Contracts.Dtos.Notification;
+using REAC.Application.Contracts.IAppServices.Litigation;
 using REAC.Application.Contracts.IAppServices.Notification;
 using REAC.Application.Contracts.IAppServices.System;
 using REAC.Domain.Shared.Constants;
 using REAC.Domain.Shared.Enum;
 using REAC.EntityFrameworkCore.Entities.Actor;
 using REAC.EntityFrameworkCore.Entities.Litigation;
+using REAC.EntityFrameworkCore.Entities.Reconciliation;
 using REAC.EntityFrameworkCore.Entities.System;
 using REAC.EntityFrameworkCore.Entities.Wpf.Business;
 using System.Text.Json;
@@ -79,7 +81,7 @@ namespace REAC.Application.AppServices.SLA
                                 {
                                     litigationRequest.IsReformerReminderForReconciliationFirstPeriodSent = true;
 
-                                    
+
                                     //Send Notification for reformer(reformer actorType),RequestType(ReformerTaskrequests)
                                     // Mail - Sms - Application Notification
                                     // يرجى سرعة اتمام عملية الصلح على الدعوى رقم ......
@@ -237,7 +239,7 @@ namespace REAC.Application.AppServices.SLA
                                                 body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_ReconciliationReport_PleaseReply).Result.Data?.Value);
                                                 body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
                                             }
-                                            await SendNotificationMS(body,msg, litigationRequest, " سرعة الرد على محضر الصلح", NotificationActorType.Defendant, RequestType.ReformationReport,
+                                            await SendNotificationMS(body, msg, litigationRequest, " سرعة الرد على محضر الصلح", NotificationActorType.Defendant, RequestType.ReformationReport,
                                                false, false, false, false, true, false, true);//المدعى عليه سواء فرد او شركة
                                         }
                                         catch (Exception e)
@@ -254,36 +256,36 @@ namespace REAC.Application.AppServices.SLA
                             if (litigationRequest.IsLitigationRequestReconciliationReportResponsePeriodSent != true)
                             {
 
-                           
+
                                 double totalReviewHours = 0;
 
-                            totalReviewHours += (DateTime.Now - litigationRequest.LitigationRequestReconciliationReports.FirstOrDefault().ReportDate).TotalHours;
-                            if (totalReviewHours >= LitigationRequestReconciliationReportDecisionPeriod)
-                            {
-                                 litigationRequest.IsLitigationRequestReconciliationReportResponsePeriodSent = true;
-                                //Send Notification for reformer
-                                // Mail - Sms - Application Notification
-                                // يرجى العلم أن الرد على محضر الصلح الصادر على الدعوى رقم ..... قد تجاوز مهلته القصوى
-                                try
+                                totalReviewHours += (DateTime.Now - litigationRequest.LitigationRequestReconciliationReports.FirstOrDefault().ReportDate).TotalHours;
+                                if (totalReviewHours >= LitigationRequestReconciliationReportDecisionPeriod)
                                 {
-                                    var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_ReconciliationReport_WarnReformer).Result.Data?.Value;
-                                    msg = msg?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
-                                    var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
-                                    string body;
-                                    using (StreamReader streamReader = File.OpenText(pathToFile))
+                                    litigationRequest.IsLitigationRequestReconciliationReportResponsePeriodSent = true;
+                                    //Send Notification for reformer
+                                    // Mail - Sms - Application Notification
+                                    // يرجى العلم أن الرد على محضر الصلح الصادر على الدعوى رقم ..... قد تجاوز مهلته القصوى
+                                    try
                                     {
-                                        body = await streamReader.ReadToEndAsync();
-                                        body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_ReconciliationReport_WarnReformer).Result.Data?.Value);
-                                        body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                                        var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_ReconciliationReport_WarnReformer).Result.Data?.Value;
+                                        msg = msg?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                                        var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                        string body;
+                                        using (StreamReader streamReader = File.OpenText(pathToFile))
+                                        {
+                                            body = await streamReader.ReadToEndAsync();
+                                            body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_ReconciliationReport_WarnReformer).Result.Data?.Value);
+                                            body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                                        }
+                                        await SendNotificationMS(body, msg, litigationRequest, "الرد على محضر الصلح", NotificationActorType.Reformer, RequestType.ReformationReport,
+                                           false, true);
                                     }
-                                    await SendNotificationMS(body, msg, litigationRequest, "الرد على محضر الصلح", NotificationActorType.Reformer, RequestType.ReformationReport,
-                                       false, true);
-                                }
-                                catch (Exception e)
-                                {
+                                    catch (Exception e)
+                                    {
 
+                                    }
                                 }
-                            }
                             }
                         }
 
@@ -583,10 +585,65 @@ namespace REAC.Application.AppServices.SLA
                 }
             }
 
+
+            var litigationRequestReconciliationExtendRequests = (await _repository.GetQueryable<LitigationRequestExtendPeriodRequest, Guid>())
+                                .Include(x => x.LitigationRequest.ReformerCitizen)//المصلح مواطن
+                .Where(x => x.LitigationRequestExtendPeriodRequestTypeId == LitigationRequestExtendPeriodRequestType.Reconciliation 
+                && x.LitigationRequestExtendPeriodRequestStatusId == null && x.CreatedOn != null);
+
+            if (litigationRequestReconciliationExtendRequests.Any())
+            {
+                int LitigationRequestReconciliationExtendRequestResponsePeriod = 0;
+                int.TryParse(_sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_LitigationRequestExtendRequestReplyPeriod).Result.Data?.Value, out LitigationRequestReconciliationExtendRequestResponsePeriod);
+
+
+                foreach (var extendRequest in litigationRequestReconciliationExtendRequests)
+                {
+                    if(extendRequest.CreatedOn is not null)
+                    {
+                        double totalHours = 0;
+
+                        totalHours += (DateTime.Now - extendRequest.CreatedOn).Value.TotalHours;
+
+                        if (totalHours > LitigationRequestReconciliationExtendRequestResponsePeriod)
+                        {
+                            extendRequest.LitigationRequestExtendPeriodRequestStatusId = LitigationRequestExtendPeriodRequestStatus.Reject;
+                            extendRequest.FinishStatusReason = "لم يتم الرد في خلال الفتره المحدده";
+
+                            // Send Notification
+                            // تم رفض طلب مد مدة الصلح
+                            try
+                            {
+                                var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reconciliation_ExtendRequest_Rejected).Result.Data?.Value;
+                                msg = msg.Replace("{LitigationCode}", extendRequest.LitigationRequest.RequestCode);
+                                var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                string body;
+                                using (StreamReader streamReader = File.OpenText(pathToFile))
+                                {
+                                    body = await streamReader.ReadToEndAsync();
+                                    body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Arbitration_ExtendRequest_Rejected).Result.Data?.Value);
+                                    body = body?.Replace("{LitigationCode}", extendRequest.LitigationRequest?.RequestCode);
+                                }
+                                await SendNotificationMS(body, msg, extendRequest.LitigationRequest, "رفض طلب مد مدة الصلح",NotificationActorType.Reformer,RequestType.ExtendReconciliationPeriodRequest,notifyReformer:true,notifyDeptAdmin:true);
+
+                            }
+                            catch (Exception e)
+                            {
+                            }
+
+                        }
+                    }
+                    
+                }
+            }
+
+            var repositoryLitigationRequestExtendRequestResponse = await _repository.SaveChangesAsync(default);
+
+
             return new BaseResponse() { IsDone = true };
         }
 
-        private async Task  SendNotificationMS(string mailMsg, string msg, LitigationRequest litigationRequest, string subject, NotificationActorType notificationActorType, RequestType requestType, bool notifyApplicant = false, bool notifyReformer = false, bool notifyDeptAdmin = false, bool notifyFirstParty = false, bool notifySecondParty = false, bool notifyFirstPartyFacility = false, bool notifySecondPartyFacility = false)
+        private async Task SendNotificationMS(string mailMsg, string msg, LitigationRequest litigationRequest, string subject, NotificationActorType notificationActorType, RequestType requestType, bool notifyApplicant = false, bool notifyReformer = false, bool notifyDeptAdmin = false, bool notifyFirstParty = false, bool notifySecondParty = false, bool notifyFirstPartyFacility = false, bool notifySecondPartyFacility = false)
         {
             var deptAdminInfoReconciliation = await _employeeService.GetAdminsByDepartmentType(DepartmentType.Reconciliation);
             var objEmail = new SendEmailDto()
