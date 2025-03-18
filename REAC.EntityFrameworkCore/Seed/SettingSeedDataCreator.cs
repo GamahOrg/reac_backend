@@ -994,6 +994,12 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                     new SysSetting
                         {
                             Id = Guid.NewGuid(),
+                            Key = "SLA.LitigationRequestExtendRequestReplyPeriod",
+                            Value = "24"
+
+                        },new SysSetting
+                        {
+                            Id = Guid.NewGuid(),
                             Key = "SLA.ReformerReminderForReconciliationFirstPeriod",
                             Value = "72"
 
@@ -1292,7 +1298,19 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                             Value = "تم إرسال طلب مهمة تحكيم جديدة كرئيس هيئة على الدعوى رقم {LitigationCode} "
                         },
 	                #endregion
-
+#region Arbitration
+                    new SysSetting
+                    {
+                        Id = Guid.NewGuid(),
+                        Key = "SLA.AddLitigationRequestArbitratorNominationListPeriod",
+                        Value = "48"
+                    },new SysSetting
+                    {
+                        Id = Guid.NewGuid(),
+                        Key = "SLA.AddLitigationRequestArbitratorNominationListWarning",
+                        Value = "برجاء سرعة اضافة قائمة المحكمين المرشحين لدعوي رقم {LitigationRequest}"
+                    },
+	#endregion
                     #endregion
 
                     new SysSetting

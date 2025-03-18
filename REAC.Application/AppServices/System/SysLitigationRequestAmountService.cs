@@ -10,6 +10,10 @@ using System.Threading;
 using System.Runtime.InteropServices;
 using REAC.EntityFrameworkCore.Entities.Litigation;
 using Microsoft.EntityFrameworkCore;
+using REAC.Domain.Shared.Constants;
+using REAC.Domain.Shared.Enum;
+using REAC.EntityFrameworkCore.Entities.Actor;
+using System.IdentityModel.Tokens.Jwt;
 
 
 namespace REAC.Application.AppServices.System
@@ -165,6 +169,47 @@ namespace REAC.Application.AppServices.System
                 IsDone = true,
                 Data = entityDto,
             };
+        }
+
+        public async Task<BaseResponse> Delete(Guid id , CancellationToken cancellationToken)
+        {
+            try
+            {
+
+                var LitigiationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>())
+                .FirstOrDefault(x => x.LitigationRequestAmountId == id);
+                if (LitigiationRequest != null)
+                    return new DataResponse<SysLitigationRequestAmountCreateUpdateDto> { IsDone = false, Message = "لا يمكن حذف هذه الرسوم ,مرتبطه بدعوه موجوده بالفعل" };
+
+                var entity = (await _repository.GetQueryable<SysLitigationRequestAmount, Guid>())
+                .Include(x => x.LitigationRequestFees)
+                .FirstOrDefault(x => x.Id == id);
+                if (entity == null)
+                    return new DataResponse<SysLitigationRequestAmountCreateUpdateDto> { IsDone = false, Message = "غير موجود" };
+
+                if (entity.LitigationRequestFees != null)
+                {
+                    entity.LitigationRequestFees.Clear();
+                    _repository.Remove<SysLitigationRequestAmount, Guid>(entity);
+
+                    var response = await _repository.SaveChangesAsync(cancellationToken);
+
+                    if (response.IsDone)
+                    {
+                        return new DataResponse<SysLitigationRequestAmountCreateUpdateDto>()
+                        {
+                            IsDone = true,
+                            Data = null
+                        };
+                    }
+                }
+                return new DataResponse<SysLitigationRequestAmountCreateUpdateDto> { IsDone = false, Message = "غير موجود" };
+            }
+            catch (Exception)
+            {
+                return new DataResponse<SysLitigationRequestAmountCreateUpdateDto> { IsDone = false, Message = "غير موجود" };
+            }
+          
         }
     }
 }

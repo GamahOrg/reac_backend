@@ -1151,6 +1151,9 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Property<bool>("IsArbitrationFeesHaveBeenCollected")
                         .HasColumnType("bit");
 
+                    b.Property<bool?>("IsArbitratorAdminNominationListAddedPeriodSent")
+                        .HasColumnType("bit");
+
                     b.Property<bool?>("IsArbitratorAssigningRequestResponseFirstPeriodSent")
                         .HasColumnType("bit");
 
@@ -2153,6 +2156,12 @@ namespace REAC.EntityFrameworkCore.Migrations
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("CreatedOn")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("FinishStatusReason")
                         .HasColumnType("nvarchar(max)");

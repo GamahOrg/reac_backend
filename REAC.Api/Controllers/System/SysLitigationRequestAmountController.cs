@@ -55,4 +55,16 @@ public class SysLitigationRequestAmountController : BaseController<SysLitigation
         var returnValue = await _amountService.UpdateAsync(id, sysLitigationRequestAmountCreateUpdateDto, cancellationToken);
         return Ok(returnValue);
     }
+
+    [HttpPost("Delete")]
+    public async Task<ActionResult> Delete(Guid id, CancellationToken cancellationToken)
+    {
+        if (ModelState.IsValid)
+        {
+            var returnValue = await _amountService.Delete(id, cancellationToken);
+            return Ok(returnValue);
+        }
+
+        return BadRequest();
+    }
 }

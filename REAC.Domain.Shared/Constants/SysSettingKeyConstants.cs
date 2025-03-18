@@ -244,6 +244,7 @@
         public const string SLA_LitigationRequestReconciliationReportDecisionPeriod = "SLA.LitigationRequestReconciliationReportDecisionPeriod";
         public const string SLA_LitigationRequestReformerAssigningRequestResponsePeriod = "SLA.LitigationRequestReformerAssigningRequestResponsePeriod";
         public const string SLA_LitigationRequestReformerAssigningRequestDecisionPeriod = "SLA.LitigationRequestReformerAssigningRequestDecisionPeriod";
+        public const string SLA_LitigationRequestExtendRequestReplyPeriod = "SLA.LitigationRequestExtendRequestReplyPeriod";
 
         public const string SLA_Reconciliation_ReformerMaxSessionsCountPerDay = "Reconciliation.ReformerMaxSessionsCountPerDay";
         public const string SLA_Arbitration_ArbitratorMaxSessionsCountPerDay = "SLA.Arbitration.ArbitratorMaxSessionsCountPerDay";
@@ -318,6 +319,8 @@
         public const string SLA_ArbitratorTaskRequest_ReAssign = "SLA.ArbitratorTaskRequest.ReAssign";
         public const string SLA_ArbitratorChairmanTaskRequest_Cancelled = "SLA.ArbitratorChairmanTaskRequest.Cancelled";
         public const string SLA_ArbitratorChairmanTaskRequest_ReAssign = "SLA.ArbitratorChairmanTaskRequest.ReAssign";
+        public const string SLA_AddLitigationRequestArbitratorNominationListPeriod = "SLA.AddLitigationRequestArbitratorNominationListPeriod";
+        public const string SLA_AddLitigationRequestArbitratorNominationListWarning = "SLA.AddLitigationRequestArbitratorNominationListWarning";
 
 
 

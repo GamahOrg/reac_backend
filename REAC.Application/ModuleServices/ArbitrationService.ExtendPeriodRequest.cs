@@ -55,6 +55,8 @@ namespace REAC.Application.ModuleServices
                         LitigationRequestId = requestPayload.LitigationRequestId,
                         RequiredDays = requestPayload.RequiredDays,
                         RequestReason = requestPayload.RequestReason,
+                        CreatedBy = referenceId,
+                        CreatedOn = DateTime.Now,
                         LitigationRequestExtendPeriodRequestTypeId = LitigationRequestExtendPeriodRequestType.Arbitration
                     };
 
