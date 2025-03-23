@@ -1008,21 +1008,26 @@ namespace REAC.Application.ModuleServices
                     combinedCondition = combinedCondition.AndAlso(x =>
                         x.LitigationRequestReformerAssigningRequests.Any(y => y.ReformerCitizen.FullName.Contains(filter.ReformerName))
                         || x.ReformerCitizen.FullName.Contains(filter.ReformerName));
+                    litigationRequestsQuery = entitiesQueryable.Where(combinedCondition);
+
                 }
                 if (filter.AreaId is not null)
                 {
                     combinedCondition = combinedCondition.AndAlso(x =>
                         x.ReformerCitizen.AreaId == filter.AreaId
                         || x.LitigationRequestReformerAssigningRequests.Any(y => y.ReformerCitizen.AreaId == filter.AreaId));
+                    litigationRequestsQuery = entitiesQueryable.Where(combinedCondition);
+
                 }
                 if (filter.CityId is not null)
                 {
                     combinedCondition = combinedCondition.AndAlso(x =>
                         x.ReformerCitizen.CityId == filter.CityId
                         || x.LitigationRequestReformerAssigningRequests.Any(y => y.ReformerCitizen.CityId == filter.CityId));
+                    litigationRequestsQuery = entitiesQueryable.Where(combinedCondition);
+
                 }
 
-                litigationRequestsQuery = entitiesQueryable.Where(combinedCondition);
             }
 
             litigationRequestsQuery = ascending
