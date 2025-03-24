@@ -141,7 +141,7 @@ public class SysSettingController : BaseController<SysSetting,
             for (int i = 0; i < SystemSettingsConfiguration.ReviewSystemSettingOrder.Count(); i++)
             {
                 var index = returnValue?.Data?.FindIndex(x => x.Key == SystemSettingsConfiguration.ReviewSystemSettingOrder[i]);
-                if (index != null)
+                if (index != null && index != -1)
                 {
                     var obj = returnValue?.Data?[index.Value];
                     if(obj != null)

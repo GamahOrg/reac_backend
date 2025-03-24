@@ -260,37 +260,41 @@ namespace REAC.Application.AppServices.Litigation
                 }
                 else
                 {
-                    var _bpfService = _serviceProvider.GetRequiredService<IBpfService>();
-                    await _bpfService.ExcuteWorkFlow(litigationRequest.Id, default, 2);
-                    litigationRequest.InternalStatusId = RequestStatus.New;
-                    litigationRequest.ExternalStatusId = RequestStatus.New;
-
-                    repositorySaveResponse = await _repository.SaveChangesAsync(new CancellationToken());
-                    if (!repositorySaveResponse.IsDone)
-                        return repositorySaveResponse;
-
-                    //  Send Notification 
-                    // تم الموافقة على طلب المشارطة على الدعوى رقم........
-                    // المدعى - المدعى عليه - مدير ادارة التدقيق - موظف التدقيق
-                    try
+                    if(litigationRequest.PlaintiffAgreementRequestResponse.HasValue & litigationRequest.DefendantAgreementRequestResponse.HasValue)
                     {
-                        var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Accept_Agreement).Result.Data?.Value;
-                        msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
-                        var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
-                        string body;
-                        using (StreamReader streamReader = File.OpenText(pathToFile))
+                        var _bpfService = _serviceProvider.GetRequiredService<IBpfService>();
+                        await _bpfService.ExcuteWorkFlow(litigationRequest.Id, default, 2);
+                        litigationRequest.InternalStatusId = RequestStatus.New;
+                        litigationRequest.ExternalStatusId = RequestStatus.New;
+
+                        repositorySaveResponse = await _repository.SaveChangesAsync(new CancellationToken());
+                        if (!repositorySaveResponse.IsDone)
+                            return repositorySaveResponse;
+
+                        //  Send Notification 
+                        // تم الموافقة على طلب المشارطة على الدعوى رقم........
+                        // المدعى - المدعى عليه - مدير ادارة التدقيق - موظف التدقيق
+                        try
                         {
-                            body = await streamReader.ReadToEndAsync();
-                            body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Accept_Agreement).Result.Data?.Value);
-                            body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
-                        }
+                            var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Accept_Agreement).Result.Data?.Value;
+                            msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
+                            var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                            string body;
+                            using (StreamReader streamReader = File.OpenText(pathToFile))
+                            {
+                                body = await streamReader.ReadToEndAsync();
+                                body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Accept_Agreement).Result.Data?.Value);
+                                body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                            }
 
-                        await SendNotificationMSWithDefendant(body, msg, litigationRequest, RequestType.LitigationAgreementRequest, "قبول طلب المشارطة");
+                            await SendNotificationMSWithDefendant(body, msg, litigationRequest, RequestType.LitigationAgreementRequest, "قبول طلب المشارطة");
+                        }
+                        catch (Exception ex)
+                        {
+                            return new ExceptionResponse() { IsDone = false, Message = ex.Message, Exception = ex.ToString() };
+                        }
                     }
-                    catch (Exception ex)
-                    {
-                        return new ExceptionResponse() { IsDone = false, Message = ex.Message, Exception = ex.ToString() };
-                    }
+                    
                 }
 
             }

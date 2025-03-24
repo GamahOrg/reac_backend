@@ -77,6 +77,7 @@
 
         #region Wafi
         public const string Wafi_URL = "Wafi_URL";
+        public const string WafiData_URL = "WafiData_URL";
 
         #endregion
 
@@ -206,6 +207,7 @@
         public const string LitigationRequest_Creation_Reject = "LitigationRequest.Creation.Reject";
         public const string LitigationRequest_Creation_Resent = "LitigationRequest.Creation.Resent";
         public const string LitigationRequest_Creation_Accept = "LitigationRequest.Creation.Accept";
+        public const string LitigationRequest_Creation_Accept_Defendant = "LitigationRequest.Creation.Accept.Defendant";
         public const string LitigationRequest_Decision_WaiverOfRight = "LitigationRequest.Decision.WaiverOfRight";
         public const string LitigationRequest_Decision_ReconciliationWasMade = "LitigationRequest.Decision.ReconciliationWasMade";
         public const string LitigationRequest_Decision_WaiverOfTheLitigation = "LitigationRequest.Decision.WaiverOfTheLitigation";
@@ -245,6 +247,9 @@
         public const string SLA_LitigationRequestReformerAssigningRequestResponsePeriod = "SLA.LitigationRequestReformerAssigningRequestResponsePeriod";
         public const string SLA_LitigationRequestReformerAssigningRequestDecisionPeriod = "SLA.LitigationRequestReformerAssigningRequestDecisionPeriod";
         public const string SLA_LitigationRequestExtendRequestReplyPeriod = "SLA.LitigationRequestExtendRequestReplyPeriod";
+
+        public const string SLA_AddLitigationRequestArbitrationSessionPeriod = "SLA.AddLitigationRequestArbitrationSessionPeriod";
+        public const string SLA_AddLitigationRequestArbitrationSessionWarning = "SLA.AddLitigationRequestArbitrationSessionWarning";
 
         public const string SLA_Reconciliation_ReformerMaxSessionsCountPerDay = "Reconciliation.ReformerMaxSessionsCountPerDay";
         public const string SLA_Arbitration_ArbitratorMaxSessionsCountPerDay = "SLA.Arbitration.ArbitratorMaxSessionsCountPerDay";

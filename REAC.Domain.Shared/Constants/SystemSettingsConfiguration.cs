@@ -71,7 +71,9 @@ namespace REAC.Domain.Shared.Constants
 
             "SLA.LitigationRequestExtendRequestReplyPeriod",
 
-            "Arbitration.Period"
+            "Arbitration.Period",
+
+            "SLA.AddLitigationRequestArbitrationSessionPeriod"
 
         };
 
@@ -105,6 +107,8 @@ namespace REAC.Domain.Shared.Constants
             "SLA.SecondAgreementRequestForForRequest",
             "SLA.AgreementCancelled",
             "LitigationRequest.Reject.Agreement",
+            "LitigationRequest.Creation.Accept.Defendant",
+             "LitigationRequest.Creation.Accept",
         };
 
         public static readonly List<string> ReviewSystemSettingOrder = new List<string>
@@ -126,6 +130,8 @@ namespace REAC.Domain.Shared.Constants
             "SLA.SecondAgreementRequestForForRequest",
             "SLA.AgreementCancelled",
             "LitigationRequest.Reject.Agreement",
+            "LitigationRequest.Creation.Accept",
+            "LitigationRequest.Creation.Accept.Defendant"
         };
 
     }
