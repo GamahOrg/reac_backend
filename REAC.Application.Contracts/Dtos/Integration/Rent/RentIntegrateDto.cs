@@ -9,7 +9,7 @@ namespace REAC.Application.Contracts.Dtos.Integration.Rent
 {
     public class RentIntegrateDto
     {
-        public WafiData Wafiresponse { get; set; }
+        public WafiData? Wafiresponse { get; set; }
         public PartyDTO FirstPartyDto { get; set; }
         public PartyDTO SecondPartyDto { get; set; }
         public EjarPropertyDto Property { get; set; }

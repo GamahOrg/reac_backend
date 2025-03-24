@@ -1937,7 +1937,7 @@ namespace REAC.Application.AppServices.Litigation
                 {
                     if (wafiData.IsDone)
                     {
-                        rentIntegrateDto.Wafiresponse = wafiData.Data.data;
+                        rentIntegrateDto.Wafiresponse = wafiData?.Data?.data;
                     }
                 }
 
