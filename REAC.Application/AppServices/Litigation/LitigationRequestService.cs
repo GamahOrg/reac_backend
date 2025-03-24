@@ -38,6 +38,7 @@ using REAC.EntityFrameworkCore.Entities.Litigation;
 using REAC.EntityFrameworkCore.Entities.System;
 using REAC.EntityFrameworkCore.Entities.Wpf.Business;
 using REAC.EntityFrameworkCore.Seed.Integration;
+using System;
 using System.Globalization;
 using System.Linq;
 using System.Net;
@@ -1913,9 +1914,9 @@ namespace REAC.Application.AppServices.Litigation
                 Id = litigationRequest.ContractId
             };
 
-
             if (litigationRequest.Contract.LitigationRequestContractTypeId == LitigationRequestContractType.Wafi)
             {
+                //WafiGetUserInfo take wafi number only (show project details by wafi number only)
                 var wafiResult = await WafiGetUserInfo(litigationRequest.Contract.ContractKey);
 
                 if (wafiResult is not null)
@@ -1929,6 +1930,7 @@ namespace REAC.Application.AppServices.Litigation
             }
             if (litigationRequest.Contract.LitigationRequestContractTypeId == LitigationRequestContractType.Wafi)
             {
+                //(GetWafiData) get wafi for defandent
                 var wafiData = await GetWafiData(litigationRequest.Contract.ContractKey, SecondPartyNationalId);
 
                 if (wafiData is not null)
@@ -4125,20 +4127,32 @@ namespace REAC.Application.AppServices.Litigation
 
         public async Task<DataResponse<WafiDataDto>> GetWafiData(string licenseNumber, string identityNumber)
         {
-            string accessToken = await GetAccessToken();
+            var accessToken = (await _gEELoginService.Login()).Data?.Access_token;
 
-            HttpClient httpclient = new HttpClient();
+
+            //string accessToken = await GetAccessToken();
+
+            //HttpClient httpclient = new HttpClient();
             try
             {
-                httpclient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                //httpclient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
 
-                var apiUrl = $"https://wafiservicesapi.rega.gov.sa/api/REAC/GetLicenseProjectPartiesData?licenseNumber={Uri.EscapeDataString(licenseNumber)}&identityNumber={identityNumber}";
+                var apiUrl = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.WafiData_URL).Result.Data?.Value;
+                apiUrl = string.Format(apiUrl, licenseNumber, identityNumber);
+
+                var client = new HttpClient();
+                var request = new HttpRequestMessage(HttpMethod.Get, apiUrl);
+                request.Headers.Add("Authorization", $"Bearer {accessToken}");
+                var response = await client.SendAsync(request);
+
+
+                //var apiUrl = $"https://wafiservicesapi.rega.gov.sa/api/REAC/GetLicenseProjectPartiesData?licenseNumber={Uri.EscapeDataString(licenseNumber)}&identityNumber={identityNumber}";
                 // var apiUrl=" https://wafiservicesapi.rega.gov.sa/api/REAC/GetLicenseProjectPartiesData?licenseNumber=2/أ&identityNumber=1003643689";
-                httpclient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+                //httpclient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
 
-                var response = await httpclient.GetAsync(apiUrl);
+                //var response = await httpclient.GetAsync(apiUrl);
 
 
                 if (response.IsSuccessStatusCode)
@@ -4155,7 +4169,12 @@ namespace REAC.Application.AppServices.Litigation
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Exception occurred: {ex.Message}");
+                _loggerManager.Log(Core.Log.Domain.Shared.Enums.LoggerType.Database
+                       , new LogDto()
+                       {
+                           Type = Core.Log.Domain.Shared.Enums.LogType.Exception,
+                           Message = $"GetWafiData Exception ====> {ex.ToString()}"
+                       });
                 return null;
             }
         }

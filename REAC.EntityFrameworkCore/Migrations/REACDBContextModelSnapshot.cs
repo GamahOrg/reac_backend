@@ -1181,6 +1181,9 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Property<bool>("IsArbitratorReminderForCancelArbitrationSent")
                         .HasColumnType("bit");
 
+                    b.Property<bool?>("IsArbitratorSessionTimeAddedPeriodSent")
+                        .HasColumnType("bit");
+
                     b.Property<bool?>("IsArbitratorsChairmanDecisionRequired")
                         .HasColumnType("bit");
 

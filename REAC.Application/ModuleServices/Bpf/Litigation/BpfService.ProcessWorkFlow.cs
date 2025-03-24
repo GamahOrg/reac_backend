@@ -583,6 +583,8 @@ namespace Bpf.Application.ModuleServices
                         {
                             msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Creation_Accept).Result.Data?.Value;
                             msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
+                            string msgDefendant = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Creation_Accept_Defendant).Result.Data?.Value;
+                            msgDefendant = msgDefendant.Replace("{LitigationCode}", litigationRequest.RequestCode);
                             var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
                             using (StreamReader streamReader = File.OpenText(pathToFile))
                             {
@@ -590,7 +592,7 @@ namespace Bpf.Application.ModuleServices
                                 body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Creation_Accept).Result.Data?.Value);
                                 body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
                             }
-                            SendNotificationMSWithDefendant(body, msg, msg, litigationRequest, RequestType.LitigationRequest, "Litigation Request Accepted", true);
+                            SendNotificationMSWithDefendant(body, msg, msgDefendant, msg, litigationRequest, RequestType.LitigationRequest, "Litigation Request Accepted", true);
                         }
                         catch (Exception)
                         {
@@ -647,7 +649,7 @@ namespace Bpf.Application.ModuleServices
                                 body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.WorkFlow_Condition_Review).Result.Data?.Value);
                                 body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
                             }
-                            SendNotificationMSWithDefendant(body, msg, msgReview, litigationRequest, RequestType.LitigationAgreementRequest, "Litigation Request Resent");
+                            SendNotificationMSWithDefendant(body, msg, msg, msgReview, litigationRequest, RequestType.LitigationAgreementRequest, "Litigation Request Resent");
                         }
                         catch (Exception e)
                         {
@@ -787,7 +789,7 @@ namespace Bpf.Application.ModuleServices
 
         }
         //المدعى -مدير ادارة التدقيق -المدعى عليه
-        private async Task SendNotificationMSWithDefendant(string mailMsg, string msg, string msgReview, LitigationRequest litigationRequest, RequestType requestTypeId, string subject, bool? sendToArbitratorAdmin = null)
+        private async Task SendNotificationMSWithDefendant(string mailMsg, string msg, string msgDefendant, string msgReview, LitigationRequest litigationRequest, RequestType requestTypeId, string subject, bool? sendToArbitratorAdmin = null)
         {
             var deptAdminInfoReview = await _employeeService.GetAdminsByDepartmentType(DepartmentType.Review);
             var deptAdminInfoArbitrator = await _employeeService.GetAdminsByDepartmentType(DepartmentType.Arbitration);
@@ -910,10 +912,10 @@ namespace Bpf.Application.ModuleServices
                     ViewedOn = null,
                     RequestId = litigationRequest.Id,
                     RequestTypeId = requestTypeId,
-                    Message = msg,
+                    Message = msgDefendant,
                 });
                 objSms.recipients.Add(litigationRequest?.Contract?.SecondPartyCitizen.Mobile);
-
+                objSms.message_text = msgDefendant;
             }
 
 
@@ -929,9 +931,10 @@ namespace Bpf.Application.ModuleServices
                     ViewedOn = null,
                     RequestId = litigationRequest.Id,
                     RequestTypeId = requestTypeId,
-                    Message = msg,
+                    Message = msgDefendant,
                 });
                 objSms.recipients.Add(litigationRequest?.Contract?.SecondPartyFacility?.Citizen?.Mobile);
+                objSms.message_text = msgDefendant;
 
             }
 

@@ -13,6 +13,7 @@ using REAC.EntityFrameworkCore.Entities.Arbitration;
 using REAC.EntityFrameworkCore.Entities.Litigation;
 using REAC.EntityFrameworkCore.Entities.Reconciliation;
 using REAC.EntityFrameworkCore.Entities.Wpf.Business;
+using System.DirectoryServices.Protocols;
 
 namespace REAC.Application.AppServices.SLA
 {
@@ -1193,7 +1194,7 @@ namespace REAC.Application.AppServices.SLA
             }
 
 
-            var litigationRequestArbitrationExtendRequests = (await _repository.GetQueryable<LitigationRequestExtendPeriodRequest, Guid>())              
+            var litigationRequestArbitrationExtendRequests = (await _repository.GetQueryable<LitigationRequestExtendPeriodRequest, Guid>())
                                 .Include(x => x.LitigationRequest.ArbitratorCitizen)
                 .Where(x => x.LitigationRequestExtendPeriodRequestTypeId == LitigationRequestExtendPeriodRequestType.Arbitration
                 && x.LitigationRequestExtendPeriodRequestStatusId == null && x.CreatedOn != null);
@@ -1244,13 +1245,74 @@ namespace REAC.Application.AppServices.SLA
                 }
             }
 
+
+            litigationRequests = (await _repository.GetQueryable<LitigationRequest, Guid>())?
+                               .Include(x => x.ArbitratorCitizen)
+                               .Include(x => x.LitigationRequestSessions.Where(y => y.LitigationRequestSessionRequestTypeId == LitigationRequestSessionRequestType.Arbitration))
+                             .Where(x => x.LitigationRequestStage == LitigationRequestStage.Arbitration
+                             & x.IsFinished != true & x.ArbitratorCitizenId != null)
+                             .ToList();
+
+            if (litigationRequests is not null && litigationRequests.Any())
+            {
+                foreach (var litigationRequest in litigationRequests)
+                {
+                    if (!litigationRequest.LitigationRequestSessions.Any())
+                    {
+                        var arbitratorChairmanAssigningDate = (await _repository.GetQueryable<LitigationRequestArbitratorAssigningRequest, Guid>())?
+                            .FirstOrDefault(x => x.LitigationRequestId == litigationRequest.Id && x.CitizenId == litigationRequest.ArbitratorCitizenId && x.Response == LitigationRequestArbitratorAssigningRequestStatus.Approve)?.ResponseOn;
+
+                        if (arbitratorChairmanAssigningDate != null && litigationRequest.IsArbitratorSessionTimeAddedPeriodSent != true)
+                        {
+                            int AddLitigationRequestArbitrationSessionPeriod = 0;
+                            int.TryParse(_sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_AddLitigationRequestArbitrationSessionPeriod).Result.Data?.Value, out AddLitigationRequestArbitrationSessionPeriod);
+                            double totalHours = 0;
+
+                            totalHours += (DateTime.Now - arbitratorChairmanAssigningDate).Value.TotalHours;
+
+                            if(totalHours > AddLitigationRequestArbitrationSessionPeriod)
+                            {
+                                litigationRequest.IsArbitratorSessionTimeAddedPeriodSent = true;
+
+                                // Send Notification
+                                // اشعار بتحديد موعد الجلسة
+                                try
+                                {
+                                    var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_AddLitigationRequestArbitrationSessionWarning).Result.Data?.Value;
+                                    msg = msg.Replace("{LitigationRequest}", litigationRequest.RequestCode);
+                                    var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                    string body;
+                                    using (StreamReader streamReader = File.OpenText(pathToFile))
+                                    {
+                                        body = await streamReader.ReadToEndAsync();
+                                        body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Arbitration_ExtendRequest_Rejected).Result.Data?.Value);
+                                        body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                                    }
+                                    await SendNotificationMS(body, msg, litigationRequest, "اشعار بتحديد موعد الجلسة", NotificationActorType.Arbitrator, RequestType.ExtendArbitrationPeriodRequest, notifyArbitratorChairman: true);
+
+                                }
+                                catch (Exception e)
+                                {
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+
+
+
+
+
+
             var repositoryLitigationRequestExtendRequestResponse = await _repository.SaveChangesAsync(default);
 
             return new BaseResponse() { IsDone = true };
         }
 
 
-        private async Task SendNotificationMS(string mailMsg, string msg, LitigationRequest litigationRequest, string subject, NotificationActorType notificationActorType, RequestType requestType, LitigationRequestArbitratorList? arbitrator = null, bool notifyApplicant = false, bool notifyArbitrators = false, bool notifyDeptAdmin = false, bool notifyFirstParty = false, bool notifySecondParty = false,bool notifyArbitratorChairman = false)
+        private async Task SendNotificationMS(string mailMsg, string msg, LitigationRequest litigationRequest, string subject, NotificationActorType notificationActorType, RequestType requestType, LitigationRequestArbitratorList? arbitrator = null, bool notifyApplicant = false, bool notifyArbitrators = false, bool notifyDeptAdmin = false, bool notifyFirstParty = false, bool notifySecondParty = false, bool notifyArbitratorChairman = false)
         {
             var deptAdminInfoArbitration = await _employeeService.GetAdminsByDepartmentType(DepartmentType.Arbitration);
             var objEmail = new SendEmailDto()
@@ -1322,7 +1384,7 @@ namespace REAC.Application.AppServices.SLA
                     Message = msg,
                 });
             }
-            
+
             // Notify Chairman 
             if (notifyArbitratorChairman && litigationRequest.ArbitratorCitizen != null)
             {

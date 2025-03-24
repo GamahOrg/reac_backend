@@ -132,6 +132,11 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                         Id = Guid.NewGuid(),
                         Key = "Wafi_URL",
                         Value = "https://api-dev.rega.gov.sa/v1/wafi/get-project-details-by-license?licenseNumber={0}",
+                    },new SysSetting
+                    {
+                        Id = Guid.NewGuid(),
+                        Key = "WafiData_URL",
+                        Value = "https://wafiservicesapi.rega.gov.sa/api/REAC/GetLicenseProjectPartiesData?licenseNumber={0}&identityNumber={1}",
                     },
 	                #endregion
 
@@ -738,6 +743,12 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                         Id = Guid.NewGuid(),
                         Key = "LitigationRequest.Creation.Accept",
                         Value = "تم قبول واستلام الطلب لدعوي رقم {LitigationCode}",
+                    }
+                    ,new SysSetting
+                    {
+                        Id = Guid.NewGuid(),
+                        Key = "LitigationRequest.Creation.Accept.Defendant",
+                        Value = "تم تقديم دعوى رقم {LitigationCode} والمقامة ضدكم ",
                     },new SysSetting
                     {
                         Id = Guid.NewGuid(),
@@ -1309,6 +1320,16 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                         Id = Guid.NewGuid(),
                         Key = "SLA.AddLitigationRequestArbitratorNominationListWarning",
                         Value = "برجاء سرعة اضافة قائمة المحكمين المرشحين لدعوي رقم {LitigationRequest}"
+                    },new SysSetting
+                    {
+                        Id = Guid.NewGuid(),
+                        Key = "SLA.AddLitigationRequestArbitrationSessionPeriod",
+                        Value = "24"
+                    },new SysSetting
+                    {
+                        Id = Guid.NewGuid(),
+                        Key = "SLA.AddLitigationRequestArbitrationSessionWarning",
+                        Value = "برجاء سرعة تحديد موعد الجلسه لدعوي رقم {LitigationRequest}"
                     },
 	#endregion
                     #endregion

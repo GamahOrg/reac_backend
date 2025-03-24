@@ -33,6 +33,7 @@ public partial class LitigationRequest : BaseEntity<Guid>
     public bool? IsArbitratorCountSelectionDecisionPeriodSent { get; set; }
 
     public bool? IsArbitratorAdminNominationListAddedPeriodSent { get; set; }
+    public bool? IsArbitratorSessionTimeAddedPeriodSent { get; set; }
     public bool? IsArbitratorNominationListResponsePeriodSent { get; set; }
     public bool? IsArbitratorNominationListDecisionPeriodSent { get; set; }
 
