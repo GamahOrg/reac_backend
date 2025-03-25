@@ -294,7 +294,7 @@ namespace REAC.Application.ModuleServices
                          .Include(x => x.Contract.LitigationRequestContractType)
                          .Where(x => x.Id == requestId
                          & x.ArbitratorCitizenId == referenceId
-                         | x.ApplicantCitizenId == referenceId
+                         | x.ApplicantCitizenId == referenceId & x.Id == requestId
                       |
                       x.Contract.FirstPartyCitizenId == referenceId & x.Id == requestId
                       |
