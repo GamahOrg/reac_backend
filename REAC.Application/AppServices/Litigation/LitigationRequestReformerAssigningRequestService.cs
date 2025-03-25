@@ -47,6 +47,15 @@ namespace REAC.Application.AppServices.Litigation
             Guid referenceId = Guid.Empty;
             _jwtReader.GetReferenceId(ref referenceId);
 
+            var citizenInfo = (await _repository.GetQueryable<Citizen, Guid>())
+                .Where(c => c.Id == referenceId)
+                .FirstOrDefault();
+
+            if (citizenInfo?.SigntureFileId == null)
+            {
+                return new BaseResponse() { IsDone = false, Message = "يرجى تسجيل التوقيع الالكتروني الخاص بك" };
+            }
+
             var litigationRequestReformerAssigningRequest = (await _repository.GetQueryable<LitigationRequestReformerAssigningRequest, Guid>())
                             .Include(l => l.ReformerCitizen)
                          .Where(x => x.Id == requestPayload.Id).ToList().FirstOrDefault();
@@ -71,9 +80,7 @@ namespace REAC.Application.AppServices.Litigation
 
             if (litigationRequest != null)
             {
-                var citizenInfo = (await _repository.GetQueryable<Citizen, Guid>())
-                    .Where(c => c.Id == referenceId)
-                    .FirstOrDefault();
+            
                 var msg = "";
                 string body;
                 var deptAdminInfoReconciliation = await _employeeService.GetAdminsByDepartmentType(DepartmentType.Reconciliation);
