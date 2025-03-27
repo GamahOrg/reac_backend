@@ -3901,28 +3901,60 @@ namespace REAC.Application.AppServices.Litigation
             {
                 if (litigationRequest.PlaintiffAgreementRequestResponse != ApproveRejectStatus.Approve | litigationRequest.DefendantAgreementRequestResponse != ApproveRejectStatus.Approve)
                 {
-                    litigationRequest.InternalStatusId = RequestStatus.AgreementRequestHasBeenRejected;
-                    litigationRequest.ExternalStatusId = RequestStatus.AgreementRequestHasBeenRejected;
-                    litigationRequest.IsFinished = true;
-                    litigationRequest.IsActive = false;
-                    //  Send Notification 
-                    // تم رفض طلب المشارطة على الدعوى رقم..........
-                    // المدعى - المدعى عليه - مدير ادارة التدقيق - موظف التدقيق
-                    try
+                    // if the type is arbitiration and reconciliation we will continue on reconciliatrion only
+                    if (litigationRequest.LitigationRequestCategoryId == LitigationRequestCategory.ReconciliationAndArbitration)
                     {
-                        var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Reject_Agreement).Result.Data?.Value;
-                        msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
-                        var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
-                        string body;
-                        using (StreamReader streamReader = File.OpenText(pathToFile))
+                        var _bpfService = _serviceProvider.GetRequiredService<IBpfService>();
+                        await _bpfService.ExcuteWorkFlow(litigationRequest.Id, default, 2);
+                        litigationRequest.InternalStatusId = RequestStatus.LitigationFeesHaveBeenCollected;
+                        litigationRequest.ExternalStatusId = RequestStatus.LitigationFeesHaveBeenCollected;
+
+                        //  Send Notification 
+                        // تم رفض طلب المشارطة على الدعوى وجارى استكمال الصلح ..........
+                        // المدعى - المدعى عليه - مدير ادارة التدقيق - موظف التدقيق
+                        try
                         {
-                            body = await streamReader.ReadToEndAsync();
-                            body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Reject_Agreement).Result.Data?.Value);
-                            body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                            var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Reject_Agreement).Result.Data?.Value;
+                            msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
+                            var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                            string body;
+                            using (StreamReader streamReader = File.OpenText(pathToFile))
+                            {
+                                body = await streamReader.ReadToEndAsync();
+                                body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Reject_Agreement).Result.Data?.Value);
+                                body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                            }
+                            await SendNotificationMSWithDefendant(body, msg, litigationRequest, RequestType.LitigationAgreementRequest, " رفض طلب المشارطة وجارى استكمال مرحلة الصلح");
                         }
-                        await SendNotificationMSWithDefendant(body, msg, litigationRequest, RequestType.LitigationAgreementRequest, "رفض طلب المشارطة");
+                        catch { }
                     }
-                    catch { }
+                    // else "arbitiration" do old logic
+                    else
+                    {
+
+                        litigationRequest.InternalStatusId = RequestStatus.AgreementRequestHasBeenRejected;
+                        litigationRequest.ExternalStatusId = RequestStatus.AgreementRequestHasBeenRejected;
+                        litigationRequest.IsFinished = true;
+                        litigationRequest.IsActive = false;
+                        //  Send Notification 
+                        // تم رفض طلب المشارطة على الدعوى رقم..........
+                        // المدعى - المدعى عليه - مدير ادارة التدقيق - موظف التدقيق
+                        try
+                        {
+                            var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Reject_Agreement).Result.Data?.Value;
+                            msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
+                            var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                            string body;
+                            using (StreamReader streamReader = File.OpenText(pathToFile))
+                            {
+                                body = await streamReader.ReadToEndAsync();
+                                body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Reject_Agreement).Result.Data?.Value);
+                                body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                            }
+                            await SendNotificationMSWithDefendant(body, msg, litigationRequest, RequestType.LitigationAgreementRequest, "رفض طلب المشارطة");
+                        }
+                        catch { }
+                    }
                 }
                 else
                 {

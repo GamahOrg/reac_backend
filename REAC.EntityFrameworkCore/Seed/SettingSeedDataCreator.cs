@@ -945,6 +945,12 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                     new SysSetting
                         {
                             Id = Guid.NewGuid(),
+                            Key = "SLA.AgreementPeriodFinishedWarning",
+                            Value = "انتهي وقت المشارطه لدعوي رقم {LitigationCode} برجاء استكمال الدعوي الي مرحلة الصلح"
+
+                        },new SysSetting
+                        {
+                            Id = Guid.NewGuid(),
                             Key = "SLA.ReminderForReviewer",
                             Value = "72"
 

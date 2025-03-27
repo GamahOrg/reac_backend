@@ -85,5 +85,55 @@ namespace Bpf.Application.ModuleServices
                 };
             }
         }
+        
+        public async Task<BaseResponse> ExecuteWorkFlowForSLA(Guid requestId,  CancellationToken cancellationToken, int? orderId = null)
+        {
+            try
+            {
+                var litigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>())
+                    .Include(x => x.WorkFlowProcessingLogs)
+                    .ThenInclude(x => x.Employee)
+                            .Include(x => x.ApplicantCitizen)
+                          .Include(x => x.LitigationRequestCategory)
+                          .Include(x => x.Contract)
+                         .ThenInclude(x => x.FirstPartyCitizen)
+                         .Include(x => x.Contract)
+                         .ThenInclude(x => x.FirstPartyFacility).ThenInclude(x => x.Citizen)
+                          .AsNoTracking()
+                          .Where(x => x.Id == requestId).ToList().FirstOrDefault();
+
+                BaseResponse response;
+
+                if (orderId is not null)
+                     response = await ExecuteWorkFlowStepsForSLA(litigationRequest.LitigationRequestCategory.BpfId, requestId, null, (int)orderId, null, cancellationToken);
+                else
+                    response = await ExecuteWorkFlowStepsForSLA(litigationRequest.LitigationRequestCategory.BpfId, requestId, null, 1, null, cancellationToken);
+
+
+
+                litigationRequest.InternalStatusId = (response as DataResponse<ResponseWorkFlowDto>).Data.InternalStatus is not null ? (response as DataResponse<ResponseWorkFlowDto>).Data.InternalStatus.Value : RequestStatus.New;
+                litigationRequest.ExternalStatusId = (response as DataResponse<ResponseWorkFlowDto>).Data.ExternalStatus is not null ? (response as DataResponse<ResponseWorkFlowDto>).Data.ExternalStatus.Value : RequestStatus.New;
+                litigationRequest.IsSent = true;
+                litigationRequest.SentOn = DateTime.Now;
+                litigationRequest.IsActive = (response as DataResponse<ResponseWorkFlowDto>).Data.IsActive;
+                litigationRequest.IsFinished = (response as DataResponse<ResponseWorkFlowDto>).Data.IsFinished;
+                litigationRequest.IsAllowEdit = false;
+
+                var repositorySaveResponse = await _repository.SaveChangesAsync(new CancellationToken());
+                if (!repositorySaveResponse.IsDone)
+                    return repositorySaveResponse;
+                
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                return new ExceptionResponse()
+                {
+                    IsDone = false,
+                    Exception = ex.Message + "\n" + ex.ToString(),
+                };
+            }
+        }
     }
 }

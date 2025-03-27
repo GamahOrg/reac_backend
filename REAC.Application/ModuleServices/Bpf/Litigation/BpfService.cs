@@ -87,6 +87,39 @@ namespace Bpf.Application.ModuleServices
 
             return response;
         }
+        
+        public async Task<BaseResponse> ExecuteWorkFlowStepsForSLA(Guid WorkflowId, Guid requestId, Guid? sourceWorkFlowProcessingLogId, int order, bool? sameEmployee, CancellationToken cancellationToken)
+        {
+            var workFlow = (await _repository.GetQueryable<WorkFlow, Guid>())?
+                    .Where(x => x.Id == WorkflowId)
+                    .Include(x => x.Department)
+                    .Include(x => x.WorkFlowSteps.Where(t => t.Order == order))
+                    .ThenInclude(x => x.Department)
+                    .ThenInclude(x => x.SysEmployees
+                    .OrderBy(x => x.WorkFlowProcessingLogs.Count(x => !x.IsFinished)).ThenBy(x => x.IsAdmin))
+                    .ThenInclude(x => x.EmployeeVacationRequests)
+                    .AsNoTracking()
+                    .FirstOrDefault();
+
+           var sql = workFlow.ToString();
+
+            #region ValidateWorkflow
+            var ValidationResponse = ValidateWorkflow(workFlow);
+            if (!ValidationResponse.IsDone)
+                return ValidationResponse;
+            #endregion
+
+            #region Steps Execution
+            BaseResponse response = new BaseResponse();
+            foreach (var step in workFlow.WorkFlowSteps)
+            {
+                response = await ExecuteWorkFlowStep(step, requestId, sourceWorkFlowProcessingLogId, sameEmployee, cancellationToken);
+                return response;
+            }
+            #endregion
+
+            return response;
+        }
 
         /// <summary>
         /// Execute Work Flow Step
