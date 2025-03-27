@@ -327,6 +327,8 @@
         public const string SLA_AddLitigationRequestArbitratorNominationListPeriod = "SLA.AddLitigationRequestArbitratorNominationListPeriod";
         public const string SLA_AddLitigationRequestArbitratorNominationListWarning = "SLA.AddLitigationRequestArbitratorNominationListWarning";
 
+        public const string SLA_AgreementPeriodFinishedWarning = "SLA.AgreementPeriodFinishedWarning";
+
 
 
 

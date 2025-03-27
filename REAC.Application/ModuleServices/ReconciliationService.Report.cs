@@ -163,30 +163,60 @@ namespace REAC.Application.ModuleServices
                         //}
                         break;
                     case ReconciliationRequestDecision.ReconciliationWasNotMade:
-                        if (litigationRequest.LitigationRequestCategoryId == LitigationRequestCategory.ReconciliationAndArbitration)
+                        if (litigationRequest.LitigationRequestCategoryId == LitigationRequestCategory.ReconciliationAndArbitration && litigationRequest.IsReminderForCancelLitigationForAgreementSent != true)
                         {
-                            litigationRequest.InternalStatusId = RequestStatus.ReconciliationWasNotMadeAndMoveToArbitration;
-                            litigationRequest.ExternalStatusId = RequestStatus.ReconciliationWasNotMadeAndMoveToArbitration;
-                            litigationRequest.LitigationRequestStage = LitigationRequestStage.Arbitration;
-                            litigationRequest.LitigationRequestSubStage = LitigationRequestSubStage.ArbitratorSelectionPeriod;
-                            // Send Notification
-                            //عدم الصلح  
-                            try
+                            if (litigationRequest.PlaintiffAgreementRequestResponse.HasValue & litigationRequest.DefendantAgreementRequestResponse.HasValue & (litigationRequest.PlaintiffAgreementRequestResponse != ApproveRejectStatus.Approve | litigationRequest.DefendantAgreementRequestResponse != ApproveRejectStatus.Approve))
                             {
-                                msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Decision_ReconciliationWasNotMadeAndMoveToArbitration).Result.Data?.Value;
-                                msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode); var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
-                                using (StreamReader streamReader = File.OpenText(pathToFile))
-                                {
-                                    body = await streamReader.ReadToEndAsync();
-                                    body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Decision_ReconciliationWasNotMadeAndMoveToArbitration).Result.Data?.Value);
-                                    body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
-                                }
-                                await SendNotificationMSWithAllTypes(body, msg, litigationRequest, "Reconciliation Litigation Request For Report Reply Added");
+                                    litigationRequest.InternalStatusId = RequestStatus.ReconciliationWasNotMade;
+                                    litigationRequest.ExternalStatusId = RequestStatus.ReconciliationWasNotMade;
+                                    litigationRequest.IsActive = false;
+                                    litigationRequest.IsFinished = true;
+
+                                    // Send Notification
+                                    // عدم الصلح
+
+                                    try
+                                    {
+                                        msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Decision_ReconciliationWasNotMade).Result.Data?.Value;
+                                        msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
+                                        var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                        using (StreamReader streamReader = File.OpenText(pathToFile))
+                                        {
+                                            body = await streamReader.ReadToEndAsync();
+                                            body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Decision_ReconciliationWasNotMade).Result.Data?.Value);
+                                            body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                                        }
+                                        await SendNotificationMSWithAllTypes(body, msg, litigationRequest, "Reconciliation Litigation Request For Report Reply Added");
+                                    }
+                                    catch (Exception e)
+                                    { }
                             }
-                            catch (Exception e)
+                            else
                             {
 
+                                litigationRequest.InternalStatusId = RequestStatus.ReconciliationWasNotMadeAndMoveToArbitration;
+                                litigationRequest.ExternalStatusId = RequestStatus.ReconciliationWasNotMadeAndMoveToArbitration;
+                                litigationRequest.LitigationRequestStage = LitigationRequestStage.Arbitration;
+                                litigationRequest.LitigationRequestSubStage = LitigationRequestSubStage.ArbitratorSelectionPeriod;
+                                // Send Notification
+                                //عدم الصلح  
+                                try
+                                {
+                                    msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Decision_ReconciliationWasNotMadeAndMoveToArbitration).Result.Data?.Value;
+                                    msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode); var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                    using (StreamReader streamReader = File.OpenText(pathToFile))
+                                    {
+                                        body = await streamReader.ReadToEndAsync();
+                                        body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Decision_ReconciliationWasNotMadeAndMoveToArbitration).Result.Data?.Value);
+                                        body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                                    }
+                                    await SendNotificationMSWithAllTypes(body, msg, litigationRequest, "Reconciliation Litigation Request For Report Reply Added");
+                                }
+                                catch (Exception e)
+                                {
 
+
+                                }
                             }
                         }
                         else
