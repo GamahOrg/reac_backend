@@ -165,7 +165,7 @@ namespace REAC.Application.ModuleServices
                     case ReconciliationRequestDecision.ReconciliationWasNotMade:
                         if (litigationRequest.LitigationRequestCategoryId == LitigationRequestCategory.ReconciliationAndArbitration && litigationRequest.IsReminderForCancelLitigationForAgreementSent != true)
                         {
-                            if (litigationRequest.PlaintiffAgreementRequestResponse.HasValue & litigationRequest.DefendantAgreementRequestResponse.HasValue & (litigationRequest.PlaintiffAgreementRequestResponse != ApproveRejectStatus.Approve | litigationRequest.DefendantAgreementRequestResponse != ApproveRejectStatus.Approve))
+                            if ((litigationRequest.PlaintiffAgreementRequestResponse.HasValue & litigationRequest.PlaintiffAgreementRequestResponse != ApproveRejectStatus.Approve) | (litigationRequest.DefendantAgreementRequestResponse.HasValue & litigationRequest.DefendantAgreementRequestResponse != ApproveRejectStatus.Approve))
                             {
                                     litigationRequest.InternalStatusId = RequestStatus.ReconciliationWasNotMade;
                                     litigationRequest.ExternalStatusId = RequestStatus.ReconciliationWasNotMade;
