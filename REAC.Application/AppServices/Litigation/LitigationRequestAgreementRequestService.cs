@@ -222,7 +222,7 @@ namespace REAC.Application.AppServices.Litigation
                 }
             }
 
-            if (litigationRequest.PlaintiffAgreementRequestResponse.HasValue | litigationRequest.DefendantAgreementRequestResponse.HasValue)
+            if (litigationRequest.PlaintiffAgreementRequestResponse.HasValue && litigationRequest.DefendantAgreementRequestResponse.HasValue)
             {
                 if ((litigationRequest.PlaintiffAgreementRequestResponse.HasValue & litigationRequest.PlaintiffAgreementRequestResponse != ApproveRejectStatus.Approve) | (litigationRequest.DefendantAgreementRequestResponse.HasValue & litigationRequest.DefendantAgreementRequestResponse != ApproveRejectStatus.Approve))
                 {
@@ -230,10 +230,7 @@ namespace REAC.Application.AppServices.Litigation
                     if (litigationRequest.LitigationRequestCategoryId == LitigationRequestCategory.ReconciliationAndArbitration)
                     {
                         var _bpfService = _serviceProvider.GetRequiredService<IBpfService>();
-                        if (litigationRequest.InternalStatusId != RequestStatus.LitigationFeesHaveBeenCollected)
-                        {
-                            await _bpfService.ExcuteWorkFlow(litigationRequest.Id, default, 2);
-                        }
+                        await _bpfService.ExcuteWorkFlow(litigationRequest.Id, default, 2);
 
                         litigationRequest.InternalStatusId = RequestStatus.LitigationFeesHaveBeenCollected;
                         litigationRequest.ExternalStatusId = RequestStatus.LitigationFeesHaveBeenCollected;
