@@ -61,8 +61,9 @@ namespace REAC.Application.AppServices.Integration.GEE
                 _loggerManager.Log(Core.Log.Domain.Shared.Enums.LoggerType.Database
                        , new LogDto()
                        {
-                           Type = Core.Log.Domain.Shared.Enums.LogType.Trace,
-                           Message = $"SMS Service Send Request ===> {JsonConvert.SerializeObject(request)}"                          
+                           Type = Core.Log.Domain.Shared.Enums.LogType.Trace, 
+                           Message = $" SMS message ===> {JsonConvert.SerializeObject(sMSRequest)}" + "\r\n" + 
+                              $"; SMS Service Send Request ===> {JsonConvert.SerializeObject(request)}"
                        });
                 var response = await client.SendAsync(request);
 
@@ -74,8 +75,10 @@ namespace REAC.Application.AppServices.Integration.GEE
                        , new LogDto()
                        {
                            Type = Core.Log.Domain.Shared.Enums.LogType.Trace,
-                           Message = $"SMS Service Request ===> {JsonConvert.SerializeObject(request)}" +  "\r\n" +
-                           $"; SMS Service Response ===> {JsonConvert.SerializeObject(response)}"
+                          Message = $"SMS message ===> {JsonConvert.SerializeObject(sMSRequest)}" + "\r\n" +
+$"; SMS Service Request ===> {JsonConvert.SerializeObject(request)}" +  "\r\n" +
+$"; SMS Service Response ===> {JsonConvert.SerializeObject(response)}"
+
                        });
                     responseDto.Data = await response.Content.ReadFromJsonAsync<SMSDataDto>();
                     return new DataResponse<SMSResponseDto> { IsDone = true, Data = responseDto };
@@ -88,8 +91,9 @@ namespace REAC.Application.AppServices.Integration.GEE
                        , new LogDto()
                        {
                            Type = Core.Log.Domain.Shared.Enums.LogType.Trace,
-                           Message = $"SMS Service Request ===> {JsonConvert.SerializeObject(request)}"+  "\r\n" +
-                           $"; SMS Service Response ===> {JsonConvert.SerializeObject(response)}"
+                           Message = $"SMS message ===> {JsonConvert.SerializeObject(sMSRequest)}" + "\r\n" +
+                             $"; SMS Service Request ===> {JsonConvert.SerializeObject(request)}"+  "\r\n" +
+                             $"; SMS Service Response ===> {JsonConvert.SerializeObject(response)}"
                        });
                     return new DataResponse<SMSResponseDto> { IsDone = false, Data = responseDto };
                 }
@@ -101,8 +105,10 @@ namespace REAC.Application.AppServices.Integration.GEE
                        , new LogDto()
                        {
                            Type = Core.Log.Domain.Shared.Enums.LogType.Trace,
-                           Message = $"SMS Service Request ===> {JsonConvert.SerializeObject(request)}" + "\r\n" +
-                           $"; SMS Service Response ===> {JsonConvert.SerializeObject(response)}"
+                           Message = $"SMS message ===> {JsonConvert.SerializeObject(sMSRequest)}" + "\r\n" +
+$"; SMS Service Request ===> {JsonConvert.SerializeObject(request)}" + "\r\n" +
+$"; SMS Service Response ===> {JsonConvert.SerializeObject(response)}"
+
                        });
 
                     return new DataResponse<SMSResponseDto> { IsDone = false, Data = responseDto };
@@ -114,7 +120,8 @@ namespace REAC.Application.AppServices.Integration.GEE
                        , new LogDto()
                        {
                            Type = Core.Log.Domain.Shared.Enums.LogType.Exception,
-                           Message = $"SMS Service ===> {e.ToString()}"
+                           Message = $"SMS message ===> {JsonConvert.SerializeObject(sMSRequest)}" + "\r\n" + 
+                           $"; SMS Service ===> {e.ToString()}"
                        });
                 return new DataResponse<SMSResponseDto> { IsDone = false, Message = e.Message + e.InnerException?.Message };
             }
