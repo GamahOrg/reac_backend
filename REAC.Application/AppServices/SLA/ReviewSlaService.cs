@@ -320,6 +320,7 @@ namespace REAC.Application.AppServices.SLA
                                                     foreach (var workFlowProcessingLog in workFlowProcessingLogs.Where(x => x.EmployeeId == employeeId))
                                                     {
                                                         workFlowProcessingLog.EmployeeId = newEmployeeId;
+                                                        workFlowProcessingLog.CreatedOn = DateTime.Now;
                                                     }
 
                                                     litigationRequest.IsReminderForReviewerManagerSent = false;
