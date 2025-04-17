@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Core.GenericRepository.BaseRepository;
 using Core.Log.Application.Contracts.Dto;
 using Core.Log.Application.Contracts.IAppServices;
@@ -149,7 +149,7 @@ namespace REAC.Application.AppServices.SLA
                             .Include(x => x.Contract.FirstPartyCitizen)
                             .Include(x => x.Contract.SecondPartyFacility).ThenInclude(x => x.Citizen)
                             .Include(x => x.Contract.SecondPartyCitizen)
-                            .Where(x => x.InternalStatusId == RequestStatus.New & x.IsFinished != true)
+                            .Where(x => x.InternalStatusId == RequestStatus.New && x.IsFinished != true)
                             .ToList();
 
             if (litigationRequests != null)
@@ -167,7 +167,7 @@ namespace REAC.Application.AppServices.SLA
                         {
                             if (reminderForReviewerPeriod > 0)
                             {
-                                var workFlowProcessingLogs = litigationRequest.WorkFlowProcessingLogs.Where(x => x.EmployeeId.HasValue == true).OrderBy(x => x.CreatedOn).ToList();
+                                var workFlowProcessingLogs = litigationRequest.WorkFlowProcessingLogs.Where(x => x.EmployeeId.HasValue == true && !x.IsFinished).OrderBy(x => x.CreatedOn).ToList();
                                 Guid? employeeId = workFlowProcessingLogs.Last().EmployeeId;
                                 var employeeWorkFlowProcessingLogs = workFlowProcessingLogs.Where(x => x.EmployeeId == employeeId);
 
@@ -175,17 +175,9 @@ namespace REAC.Application.AppServices.SLA
                                 {
                                     double totalReviewHours = 0;
 
-                                    foreach (var employeeWorkFlowProcessingLog in employeeWorkFlowProcessingLogs)
-                                    {
-                                        if (employeeWorkFlowProcessingLog.IsFinished & employeeWorkFlowProcessingLog.FinishedOn is not null)
-                                        {
-                                            totalReviewHours += (employeeWorkFlowProcessingLog.FinishedOn - employeeWorkFlowProcessingLog.CreatedOn).Value.TotalHours;
-                                        }
-                                        else
-                                        {
-                                            totalReviewHours += (DateTime.Now - employeeWorkFlowProcessingLog.CreatedOn).TotalHours;
-                                        }
-                                    }
+
+                                    totalReviewHours = (DateTime.Now - employeeWorkFlowProcessingLogs.FirstOrDefault().CreatedOn).TotalHours;
+
                                     if (totalReviewHours >= reminderForReviewerPeriod)
                                     {
                                         litigationRequest.IsReminderForReviewerSent = true;
@@ -260,7 +252,7 @@ namespace REAC.Application.AppServices.SLA
                         {
                             if (reminderForReviewerManagerPeriod > 0)
                             {
-                                var workFlowProcessingLogs = litigationRequest.WorkFlowProcessingLogs.Where(x => x.EmployeeId.HasValue == true).OrderBy(x => x.CreatedOn).ToList();
+                                var workFlowProcessingLogs = litigationRequest.WorkFlowProcessingLogs.Where(x => x.EmployeeId.HasValue == true && !x.IsFinished).OrderBy(x => x.CreatedOn).ToList();
                                 Guid? employeeId = workFlowProcessingLogs.Last().EmployeeId;
                                 var employeeWorkFlowProcessingLogs = workFlowProcessingLogs.Where(x => x.EmployeeId == employeeId);
 
@@ -268,17 +260,9 @@ namespace REAC.Application.AppServices.SLA
                                 {
                                     double totalReviewHours = 0;
 
-                                    foreach (var employeeWorkFlowProcessingLog in employeeWorkFlowProcessingLogs)
-                                    {
-                                        if (employeeWorkFlowProcessingLog.IsFinished & employeeWorkFlowProcessingLog.FinishedOn is not null)
-                                        {
-                                            totalReviewHours += (employeeWorkFlowProcessingLog.FinishedOn - employeeWorkFlowProcessingLog.CreatedOn).Value.TotalHours;
-                                        }
-                                        else
-                                        {
-                                            totalReviewHours += (DateTime.Now - employeeWorkFlowProcessingLog.CreatedOn).TotalHours;
-                                        }
-                                    }
+                                    totalReviewHours = (DateTime.Now - employeeWorkFlowProcessingLogs.FirstOrDefault().CreatedOn).TotalHours;
+
+
                                     if (totalReviewHours >= reminderForReviewerManagerPeriod)
                                     {
                                         litigationRequest.IsReminderForReviewerManagerSent = true;
@@ -323,7 +307,6 @@ namespace REAC.Application.AppServices.SLA
                                                         workFlowProcessingLog.CreatedOn = DateTime.Now;
                                                     }
 
-                                                    litigationRequest.IsReminderForReviewerManagerSent = false;
 
                                                     //Send Notification for old reviewer
                                                     // Mail - Sms - Application Notification
@@ -498,8 +481,6 @@ namespace REAC.Application.AppServices.SLA
                                             // Send Notification for review department admin
                                             // Mail - Sms - Application Notification
                                             // يوجد تأخير تجاوز المده المسموح بها للتدقيق على الدعوى رقم .....
-
-
                                             try
                                             {
                                                 var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_AssignLitigation_ReviewerAdmin).Result.Data?.Value;
@@ -1457,7 +1438,7 @@ namespace REAC.Application.AppServices.SLA
                 notification_type = "SMS",
             };
             var lstNotification = new List<SysNotificationDto>();
-           
+
 
             //مدير ادارة التدقيق
             if (deptAdminInfoReview is not null)
