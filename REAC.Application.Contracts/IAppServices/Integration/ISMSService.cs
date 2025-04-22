@@ -11,5 +11,6 @@ namespace REAC.Application.Contracts.IAppServices.Integration
     public interface ISMSService
     {
         Task<DataResponse<SMSResponseDto>> SendSMS(SMSRequestDto sMSRequest);
+        Task SendSMSToSLA(SMSRequestDto sMSRequest);
     }
 }

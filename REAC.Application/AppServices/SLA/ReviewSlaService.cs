@@ -1,4 +1,4 @@
-using AutoMapper;
+﻿using AutoMapper;
 using Core.GenericRepository.BaseRepository;
 using Core.Log.Application.Contracts.Dto;
 using Core.Log.Application.Contracts.IAppServices;

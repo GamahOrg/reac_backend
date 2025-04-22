@@ -9,6 +9,8 @@ using System.Text;
 using Newtonsoft.Json;
 using Core.Log.Application.Contracts.Dto;
 using Core.Log.Application.Contracts.IAppServices;
+using REAC.EntityFrameworkCore.Entities.Notification;
+using Core.GenericRepository.BaseRepository;
 
 namespace REAC.Application.AppServices.Integration.GEE
 {
@@ -17,12 +19,15 @@ namespace REAC.Application.AppServices.Integration.GEE
         private readonly ISysSettingService _sysSetting;
         private readonly IGEELoginService _gEELoginService;
         private readonly ILoggerManager _loggerManager;
+        private readonly IEntityRepository _repository;
 
-        public SMSService(ISysSettingService sysSetting, IGEELoginService gEELoginService, ILoggerManager loggerManager)
+
+        public SMSService(ISysSettingService sysSetting, IGEELoginService gEELoginService, ILoggerManager loggerManager, IEntityRepository repository)
         {
             _sysSetting = sysSetting;
             _gEELoginService = gEELoginService;
             _loggerManager = loggerManager;
+            _repository = repository;
         }
 
 
@@ -30,7 +35,7 @@ namespace REAC.Application.AppServices.Integration.GEE
         {
             try
             {
-                if(sMSRequest is null)
+                if (sMSRequest is null)
                     return new DataResponse<SMSResponseDto> { IsDone = false, Message = "" };
 
                 var token = (await _gEELoginService.Login()).Data?.Access_token;
@@ -61,9 +66,9 @@ namespace REAC.Application.AppServices.Integration.GEE
                 _loggerManager.Log(Core.Log.Domain.Shared.Enums.LoggerType.Database
                        , new LogDto()
                        {
-                           Type = Core.Log.Domain.Shared.Enums.LogType.Trace, 
-                           Message = $" SMS message ===> {JsonConvert.SerializeObject(sMSRequest)}" + "\r\n" + 
-                              $"; SMS Service Send Request ===> {JsonConvert.SerializeObject(request)}"
+                           Type = Core.Log.Domain.Shared.Enums.LogType.Trace,
+                           Message = $" SMS message ===> {JsonConvert.SerializeObject(sMSRequest)}" + "\r\n" +
+                           $"; SMS Service Send Request ===> {JsonConvert.SerializeObject(request)}"
                        });
                 var response = await client.SendAsync(request);
 
@@ -75,10 +80,9 @@ namespace REAC.Application.AppServices.Integration.GEE
                        , new LogDto()
                        {
                            Type = Core.Log.Domain.Shared.Enums.LogType.Trace,
-                          Message = $"SMS message ===> {JsonConvert.SerializeObject(sMSRequest)}" + "\r\n" +
-$"; SMS Service Request ===> {JsonConvert.SerializeObject(request)}" +  "\r\n" +
-$"; SMS Service Response ===> {JsonConvert.SerializeObject(response)}"
-
+                           Message = $"SMS message ===> {JsonConvert.SerializeObject(sMSRequest)}" + "\r\n" +
+                           $"; SMS Service Request ===> {JsonConvert.SerializeObject(request)}" + "\r\n" +
+                           $"; SMS Service Response ===> {JsonConvert.SerializeObject(response)}"
                        });
                     responseDto.Data = await response.Content.ReadFromJsonAsync<SMSDataDto>();
                     return new DataResponse<SMSResponseDto> { IsDone = true, Data = responseDto };
@@ -92,8 +96,8 @@ $"; SMS Service Response ===> {JsonConvert.SerializeObject(response)}"
                        {
                            Type = Core.Log.Domain.Shared.Enums.LogType.Trace,
                            Message = $"SMS message ===> {JsonConvert.SerializeObject(sMSRequest)}" + "\r\n" +
-                             $"; SMS Service Request ===> {JsonConvert.SerializeObject(request)}"+  "\r\n" +
-                             $"; SMS Service Response ===> {JsonConvert.SerializeObject(response)}"
+                           $"; SMS Service Request ===> {JsonConvert.SerializeObject(request)}" + "\r\n" +
+                           $"; SMS Service Response ===> {JsonConvert.SerializeObject(response)}"
                        });
                     return new DataResponse<SMSResponseDto> { IsDone = false, Data = responseDto };
                 }
@@ -106,9 +110,8 @@ $"; SMS Service Response ===> {JsonConvert.SerializeObject(response)}"
                        {
                            Type = Core.Log.Domain.Shared.Enums.LogType.Trace,
                            Message = $"SMS message ===> {JsonConvert.SerializeObject(sMSRequest)}" + "\r\n" +
-$"; SMS Service Request ===> {JsonConvert.SerializeObject(request)}" + "\r\n" +
-$"; SMS Service Response ===> {JsonConvert.SerializeObject(response)}"
-
+                           $"; SMS Service Request ===> {JsonConvert.SerializeObject(request)}" + "\r\n" +
+                           $"; SMS Service Response ===> {JsonConvert.SerializeObject(response)}"
                        });
 
                     return new DataResponse<SMSResponseDto> { IsDone = false, Data = responseDto };
@@ -120,13 +123,49 @@ $"; SMS Service Response ===> {JsonConvert.SerializeObject(response)}"
                        , new LogDto()
                        {
                            Type = Core.Log.Domain.Shared.Enums.LogType.Exception,
-                           Message = $"SMS message ===> {JsonConvert.SerializeObject(sMSRequest)}" + "\r\n" + 
+                           Message = $"SMS message ===> {JsonConvert.SerializeObject(sMSRequest)}" + "\r\n" +
                            $"; SMS Service ===> {e.ToString()}"
                        });
                 return new DataResponse<SMSResponseDto> { IsDone = false, Message = e.Message + e.InnerException?.Message };
             }
         }
 
+        public async Task SendSMSToSLA(SMSRequestDto sMSRequest)
+        {
+            try
+            {
+                foreach (var recipient in sMSRequest.recipients)
+                {
+                    var smsExist = (await _repository.GetQueryable<SysNotificationSMS, Guid>())
+                        .Any(x => x.MobileNumber == recipient && x.Message == sMSRequest.message_text && !x.IsSent);
 
+                    if (!smsExist)
+                    {
+                        await _repository.AddAsync<SysNotificationSMS, Guid>(new SysNotificationSMS()
+                        {
+                            Message = sMSRequest.message_text,
+                            CreatedOn = DateTime.Now,
+                            Id = Guid.NewGuid(),
+                            IsSent = false,
+                            RetryAttempt = 0,
+                            MobileNumber = recipient
+                        });
+                        await _repository.SaveChangesAsync();
+                    }
+
+                }
+
+            }
+            catch (Exception e)
+            {
+                _loggerManager.Log(Core.Log.Domain.Shared.Enums.LoggerType.Database
+                       , new LogDto()
+                       {
+                           Type = Core.Log.Domain.Shared.Enums.LogType.Exception,
+                           Message = $"SendSMSToSLA ===> {JsonConvert.SerializeObject(sMSRequest)}" + "\r\n" +
+                           $"; SMS Service ===> {e.ToString()}"
+                       });
+            }
+        }
     }
 }

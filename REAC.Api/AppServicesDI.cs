@@ -66,6 +66,7 @@ namespace REAC.Api
             services.AddScoped<IReconciliationSlaService, ReconciliationSlaService>();
             services.AddScoped<IArbitrationSlaService, ArbitrationSlaService>();
             services.AddScoped<ISendEmailSLAService, SendEmailSLAService>();
+            services.AddScoped<ISendSMSSLAService, SendSMSSLAService>();
             services.AddScoped<IFreeUpReformerAndArbitratorService, FreeUpReformerAndArbitratorService>();
             services.AddScoped<ISysVacationRequestService, SysVacationRequestService>();
 

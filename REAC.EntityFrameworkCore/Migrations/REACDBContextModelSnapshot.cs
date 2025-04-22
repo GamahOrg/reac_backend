@@ -2116,6 +2116,37 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.ToTable("SysNotificationPlanItemDestination", (string)null);
                 });
 
+            modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Notification.SysNotificationSMS", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Error")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsSent")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("MobileNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("RetryAttempt")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("SysNotificationSMS");
+                });
+
             modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Notification.SysRequestType", b =>
                 {
                     b.Property<int>("Id")

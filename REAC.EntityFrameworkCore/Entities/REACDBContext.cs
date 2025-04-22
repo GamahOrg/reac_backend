@@ -67,6 +67,7 @@ public partial class REACDBContext : DbContext
     public virtual DbSet<SysNotificationPlanItemDestination> SysNotificationPlanItemDestinations { get; set; }
     public virtual DbSet<SysNotificationPlan> SysNotificationPlans { get; set; }
     public virtual DbSet<SysNotificationEmail> SysNotificationEmails { get; set; }
+    public virtual DbSet<SysNotificationSMS> SysNotificationSMS { get; set; }
     public virtual DbSet<SysNotification> SysNotifications { get; set; }
     public virtual DbSet<SysNotificationActorType> SysNotificationActorTypes { get; set; }
     public virtual DbSet<SysRequestType> SysRequestTypes { get; set; }
