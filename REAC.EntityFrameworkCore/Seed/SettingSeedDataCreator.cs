@@ -1166,7 +1166,7 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                         {
                             Id = Guid.NewGuid(),
                             Key = "SLA.AssignLitigation.ReviewerAdmin",
-                            Value = "تم ارسال الدعوى رقم {LitigationCode} إلى مدقق جديد لتخطى المدقق السابق مدة التدقيق الفصوى"
+                            Value = "تم ارسال الدعوى رقم {LitigationCode} إلى مدقق جديد لتخطى المدقق السابق مدة التدقيق القصوى"
                         },new SysSetting
                         {
                             Id = Guid.NewGuid(),

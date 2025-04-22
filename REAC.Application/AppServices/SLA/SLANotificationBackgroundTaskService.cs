@@ -27,7 +27,7 @@ namespace REAC.Application.AppServices.SLA
             {
                 await DoWork(stoppingToken); 
             }
-           , null, TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(3600));
+           , null, TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10));
         }
 
 
@@ -43,12 +43,16 @@ namespace REAC.Application.AppServices.SLA
                         using (var scope = _scopeFactory.CreateScope())
                         {
                             var slaSendEmailService = scope.ServiceProvider.GetRequiredService<ISendEmailSLAService>();
+                            var slaSendSMSService = scope.ServiceProvider.GetRequiredService<ISendSMSSLAService>();
 
                             if (SendEmailSLAService.emailSetting is null)
                                 await slaSendEmailService.GetEmailSettings();
 
                             if (slaSendEmailService is not null)
                                 await slaSendEmailService.SendMail();
+                            
+                            if (slaSendSMSService is not null)
+                                await slaSendSMSService.SendSMS();
 
                         }
                     }
