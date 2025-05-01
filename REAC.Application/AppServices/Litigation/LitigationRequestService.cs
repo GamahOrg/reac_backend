@@ -3969,8 +3969,8 @@ namespace REAC.Application.AppServices.Litigation
                         // المدعى - المدعى عليه - مدير ادارة التدقيق - موظف التدقيق
                         try
                         {
-                            var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Reject_Agreement).Result.Data?.Value;
-                            msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
+                           // var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Reject_Agreement).Result.Data?.Value;
+                          //  msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
                             //var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
                            // string body;
                            // using (StreamReader streamReader = File.OpenText(pathToFile))
@@ -3979,7 +3979,7 @@ namespace REAC.Application.AppServices.Litigation
                             //    body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Reject_Agreement).Result.Data?.Value);
                             //    body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
                            // }
-                            await SendNotificationMSWithDefendant(body, msg, litigationRequest, RequestType.LitigationAgreementRequest, " رفض طلب المشارطة وجارى استكمال مرحلة الصلح");
+                         //   await SendNotificationMSWithDefendant(body, msg, litigationRequest, RequestType.LitigationAgreementRequest, " رفض طلب المشارطة وجارى استكمال مرحلة الصلح");
                         }
                         catch { }
                     }
@@ -3996,8 +3996,8 @@ namespace REAC.Application.AppServices.Litigation
                         // المدعى - المدعى عليه - مدير ادارة التدقيق - موظف التدقيق
                         try
                         {
-                            var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Reject_Agreement).Result.Data?.Value;
-                            msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
+                         //   var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Reject_Agreement).Result.Data?.Value;
+                        //    msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
                           //  var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
                           //  string body;
                            // using (StreamReader streamReader = File.OpenText(pathToFile))
@@ -4006,7 +4006,7 @@ namespace REAC.Application.AppServices.Litigation
                            //     body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Reject_Agreement).Result.Data?.Value);
                           //      body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
                           //  }
-                            await SendNotificationMSWithDefendant(body, msg, litigationRequest, RequestType.LitigationAgreementRequest, "رفض طلب المشارطة");
+                         //   await SendNotificationMSWithDefendant(body, msg, litigationRequest, RequestType.LitigationAgreementRequest, "رفض طلب المشارطة");
                         }
                         catch { }
                     }
@@ -4023,8 +4023,8 @@ namespace REAC.Application.AppServices.Litigation
                     // المدعى - المدعى عليه - مدير ادارة التدقيق - موظف التدقيق
                     try
                     {
-                        var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Accept_Agreement).Result.Data?.Value;
-                        msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
+                       // var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Accept_Agreement).Result.Data?.Value;
+                       // msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
                        // var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
                       //  string body;
                      //   using (StreamReader streamReader = File.OpenText(pathToFile))
@@ -4033,7 +4033,7 @@ namespace REAC.Application.AppServices.Litigation
                        //     body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Accept_Agreement).Result.Data?.Value);
                         //    body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
                        // }
-                        await SendNotificationMSWithDefendant(body, msg, litigationRequest, RequestType.LitigationAgreementRequest, "قبول طلب المشارطة");
+                       // await SendNotificationMSWithDefendant(body, msg, litigationRequest, RequestType.LitigationAgreementRequest, "قبول طلب المشارطة");
                     }
                     catch { }
                 }
