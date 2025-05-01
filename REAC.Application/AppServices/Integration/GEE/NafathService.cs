@@ -590,6 +590,12 @@ namespace REAC.Application.AppServices.Integration.GEE
             }
             catch (Exception e)
             {
+            _loggerManager.Log(Core.Log.Domain.Shared.Enums.LoggerType.Database
+              , new LogDto()
+              {
+                  Type = Core.Log.Domain.Shared.Enums.LogType.Exception,
+                  Message = $"Nafath Check Status ==> {e}"
+              });
                 return new DataResponse<NafathCheckResponseDto>() { IsDone = false, Message = e.Message + e.InnerException };
             }
         }
