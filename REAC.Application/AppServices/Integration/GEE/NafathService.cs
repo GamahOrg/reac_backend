@@ -1256,6 +1256,14 @@ public async Task<BaseResponse> CheckNafathAgreementRequestStatusForMobile(strin
                     Token = token
                 };
                 var nafathCheckStatusResponse = (await NafathCheckStatus(nafathCheckRequestDto));
+
+                _loggerManager.Log(Core.Log.Domain.Shared.Enums.LoggerType.Database
+                              , new LogDto()
+                              {
+                                  Type = Core.Log.Domain.Shared.Enums.LogType.Exception,
+                                  Message = $"nafath Check Status Response ==> {nafathCheckStatusResponse}"
+                              });
+                              
                 //var nafathCheckStatusResponse = new DataResponse<NafathCheckResponseDto>()
                 //{
                 //    IsDone = true,
