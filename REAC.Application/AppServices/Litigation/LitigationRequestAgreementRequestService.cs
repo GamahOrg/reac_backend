@@ -23,6 +23,8 @@ using Microsoft.EntityFrameworkCore;
 using REAC.Application.Contracts.IAppServices.Litigation;
 using Core.Security.Entities;
 using Microsoft.AspNetCore.Identity;
+using Core.Log.Application.Contracts.Dto;
+
 
 namespace REAC.Application.AppServices.Litigation
 {
@@ -59,7 +61,8 @@ namespace REAC.Application.AppServices.Litigation
         public async Task<BaseResponse> AddCitizenLitigationRequestForAgreementRequestReply(Guid requestId, string nationalId, ApproveRejectStatus agreementRequestStatus)
         {
 
-
+          try
+           {
             Guid? referenceId = _userManager.Users.FirstOrDefault(u => u.UserName == nationalId).ReferenceId;
 
             var litigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>())
@@ -344,7 +347,16 @@ namespace REAC.Application.AppServices.Litigation
                 return repositorySaveResponse;
 
             return await GetCitizenLitigationRequestForAgreementRequestReply(requestId, nationalId);
-
+}
+catch (Exception e) {
+    _loggerManager.Log(Core.Log.Domain.Shared.Enums.LoggerType.Database
+                  , new LogDto()
+                  {
+                      Type = Core.Log.Domain.Shared.Enums.LogType.Exception,
+                      Message = $"AddCitizenLitigationRequestForAgreementRequestReply ==> {e}"
+                  });
+    return new BaseResponse() { IsDone = false, Message = "خطأ داخلي" };
+}
         }
 
         private async Task<BaseResponse> GetCitizenLitigationRequestForAgreementRequestReply(Guid requestId, string nationalId)
