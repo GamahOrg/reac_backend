@@ -57,7 +57,7 @@ builder.Services.AddDbContext<LogDbContext>(option => option.UseSqlServer(
 builder.Services.AddGenericRepository<REACDBContext>();
 
 
-builder.Services.AddHostedService<NafathBackgroundTaskService>();
+//builder.Services.AddHostedService<NafathBackgroundTaskService>();
 builder.Services.AddHostedService<SLABackgroundTaskService>();
 builder.Services.AddHostedService<SLANotificationBackgroundTaskService>();
 
