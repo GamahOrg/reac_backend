@@ -355,6 +355,8 @@ namespace REAC.Application.AppServices.Litigation
             if (!repositorySaveResponse.IsDone)
                 return repositorySaveResponse;
 
+            Thread.Sleep(30000);
+
             return await GetCitizenLitigationRequestForAgreementRequestReply(requestId, nationalId);
 }
 catch (Exception e) {
