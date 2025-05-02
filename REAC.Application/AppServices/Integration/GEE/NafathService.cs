@@ -1275,10 +1275,10 @@ public async Task<BaseResponse> CheckNafathAgreementRequestStatusForMobile(strin
                         && nafathCheckStatusResponse.Data?.Data?.AccessToken is not null)
                     {
                         var addCitizenLitigationRequestForAgreementRequestReplyReturnValue = await _agreementRequestService.AddCitizenLitigationRequestForAgreementRequestReply(nafathCheckItem.LitigationRequestId, nafathCheckItem.NationalId, nafathCheckItem.AgreementStatus);
-                        if (addCitizenLitigationRequestForAgreementRequestReplyReturnValue.IsDone)
-                        {
+                        //if (addCitizenLitigationRequestForAgreementRequestReplyReturnValue.IsDone)
+                        //{
                             return addCitizenLitigationRequestForAgreementRequestReplyReturnValue;
-                        }
+                        //}
 
                         //var nafathReconciliationReport = _nafathReconciliationReportHub.Clients.Group(nafathCheckItem.TransactionId).ReceivedNafathReconciliationReportStatus(addCitizenLitigationRequestForReportReply);
                         //if (nafathReconciliationReport.IsCompleted)

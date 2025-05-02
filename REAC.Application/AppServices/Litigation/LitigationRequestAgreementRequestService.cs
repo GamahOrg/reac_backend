@@ -355,7 +355,7 @@ catch (Exception e) {
                       Type = Core.Log.Domain.Shared.Enums.LogType.Exception,
                       Message = $"AddCitizenLitigationRequestForAgreementRequestReply ==> {e}"
                   });
-    return new BaseResponse() { IsDone = false, Message = "خطأ داخلي" };
+    return new BaseResponse() { IsDone = false, Message = e.ToString() };
 }
         }
 
