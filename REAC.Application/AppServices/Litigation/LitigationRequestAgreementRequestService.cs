@@ -240,7 +240,7 @@ namespace REAC.Application.AppServices.Litigation
                             return repositorySaveResponse;
 
                         var _bpfService = _serviceProvider.GetRequiredService<IBpfService>();
-                        var exResponse = await _bpfService.ExcuteWorkFlow(litigationRequest.Id, default, 2);
+                        var exResponse = _bpfService.ExcuteWorkFlow(litigationRequest.Id, default, 2).GetAwaiter().GetResult();
                         if (!exResponse.IsDone)
                             return exResponse;
                             
@@ -311,7 +311,7 @@ namespace REAC.Application.AppServices.Litigation
 
 
                         var _bpfService = _serviceProvider.GetRequiredService<IBpfService>();
-                        var exResponse = await _bpfService.ExcuteWorkFlow(litigationRequest.Id, default, 2);
+                      var exResponse = _bpfService.ExcuteWorkFlow(litigationRequest.Id, default, 2).GetAwaiter().GetResult();
                         if (!exResponse.IsDone)
                             return exResponse;
 
@@ -355,7 +355,6 @@ namespace REAC.Application.AppServices.Litigation
             if (!repositorySaveResponse.IsDone)
                 return repositorySaveResponse;
 
-            Thread.Sleep(30000);
 
             return await GetCitizenLitigationRequestForAgreementRequestReply(requestId, nationalId);
 }
