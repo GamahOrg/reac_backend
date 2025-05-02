@@ -232,15 +232,18 @@ namespace REAC.Application.AppServices.Litigation
                     // if the type is arbitiration and reconciliation we will continue on reconciliatrion only
                     if (litigationRequest.LitigationRequestCategoryId == LitigationRequestCategory.ReconciliationAndArbitration)
                     {
+                       litigationRequest.InternalStatusId = RequestStatus.LitigationFeesHaveBeenCollected;
+                       litigationRequest.ExternalStatusId = RequestStatus.LitigationFeesHaveBeenCollected;
+                       
+                        repositorySaveResponse = await _repository.SaveChangesAsync(new CancellationToken());
+                        if (!repositorySaveResponse.IsDone)
+                            return repositorySaveResponse;
+
                         var _bpfService = _serviceProvider.GetRequiredService<IBpfService>();
-                        await _bpfService.ExcuteWorkFlow(litigationRequest.Id, default, 2);
-
-                        litigationRequest.InternalStatusId = RequestStatus.LitigationFeesHaveBeenCollected;
-                        litigationRequest.ExternalStatusId = RequestStatus.LitigationFeesHaveBeenCollected;
-
-                         repositorySaveResponse = await _repository.SaveChangesAsync(new CancellationToken());
-                         if (!repositorySaveResponse.IsDone)
-                             return repositorySaveResponse;
+                        var exResponse = await _bpfService.ExcuteWorkFlow(litigationRequest.Id, default, 2);
+                        if (!exResponse.IsDone)
+                            return exResponse;
+                            
                         //  Send Notification 
                         // تم رفض طلب المشارطة على الدعوى وجارى استكمال الصلح ..........
                         // المدعى - المدعى عليه - مدير ادارة التدقيق - موظف التدقيق
