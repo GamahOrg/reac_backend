@@ -356,8 +356,18 @@ namespace REAC.Application.AppServices.Litigation
                 return repositorySaveResponse;
 
 
-            return await GetCitizenLitigationRequestForAgreementRequestReply(requestId, nationalId);
-}
+          BaseResponse getresponse = new BaseResponse();
+          again:
+          try
+          {
+              getresponse = GetCitizenLitigationRequestForAgreementRequestReply(requestId, nationalId).GetAwaiter().GetResult();
+          }
+          catch
+          {
+              if (!getresponse.IsDone)
+                  goto again;
+          }
+ }
 catch (Exception e) {
     _loggerManager.Log(Core.Log.Domain.Shared.Enums.LoggerType.Database
                   , new LogDto()
