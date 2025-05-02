@@ -300,14 +300,17 @@ namespace REAC.Application.AppServices.Litigation
                 {
                     if(litigationRequest.PlaintiffAgreementRequestResponse.HasValue & litigationRequest.DefendantAgreementRequestResponse.HasValue)
                     {
-                        var _bpfService = _serviceProvider.GetRequiredService<IBpfService>();
-                        await _bpfService.ExcuteWorkFlow(litigationRequest.Id, default, 2);
-                        litigationRequest.InternalStatusId = RequestStatus.New;
-                        litigationRequest.ExternalStatusId = RequestStatus.New;
-
+                        litigationRequest.InternalStatusId = RequestStatus.LitigationFeesHaveBeenCollected;
+                        litigationRequest.ExternalStatusId = RequestStatus.LitigationFeesHaveBeenCollected;
                         repositorySaveResponse = await _repository.SaveChangesAsync(new CancellationToken());
                         if (!repositorySaveResponse.IsDone)
                             return repositorySaveResponse;
+
+
+                        var _bpfService = _serviceProvider.GetRequiredService<IBpfService>();
+                        var exResponse = await _bpfService.ExcuteWorkFlow(litigationRequest.Id, default, 2);
+                        if (!exResponse.IsDone)
+                            return exResponse;
 
                         //  Send Notification 
                         // تم الموافقة على طلب المشارطة على الدعوى رقم........
