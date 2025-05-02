@@ -238,6 +238,9 @@ namespace REAC.Application.AppServices.Litigation
                         litigationRequest.InternalStatusId = RequestStatus.LitigationFeesHaveBeenCollected;
                         litigationRequest.ExternalStatusId = RequestStatus.LitigationFeesHaveBeenCollected;
 
+                         repositorySaveResponse = await _repository.SaveChangesAsync(new CancellationToken());
+                         if (!repositorySaveResponse.IsDone)
+                             return repositorySaveResponse;
                         //  Send Notification 
                         // تم رفض طلب المشارطة على الدعوى وجارى استكمال الصلح ..........
                         // المدعى - المدعى عليه - مدير ادارة التدقيق - موظف التدقيق
