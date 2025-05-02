@@ -47,7 +47,11 @@ public class LitigationRequestController : BaseController<LitigationRequest,
 
         return BadRequest();
     }
-
+ [HttpGet("GetVersion")]
+ public async Task<IActionResult> GetVersion(Guid litigationId, CancellationToken cancellationToken)
+ {
+     return Ok(1);
+ }
     [HttpGet("ApproveArbitrationFeesPaid/{litigationId}")]
     public async Task<IActionResult> ApproveArbitrationFeesPaid(Guid litigationId, CancellationToken cancellationToken)
     {
