@@ -33,6 +33,7 @@ using REAC.EntityFrameworkCore.Entities.Litigation;
 using REAC.EntityFrameworkCore.Entities.System;
 using REAC.EntityFrameworkCore.Entities.Wpf.System;
 using System.Threading;
+using static Dapper.SqlMapper;
 using static REAC.Application.Contracts.IAppServices.Litigation.ILitigationRequestService;
 
 namespace REAC.Application.AppServices.Litigation
@@ -79,7 +80,9 @@ namespace REAC.Application.AppServices.Litigation
             try
             {
                 var contract = (await _repository.GetQueryable<LitigationRequestContract, Guid>())
-                                       .Where(x => x.Id == model.ContractId).ToList().FirstOrDefault();
+                                       .FirstOrDefault(x => x.Id == model.ContractId);
+                if (contract == null)
+                    return new BaseResponse() { IsDone = false, Message = "لا يمكن الوصول لبيانات العقد" };
 
                 switch (contract.LitigationRequestContractTypeId)
                 {
@@ -120,7 +123,25 @@ namespace REAC.Application.AppServices.Litigation
 
                 };
 
-                return await base.UpdateAsync(contractUpdateDto);
+                var result = await base.UpdateAsync(contractUpdateDto);
+
+                if (result.IsDone)
+                {
+                    var data = (await _repository.GetQueryable<LitigationRequestContract, Guid>())
+                                       .Include(x => x.ContractFile)
+                                       .AsNoTracking()
+                                       .FirstOrDefault(x => x.Id == model.ContractId);
+
+                    return new DataResponse<LitigationRequestContract>()
+                    {
+                        IsDone = response.IsDone,
+                        Data = data,
+                        Message = response.Message
+                    };
+                }
+
+                return new BaseResponse() { IsDone = false, Message = "خطأ داخلي" };
+
             }
             catch (Exception ex)
             {
@@ -876,7 +897,7 @@ namespace REAC.Application.AppServices.Litigation
                     modifiacitonRequest.IsApproved = null;
                     modifiacitonRequest.ActorType = model.ActorType;
                 }
-                
+
                 var record = await _repository.AddAsync<LititgationRequestModificationRequest, Guid>(modifiacitonRequest);
                 var result = await _repository.SaveChangesAsync();
                 if (!result.IsDone)
@@ -1014,7 +1035,7 @@ namespace REAC.Application.AppServices.Litigation
         {
             try
             {
-               
+
                 var result = (await _repository.GetQueryable<LititgationRequestModificationRequest, Guid>())
                     .FirstOrDefault(x => x.Id == addModificationRequestActionDto.ModificationRequestId);
 

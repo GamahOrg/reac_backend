@@ -129,6 +129,19 @@ namespace REAC.Application.ModuleServices
                         Message = "لا يمكن إضافة جلسة قبل تاريخ تقديم طلب الدعوى"
                     };
                 }
+                if (litigationRequest.StartReconciliationDate.HasValue)
+                {
+                    DateTime newDate = litigationRequest.StartReconciliationDate.Value.AddDays((double)litigationRequest.ReconciliationPeriod);
+
+                    if (requestPayload.SessionDateTime > newDate)
+                    {
+                        return new BaseResponse()
+                        {
+                            IsDone = false,
+                            Message = "لا يمكن إضافة جلسة تتخطى  مدة صلح الدعوى"
+                        };
+                    }
+                }
                 var updateResponse = new BaseResponse();
                 bool updatedSession = false;
                 if (litigationRequest.LitigationRequestSessions != null)
@@ -1006,7 +1019,7 @@ namespace REAC.Application.ModuleServices
                 if (filter.ReformerName is not null)
                 {
                     combinedCondition = combinedCondition.AndAlso(x =>
-                        x.LitigationRequestReformerAssigningRequests.Any(y => y.ReformerCitizen.FullName.Contains(filter.ReformerName))
+                        x.LitigationRequestReformerAssigningRequests.Any(y => (y.ReformerCitizen.FullName.Contains(filter.ReformerName)) && y.Response == 0)
                         || x.ReformerCitizen.FullName.Contains(filter.ReformerName));
                     litigationRequestsQuery = entitiesQueryable.Where(combinedCondition);
 

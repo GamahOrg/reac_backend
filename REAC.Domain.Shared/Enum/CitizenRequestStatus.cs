@@ -20,6 +20,10 @@
         SendToPayFees = 8,
         ///<summary>تم دفع الرسوم</summary>
         FeesPaid = 9,
+        ///<summary>   تم الارسال لدفع رسوم التعديل</summary>
+        SendToPayEditFees = 10,
+        ///<summary>تم دفع الرسوم التعديل</summary>
+        EditFeesPaid = 11,
     }
 
 }

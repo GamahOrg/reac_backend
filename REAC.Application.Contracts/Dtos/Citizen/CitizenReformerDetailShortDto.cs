@@ -26,6 +26,8 @@ namespace REAC.Application.Contracts.Dtos.Citizen
         public string? ReformerStatus { get; set; }
 
         public DateTime? ReformerStatusDate { get; set; }
+        public DateTime? StoppedFromDate { get; set; }
+        public DateTime? StoppedToDate { get; set; }
 
         public ICollection<ReformerStopFreeUpDetailDecisionDto> ReformerStopFreeUpDetailDecisionDtos { get; set; } = new List<ReformerStopFreeUpDetailDecisionDto>();
 

@@ -53,6 +53,8 @@ namespace REAC.Application.ModuleServices
                     litigationRequest.ArbitratorSelectionDuration = arbitratorCountRequestPayload.ArbitratorSelectionDuration;
                     litigationRequest.LitigationRequestSubStage = LitigationRequestSubStage.LitigationRequestAddArbitratorCount;
                     litigationRequest.ArbitratorsSelectionDurationDateTime = DateTime.Now;
+                    litigationRequest.InternalStatusId = RequestStatus.WaitingForDetermineArbitratorsNumber;
+                    litigationRequest.ExternalStatusId = RequestStatus.WaitingForDetermineArbitratorsNumber;
 
 
                     await _repository.AddAsync<WorkFlowLog, Guid>(new WorkFlowLog()
@@ -149,7 +151,7 @@ namespace REAC.Application.ModuleServices
                                 emails.Add(litigationRequest.Contract.FirstPartyFacility.Citizen.Email);
                                 recipients.Add(litigationRequest.Contract.FirstPartyFacility.Citizen.Mobile);
                             };
-                            if (litigationRequest?.Contract?.SecondPartyCitizenId != null)
+                            if (litigationRequest?.Contract?.SecondPartyCitizenId != null && litigationRequest?.Contract?.SecondPartyCitizenId != litigationRequest.ApplicantCitizenId)
                             {
                                 notifications.Add(new SysNotificationDto
                                 {
@@ -163,7 +165,7 @@ namespace REAC.Application.ModuleServices
                                 emails.Add(litigationRequest.Contract.SecondPartyCitizen.Email);
                                 recipients.Add(litigationRequest.Contract.SecondPartyCitizen.Mobile);
                             };
-                            if (litigationRequest?.Contract?.SecondPartyFacilityId != null)
+                            if (litigationRequest?.Contract?.SecondPartyFacilityId != null && litigationRequest?.Contract?.SecondPartyFacility.CitizenId != litigationRequest.ApplicantCitizenId)
                             {
                                 notifications.Add(new SysNotificationDto
                                 {
@@ -190,16 +192,19 @@ namespace REAC.Application.ModuleServices
                                 notification_type = "SMS",
 
                             }, notifications);
-
+                            List<string> adminsEmail = new List<string>();
+                            List<string> adminsMobile = new List<string>();
+                            adminsEmail.Add(arbitrationAdmin.Data?.Email ?? string.Empty);
+                            adminsMobile.Add(arbitrationAdmin.Data?.Mobile ?? string.Empty);
                             await _notificationService.SendNotifications(new Contracts.Dtos.Notification.SendEmailDto()
                             {
-                                To = emails,
+                                To = adminsEmail,
                                 Subject = "تحديد مدة أختيار المحكمين",
                                 Body = adminBody
                             }, new Contracts.Dtos.Integration.GEE.SMSRequestDto()
                             {
                                 message_text = adminMsg,
-                                recipients = recipients,
+                                recipients = adminsMobile,
                                 notification_type = "SMS",
 
                             }, new List<SysNotificationDto>()

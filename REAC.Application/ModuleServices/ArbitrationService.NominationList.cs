@@ -52,6 +52,12 @@ namespace REAC.Application.ModuleServices
                         Message = "طلب غير موجود"
                     };
 
+                if (litigationRequest.IsArbitrationFeesHaveBeenCollected != true)
+                    return new BaseResponse()
+                    {
+                        IsDone = false,
+                        Message = "يرجي استكمال دفع رسوم التحكيم لهذه الدعوي"
+                    };
 
                 bool allowAdd = true;
                 bool isDone = false;
@@ -738,46 +744,46 @@ namespace REAC.Application.ModuleServices
                 {
                     if (litigationRequest?.LitigationRequestSubStage != LitigationRequestSubStage.LitigationRequestAddArbitratorListNominationDone)
                         allowAdd = false;
-                    else
-                    {
-                        if (litigationRequest.ApplicantCitizenId == referenceId)
-                        {
-                            if (litigationRequest.IsPlaintiffArbitratorNominationListDone.HasValue)
-                                allowAdd = false;
-                        }
-                        if (litigationRequest.Contract.FirstPartyCitizenId.HasValue)
-                        {
-                            if (litigationRequest.Contract.FirstPartyCitizenId == referenceId)
-                            {
-                                if (litigationRequest.IsPlaintiffArbitratorNominationListDone.HasValue)
-                                    allowAdd = false;
-                            }
-                        }
-                        if (litigationRequest.Contract.SecondPartyCitizenId.HasValue)
-                        {
-                            if (litigationRequest.Contract.SecondPartyCitizenId == referenceId)
-                            {
-                                if (litigationRequest.IsDefendantArbitratorNominationListDone.HasValue)
-                                    allowAdd = false;
-                            }
-                        }
-                        if (litigationRequest.Contract.FirstPartyFacilityId.HasValue)
-                        {
-                            if (litigationRequest.Contract.FirstPartyFacility?.CitizenId == referenceId)
-                            {
-                                if (litigationRequest.IsPlaintiffArbitratorNominationListDone.HasValue)
-                                    allowAdd = false;
-                            }
-                        }
-                        if (litigationRequest.Contract.SecondPartyFacilityId.HasValue)
-                        {
-                            if (litigationRequest.Contract.SecondPartyFacility?.CitizenId == referenceId)
-                            {
-                                if (litigationRequest.IsDefendantArbitratorNominationListDone.HasValue)
-                                    allowAdd = false;
-                            }
-                        }
-                    }
+                    //else
+                    //{
+                    //    if (litigationRequest.ApplicantCitizenId == referenceId)
+                    //    {
+                    //        if (litigationRequest.IsPlaintiffArbitratorNominationListDone.HasValue)
+                    //            allowAdd = false;
+                    //    }
+                    //    if (litigationRequest.Contract.FirstPartyCitizenId.HasValue)
+                    //    {
+                    //        if (litigationRequest.Contract.FirstPartyCitizenId == referenceId)
+                    //        {
+                    //            if (litigationRequest.IsPlaintiffArbitratorNominationListDone.HasValue)
+                    //                allowAdd = false;
+                    //        }
+                    //    }
+                    //    if (litigationRequest.Contract.SecondPartyCitizenId.HasValue)
+                    //    {
+                    //        if (litigationRequest.Contract.SecondPartyCitizenId == referenceId)
+                    //        {
+                    //            if (litigationRequest.IsDefendantArbitratorNominationListDone.HasValue)
+                    //                allowAdd = false;
+                    //        }
+                    //    }
+                    //    if (litigationRequest.Contract.FirstPartyFacilityId.HasValue)
+                    //    {
+                    //        if (litigationRequest.Contract.FirstPartyFacility?.CitizenId == referenceId)
+                    //        {
+                    //            if (litigationRequest.IsPlaintiffArbitratorNominationListDone.HasValue)
+                    //                allowAdd = false;
+                    //        }
+                    //    }
+                    //    if (litigationRequest.Contract.SecondPartyFacilityId.HasValue)
+                    //    {
+                    //        if (litigationRequest.Contract.SecondPartyFacility?.CitizenId == referenceId)
+                    //        {
+                    //            if (litigationRequest.IsDefendantArbitratorNominationListDone.HasValue)
+                    //                allowAdd = false;
+                    //        }
+                    //    }
+                    //}
                 }
 
             }

@@ -1465,6 +1465,158 @@ namespace REAC.Application.AppServices
                     await _repository.SaveChangesAsync();
                     break;
 
+                case CitizenRequestAction.SendToPayEditFees:
+                    citizenRequests.StatusId = CitizenRequestStatus.SendToPayEditFees;
+                    saveResponse = await _repository.SaveChangesAsync();
+                    if (!saveResponse.IsDone) return saveResponse;
+
+                    switch (citizenRequests.CitizenRequestTypeId)
+                    {
+                        case CitizenRequestType.Arbitrator:
+                            // Send Notification
+                            // تم ارسال الطلب بالانضمام كمحكم لدفع رسوم التعديل 
+
+                            try
+                            {
+
+                                msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Arbitrator_UpdateJoiningRequest_ToPayEditFees).Result.Data?.Value;
+                                msg = msg.Replace("{CitizenName}", citizenRequests.Citizen.FullName);
+                                var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                using (StreamReader streamReader = File.OpenText(pathToFile))
+                                {
+                                    body = await streamReader.ReadToEndAsync();
+                                    body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Arbitrator_UpdateJoiningRequest_ToPayEditFees).Result.Data?.Value);
+                                    body = body?.Replace("{CitizenName}", citizenRequests.Citizen.FullName);
+                                }
+                                applicationNotifications.Add(new SysNotificationDto()
+                                {
+                                    ActorId = citizenRequests.Citizen.Id,
+                                    CreatedOn = DateTime.Now,
+                                    ActorTypeId = NotificationActorType.Arbitrator,
+                                    IsViewed = false,
+                                    ViewedOn = null,
+                                    RequestId = citizenRequests.Id,
+                                    RequestTypeId = RequestType.JoinRequestAsArbitratorRequest,
+                                    Message = msg
+                                });
+
+                                msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Employee_Arbitrator_UpdateJoiningRequest_ToPayEditFees).Result.Data?.Value;
+                                msg = msg.Replace("{CitizenName}", citizenRequests.Citizen.FullName);
+                                pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                using (StreamReader streamReader = File.OpenText(pathToFile))
+                                {
+                                    body = await streamReader.ReadToEndAsync();
+                                    body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Employee_Arbitrator_UpdateJoiningRequest_ToPayEditFees).Result.Data?.Value);
+                                    body = body?.Replace("{CitizenName}", citizenRequests.Citizen.FullName);
+                                }
+                                applicationNotifications.Add(new SysNotificationDto()
+                                {
+                                    ActorId = deptAdminInfoArbitration.Data.Id,
+                                    CreatedOn = DateTime.Now,
+                                    ActorTypeId = NotificationActorType.Employee,
+                                    IsViewed = false,
+                                    ViewedOn = null,
+                                    RequestId = citizenRequests.Id,
+                                    RequestTypeId = RequestType.JoinRequestAsArbitratorRequest,
+                                    Message = msg
+                                });
+
+                                var notificationResultUpdatedArbitrator = _notificationService.SendNotifications(
+                                    new SendEmailDto()
+                                    {
+                                        To = new List<string>() { citizenRequests.Citizen.Email, deptAdminInfoArbitration.Data.Email },
+                                        Subject = "Arbitrator Update Joining Request To Pay Fees",
+                                        Body = body
+                                    },
+                                    new SMSRequestDto()
+                                    {
+                                        message_text = msg,
+                                        recipients = new List<string>() { citizenRequests.Citizen.Mobile, deptAdminInfoArbitration.Data.Mobile },
+                                        notification_type = "SMS",
+
+                                    },
+                                    applicationNotifications
+                                    );
+                            }
+                            catch (Exception ex)
+                            {
+
+                            }
+
+                            break;
+                        case CitizenRequestType.Reformer:
+                            // Send Notification
+                            // تم ارسال الطلب بالانضمام كمصلح لدفع الرسوم 
+                            try
+                            {
+                                msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reformer_UpdateJoiningRequest_ToPayFees).Result.Data?.Value;
+                                msg = msg.Replace("{CitizenName}", citizenRequests.Citizen.FullName);
+                                var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                using (StreamReader streamReader = File.OpenText(pathToFile))
+                                {
+                                    body = await streamReader.ReadToEndAsync();
+                                    body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reformer_UpdateJoiningRequest_ToPayFees).Result.Data?.Value);
+                                    body = body?.Replace("{CitizenName}", citizenRequests.Citizen.FullName);
+                                }
+                                applicationNotifications.Add(new SysNotificationDto()
+                                {
+                                    ActorId = citizenInfo.Id,
+                                    CreatedOn = DateTime.Now,
+                                    ActorTypeId = NotificationActorType.Reformer,
+                                    IsViewed = false,
+                                    ViewedOn = null,
+                                    RequestId = citizenRequests.Id,
+                                    RequestTypeId = RequestType.JoinRequestAsReformerRequest,
+                                    Message = msg
+                                });
+
+                                msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Employee_Reformer_UpdateJoiningRequest_ToPayFees).Result.Data?.Value;
+                                msg = msg.Replace("{CitizenName}", citizenRequests.Citizen.FullName);
+                                using (StreamReader streamReader = File.OpenText(pathToFile))
+                                {
+                                    body = await streamReader.ReadToEndAsync();
+                                    body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Employee_Reformer_UpdateJoiningRequest_ToPayFees).Result.Data?.Value);
+                                    body = body?.Replace("{CitizenName}", citizenRequests.Citizen.FullName);
+                                }
+                                applicationNotifications.Add(new SysNotificationDto()
+                                {
+                                    ActorId = deptAdminInfoArbitration.Data.Id,
+                                    CreatedOn = DateTime.Now,
+                                    ActorTypeId = NotificationActorType.Employee,
+                                    IsViewed = false,
+                                    ViewedOn = null,
+                                    RequestId = citizenRequests.Id,
+                                    RequestTypeId = RequestType.JoinRequestAsReformerRequest,
+                                    Message = msg
+                                });
+
+                                var notificationResultUpdatedArbitrator = _notificationService.SendNotifications(
+                                    new SendEmailDto()
+                                    {
+                                        To = new List<string>() { citizenInfo.Email, deptAdminInfoReconciliation.Data.Email },
+                                        Subject = "Reformer Update JoiningRequest To Pay Fees",
+                                        Body = body
+                                    },
+                                    new SMSRequestDto()
+                                    {
+                                        message_text = msg,
+                                        recipients = new List<string>() { citizenInfo.Mobile, deptAdminInfoReconciliation.Data.Mobile },
+                                        notification_type = "SMS",
+
+                                    },
+                                    applicationNotifications
+                                    );
+                            }
+                            catch (Exception ex)
+                            {
+
+                            }
+
+                            break;
+                    }
+                    await _repository.SaveChangesAsync();
+                    break;
+
                 case CitizenRequestAction.FeesPaid:
                     citizenRequests.IsFeesPaid = true;
                     citizenRequests.StatusId = CitizenRequestStatus.FeesPaid;
@@ -1526,6 +1678,158 @@ namespace REAC.Application.AppServices
                                     {
                                         To = new List<string>() { citizenRequests.Citizen.Email, deptAdminInfoArbitration.Data.Email },
                                         Subject = "Arbitrator  Update JoiningRequest and Fees Paid",
+                                        Body = body
+                                    },
+                                    new SMSRequestDto()
+                                    {
+                                        message_text = msg,
+                                        recipients = new List<string>() { citizenRequests.Citizen.Mobile, deptAdminInfoArbitration.Data.Mobile },
+                                        notification_type = "SMS",
+
+                                    },
+                                    applicationNotifications
+                                    );
+                            }
+                            catch (Exception ex)
+                            {
+
+                            }
+
+                            break;
+                        case CitizenRequestType.Reformer:
+                            // Send Notification
+                            //تم دفع رسوم طلب بالانضمام كمصلح 
+                            try
+                            {
+                                msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reformer_UpdateJoiningRequest_PaidFees).Result.Data?.Value;
+                                msg = msg.Replace("{CitizenName}", citizenRequests.Citizen.FullName);
+                                var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                using (StreamReader streamReader = File.OpenText(pathToFile))
+                                {
+                                    body = await streamReader.ReadToEndAsync();
+                                    body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reformer_UpdateJoiningRequest_PaidFees).Result.Data?.Value);
+                                    body = body?.Replace("{CitizenName}", citizenRequests.Citizen.FullName);
+                                }
+                                applicationNotifications.Add(new SysNotificationDto()
+                                {
+                                    ActorId = citizenInfo.Id,
+                                    CreatedOn = DateTime.Now,
+                                    ActorTypeId = NotificationActorType.Reformer,
+                                    IsViewed = false,
+                                    ViewedOn = null,
+                                    RequestId = citizenRequests.Id,
+                                    RequestTypeId = RequestType.JoinRequestAsReformerRequest,
+                                    Message = msg
+                                });
+
+                                msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Employee_Reformer_UpdateJoiningRequest_PaidFees).Result.Data?.Value;
+                                msg = msg.Replace("{CitizenName}", citizenRequests.Citizen.FullName);
+                                pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                using (StreamReader streamReader = File.OpenText(pathToFile))
+                                {
+                                    body = await streamReader.ReadToEndAsync();
+                                    body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Employee_Reformer_UpdateJoiningRequest_PaidFees).Result.Data?.Value);
+                                    body = body?.Replace("{CitizenName}", citizenRequests.Citizen.FullName);
+                                }
+                                applicationNotifications.Add(new SysNotificationDto()
+                                {
+                                    ActorId = deptAdminInfoArbitration.Data.Id,
+                                    CreatedOn = DateTime.Now,
+                                    ActorTypeId = NotificationActorType.Employee,
+                                    IsViewed = false,
+                                    ViewedOn = null,
+                                    RequestId = citizenRequests.Id,
+                                    RequestTypeId = RequestType.JoinRequestAsReformerRequest,
+                                    Message = msg
+                                });
+
+                                var notificationResultUpdatedArbitrator = _notificationService.SendNotifications(
+                                    new SendEmailDto()
+                                    {
+                                        To = new List<string>() { citizenInfo.Email, deptAdminInfoReconciliation.Data.Email },
+                                        Subject = "Reformer Update JoiningRequest and Fees Paid",
+                                        Body = body
+                                    },
+                                    new SMSRequestDto()
+                                    {
+                                        message_text = msg,
+                                        recipients = new List<string>() { citizenInfo.Mobile, deptAdminInfoReconciliation.Data.Mobile },
+                                        notification_type = "SMS",
+
+                                    },
+                                    applicationNotifications
+                                    );
+                            }
+                            catch (Exception ex)
+                            {
+
+                            }
+
+                            break;
+                    }
+                    await _repository.SaveChangesAsync();
+                    break;
+                case CitizenRequestAction.EditFeesPaid:
+                    citizenRequests.IsFeesPaid = true;
+                    citizenRequests.StatusId = CitizenRequestStatus.EditFeesPaid;
+                    saveResponse = await _repository.SaveChangesAsync();
+                    if (!saveResponse.IsDone) return saveResponse;
+
+                    switch (citizenRequests.CitizenRequestTypeId)
+                    {
+                        case CitizenRequestType.Arbitrator:
+                            // Send Notification
+                            //تم دفع رسوم طلب بالانضمام كمحكم 
+
+                            try
+                            {
+                                msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Arbitrator_UpdateJoiningRequest_PaidEditFees).Result.Data?.Value;
+                                msg = msg.Replace("{CitizenName}", citizenRequests.Citizen.FullName);
+                                var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                using (StreamReader streamReader = File.OpenText(pathToFile))
+                                {
+                                    body = await streamReader.ReadToEndAsync();
+                                    body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Arbitrator_UpdateJoiningRequest_PaidEditFees).Result.Data?.Value);
+                                    body = body?.Replace("{CitizenName}", citizenRequests.Citizen.FullName);
+                                }
+                                applicationNotifications.Add(new SysNotificationDto()
+                                {
+                                    ActorId = citizenRequests.Citizen.Id,
+                                    CreatedOn = DateTime.Now,
+                                    ActorTypeId = NotificationActorType.Arbitrator,
+                                    IsViewed = false,
+                                    ViewedOn = null,
+                                    RequestId = citizenRequests.Id,
+                                    RequestTypeId = RequestType.JoinRequestAsArbitratorRequest,
+                                    Message = msg
+                                });
+
+                                msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Employee_Arbitrator_UpdateJoiningRequest_PaidEditFees).Result.Data?.Value;
+                                msg = msg.Replace("{CitizenName}", citizenRequests.Citizen.FullName);
+                                pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                using (StreamReader streamReader = File.OpenText(pathToFile))
+                                {
+                                    body = await streamReader.ReadToEndAsync();
+                                    body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Employee_Arbitrator_UpdateJoiningRequest_PaidEditFees).Result.Data?.Value);
+                                    body = body?.Replace("{CitizenName}", citizenRequests.Citizen.FullName);
+                                }
+                                applicationNotifications.Add(new SysNotificationDto()
+                                {
+                                    ActorId = deptAdminInfoArbitration.Data.Id,
+                                    CreatedOn = DateTime.Now,
+                                    ActorTypeId = NotificationActorType.Employee,
+                                    IsViewed = false,
+                                    ViewedOn = null,
+                                    RequestId = citizenRequests.Id,
+                                    RequestTypeId = RequestType.JoinRequestAsArbitratorRequest,
+                                    Message = msg
+                                });
+
+                                var notificationResultUpdatedArbitrator = _notificationService.SendNotifications(
+                                    new SendEmailDto()
+                                    {
+                                        To = new List<string>() { citizenRequests.Citizen.Email, deptAdminInfoArbitration.Data.Email },
+                                        Subject = "Arbitrator  Update JoiningRequest and Fees Edit Request  Paid",
                                         Body = body
                                     },
                                     new SMSRequestDto()

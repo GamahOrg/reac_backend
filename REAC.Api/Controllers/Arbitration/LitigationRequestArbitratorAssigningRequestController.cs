@@ -1,6 +1,7 @@
 ﻿using Core.Security.Attributes;
 using Core.Security.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using REAC.Application.Contracts.Dtos.Arbitration;
 using REAC.Application.Contracts.Dtos.Reconciliation.Process;
 using REAC.Application.Contracts.IAppServices.Litigation;
 using REAC.Domain.Shared.Constants;
@@ -19,12 +20,12 @@ public class LitigationRequestArbitratorAssigningRequestController : ControllerB
     {
         _litigationRequestArbitratorAssigningRequest = litigationRequestArbitratorAssigningRequest;
     }
-    [HttpGet(nameof(GetLitigationRequestArbitratorAssigningRequests))]
-    public async Task<IActionResult> GetLitigationRequestArbitratorAssigningRequests(int pageIndex,int pageSize,CancellationToken cancellationToken)
+    [HttpPost(nameof(GetLitigationRequestArbitratorAssigningRequests))]
+    public async Task<IActionResult> GetLitigationRequestArbitratorAssigningRequests(int pageIndex,int pageSize,CancellationToken cancellationToken, LitigationRequestArbitrationAssignedRequestFilter? filter, bool ascending = false)
     {
         if (ModelState.IsValid)
         {
-            var returnValue = await _litigationRequestArbitratorAssigningRequest.GetLitigationRequestArbitratorAssigningRequests(pageIndex,pageSize, cancellationToken);
+            var returnValue = await _litigationRequestArbitratorAssigningRequest.GetLitigationRequestArbitratorAssigningRequests(pageIndex,pageSize, cancellationToken, filter, ascending);
             return Ok(returnValue);
         }
 

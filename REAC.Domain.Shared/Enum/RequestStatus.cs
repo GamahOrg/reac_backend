@@ -74,7 +74,12 @@ public enum RequestStatus
     PendingPayment = 33,
 
     ///<summary>تم ارسال طلب تعديل علي الدعوي</summary>
-    EditRequestHasBeenSent = 34
+    EditRequestHasBeenSent = 34,
+
+    ///<summary>بإنتظار تحديد عدد هيئة التحكيم</summary>
+    WaitingForDetermineArbitratorsNumber = 35,
+    ///<summary>بانتظار اختيار محكم</summary>
+    WaitingForArbitratorsSelection = 36
 
 }
 

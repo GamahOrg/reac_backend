@@ -47,7 +47,7 @@ namespace REAC.Api.Controllers.Security
             return Ok(await _nafathService.CheckNafathReconciliationReportStatusForMobile(transactionId));
         }
 
-         [HttpGet(nameof(CheckNafathAgreementRequestStatus))]
+        [HttpGet(nameof(CheckNafathAgreementRequestStatus))]
         public async Task<IActionResult> CheckNafathAgreementRequestStatus(string transactionId)
         {
             return Ok(await _nafathService.CheckNafathAgreementRequestStatusForMobile(transactionId));

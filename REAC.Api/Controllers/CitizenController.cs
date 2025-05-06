@@ -210,22 +210,22 @@ public class CitizenController : ControllerBase
         return BadRequest();
     }
     [HttpGet(nameof(GetArbitratorsFullLookup))]
-    public async Task<ActionResult> GetArbitratorsFullLookup(Guid? citizenId, Guid requestId)
+    public async Task<ActionResult> GetArbitratorsFullLookup(Guid? citizenId, Guid requestId, string? fullName = null, string? area = null, string? arbitratorClass = null)
     {
         if (ModelState.IsValid)
         {
-            var returnValue = await _citizenService.GetArbitratorsFullLookup(citizenId, requestId);
+            var returnValue = await _citizenService.GetArbitratorsFullLookup(citizenId, requestId, fullName, area, arbitratorClass );
             return Ok(returnValue);
         }
 
         return BadRequest();
     }
     [HttpGet(nameof(GetReformersDecisions))]
-    public async Task<ActionResult> GetReformersDecisions(int pageIndex, int pageSize, CancellationToken cancellationToken = default)
+    public async Task<ActionResult> GetReformersDecisions(int pageIndex, int pageSize, [FromQuery] string? searchKey, [FromQuery] bool? isActive, CancellationToken cancellationToken = default)
     {
         if (ModelState.IsValid)
         {
-            var returnValue = await _citizenService.GetReformersDecisions(pageIndex, pageSize, cancellationToken);
+            var returnValue = await _citizenService.GetReformersDecisions(pageIndex, pageSize, searchKey, isActive, cancellationToken);
             return Ok(returnValue);
         }
 
@@ -244,11 +244,11 @@ public class CitizenController : ControllerBase
     }
 
     [HttpGet(nameof(GetArbitratorsDecisions))]
-    public async Task<ActionResult> GetArbitratorsDecisions(int pageIndex, int pageSize, CancellationToken cancellationToken = default)
+    public async Task<ActionResult> GetArbitratorsDecisions(int pageIndex, int pageSize, [FromQuery] string? searchKey, [FromQuery] bool? isActive , CancellationToken cancellationToken = default)
     {
         if (ModelState.IsValid)
         {
-            var returnValue = await _citizenService.GetArbitratorsDecisions(pageIndex, pageSize, cancellationToken);
+            var returnValue = await _citizenService.GetArbitratorsDecisions(pageIndex, pageSize, searchKey,isActive, cancellationToken);
             return Ok(returnValue);
         }
 

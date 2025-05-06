@@ -51,18 +51,20 @@ namespace REAC.Application.AppServices.SLA
             // Auto Activate Reformers
 
             var citizens = (await _repository.GetQueryable<Citizen, Guid>())
+                .Where(x => x.IsReformer == true && x.ReformerStatusId == ReformerStatus.Stopped)
                       .Select(x => new
                       {
                           Citizen = x,
                           LatestDecision = x.ReformerStopFreeUpDecisions
-                              .OrderByDescending(y => y.DecisionDate)
+                              .OrderByDescending(z => z.DecisionDate)
                               .FirstOrDefault()
                       })
                       .ToList();
 
-            foreach(var citizen in citizens)
+            foreach (var citizen in citizens)
             {
-                if(citizen.LatestDecision is null || (citizen.LatestDecision.ReformerStatusId == ReformerStatus.Certified & citizen.LatestDecision.DecisionTo is null) || citizen.LatestDecision.DecisionTo > DateTime.Now)
+                if (citizen.LatestDecision is null || (citizen.LatestDecision.ReformerStatusId == ReformerStatus.Certified && citizen.LatestDecision.DecisionTo is null) 
+                    || citizen.LatestDecision.ReformerStatusId == ReformerStatus.PendingStop || citizen.LatestDecision.DecisionTo.Value.Date > DateTime.Now.Date)
                     continue;
 
                 citizen.Citizen.ReformerStatusId = ReformerStatus.Certified;
@@ -98,6 +100,116 @@ namespace REAC.Application.AppServices.SLA
                     {
                         body = await streamReader.ReadToEndAsync();
                         body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reformer_Activate).Result.Data?.Value);
+                        body = body?.Replace("{CitizenName}", citizen.Citizen.FullName);
+                    }
+
+                    var applicationNotifications = new List<SysNotificationDto>();
+
+                    applicationNotifications.Add(new SysNotificationDto()
+                    {
+                        ActorId = citizen.Citizen.Id,
+                        CreatedOn = DateTime.Now,
+                        ActorTypeId = NotificationActorType.Reformer,
+                        IsViewed = false,
+                        ViewedOn = null,
+                        RequestId = citizen.Citizen.Id,
+                        RequestTypeId = RequestType.StopFreeUpReformer,
+                        Message = msg
+                    });
+
+                    applicationNotifications.Add(new SysNotificationDto()
+                    {
+                        ActorId = deptAdminInfoReconciliation.Data.Id,
+                        CreatedOn = DateTime.Now,
+                        ActorTypeId = NotificationActorType.Employee,
+                        IsViewed = false,
+                        ViewedOn = null,
+                        RequestId = citizen.Citizen.Id,
+                        RequestTypeId = RequestType.StopFreeUpReformer,
+                        Message = msg
+                    });
+
+                    var notificationResultUpdatedArbitrator = await _notificationService.SendNotifications(
+                        new SendEmailDto()
+                        {
+                            To = new List<string>() { citizen.Citizen.Email, deptAdminInfoReconciliation.Data.Email },
+                            Subject = "Reformer Activated",
+                            Body = body
+                        },
+                        new SMSRequestDto()
+                        {
+                            message_text = msg,
+                            recipients = new List<string>() { citizen.Citizen.Mobile, deptAdminInfoReconciliation.Data.Mobile },
+                            notification_type = "SMS",
+
+                        },
+                        applicationNotifications
+                        );
+                }
+                catch (Exception ex)
+                {
+                    _loggerManager.Log(Core.Log.Domain.Shared.Enums.LoggerType.Database
+                                        , new LogDto()
+                                        {
+                                            Type = Core.Log.Domain.Shared.Enums.LogType.Exception,
+                                            Message = ex.ToString()
+                                        });
+                }
+            }
+
+            // Auto DeActivate Reformers
+
+            citizens = (await _repository.GetQueryable<Citizen, Guid>())
+               .Where(x => x.IsReformer == true && x.ReformerStatusId == ReformerStatus.PendingStop)
+                     .Select(x => new
+                     {
+                         Citizen = x,
+                         LatestDecision = x.ReformerStopFreeUpDecisions
+                             .OrderByDescending(z => z.DecisionDate)
+                             .FirstOrDefault()
+                     })
+                     .ToList();
+
+            foreach (var citizen in citizens)
+            {
+                if (citizen.LatestDecision is null || citizen.LatestDecision.ReformerStatusId != ReformerStatus.PendingStop || citizen.LatestDecision.DecisionFrom.Value.Date != DateTime.Now.Date)
+                    continue;
+
+                citizen.Citizen.ReformerStatusId = ReformerStatus.Stopped;
+
+                ReformerStopFreeUpDecision ReformerStopFreeUpDecision = new ReformerStopFreeUpDecision();
+                ReformerStopFreeUpDecision.CitizenId = citizen.Citizen.Id;
+                ReformerStopFreeUpDecision.ReformerStatusId = ReformerStatus.Stopped;
+                ReformerStopFreeUpDecision.DecisionDate = DateTime.Now;
+                ReformerStopFreeUpDecision.DecisionFrom = citizen.LatestDecision.DecisionFrom;
+                ReformerStopFreeUpDecision.DecisionTo = citizen.LatestDecision.DecisionTo;
+                ReformerStopFreeUpDecision.CreatedByRole = EntityFrameworkCore.Seed.Roles.SuperAdmin;
+                await _repository.AddAsync<ReformerStopFreeUpDecision, int>(ReformerStopFreeUpDecision);
+                var saveResponse = await _repository.SaveChangesAsync();
+                if (!saveResponse.IsDone)
+                    _loggerManager.Log(Core.Log.Domain.Shared.Enums.LoggerType.Database
+                                        , new LogDto()
+                                        {
+                                            Type = Core.Log.Domain.Shared.Enums.LogType.Exception,
+                                            Message = saveResponse.Message
+                                        });
+
+                // Send Notification
+                // تم إيقاف المصلح
+
+                try
+                {
+                    var deptAdminInfoReconciliation = await _employeeService.GetAdminsByDepartmentType(DepartmentType.Reconciliation);
+
+                    var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reformer_DeActivate).Result.Data?.Value;
+                    msg = msg.Replace("{CitizenName}", citizen.Citizen.FullName);
+                    var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                    string body;
+
+                    using (StreamReader streamReader = File.OpenText(pathToFile))
+                    {
+                        body = await streamReader.ReadToEndAsync();
+                        body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reformer_DeActivate).Result.Data?.Value);
                         body = body?.Replace("{CitizenName}", citizen.Citizen.FullName);
                     }
 

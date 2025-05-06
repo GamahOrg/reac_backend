@@ -19,7 +19,8 @@ namespace REAC.Application.Contracts.Dtos.Citizen
         public string? ArbitratorStatus { get; set; }
 
         public DateTime? ArbitratorStatusDate { get; set; }
-
+        public int AllRequestsCount { get; set; }
+        public int FinishedRequestsCount { get; set; }
     }
 
     public class CitizenArbitratorShortStatusDto : BaseEntity<Guid>

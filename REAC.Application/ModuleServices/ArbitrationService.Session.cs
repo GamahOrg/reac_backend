@@ -612,7 +612,7 @@ namespace REAC.Application.ModuleServices
             var entitiesQuerable = (await _repository.GetQueryable<LitigationRequest, Guid>())
                                          .Include(x => x.Area)
                                       .Include(x => x.City)
-                                      .Include(x => x.LitigationRequestSessions.Where(x => x.LitigationRequestSessionRequestTypeId == LitigationRequestSessionRequestType.Arbitration))
+                                      .Include(x => x.LitigationRequestSessions.Where(x => x.LitigationRequestSessionRequestTypeId == LitigationRequestSessionRequestType.Arbitration && x.SessionDatetime.Date >= DateTime.Today.Date))
                                       .Include(x => x.LitigationRequestReconciliationReports)
                                       .Include(x => x.ApplicantCitizen)
                                       .Include(x => x.InternalStatus)
