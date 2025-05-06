@@ -314,8 +314,7 @@ namespace REAC.Application.AppServices.Litigation
 
         public async Task<BaseResponse> ApproveArbitrationFeesPaid(Guid litigationId, CancellationToken cancellationToken)
         {
-            var litigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>())
-                          .Where(x => x.Id == litigationId).ToList().FirstOrDefault();
+            var litigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>())                          .Where(x => x.Id == litigationId).ToList().FirstOrDefault();
 
             if (litigationRequest == null)
                 return new ExceptionResponse()
@@ -325,6 +324,8 @@ namespace REAC.Application.AppServices.Litigation
                 };
 
             litigationRequest.IsArbitrationFeesHaveBeenCollected = true;
+            litigationRequest.ExternalStatusId = RequestStatus.WaitingForArbitratorsSelection;
+            litigationRequest.InternalStatusId = RequestStatus.WaitingForArbitratorsSelection;
 
             return _repository.SaveChangesAsync().Result;
             //if (!saveResponse.IsDone)
@@ -333,27 +334,13 @@ namespace REAC.Application.AppServices.Litigation
         }
 
 
-        public async Task<BaseResponse> SendLitigationFeesRequestPaid(Guid litigationId)
-        {
-            try
-            {
-                var litigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>())
-                          .Where(x => x.Id == litigationId).ToList().FirstOrDefault();
-
-                if (litigationRequest == null)
-                    return new ExceptionResponse()
+        public async Task<BaseResponse> SendLitigationFeesRequestPaid(Guid litigationId)        {            try            {                var litigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>())                          .Where(x => x.Id == litigationId).ToList().FirstOrDefault();                if (litigationRequest == null)                    return new ExceptionResponse()
                     {
                         Exception = "لم يتم العثور على الدعوى",
                         IsDone = false,
-                    };
+                    };                litigationRequest.IsLitigationFeesHaveBeenCollected = true;                litigationRequest.InternalStatusId = RequestStatus.LitigationFeesHaveBeenCollected;                litigationRequest.ExternalStatusId = RequestStatus.LitigationFeesHaveBeenCollected;
 
-                litigationRequest.IsLitigationFeesHaveBeenCollected = true;
-                litigationRequest.InternalStatusId = RequestStatus.LitigationFeesHaveBeenCollected;
-                litigationRequest.ExternalStatusId = RequestStatus.LitigationFeesHaveBeenCollected;
-
-                var saveResponse = _repository.SaveChangesAsync().Result;
-                if (!saveResponse.IsDone)
-                    return saveResponse;
+                var saveResponse = _repository.SaveChangesAsync().Result;                if (!saveResponse.IsDone)                    return saveResponse;
 
                 var _bpfService = _serviceProvider.GetRequiredService<IBpfService>();
                 var _stepService = _serviceProvider.GetRequiredService<IWorkFlowStepService>();
@@ -387,42 +374,17 @@ namespace REAC.Application.AppServices.Litigation
                 {
                     IsDone = true,
                     Message = ""
-                };
+                };            }            catch (Exception ex)            {                return new ExceptionResponse()                {                    Exception = ex.Message + "\n" + ex.ToString(),                    IsDone = false,                };            }        }
 
-            }
-            catch (Exception ex)
-            {
-                return new ExceptionResponse()
-                {
-                    Exception = ex.Message + "\n" + ex.ToString(),
-                    IsDone = false,
-
-                };
-
-            }
-
-        }
-
-        public async Task<BaseResponse> SendReconciliationFeesRequestPaid(Guid litigationId)
-        {
-            try
-            {
-                var litigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>())
-                          .Where(x => x.Id == litigationId).ToList().FirstOrDefault();
-
-                if (litigationRequest == null)
-                    return new ExceptionResponse()
+        public async Task<BaseResponse> SendReconciliationFeesRequestPaid(Guid litigationId)        {            try            {                var litigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>())                          .Where(x => x.Id == litigationId).ToList().FirstOrDefault();
+                if (litigationRequest == null)                    return new ExceptionResponse()
                     {
                         Exception = "لم يتم العثور على الدعوى",
                         IsDone = false,
-                    };
-
-                litigationRequest.IsReconciliationFeesHaveBeenCollected = true;
+                    };                litigationRequest.IsReconciliationFeesHaveBeenCollected = true;
 
 
-                var saveResponse = _repository.SaveChangesAsync().Result;
-                if (!saveResponse.IsDone)
-                    return saveResponse;
+                var saveResponse = _repository.SaveChangesAsync().Result;                if (!saveResponse.IsDone)                    return saveResponse;
 
                 var _bpfService = _serviceProvider.GetRequiredService<IBpfService>();
                 var _stepService = _serviceProvider.GetRequiredService<IWorkFlowStepService>();
@@ -456,22 +418,7 @@ namespace REAC.Application.AppServices.Litigation
                 {
                     IsDone = true,
                     Message = ""
-                };
-
-            }
-            catch (Exception ex)
-            {
-                return new ExceptionResponse()
-                {
-                    Exception = ex.Message + "\n" + ex.ToString(),
-                    IsDone = false,
-
-                };
-
-            }
-
-        }
-        public async Task<Guid> GetAddedLitigation()
+                };            }            catch (Exception ex)            {                return new ExceptionResponse()                {                    Exception = ex.Message + "\n" + ex.ToString(),                    IsDone = false,                };            }        }        public async Task<Guid> GetAddedLitigation()
         {
             var quarable = await GetQueryableAsync();
             var latestAdded = quarable.OrderByDescending(x => x.CreatedOn).First();
@@ -3969,17 +3916,17 @@ namespace REAC.Application.AppServices.Litigation
                         // المدعى - المدعى عليه - مدير ادارة التدقيق - موظف التدقيق
                         try
                         {
-                           // var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Reject_Agreement).Result.Data?.Value;
-                          //  msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
-                            //var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
-                           // string body;
-                           // using (StreamReader streamReader = File.OpenText(pathToFile))
-                           // {
-                            //    body = await streamReader.ReadToEndAsync();
-                            //    body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Reject_Agreement).Result.Data?.Value);
-                            //    body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
-                           // }
-                         //   await SendNotificationMSWithDefendant(body, msg, litigationRequest, RequestType.LitigationAgreementRequest, " رفض طلب المشارطة وجارى استكمال مرحلة الصلح");
+                            var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Reject_Agreement).Result.Data?.Value;
+                            msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
+                            var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                            string body;
+                            using (StreamReader streamReader = File.OpenText(pathToFile))
+                            {
+                                body = await streamReader.ReadToEndAsync();
+                                body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Reject_Agreement).Result.Data?.Value);
+                                body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                            }
+                            await SendNotificationMSWithDefendant(body, msg, litigationRequest, RequestType.LitigationAgreementRequest, " رفض طلب المشارطة وجارى استكمال مرحلة الصلح");
                         }
                         catch { }
                     }
@@ -3996,17 +3943,17 @@ namespace REAC.Application.AppServices.Litigation
                         // المدعى - المدعى عليه - مدير ادارة التدقيق - موظف التدقيق
                         try
                         {
-                         //   var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Reject_Agreement).Result.Data?.Value;
-                        //    msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
-                          //  var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
-                          //  string body;
-                           // using (StreamReader streamReader = File.OpenText(pathToFile))
-                          //  {
-                            //    body = await streamReader.ReadToEndAsync();
-                           //     body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Reject_Agreement).Result.Data?.Value);
-                          //      body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
-                          //  }
-                         //   await SendNotificationMSWithDefendant(body, msg, litigationRequest, RequestType.LitigationAgreementRequest, "رفض طلب المشارطة");
+                            var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Reject_Agreement).Result.Data?.Value;
+                            msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
+                            var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                            string body;
+                            using (StreamReader streamReader = File.OpenText(pathToFile))
+                            {
+                                body = await streamReader.ReadToEndAsync();
+                                body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Reject_Agreement).Result.Data?.Value);
+                                body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                            }
+                            await SendNotificationMSWithDefendant(body, msg, litigationRequest, RequestType.LitigationAgreementRequest, "رفض طلب المشارطة");
                         }
                         catch { }
                     }
@@ -4023,17 +3970,17 @@ namespace REAC.Application.AppServices.Litigation
                     // المدعى - المدعى عليه - مدير ادارة التدقيق - موظف التدقيق
                     try
                     {
-                       // var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Accept_Agreement).Result.Data?.Value;
-                       // msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
-                       // var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
-                      //  string body;
-                     //   using (StreamReader streamReader = File.OpenText(pathToFile))
-                      //  {
-                      //      body = await streamReader.ReadToEndAsync();
-                       //     body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Accept_Agreement).Result.Data?.Value);
-                        //    body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
-                       // }
-                       // await SendNotificationMSWithDefendant(body, msg, litigationRequest, RequestType.LitigationAgreementRequest, "قبول طلب المشارطة");
+                        var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Accept_Agreement).Result.Data?.Value;
+                        msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
+                        var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                        string body;
+                        using (StreamReader streamReader = File.OpenText(pathToFile))
+                        {
+                            body = await streamReader.ReadToEndAsync();
+                            body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Accept_Agreement).Result.Data?.Value);
+                            body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                        }
+                        await SendNotificationMSWithDefendant(body, msg, litigationRequest, RequestType.LitigationAgreementRequest, "قبول طلب المشارطة");
                     }
                     catch { }
                 }

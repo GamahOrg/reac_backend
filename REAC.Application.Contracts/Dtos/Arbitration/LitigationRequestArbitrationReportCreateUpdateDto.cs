@@ -17,6 +17,8 @@ namespace REAC.Application.Contracts.Dtos.Arbitration
         public string JudgmentDecisionPlace { get; set; } = null!;
         public Guid MeetingLocationId { get; set; }
         public string? MeetingLocationName { get; set; }
+        public string? ArbitratorCitizenName { get; set; }
+        
 
     }
     public partial class LitigationRequestArbitrationReportExplanationRequestGetDto : BaseEntity<Guid>

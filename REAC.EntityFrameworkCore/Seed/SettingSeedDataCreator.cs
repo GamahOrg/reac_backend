@@ -297,6 +297,18 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                         Value="تم ارسال طلب {CitizenName} للانضمام كمحكم لدفع الرسوم"
                     },
 
+                       new SysSetting
+                    {
+                        Id = Guid.NewGuid(),
+                        Key=SysSettingKeyConstants.Arbitrator_UpdateJoiningRequest_ToPayEditFees,
+                        Value="تنويه برجاء دفع رسوم تعديل طلب الانضمام كمحكم {CitizenName}"
+                    },
+                     new SysSetting
+                    {
+                        Id = Guid.NewGuid(),
+                        Key=SysSettingKeyConstants.Employee_Arbitrator_UpdateJoiningRequest_ToPayEditFees,
+                        Value="تم ارسال طلب {CitizenName} للانضمام كمحكم لدفع رسوم تعديل الطلب"
+                    },
                      new SysSetting
                     {
                         Id = Guid.NewGuid(),
@@ -323,7 +335,12 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                          Key=SysSettingKeyConstants.Employee_Arbitrator_UpdateJoiningRequest_PaidFees,
                          Value="تم دفع رسوم طلب {CitizenName} للانضمام كمحكم "
                      },
-
+                         new SysSetting
+                     {
+                         Id= Guid.NewGuid(),
+                         Key=SysSettingKeyConstants.Employee_Arbitrator_UpdateJoiningRequest_PaidEditFees,
+                         Value="تم دفع رسوم طلب تعديل الطلب {CitizenName} للانضمام كمحكم "
+                     },
                      new SysSetting
                      {
                          Id= Guid.NewGuid(),
@@ -1293,6 +1310,11 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                             Id = Guid.NewGuid(),
                             Key = "SLA.ArbitratorTaskRequest.FirstWarning",
                             Value = "يرجى سرعة الرد على طلب مهمة التحكيم على الدعوى رقم {LitigationCode}"
+                        },new SysSetting
+                        {
+                            Id = Guid.NewGuid(),
+                            Key = "SLA.ArbitratorTaskRequest.FirstWarning.Admin",
+                            Value = "لم يقم المحكم {Arbitrator} بقبول طلب المهمه"
                         },new SysSetting
                         {
                             Id = Guid.NewGuid(),

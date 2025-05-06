@@ -44,6 +44,13 @@ namespace REAC.Application.ModuleServices
                         IsDone = false,
                         Message = "طلب غير موجود"
                     };
+                
+                if (litigationRequest.IsArbitrationFeesHaveBeenCollected != true)
+                    return new BaseResponse()
+                    {
+                        IsDone = false,
+                        Message = "يرجي استكمال دفع رسوم التحكيم لهذه الدعوي"
+                    };
 
 
                 bool allowAdd = true;

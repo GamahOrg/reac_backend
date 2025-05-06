@@ -1,4 +1,4 @@
-using AutoMapper;
+﻿using AutoMapper;
 using Core.GenericRepository.BaseRepository;
 using Core.Log.Application.Contracts.IAppServices;
 using Core.Shared.Responses;
@@ -357,7 +357,7 @@ namespace REAC.Application.AppServices.Litigation
 
 
                 BaseResponse getresponse = new BaseResponse();
-                again:
+            again:
                 try
                 {
                     getresponse = GetCitizenLitigationRequestForAgreementRequestReply(requestId, nationalId).GetAwaiter().GetResult();

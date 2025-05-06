@@ -1,0 +1,1 @@
+﻿INSERT [dbo].[SysReformerStatus] ([Id], [StatusName], [Translations]) VALUES (3, N'بأنتظار الايقاف', N'[{"LanguageCode":"en-US","StatusName":"بأنتظار الايقاف"},{"LanguageCode":"ar","StatusName":"PendingStop"}]')

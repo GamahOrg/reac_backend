@@ -8,6 +8,8 @@ namespace REAC.Application.Contracts.Dtos.Citizen
         public string? ReformerStatus { get; set; }
         public DateTime DecisionDate { get; set; }
         public StoppingReason? StoppingReason { get; set; }
+        public DateTime? StoppedFromDate { get; set; }
+        public DateTime? StoppedToDate { get; set; }
         public string? LateLitigationRequestNumber { get; set; }
     }
 }

@@ -5,6 +5,7 @@ using Core.GenericRepository.Shared.Pagging;
 using Core.Log.Application.Contracts.IAppServices;
 using Core.Shared.Responses;
 using Microsoft.EntityFrameworkCore;
+using REAC.Application.Contracts.Dtos.Arbitration;
 using REAC.Application.Contracts.Dtos.Integration.GEE;
 using REAC.Application.Contracts.Dtos.Litigation;
 using REAC.Application.Contracts.Dtos.Notification;
@@ -22,6 +23,7 @@ using REAC.EntityFrameworkCore.Entities.Litigation;
 using REAC.EntityFrameworkCore.Entities.System;
 using REAC.EntityFrameworkCore.Entities.Wpf.Business;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 
 namespace REAC.Application.AppServices.Litigation
 {
@@ -377,7 +379,7 @@ namespace REAC.Application.AppServices.Litigation
 
             return await GetLitigationRequestArbitratorAssigningRequests(litigationRequestArbitratorAssigningRequest.LitigationRequestId, requestPayload.Id, cancellationToken);
         }
-        public async Task<BaseResponse> GetLitigationRequestArbitratorAssigningRequests(int pageIndex, int pageSize,CancellationToken cancellationToken)
+        public async Task<BaseResponse> GetLitigationRequestArbitratorAssigningRequests(int pageIndex, int pageSize,CancellationToken cancellationToken, LitigationRequestArbitrationAssignedRequestFilter? filter, bool ascending = false)
         {
             Guid referenceId = Guid.Empty;
             _jwtReader.GetReferenceId(ref referenceId);
@@ -407,15 +409,65 @@ namespace REAC.Application.AppServices.Litigation
                          .Include(x => x.Contract.SecondPartyCitizen)
                          .Include(x => x.Contract.LitigationRequestContractType)
                          .Where(x => x.LitigationRequestArbitratorAssigningRequests
-                         .Where(t => t.CitizenId == referenceId).Count() > 0).OrderByDescending(x => x.CreatedOn).AsNoTracking().GetPaged(pageIndex,pageSize);
+                         .Where(t => t.CitizenId == referenceId && t.Response != LitigationRequestArbitratorAssigningRequestStatus.Cancelled).Count() > 0)
+                         .AsNoTracking();
+
+
+            if (filter is not null)
+            {
+                Expression<Func<LitigationRequest, bool>> combinedCondition = PredicateBuilder.True<LitigationRequest>();
+
+                if (filter.LitigationRequestCode is not null)
+                {
+                    combinedCondition = combinedCondition.AndAlso(x => x.RequestCode.Contains(filter.LitigationRequestCode));
+                    litigationRequests = litigationRequests.Where(combinedCondition);
+
+                }
+                
+                if (filter.LitigationRequestType is not null)
+                {
+                    combinedCondition = combinedCondition.AndAlso(x => x.Contract.LitigationRequestContractTypeId == (LitigationRequestContractType)filter.LitigationRequestType);
+                    litigationRequests = litigationRequests.Where(combinedCondition);
+
+                }
+                
+                if (filter.RequestStatus is not null)
+                {
+                    litigationRequests = litigationRequests.Where(x => x.LitigationRequestArbitratorAssigningRequests.Any(t => t.CitizenId == referenceId && t.Response == (LitigationRequestArbitratorAssigningRequestStatus)filter.RequestStatus));
+
+                }
+                
+                if (filter.PlaintiffName is not null)
+                {
+                    combinedCondition = combinedCondition.AndAlso(x => x.Contract.FirstPartyCitizen.FullName.Contains(filter.PlaintiffName) || x.Contract.FirstPartyFacility.ArabicFacilityName.Contains(filter.PlaintiffName));
+                    litigationRequests = litigationRequests.Where(combinedCondition);
+
+                }
+                
+                if (filter.DefendantName is not null)
+                {
+                    combinedCondition = combinedCondition.AndAlso(x => x.Contract.SecondPartyCitizen.FullName.Contains(filter.PlaintiffName) || x.Contract.SecondPartyFacility.ArabicFacilityName.Contains(filter.PlaintiffName));
+                    litigationRequests = litigationRequests.Where(combinedCondition);
+
+                }
+                
+               
+                
+
+            }
+
+
+            var result = ascending
+                ? litigationRequests.OrderBy(x => x.CreatedOn).GetPaged(pageIndex,pageSize)
+                : litigationRequests.OrderByDescending(x => x.CreatedOn).GetPaged(pageIndex, pageSize);
 
             List<CustomLitigationRequestMircoArbitratorDto> litigationRequestMircoDtos = new List<CustomLitigationRequestMircoArbitratorDto>();
-            if (litigationRequests != null)
+            if (result != null)
             {
-                foreach (var litigationRequest in litigationRequests.Results)
+                foreach (var litigationRequest in result.Results)
                 {
                     foreach (var litigationRequestArbitratorAssigningRequest in litigationRequest.LitigationRequestArbitratorAssigningRequests
-                        .Where(x => x.CitizenId == referenceId).OrderByDescending(x => x.RequestOn).DistinctBy(x => x.LitigationRequestId))
+                        .Where(x => x.CitizenId == referenceId).DistinctBy(x => x.LitigationRequestId))
                     {
                         int arbitrationPeriod = 0;
                         int.TryParse(_sysSettingService.GetBySettingKey(SysSettingKeyConstants.Arbitration_Period).Result.Data?.Value, out arbitrationPeriod);
@@ -438,6 +490,8 @@ namespace REAC.Application.AppServices.Litigation
                         litigationRequestMircoDto.RequestTypeName = litigationRequest.Contract.LitigationRequestContractType.TypeName;
                         litigationRequestMircoDto.Response = litigationRequestArbitratorAssigningRequest.Response;
                         litigationRequestMircoDto.ResponseOn = litigationRequestArbitratorAssigningRequest.ResponseOn;
+                        litigationRequestMircoDto.ArbitratorAssigningRequestDate = litigationRequestArbitratorAssigningRequest.RequestOn;
+                        litigationRequestMircoDto.ArbitrationFinishedExpectedDate = DateTime.Now.AddDays((long)litigationRequestArbitratorAssigningRequest.LitigationRequest.ArbitrationPeriod).ToLocalTime();
 
                         bool allowAdd = true;
 
@@ -468,10 +522,10 @@ namespace REAC.Application.AppServices.Litigation
                               new PagedResult<CustomLitigationRequestMircoArbitratorDto>
                               {
                                   Results = litigationRequestMircoDtos,
-                                  CurrentPage = litigationRequests.CurrentPage,
-                                  PageCount = litigationRequests.PageCount,
-                                  PageSize = litigationRequests.PageSize,
-                                  TotalCount = litigationRequests.TotalCount
+                                  CurrentPage = result.CurrentPage,
+                                  PageCount = result.PageCount,
+                                  PageSize = result.PageSize,
+                                  TotalCount = result.TotalCount
                               },
                 IsDone = true
             };

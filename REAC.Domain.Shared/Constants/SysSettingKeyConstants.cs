@@ -119,11 +119,17 @@
         public const string Arbitrator_UpdateJoiningRequest_ToPayFees = "Arbitrator.UpdateJoiningRequest.ToPayFees";
         public const string Employee_Arbitrator_UpdateJoiningRequest_ToPayFees = "Employee.Arbitrator.UpdateJoiningRequest.ToPayFees";
 
+        public const string Arbitrator_UpdateJoiningRequest_ToPayEditFees = "Arbitrator.UpdateJoiningRequest.ToPayEditFees";
+        public const string Employee_Arbitrator_UpdateJoiningRequest_ToPayEditFees = "Employee.Arbitrator.UpdateJoiningRequest.ToPayEditFees";
+
         public const string Reformer_UpdateJoiningRequest_ToPayFees = "Reformer.UpdateJoiningRequest.ToPayFees";
         public const string Employee_Reformer_UpdateJoiningRequest_ToPayFees = "Employee.Reformer.UpdateJoiningRequest.ToPayFees";
 
         public const string Arbitrator_UpdateJoiningRequest_PaidFees = "Arbitrator.UpdateJoiningRequest.PaidFees";
         public const string Employee_Arbitrator_UpdateJoiningRequest_PaidFees = "Employee.Arbitrator.UpdateJoiningRequest.PaidFees";
+
+        public const string Arbitrator_UpdateJoiningRequest_PaidEditFees = "Arbitrator.UpdateJoiningRequest.PaidEditFees";
+        public const string Employee_Arbitrator_UpdateJoiningRequest_PaidEditFees = "Employee.Arbitrator.UpdateJoiningRequest.PaidEditFees";
 
         public const string Reformer_UpdateJoiningRequest_PaidFees = "Reformer.UpdateJoiningRequest.PaidFees";
         public const string Employee_Reformer_UpdateJoiningRequest_PaidFees = "Employee.Reformer.UpdateJoiningRequest.PaidFees";
@@ -320,6 +326,7 @@
         public const string SLA_ArbitratorsChairmanSelect_FirstWarning = "SLA.ArbitratorsChairmanSelect.FirstWarning";
         public const string SLA_ArbitratorsChairmanSelect_FinalWarning_Admin = "SLA.ArbitratorsChairmanSelect.FinalWarning.Admin";
         public const string SLA_ArbitratorTaskRequest_FirstWarning = "SLA.ArbitratorTaskRequest.FirstWarning";
+        public const string SLA_ArbitratorTaskRequest_FirstWarning_Admin = "SLA.ArbitratorTaskRequest.FirstWarning.Admin";
         public const string SLA_ArbitratorTaskRequest_Cancelled = "SLA.ArbitratorTaskRequest.Cancelled";
         public const string SLA_ArbitratorTaskRequest_ReAssign = "SLA.ArbitratorTaskRequest.ReAssign";
         public const string SLA_ArbitratorChairmanTaskRequest_Cancelled = "SLA.ArbitratorChairmanTaskRequest.Cancelled";
