@@ -440,6 +440,20 @@ namespace REAC.Application.AppServices.Litigation
             Guid referenceId = Guid.Empty;
             _jwtReader.GetReferenceId(ref referenceId);
 
+            // Check if reformer is certified
+            if(referenceId != Guid.Empty)
+            {
+                var reformerStatusId = (await _repository.GetQueryable<Citizen, Guid>())
+                    .FirstOrDefault(x => x.Id == referenceId)
+                    .ReformerStatusId;
+
+                if (reformerStatusId == ReformerStatus.Stopped)
+                {
+                    return new BaseResponse() { IsDone = false, Message = "تم ايقاف الحساب الخاص بك" };
+                }
+            }
+            
+
             var litigationRequests = (await _repository.GetQueryable<LitigationRequest, Guid>())
                          .Include(x => x.Area)
                          .Include(x => x.City)
