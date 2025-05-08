@@ -1,5 +1,6 @@
 ﻿using Core.GenericRepository.Shared.BaseEntities;
 using REAC.Domain.Shared.Enum;
+using REAC.EntityFrameworkCore.Entities.Litigation;
 
 namespace REAC.EntityFrameworkCore.Entities.Invoice
 {
@@ -18,5 +19,6 @@ namespace REAC.EntityFrameworkCore.Entities.Invoice
         public DateTime? CancelledDate { get; set; }
         public virtual SysInvoiceStatus InvoiceStatus { get; set; } = null!;
         public virtual SysInvoiceType InvoiceType { get; set; } = null!;
+        public virtual LitigationRequest LitigationRequest { get; set; } = null!;
     }
 }

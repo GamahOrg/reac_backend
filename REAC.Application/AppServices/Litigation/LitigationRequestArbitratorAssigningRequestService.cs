@@ -54,6 +54,15 @@ namespace REAC.Application.AppServices.Litigation
             Guid referenceId = Guid.Empty;
             _jwtReader.GetReferenceId(ref referenceId);
 
+            var citizenInfo = (await _repository.GetQueryable<Citizen, Guid>())
+               .Where(c => c.Id == referenceId)
+               .FirstOrDefault();
+
+            if (citizenInfo?.SigntureFileId == null)
+            {
+                return new BaseResponse() { IsDone = false, Message = "يرجى تسجيل التوقيع الالكتروني الخاص بك" };
+            }
+
             var litigationRequestArbitratorAssigningRequest = (await _repository.GetQueryable<LitigationRequestArbitratorAssigningRequest, Guid>())
                          .Include(l => l.ArbitratorCitizen)
                          .Where(x => x.Id == requestPayload.Id).ToList().FirstOrDefault();
@@ -81,9 +90,7 @@ namespace REAC.Application.AppServices.Litigation
 
             if (litigationRequest != null)
             {
-                var citizenInfo = (await _repository.GetQueryable<Citizen, Guid>())
-                    .Where(c => c.Id == referenceId)
-                    .FirstOrDefault();
+               
                 var msg = "";
                 string body;
                 var deptAdminInfoArbitration = await _employeeService.GetAdminsByDepartmentType(DepartmentType.Arbitration);
@@ -359,22 +366,22 @@ namespace REAC.Application.AppServices.Litigation
             if (!saveResponse.IsDone)
                 return saveResponse;
 
-            litigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>())?
-                        .Include(x => x.LitigationRequestArbitratorLists)
-                        .Where(x => x.Id == litigationRequestArbitratorAssigningRequest.LitigationRequestId)
-                        .SingleOrDefault();
+            //litigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>())?
+            //            .Include(x => x.LitigationRequestArbitratorLists)
+            //            .Where(x => x.Id == litigationRequestArbitratorAssigningRequest.LitigationRequestId)
+            //            .SingleOrDefault();
 
-            switch (litigationRequestArbitratorAssigningRequest.ArbitratorAssigningRequestTypeId)
-            {
-                case ArbitratorAssigningRequestType.Arbitrator:
-                    if (litigationRequest.LitigationRequestArbitratorLists.Count == litigationRequest.ArbitratorsCount - 1)
-                        litigationRequest.LitigationRequestSubStage = LitigationRequestSubStage.LitigationRequestAddArbitratorChairmanListNomination;
-                    break;
-            }
+            //switch (litigationRequestArbitratorAssigningRequest.ArbitratorAssigningRequestTypeId)
+            //{
+            //    case ArbitratorAssigningRequestType.Arbitrator:
+            //        if (litigationRequest.LitigationRequestArbitratorLists.Count == litigationRequest.ArbitratorsCount - 1)
+            //            litigationRequest.LitigationRequestSubStage = LitigationRequestSubStage.LitigationRequestAddArbitratorChairmanListNomination;
+            //        break;
+            //}
 
-            saveResponse = await _repository.SaveChangesAsync(cancellationToken);
-            if (!saveResponse.IsDone)
-                return saveResponse;
+            //saveResponse = await _repository.SaveChangesAsync(cancellationToken);
+            //if (!saveResponse.IsDone)
+            //    return saveResponse;
 
 
             return await GetLitigationRequestArbitratorAssigningRequests(litigationRequestArbitratorAssigningRequest.LitigationRequestId, requestPayload.Id, cancellationToken);

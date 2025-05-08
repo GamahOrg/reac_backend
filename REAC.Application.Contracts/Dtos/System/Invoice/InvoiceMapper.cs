@@ -8,7 +8,10 @@ namespace REAC.Application.Contracts.Dtos.System.Invoice
     {
         public InvoiceMapper()
         {
-            CreateMap<SysInvoice, InvoiceDto>().ReverseMap();
+            CreateMap<SysInvoice, InvoiceDto>()
+                .ForMember(des => des.RequestCode,
+                                  opt => opt.MapFrom(src => src.LitigationRequest.RequestCode)).ReverseMap();
+
             CreateMap<SysInvoice, CreateInvoiceDto>().ReverseMap();
             CreateMap<SysInvoice, CreateInvoiceDto>().ReverseMap();
             CreateMap<SysInvoiceStatus, SysInvoiceStatusDto>()

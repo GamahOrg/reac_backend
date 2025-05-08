@@ -44,6 +44,16 @@ namespace REAC.Application.ModuleServices
                         Message = "لا يمكن إضافة جلسة قبل تاريخ تقديم طلب الدعوى"
                     };
                 }
+                
+                if (requestPayload.SessionDateTime <= DateTime.Now)
+                {
+                    return new BaseResponse()
+                    {
+                        IsDone = false,
+                        Message = "لا يمكن إضافة جلسة بتاريخ قديم"
+                    };
+                }
+
                 var updateResponse = new BaseResponse();
                 bool updatedSession = false;
                 if (litigationRequest.LitigationRequestSessions != null)

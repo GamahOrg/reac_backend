@@ -2154,6 +2154,25 @@ public partial class REACDBContext : DbContext
             entity.OwnsMany(d => d.Translations, ownedNavigationBuilder => { ownedNavigationBuilder.ToJson(); });
 
         });
+        
+        modelBuilder.Entity<SysInvoice>(entity =>
+        {
+            entity.ToTable("Invoices");
+
+            entity.HasOne(d => d.LitigationRequest)
+          .WithOne(p => p.LitigationRequestInvoice)
+          .HasForeignKey<SysInvoice>(d => d.RequestId) 
+          .OnDelete(DeleteBehavior.ClientSetNull)
+          .HasConstraintName("FK_LitigationRequest_SysInvoice");
+
+          //  entity.HasOne(d => d.InvoiceStatus)
+          //.WithMany(p => p.Invoices)
+          //.HasForeignKey(d => d.InvoiceStatusId)
+          //.OnDelete(DeleteBehavior.ClientSetNull)
+          //.HasConstraintName("FK_SysInvoice_SysInvoiceStatus");
+
+
+        });
 
         modelBuilder.Entity<CitizenRequestProgramRealEstateInstituteFile>(entity =>
         {
