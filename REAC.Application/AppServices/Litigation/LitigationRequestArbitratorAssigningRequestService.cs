@@ -391,6 +391,19 @@ namespace REAC.Application.AppServices.Litigation
             Guid referenceId = Guid.Empty;
             _jwtReader.GetReferenceId(ref referenceId);
 
+            // Check if arbitrator is certified
+            if (referenceId != Guid.Empty)
+            {
+                var arbitratorStatusId = (await _repository.GetQueryable<Citizen, Guid>())
+                    .FirstOrDefault(x => x.Id == referenceId)
+                    .ArbitratorStatusId;
+
+                if (arbitratorStatusId == ArbitratorStatus.Stopped)
+                {
+                    return new BaseResponse() { IsDone = false, Message = "تم ايقاف الحساب الخاص بك" };
+                }
+            }
+
             var litigationRequests = (await _repository.GetQueryable<LitigationRequest, Guid>())
                          .Include(x => x.Area)
                          .Include(x => x.City)

@@ -831,7 +831,7 @@ namespace REAC.Application.AppServices
                         Message = msg
                     });
 
-                    var notificationResultUpdatedArbitrator = _notificationService.SendNotifications(
+                    var notificationResultUpdatedArbitrator = await _notificationService.SendNotifications(
                         new SendEmailDto()
                         {
                             To = new List<string>() { citizen.Email, deptAdminInfoReconciliation.Data.Email },
@@ -857,12 +857,7 @@ namespace REAC.Application.AppServices
             }
             catch (Exception ex)
             {
-                return new ExceptionResponse()
-                {
-                    IsDone = false,
-                    Exception = ex.ToString(),
-                    Message = ex.Message
-                };
+                throw;
             }
 
         }

@@ -7,6 +7,7 @@ using REAC.Application.Contracts.Dtos.Reconciliation;
 using REAC.Application.Contracts.Dtos.Reconciliation.Process;
 using REAC.Domain.Shared.Constants;
 using REAC.Domain.Shared.Enum;
+using REAC.EntityFrameworkCore.Entities.Arbitration;
 using REAC.EntityFrameworkCore.Entities.Litigation;
 using REAC.EntityFrameworkCore.Entities.Reconciliation;
 using REAC.EntityFrameworkCore.Entities.Wpf.Business;
@@ -41,7 +42,21 @@ namespace REAC.Application.ModuleServices
                         IsDone = false,
                         Message = "طلب غير موجود"
                     };
+                var arbitirationPeriod = _settingService.GetBySettingKey(SysSettingKeyConstants.Arbitration_Period).Result.Data?.Value;
+                if (litigationRequest.StartArbitrationDate !=null && arbitirationPeriod != null)
+                {
+                    int daysRemaining = int.Parse(arbitirationPeriod) - (DateTime.Now - litigationRequest.StartArbitrationDate).Value.Days;
+                    if (requestPayload.RequiredDays >= daysRemaining)
+                    {
+                        return new BaseResponse()
+                        {
+                            IsDone = false,
+                            Message = "يجب ان يكون مدة طلب التمديد اقل من مدة مرحلة التحكيم"
+                        };
+                    }
+                }
 
+               
                 bool allowAdd = true;
 
                 if (litigationRequest.LitigationRequestExtendPeriodRequests.Count() > 0)
