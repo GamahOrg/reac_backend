@@ -49,7 +49,7 @@ namespace REAC.Mobile
             services.AddScoped<INotificationService, NotificationService>();
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddScoped<DbLogger>();
-            services.AddScoped<FileLogger>();
+            services.AddSingleton<FileLogger>();
             services.AddScoped<MailLogger>();
             services.AddScoped<IHttpService, HttpService>();
             services.AddScoped<ILitigationWorkFlowService, LitigationWorkFlowService>();
@@ -110,9 +110,6 @@ namespace REAC.Mobile
 
 
             services.AddScoped<ILoggerManager, LoggerManager>();
-            services.AddScoped<DbLogger>();
-            services.AddScoped<FileLogger>();
-            services.AddScoped<MailLogger>();
             services.AddScoped<IMailService, REAC.Application.AppServices.Email.MailService>();
             services.AddScoped<IMOJService, MOJService>();
             services.AddScoped<IGEELoginService, GEELoginService>();

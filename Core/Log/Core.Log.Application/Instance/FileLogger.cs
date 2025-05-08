@@ -112,30 +112,55 @@ namespace Core.Log.Application.Instance
 
         #region Business Functions
 
+        private static readonly object _lock = new object();
+
         public async Task<BaseResponse> Log(LogDto logDto)
         {
-            //try
-            //{
-
-            //    CheckFileSize();
-            //    using (var streamWriter = new StreamWriter(GetCurrentFilePath(), true))
-            //    {
-            //        streamWriter.WriteLine(logDto.Format());
-            //    }
-            //}
-            //catch (Exception exc)
-            //{
-            //    return new ExceptionResponse()
-            //    {
-            //        IsDone = true,
-            //        Exception = exc.ToString(),
-            //        Message = exc.Message
-            //    };
-            //}
-            return new BaseResponse()
+            try
             {
-                IsDone = true
-            };
+                // Ensure the Logs directory exists
+                string logsDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Logs");
+                if (!Directory.Exists(logsDirectory))
+                {
+                    Directory.CreateDirectory(logsDirectory);
+                }
+
+                // Create or append to the log file with today's timestamp
+                string logFileName = $"{DateTime.UtcNow:yyyy-MM-dd}.log";
+                string logFilePath = Path.Combine(logsDirectory, logFileName);
+
+                lock (_lock) // Synchronize access to the file
+                {
+                    // Check if the file exists, create it if it doesn't
+                    if (!File.Exists(logFilePath))
+                    {
+                        using (var fileStream = File.Create(logFilePath))
+                        {
+                            fileStream.Close();
+                        }
+                    }
+
+                    // Write the log data to the file
+                    using (var streamWriter = new StreamWriter(logFilePath, true))
+                    {
+                        streamWriter.WriteLineAsync("\n" + logDto.Format());
+                    }
+                }
+
+                return new BaseResponse()
+                {
+                    IsDone = true
+                };
+            }
+            catch (Exception exc)
+            {
+                return new ExceptionResponse()
+                {
+                    IsDone = false,
+                    Exception = exc.ToString(),
+                    Message = exc.Message
+                };
+            }
         }
 
         #endregion

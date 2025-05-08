@@ -1,4 +1,6 @@
+using Core.Log.Application.Instance;
 using Core.Security;
+using Core.Security.Api.Middlewares;
 using Core.Security.Contracts;
 using Core.Security.Dtos;
 using Core.Security.Entities;
@@ -28,6 +30,8 @@ builder.Services.ConfigureOptions<IdentityOptionsSetup>();
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IJwtProvider, JwtProvider>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddSingleton<FileLogger>();
+
 #endregion
 
 
@@ -54,7 +58,10 @@ builder.Services.AddCors(
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+
 var app = builder.Build();
+
+app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
 
 // Configure the HTTP request pipeline.
 //if (app.Environment.IsDevelopment())

@@ -1477,6 +1477,8 @@ namespace REAC.Application.AppServices
 
             entitiesQuerable = (entitiesQuerable
                                       .Include(x => x.ArbitratorStopFreeUpDecisions)
+                                      .Include(x => x.CitizenRequests)
+                                      .ThenInclude(x=>x.SysArbitratorClass)
                                       .Include(x => x.ArbitratorLitigationRequests)
                                       .Include(x => x.LitigationRequestArbitratorLists)
                                       .Include(x => x.SysArbitratorStatus)
