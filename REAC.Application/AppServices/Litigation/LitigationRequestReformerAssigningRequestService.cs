@@ -175,7 +175,7 @@ namespace REAC.Application.AppServices.Litigation
                                 Message = msg
                             });
 
-                            _notificationService.SendNotifications(
+                            await _notificationService.SendNotifications(
                                 new SendEmailDto()
                                 {
                                     To = new List<string>() { citizenInfo.Email,litigationRequest.Contract.FirstPartyCitizen is not null ? litigationRequest.Contract.FirstPartyCitizen.Email : litigationRequest.Contract.FirstPartyFacility.Citizen.Email,
@@ -320,7 +320,7 @@ namespace REAC.Application.AppServices.Litigation
                                                 Message = reAssignMsg
                                             });
 
-                                            var notificationResultReformerAssign = _notificationService.SendNotifications(
+                                            var notificationResultReformerAssign = await _notificationService.SendNotifications(
                                                 new SendEmailDto()
                                                 {
                                                     To = new List<string>() { reformer.Email, deptAdminInfoReconciliation.Data.Email },
@@ -337,7 +337,7 @@ namespace REAC.Application.AppServices.Litigation
                                                 assignApplicationNotification
                                                 );
 
-                                            _notificationService.SendNotifications(
+                                            await _notificationService.SendNotifications(
                                                new SendEmailDto()
                                                {
                                                    To = new List<string>() { citizenInfo.Email, deptAdminInfoReconciliation.Data.Email },
@@ -403,7 +403,7 @@ namespace REAC.Application.AppServices.Litigation
                                 Message = msg
                             });
 
-                            _notificationService.SendNotifications(
+                            await _notificationService.SendNotifications(
                                new SendEmailDto()
                                {
                                    To = new List<string>() { citizenInfo.Email, deptAdminInfoReconciliation.Data.Email },
