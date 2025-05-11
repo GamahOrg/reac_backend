@@ -67,6 +67,10 @@ namespace REAC.Application.AppServices.Litigation
                          .Include(l => l.ArbitratorCitizen)
                          .Where(x => x.Id == requestPayload.Id).ToList().FirstOrDefault();
 
+var litigationRequestPendingArbitratorAssigningRequest = (await _repository.GetQueryable<LitigationRequestArbitratorAssigningRequest, Guid>())
+             .Include(l => l.ArbitratorCitizen)
+             .Where(x => x.LitigationRequestId == litigationRequestArbitratorAssigningRequest.LitigationRequestId &&  x.Response == LitigationRequestArbitratorAssigningRequestStatus.None).AsNoTracking().ToList();
+
             var litigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>())?
                         .Include(x => x.LitigationRequestArbitratorNominationLists)
                         .ThenInclude(x => x.ArbitratorCitizen)
@@ -141,6 +145,13 @@ namespace REAC.Application.AppServices.Litigation
                                     litigationRequest.LitigationRequestSubStage = LitigationRequestSubStage.LitigationRequestAddArbitrationSession;
                                     litigationRequest.StartArbitrationDate = DateTime.Now;
                                 }
+
+if (litigationRequestPendingArbitratorAssigningRequest.Count == 1 && 
+    (litigationRequest.LitigationRequestSubStage == LitigationRequestSubStage.LitigationRequestAddArbitratorListNominationDone))
+{
+    litigationRequest.LitigationRequestSubStage = LitigationRequestSubStage.LitigationRequestAddArbitratorChairmanListNomination;
+}
+                                
                                 break;
                             case ArbitratorAssigningRequestType.ArbitratorsChairman:
                                 await _repository.AddAsync<WorkFlowLog, Guid>(new WorkFlowLog()
