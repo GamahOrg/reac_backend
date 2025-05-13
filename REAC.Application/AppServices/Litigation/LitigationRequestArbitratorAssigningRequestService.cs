@@ -67,9 +67,9 @@ namespace REAC.Application.AppServices.Litigation
                          .Include(l => l.ArbitratorCitizen)
                          .Where(x => x.Id == requestPayload.Id).ToList().FirstOrDefault();
 
-var litigationRequestPendingArbitratorAssigningRequest = (await _repository.GetQueryable<LitigationRequestArbitratorAssigningRequest, Guid>())
-             .Include(l => l.ArbitratorCitizen)
-             .Where(x => x.LitigationRequestId == litigationRequestArbitratorAssigningRequest.LitigationRequestId &&  x.Response == LitigationRequestArbitratorAssigningRequestStatus.None).AsNoTracking().ToList();
+            var litigationRequestPendingArbitratorAssigningRequest = (await _repository.GetQueryable<LitigationRequestArbitratorAssigningRequest, Guid>())
+                         .Include(l => l.ArbitratorCitizen)
+                         .Where(x => x.LitigationRequestId == litigationRequestArbitratorAssigningRequest.LitigationRequestId && x.Response == LitigationRequestArbitratorAssigningRequestStatus.None).AsNoTracking().ToList();
 
             var litigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>())?
                         .Include(x => x.LitigationRequestArbitratorNominationLists)
@@ -94,7 +94,7 @@ var litigationRequestPendingArbitratorAssigningRequest = (await _repository.GetQ
 
             if (litigationRequest != null)
             {
-               
+
                 var msg = "";
                 string body;
                 var deptAdminInfoArbitration = await _employeeService.GetAdminsByDepartmentType(DepartmentType.Arbitration);
@@ -146,12 +146,12 @@ var litigationRequestPendingArbitratorAssigningRequest = (await _repository.GetQ
                                     litigationRequest.StartArbitrationDate = DateTime.Now;
                                 }
 
-if (litigationRequestPendingArbitratorAssigningRequest.Count == 1 && 
-    (litigationRequest.LitigationRequestSubStage == LitigationRequestSubStage.LitigationRequestAddArbitratorListNominationDone))
-{
-    litigationRequest.LitigationRequestSubStage = LitigationRequestSubStage.LitigationRequestAddArbitratorChairmanListNomination;
-}
-                                
+                                if (litigationRequestPendingArbitratorAssigningRequest.Count == 1 &&
+                                    (litigationRequest.LitigationRequestSubStage == LitigationRequestSubStage.LitigationRequestAddArbitratorListNominationDone))
+                                {
+                                    litigationRequest.LitigationRequestSubStage = LitigationRequestSubStage.LitigationRequestAddArbitratorChairmanListNomination;
+                                }
+
                                 break;
                             case ArbitratorAssigningRequestType.ArbitratorsChairman:
                                 await _repository.AddAsync<WorkFlowLog, Guid>(new WorkFlowLog()
@@ -397,7 +397,7 @@ if (litigationRequestPendingArbitratorAssigningRequest.Count == 1 &&
 
             return await GetLitigationRequestArbitratorAssigningRequests(litigationRequestArbitratorAssigningRequest.LitigationRequestId, requestPayload.Id, cancellationToken);
         }
-        public async Task<BaseResponse> GetLitigationRequestArbitratorAssigningRequests(int pageIndex, int pageSize,CancellationToken cancellationToken, LitigationRequestArbitrationAssignedRequestFilter? filter, bool ascending = false)
+        public async Task<BaseResponse> GetLitigationRequestArbitratorAssigningRequests(int pageIndex, int pageSize, CancellationToken cancellationToken, LitigationRequestArbitrationAssignedRequestFilter? filter, bool ascending = false)
         {
             Guid referenceId = Guid.Empty;
             _jwtReader.GetReferenceId(ref referenceId);
@@ -454,42 +454,42 @@ if (litigationRequestPendingArbitratorAssigningRequest.Count == 1 &&
                     litigationRequests = litigationRequests.Where(combinedCondition);
 
                 }
-                
+
                 if (filter.LitigationRequestType is not null)
                 {
                     combinedCondition = combinedCondition.AndAlso(x => x.Contract.LitigationRequestContractTypeId == (LitigationRequestContractType)filter.LitigationRequestType);
                     litigationRequests = litigationRequests.Where(combinedCondition);
 
                 }
-                
+
                 if (filter.RequestStatus is not null)
                 {
                     litigationRequests = litigationRequests.Where(x => x.LitigationRequestArbitratorAssigningRequests.Any(t => t.CitizenId == referenceId && t.Response == (LitigationRequestArbitratorAssigningRequestStatus)filter.RequestStatus));
 
                 }
-                
+
                 if (filter.PlaintiffName is not null)
                 {
                     combinedCondition = combinedCondition.AndAlso(x => x.Contract.FirstPartyCitizen.FullName.Contains(filter.PlaintiffName) || x.Contract.FirstPartyFacility.ArabicFacilityName.Contains(filter.PlaintiffName));
                     litigationRequests = litigationRequests.Where(combinedCondition);
 
                 }
-                
+
                 if (filter.DefendantName is not null)
                 {
                     combinedCondition = combinedCondition.AndAlso(x => x.Contract.SecondPartyCitizen.FullName.Contains(filter.PlaintiffName) || x.Contract.SecondPartyFacility.ArabicFacilityName.Contains(filter.PlaintiffName));
                     litigationRequests = litigationRequests.Where(combinedCondition);
 
                 }
-                
-               
-                
+
+
+
 
             }
 
 
             var result = ascending
-                ? litigationRequests.OrderBy(x => x.CreatedOn).GetPaged(pageIndex,pageSize)
+                ? litigationRequests.OrderBy(x => x.CreatedOn).GetPaged(pageIndex, pageSize)
                 : litigationRequests.OrderByDescending(x => x.CreatedOn).GetPaged(pageIndex, pageSize);
 
             List<CustomLitigationRequestMircoArbitratorDto> litigationRequestMircoDtos = new List<CustomLitigationRequestMircoArbitratorDto>();
@@ -504,7 +504,7 @@ if (litigationRequestPendingArbitratorAssigningRequest.Count == 1 &&
                         int.TryParse(_sysSettingService.GetBySettingKey(SysSettingKeyConstants.Arbitration_Period).Result.Data?.Value, out arbitrationPeriod);
 
 
-                       
+
                         int daysPassed = (DateTime.Now - litigationRequestArbitratorAssigningRequest.RequestOn).Days;
                         litigationRequestArbitratorAssigningRequest.LitigationRequest.ArbitrationPeriod = Math.Max(0, arbitrationPeriod - daysPassed);
 
@@ -561,7 +561,7 @@ if (litigationRequestPendingArbitratorAssigningRequest.Count == 1 &&
                 IsDone = true
             };
 
-           
+
         }
         public async Task<BaseResponse> GetLitigationRequestArbitratorAssigningRequestsAll(int pageIndex, int pageSize, CancellationToken cancellationToken)
         {

@@ -169,6 +169,20 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                         Value = "https://api-dev.rega.gov.sa/v1/mc/cr-information?CRNumber={0}",
                     },
 
+                    new SysSetting
+                    {
+                        Id = Guid.NewGuid(),
+                        Key = "MC_GetCRBasicInfo_URL",
+                        Value = "https://api-dev.rega.gov.sa/v1/mc/cr-basic-info",
+                    },
+
+                    new SysSetting
+                    {
+                        Id = Guid.NewGuid(),
+                        Key = "MC_GetCRPersonRelated_URL",
+                        Value = "https://api-dev.rega.gov.sa/v1/mc/person-related-crs",
+                    },
+
                     #endregion
 
                     #region SMS
@@ -1545,7 +1559,7 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                         #endregion
                 });
 
-            
+
             context.SaveChanges();
         }
 

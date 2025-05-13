@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace REAC.Domain.Shared.Enum
+﻿namespace REAC.Domain.Shared.Enum
 {
     public enum CRStatusType
     {
@@ -20,5 +14,16 @@ namespace REAC.Domain.Shared.Enum
 
         /// <remarks/>
         Cancelled,
+    }
+
+    public enum CRStatusTypeEnum
+    {
+        // نشط
+        Active = 1,
+        // معلق
+        Suspended = 2,
+        //مشطوب
+        Deleted = 3,
+
     }
 }

@@ -6,8 +6,6 @@ using Microsoft.EntityFrameworkCore;
 using REAC.Application.Contracts.Dtos.Facility;
 using REAC.Application.Contracts.IAppServices;
 using REAC.Application.Contracts.IAppServices.Integration;
-using REAC.Application.Contracts.IAppServices.System;
-using REAC.Domain.Shared.Enum;
 using REAC.EntityFrameworkCore.Entities;
 using REAC.EntityFrameworkCore.Entities.Actor;
 using static REAC.Application.Contracts.IAppServices.Litigation.ILitigationRequestService;
@@ -31,7 +29,7 @@ namespace REAC.Application.AppServices
         {
             try
             {
-                
+
                 Guid referenceId = Guid.Empty;
                 _jwtReader.GetReferenceId(ref referenceId);
 
@@ -55,7 +53,7 @@ namespace REAC.Application.AppServices
             catch (Exception ex) { return new BaseResponse() { IsDone = false, Message = "خطأ داخلي" }; }
         }
         public async Task<BaseResponse> GetAllFacilitiesDropdown()
-       {
+        {
             try
             {
                 Guid referenceId = Guid.Empty;
@@ -147,22 +145,26 @@ namespace REAC.Application.AppServices
             catch (Exception ex) { return new BaseResponse() { IsDone = false, Message = "خطأ داخلي" }; }
         }
 
-        public async Task<BaseResponse> ValidateAndAddFacility(string crNumber, Guid? citizenId)
+        public async Task<BaseResponse> ValidateAndAddFacility(string crNationalNumber, Guid? citizenId)
         {
             try
             {
                 // Get Facility Information
-                if (string.IsNullOrWhiteSpace(crNumber))
-                    return new BaseResponse() { IsDone = false, Message = "رقم السجل التجاري غير موجود" };
+                if (string.IsNullOrWhiteSpace(crNationalNumber))
+                    return new BaseResponse() { IsDone = false, Message = "الرقم الوطنى الموحد للسجل التجارى غير موجود" };
 
+                var nationalNumberInfomationResponse = await _mCService.GetCRNationalNumberInformation(crNationalNumber);
 
+                if (nationalNumberInfomationResponse == null)
+                    return new BaseResponse { Message = "البيانات المدخلة غير صحيحة" };
 
-                // Get CR Owners
-                var crOwnersnresult = await _mCService.GetCRInformationByCROwners(crNumber);
+                if (!nationalNumberInfomationResponse.IsDone)
+                    return new BaseResponse { Message = nationalNumberInfomationResponse.Message };
 
-                if (crOwnersnresult.Data == null || !crOwnersnresult.IsDone || crOwnersnresult.Data.Data is null
-                    || crOwnersnresult.Data.Error is not null || crOwnersnresult.Data.UnauthorizedError is not null)
-                    return new BaseResponse() { IsDone = false, Message = "البيانات المدخله غير صحيحه" };
+                if (nationalNumberInfomationResponse.Data == null)
+                    return new BaseResponse { Message = "البيانات المدخلة غير صحيحة" };
+
+                //Validate owners
 
                 Guid referenceId = Guid.Empty;
                 if (citizenId.Value != Guid.Empty)
@@ -171,32 +173,24 @@ namespace REAC.Application.AppServices
                     _jwtReader.GetReferenceId(ref referenceId);
 
                 var citizen = (await _repository.GetQueryable<Citizen, Guid>())
-                        .AsNoTracking().Where(x => x.Id == referenceId).FirstOrDefault();
-
-                // Check if User is an owner
-                if (!crOwnersnresult.Data.Data.Contains(citizen.IdentityNumber))
-                    return new BaseResponse() { IsDone = false, Message = "البيانات المدخله غير صحيحه" };
+                        .AsNoTracking()
+                        .Include(x => x.Nationality)
+                        .Where(x => x.Id == referenceId).FirstOrDefault();
 
 
 
-                var crInformationResult = await _mCService.GetCRInformationByCRNumber(crNumber);
+                var validateOwner = await _mCService.ValidateRelatedCRs(nationalNumberInfomationResponse.Data.CRNationalNumber, ((int)citizen.IdentityTypeId).ToString(), citizen.IdentityNumber, citizen.Nationality?.NationalityCode.ToString());
+                if (validateOwner == null)
+                    return new BaseResponse { Message = "البيانات المدخلة غير صحيحة" };
 
-                if (crInformationResult.Data == null || !crInformationResult.IsDone || crInformationResult.Data.Data is null
-                    || crInformationResult.Data.Error is not null || crInformationResult.Data.UnauthorizedError is not null)
-                    return new BaseResponse() { IsDone = false, Message = "البيانات المدخله غير صحيحه" };
-
-                if (crInformationResult.Data.Data.CRStatus != CRStatusType.Active.ToString())
-                    return new BaseResponse() { IsDone = false, Message = "رقم السجل التجاري غير فعال" };
-
-                if (crInformationResult.Data.Data.CRExpiryDate < DateTime.Now)
-                    return new BaseResponse() { IsDone = false, Message = "رقم السجل التجاري منتهي" };
+                if (!validateOwner.IsDone)
+                    return new BaseResponse { Message = validateOwner.Message };
 
 
 
-
-                var isExist = (await _repository.GetQueryable<Facility, Guid>()).Any(x => x.CommercialRegisterNumber == crNumber || x.Facility700Number == crNumber);
+                var isExist = (await _repository.GetQueryable<Facility, Guid>()).Any(x => x.CommercialRegisterNumber == nationalNumberInfomationResponse.Data.CRNumber || x.Facility700Number == nationalNumberInfomationResponse.Data.CRNationalNumber);
                 if (isExist)
-                    return new BaseResponse() { IsDone = false, Message = "رقم السجل التجاري موجود مسبقا" };
+                    return new BaseResponse() { IsDone = false, Message = "الرقم الوطنى الموحد للسجل التجارى او السجل التجارى موجود مسبقا" };
 
 
                 // Add new Facility
@@ -216,11 +210,11 @@ namespace REAC.Application.AppServices
                 {
                     Id = Guid.NewGuid(),
                     CitizenId = citizen.Id,
-                    ArabicFacilityName = crInformationResult.Data.Data.CRName,
+                    ArabicFacilityName = nationalNumberInfomationResponse.Data.CRName,
                     Code = code,
-                    Facility700Number = crInformationResult.Data.Data.CRNationalNumber,
-                    CommercialRegisterNumber = crInformationResult.Data.Data.CRNumber,
-                    Street = crInformationResult.Data.Data.CRAddress,
+                    Facility700Number = nationalNumberInfomationResponse.Data.CRNationalNumber,
+                    CommercialRegisterNumber = nationalNumberInfomationResponse.Data.CRNumber,
+                    Street = nationalNumberInfomationResponse.Data.CRAddress,
                 };
 
                 await _repository.AddAsync<Facility, Guid>(facility);

@@ -35,6 +35,12 @@
         public const string MC_GetCRInformationByCRNumber_URL = "MC_GetCRInformationByCRNumber_URL";
         public const string MC_GetCRInformationByCROwners_URL = "MC_GetCRInformationByCROwners_URL";
 
+
+        public const string MC_GetCRBasicInfo_URL = "MC_GetCRBasicInfo_URL";
+        public const string MC_GetCRPersonRelated_URL = "MC_GetCRPersonRelated_URL";
+
+
+
         #endregion
 
         #region SMS Integration keys
@@ -281,7 +287,7 @@
         public const string SLA_ArbitratorRegisterationFeesNotification = "SLA.ArbitratorRegisterationFeesNotification";
 
         #endregion
-        
+
         #region Arbitrator Membership
         public const string SLA_ArbitratorMembershipFees = "Configurable.ArbitratorMembershipFees";
         public const string SLA_ArbitratorMembershipFeesPeriod = "SLA.ArbitratorMembershipFeesPeriod";
@@ -341,7 +347,7 @@
 
         #endregion
 
-        
+
 
         #region Email
         public const string PrefexEmailConfiguration = "EmailConfiguration_";
