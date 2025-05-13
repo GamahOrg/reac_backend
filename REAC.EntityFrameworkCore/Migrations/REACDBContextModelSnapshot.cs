@@ -997,7 +997,10 @@ namespace REAC.EntityFrameworkCore.Migrations
 
                     b.HasIndex("InvoiceTypeId");
 
-                    b.ToTable("Invoices");
+                    b.HasIndex("RequestId")
+                        .IsUnique();
+
+                    b.ToTable("Invoices", (string)null);
                 });
 
             modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Invoice.SysInvoiceStatus", b =>
@@ -1132,6 +1135,9 @@ namespace REAC.EntityFrameworkCore.Migrations
 
                     b.Property<decimal>("Fees")
                         .HasColumnType("money");
+
+                    b.Property<decimal>("FeesDifference")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<int?>("FirstPartyArbitratorsCount")
                         .HasColumnType("int");
@@ -1380,6 +1386,30 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasFilter("[RequestCode] IS NOT NULL");
 
                     b.ToTable("LitigationRequest", (string)null);
+                });
+
+            modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Litigation.LitigationRequestAmountLog", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AmountId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("LitigationRequestId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id")
+                        .HasName("PK__LitigAmount__3214EC0729841352");
+
+                    b.HasIndex("AmountId");
+
+                    b.HasIndex("LitigationRequestId");
+
+                    b.ToTable("LitigationRequestAmountLog", (string)null);
                 });
 
             modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Litigation.LitigationRequestContract", b =>
@@ -4974,9 +5004,17 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("REAC.EntityFrameworkCore.Entities.Litigation.LitigationRequest", "LitigationRequest")
+                        .WithOne("LitigationRequestInvoice")
+                        .HasForeignKey("REAC.EntityFrameworkCore.Entities.Invoice.SysInvoice", "RequestId")
+                        .IsRequired()
+                        .HasConstraintName("FK_LitigationRequest_SysInvoice");
+
                     b.Navigation("InvoiceStatus");
 
                     b.Navigation("InvoiceType");
+
+                    b.Navigation("LitigationRequest");
                 });
 
             modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Invoice.SysInvoiceStatus", b =>
@@ -5152,6 +5190,25 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Navigation("ReformerCitizen");
 
                     b.Navigation("SysExemptionReductionCategory");
+                });
+
+            modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Litigation.LitigationRequestAmountLog", b =>
+                {
+                    b.HasOne("REAC.EntityFrameworkCore.Entities.System.SysLitigationRequestAmount", "Amounts")
+                        .WithMany()
+                        .HasForeignKey("AmountId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("REAC.EntityFrameworkCore.Entities.Litigation.LitigationRequest", "LitigationRequest")
+                        .WithMany()
+                        .HasForeignKey("LitigationRequestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Amounts");
+
+                    b.Navigation("LitigationRequest");
                 });
 
             modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Litigation.LitigationRequestContract", b =>
@@ -7236,6 +7293,9 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Navigation("LitigationRequestExtendPeriodRequests");
 
                     b.Navigation("LitigationRequestGrounds");
+
+                    b.Navigation("LitigationRequestInvoice")
+                        .IsRequired();
 
                     b.Navigation("LitigationRequestModificationRequests");
 

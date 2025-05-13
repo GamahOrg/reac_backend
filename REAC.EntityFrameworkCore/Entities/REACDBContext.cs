@@ -182,6 +182,7 @@ public partial class REACDBContext : DbContext
     public virtual DbSet<SysIdentityType> SysIdentityTypes { get; set; }
 
     public virtual DbSet<SysLitigationRequestAmount> SysLitigationRequestAmounts { get; set; }
+    public virtual DbSet<LitigationRequestAmountLog> LitigationRequestAmountLogs { get; set; }
 
     public virtual DbSet<SysLitigationRequestCategory> SysLitigationRequestCategories { get; set; }
 
@@ -1970,6 +1971,14 @@ public partial class REACDBContext : DbContext
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Fees).HasColumnType("money");
             entity.Property(e => e.LitigationAmount).HasMaxLength(50);
+        });
+        modelBuilder.Entity<LitigationRequestAmountLog>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__LitigAmount__3214EC0729841352");
+
+            entity.ToTable("LitigationRequestAmountLog");
+
+            entity.Property(e => e.Id).ValueGeneratedNever();
         });
 
         modelBuilder.Entity<SysLitigationRequestCategory>(entity =>

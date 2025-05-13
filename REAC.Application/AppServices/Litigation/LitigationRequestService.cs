@@ -32,6 +32,7 @@ using REAC.Application.Contracts.IAppServices.Wpf.System;
 using REAC.Application.Contracts.IModuleServices;
 using REAC.Domain.Shared.Constants;
 using REAC.Domain.Shared.Enum;
+using REAC.Domain.Shared.Helpers;
 using REAC.EntityFrameworkCore.Entities;
 using REAC.EntityFrameworkCore.Entities.Actor;
 using REAC.EntityFrameworkCore.Entities.Litigation;
@@ -98,6 +99,7 @@ namespace REAC.Application.AppServices.Litigation
                           .Include(x => x.LitigationRequestRequests)
                           .Include(x => x.LitigationRequestGrounds)
                           .ThenInclude(x => x.LitigationRequestGroundFiles)
+                          .Include(x => x.LitigationRequestAmount)
                           .Where(x => x.Contract.Id == model.ContractId).ToList().FirstOrDefault();
 
                 litigationRequest.Title = model.Title;
@@ -247,6 +249,11 @@ namespace REAC.Application.AppServices.Litigation
                         litigationRequest.LitigationRequestStage = LitigationRequestStage.Review;
                     }
                 }
+
+
+
+              
+
                 var saveResponse = _repository.SaveChangesAsync().Result;
                 if (!saveResponse.IsDone)
                     return saveResponse;
@@ -263,26 +270,82 @@ namespace REAC.Application.AppServices.Litigation
 
                     if (processingLog.Count > 0)
                     {
-                        var currentProcessingLog = processingLog.Where(t => t.IsFinished == false).OrderBy(t => t.CreatedOn).ToList();
-                        if (processingLog.Count > 0)
+
+                        var lastAmountLog = (await _repository.GetQueryable<LitigationRequestAmountLog, Guid>())
+                                                          .Include(x => x.Amounts)
+                                                          .Where(log => log.LitigationRequest.Id == litigationRequest.Id)
+                                                          .OrderByDescending(log => log.CreatedOn)
+                                                          .FirstOrDefault();
+
+                        var currentAmount = (await _repository.GetQueryable<SysLitigationRequestAmount, Guid>())
+                                                  .Where(s => s.Id == litigationRequest.LitigationRequestAmountId).FirstOrDefault();
+
+                        //check amount change
+                        if (lastAmountLog != null && currentAmount.Fees > lastAmountLog.Amounts.Fees)
                         {
-                            ProcessRequestPayload processRequestPayload = new ProcessRequestPayload();
-                            processRequestPayload.RequestId = litigationRequest.Id;
-                            processRequestPayload.ProcessingLogId = currentProcessingLog.LastOrDefault().Id;
-                            processRequestPayload.WorkflowStepEventId = currentProcessingLog.LastOrDefault().WorkFlowStep.WorkFlowStepEvents.FirstOrDefault().Id;
-                            processRequestPayload.Notes = "";
-                            processRequestPayload.UploadedFilesIds = new List<Guid>();
-                            await _bpfService.ProcessWorkFlow(processRequestPayload, default);
-                            return new DataResponse<LitigationCreateUpdateDto>()
+                            await _repository.AddAsync<WorkFlowLog, Guid>(new WorkFlowLog
                             {
-                                Data = model,
-                                IsDone = true,
-                                Message = ""
-                            };
+                                Id = Guid.NewGuid(),
+                                CreatedOn = DateTime.Now,
+                                RequestId = litigationRequest.Id,
+                                ShowForApplicant = false,
+                                LogMessage = $"تم تغيير رسوم التسجيل من {lastAmountLog.Amounts.Fees} الى {currentAmount.Fees}."
+                            });
+
+                            litigationRequest.IsSent = model.IsSent;
+                            litigationRequest.SentOn = DateTime.Now;
+                            litigationRequest.ExternalStatusId = RequestStatus.New;
+                            litigationRequest.InternalStatusId = RequestStatus.New;
+                            litigationRequest.LitigationRequestStage = LitigationRequestStage.Review;
+                            litigationRequest.FeesDifference = currentAmount.Fees - lastAmountLog.Amounts.Fees;
+
+                            var Response = _repository.SaveChangesAsync().Result;
+                            if (Response.IsDone)
+                                await _bpfService.ExcuteWorkFlow(litigationRequest.Id, default, null);
+
+                        }
+                        else
+                        {
+                            var currentProcessingLog = processingLog.Where(t => t.IsFinished == false).OrderBy(t => t.CreatedOn).ToList();
+                            if (processingLog.Count > 0)
+                            {
+                                ProcessRequestPayload processRequestPayload = new ProcessRequestPayload();
+                                processRequestPayload.RequestId = litigationRequest.Id;
+                                processRequestPayload.ProcessingLogId = currentProcessingLog.LastOrDefault().Id;
+                                processRequestPayload.WorkflowStepEventId = currentProcessingLog.LastOrDefault().WorkFlowStep.WorkFlowStepEvents.FirstOrDefault().Id;
+                                processRequestPayload.Notes = "";
+                                processRequestPayload.UploadedFilesIds = new List<Guid>();
+                                await _bpfService.ProcessWorkFlow(processRequestPayload, default);
+                                return new DataResponse<LitigationCreateUpdateDto>()
+                                {
+                                    Data = model,
+                                    IsDone = true,
+                                    Message = ""
+                                };
+                            }
                         }
                     }
                     else
                         await _bpfService.ExcuteWorkFlow(litigationRequest.Id, default, null);
+
+                    #region billing 
+                    // billing comparing last amount with current amount 
+                    // adding new litigation amountlog 
+                    // comparing amounts if new amount is greater than last adding new step log 
+                    if (litigationRequest.IsFinancialLitigation == true)
+                    {
+                        var newAmountLog = new LitigationRequestAmountLog
+                        {
+                            Id = Guid.NewGuid(),
+                            LitigationRequestId = litigationRequest.Id,
+                            AmountId = (Guid)litigationRequest.LitigationRequestAmountId,
+                            CreatedOn = DateTime.Now
+                        };
+                        await _repository.AddAsync<LitigationRequestAmountLog, Guid>(newAmountLog);
+                        var Response = _repository.SaveChangesAsync().Result;
+                    }
+
+                    #endregion
                     return new DataResponse<LitigationCreateUpdateDto>()
                     {
                         Data = model,
@@ -1767,7 +1830,8 @@ namespace REAC.Application.AppServices.Litigation
 
                 return new DataResponse<LitigationDetailsDto> { Data = mapped, IsDone = true };
             }
-            catch (Exception ex) { return new ExceptionResponse() { Exception = ex.Message + "\b" + ex.ToString(), IsDone = false }; };
+            catch (Exception ex) { return new ExceptionResponse() { Exception = ex.Message + "\b" + ex.ToString(), IsDone = false }; }
+            ;
         }
 
         public async Task<BaseResponse> CreateLitigationRequest(LitigationRequestDto litigationRequestDto)

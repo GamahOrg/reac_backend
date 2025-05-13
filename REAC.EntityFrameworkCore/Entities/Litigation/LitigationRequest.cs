@@ -105,6 +105,7 @@ public partial class LitigationRequest : BaseEntity<Guid>
     public Guid? LitigationRequestAmountId { get; set; }
 
     public decimal Fees { get; set; } = 0;
+    public decimal FeesDifference { get; set; } = 0;
     public decimal ReconciliationFees { get; set; } = 0;
     public decimal ArbitrationFees { get; set; } = 0;
 

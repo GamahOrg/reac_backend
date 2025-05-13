@@ -1,10 +1,5 @@
 ﻿using Core.Shared.Responses;
 using REAC.Application.Contracts.Dtos.Integration.GEE;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace REAC.Application.Contracts.IAppServices.Integration
 {
@@ -13,5 +8,7 @@ namespace REAC.Application.Contracts.IAppServices.Integration
 
         Task<DataResponse<CRInformationByCRNumberUpdatedDto>> GetCRInformationByCRNumber(string crNumber);
         Task<DataResponse<CRInformationByCROwnersUpdatedDto>> GetCRInformationByCROwners(string crNumber);
+        Task<DataResponse<CRInformationByCRNumberDto>> GetCRNationalNumberInformation(string CRNationalNumber);
+        Task<BaseResponse> ValidateRelatedCRs(string crNumber, string identifierTypeID, string identifierNo, string nationalityID);
     }
 }

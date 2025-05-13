@@ -53,6 +53,21 @@ namespace REAC.Application.ModuleServices
                         Message = "لا يمكن إضافة جلسة بتاريخ قديم"
                     };
                 }
+                var arbitirationPeriod = _settingService.GetBySettingKey(SysSettingKeyConstants.Arbitration_Period).Result.Data?.Value;
+                if (litigationRequest.StartArbitrationDate != null && arbitirationPeriod != null)
+                {
+                    int daysRemaining = int.Parse(arbitirationPeriod) - (DateTime.Now - litigationRequest.StartArbitrationDate).Value.Days;
+                    int daysDiff = (requestPayload.SessionDateTime - DateTime.Now).Days;
+                    if (daysDiff >= daysRemaining)
+                    {
+                        return new BaseResponse()
+                        {
+                            IsDone = false,
+                            Message = "موعد جلسة التحكيم يجب الا تتخطى مدة مرحلة التحكيم"
+                        };
+                    }
+                }
+
 
                 var updateResponse = new BaseResponse();
                 bool updatedSession = false;
@@ -214,6 +229,7 @@ namespace REAC.Application.ModuleServices
                             var msg = _settingService.GetBySettingKey(SysSettingKeyConstants.ArbitrationSession_Added).Result.Data?.Value;
                             msg = msg?.Replace("{LitigationCode}", litigationRequest.RequestCode);
                             msg = msg?.Replace("{SessionLink}", sessionUrl);
+                            msg = string.Concat(msg, "بالموعد", requestPayload.SessionDateTime.ToString());
                             var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
                             string body;
                             using (StreamReader streamReader = File.OpenText(pathToFile))
