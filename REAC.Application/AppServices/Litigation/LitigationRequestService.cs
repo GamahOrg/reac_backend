@@ -298,6 +298,7 @@ namespace REAC.Application.AppServices.Litigation
                             litigationRequest.InternalStatusId = RequestStatus.New;
                             litigationRequest.LitigationRequestStage = LitigationRequestStage.Review;
                             litigationRequest.FeesDifference = currentAmount.Fees - lastAmountLog.Amounts.Fees;
+                            litigationRequest.IsLitigationFeesHaveBeenCollected = false;
 
                             var Response = _repository.SaveChangesAsync().Result;
                             if (Response.IsDone)
@@ -2855,6 +2856,9 @@ namespace REAC.Application.AppServices.Litigation
         {
             try
             {
+
+                
+
                 Guid referenceId = Guid.Empty;
                 _jwtReader.GetReferenceId(ref referenceId);
 
@@ -2867,6 +2871,26 @@ namespace REAC.Application.AppServices.Litigation
                         IsDone = false,
                         Message = "لابد من إدخال رقم الهوية"
                     };
+                }
+
+                // Properties Validation
+                if (litigationRequestDto.ContractType == LitigationRequestContractType.Properties)
+                {
+                    var existLitigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>()).
+                        Include(x => x.Contract.SecondPartyCitizen)
+                        .Include(x => x.Contract.SecondPartyFacility)
+                        .FirstOrDefault(x => x.IsFinished != true && (x.ExternalStatusId != RequestStatus.Cancelled && x.InternalStatusId != RequestStatus.Cancelled || x.ExternalStatusId != RequestStatus.Rejected && x.InternalStatusId != RequestStatus.Rejected)
+                        && x.Contract.ContractKey == litigationRequestDto.key
+                        && (x.Contract.SecondPartyCitizen.IdentityNumber == litigationRequestDto.SecondPartyNationalId || x.Contract.SecondPartyFacility.CommercialRegisterNumber == litigationRequestDto.SecondPartyFacilityCommercialRegistrationNo));
+
+                    if(existLitigationRequest != null)
+                    {
+                        return new BaseResponse()
+                        {
+                            IsDone = false,
+                            Message = "يوجد دعوى قائمة بالفعل بنفس رقم الجمعيه وهوية المدعي عليه"
+                        };
+                    }
                 }
 
                 var contract = (await _repository.GetQueryable<LitigationRequestContract, Guid>())

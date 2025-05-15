@@ -28,7 +28,5 @@ GO
 
 -----------------------------------------------
 Alter table dbo.LitigationRequest
-Add FeesDifference decimal (18, 2) NOT NULL
-
-ALTER TABLE [dbo].[LitigationRequest] ADD  DEFAULT ((0.0)) FOR [FeesDifference]
+Add FeesDifference decimal (18, 2)  Default ((0.0))
 ----------------------------------------------
