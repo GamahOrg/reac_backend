@@ -252,7 +252,7 @@ namespace REAC.Application.AppServices.Litigation
 
 
 
-              
+
 
                 var saveResponse = _repository.SaveChangesAsync().Result;
                 if (!saveResponse.IsDone)
@@ -264,9 +264,9 @@ namespace REAC.Application.AppServices.Litigation
 
                     var processingLog = (await _repository.GetQueryable<WorkFlowProcessingLog, Guid>())
                         .Include(t => t.WorkFlowStep)
-                         .Include(t => t.WorkFlowStep.WorkFlowStepEvents)
-                    .AsNoTracking()
-                          .Where(x => x.RequestId == litigationRequest.Id).ToList();
+                        .Include(t => t.WorkFlowStep.WorkFlowStepEvents)
+                        .AsNoTracking()
+                        .Where(x => x.RequestId == litigationRequest.Id).ToList();
 
                     if (processingLog.Count > 0)
                     {
@@ -300,9 +300,20 @@ namespace REAC.Application.AppServices.Litigation
                             litigationRequest.FeesDifference = currentAmount.Fees - lastAmountLog.Amounts.Fees;
                             litigationRequest.IsLitigationFeesHaveBeenCollected = false;
 
-                            var Response = _repository.SaveChangesAsync().Result;
+
+                            var Response = await _repository.SaveChangesAsync();
                             if (Response.IsDone)
-                                await _bpfService.ExcuteWorkFlow(litigationRequest.Id, default, null);
+                                await _bpfService.ExcuteWorkFlow(litigationRequest.Id, default, null, true);
+
+                            // Set the latest processing log IsFinished = true
+
+                            var lastUnfinishedWorkflow = processingLog.FirstOrDefault(x => x.IsFinished != true);
+                            if (lastUnfinishedWorkflow != null)
+                            {
+                                lastUnfinishedWorkflow.IsFinished = true;
+                                lastUnfinishedWorkflow.FinishedOn = DateTime.Now;
+                                _repository.Update<WorkFlowProcessingLog, Guid>(lastUnfinishedWorkflow);
+                            }
 
                         }
                         else
@@ -343,7 +354,7 @@ namespace REAC.Application.AppServices.Litigation
                             CreatedOn = DateTime.Now
                         };
                         await _repository.AddAsync<LitigationRequestAmountLog, Guid>(newAmountLog);
-                        var Response = _repository.SaveChangesAsync().Result;
+                        var Response = await _repository.SaveChangesAsync();
                     }
 
                     #endregion
@@ -378,7 +389,8 @@ namespace REAC.Application.AppServices.Litigation
 
         public async Task<BaseResponse> ApproveArbitrationFeesPaid(Guid litigationId, CancellationToken cancellationToken)
         {
-            var litigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>())                          .Where(x => x.Id == litigationId).ToList().FirstOrDefault();
+            var litigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>())
+                          .Where(x => x.Id == litigationId).ToList().FirstOrDefault();
 
             if (litigationRequest == null)
                 return new ExceptionResponse()
@@ -398,13 +410,27 @@ namespace REAC.Application.AppServices.Litigation
         }
 
 
-        public async Task<BaseResponse> SendLitigationFeesRequestPaid(Guid litigationId)        {            try            {                var litigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>())                          .Where(x => x.Id == litigationId).ToList().FirstOrDefault();                if (litigationRequest == null)                    return new ExceptionResponse()
+        public async Task<BaseResponse> SendLitigationFeesRequestPaid(Guid litigationId)
+        {
+            try
+            {
+                var litigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>())
+                          .Where(x => x.Id == litigationId).ToList().FirstOrDefault();
+
+                if (litigationRequest == null)
+                    return new ExceptionResponse()
                     {
                         Exception = "لم يتم العثور على الدعوى",
                         IsDone = false,
-                    };                litigationRequest.IsLitigationFeesHaveBeenCollected = true;                litigationRequest.InternalStatusId = RequestStatus.LitigationFeesHaveBeenCollected;                litigationRequest.ExternalStatusId = RequestStatus.LitigationFeesHaveBeenCollected;
+                    };
 
-                var saveResponse = _repository.SaveChangesAsync().Result;                if (!saveResponse.IsDone)                    return saveResponse;
+                litigationRequest.IsLitigationFeesHaveBeenCollected = true;
+                litigationRequest.InternalStatusId = RequestStatus.LitigationFeesHaveBeenCollected;
+                litigationRequest.ExternalStatusId = RequestStatus.LitigationFeesHaveBeenCollected;
+
+                var saveResponse = _repository.SaveChangesAsync().Result;
+                if (!saveResponse.IsDone)
+                    return saveResponse;
 
                 var _bpfService = _serviceProvider.GetRequiredService<IBpfService>();
                 var _stepService = _serviceProvider.GetRequiredService<IWorkFlowStepService>();
@@ -438,17 +464,42 @@ namespace REAC.Application.AppServices.Litigation
                 {
                     IsDone = true,
                     Message = ""
-                };            }            catch (Exception ex)            {                return new ExceptionResponse()                {                    Exception = ex.Message + "\n" + ex.ToString(),                    IsDone = false,                };            }        }
+                };
 
-        public async Task<BaseResponse> SendReconciliationFeesRequestPaid(Guid litigationId)        {            try            {                var litigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>())                          .Where(x => x.Id == litigationId).ToList().FirstOrDefault();
-                if (litigationRequest == null)                    return new ExceptionResponse()
+            }
+            catch (Exception ex)
+            {
+                return new ExceptionResponse()
+                {
+                    Exception = ex.Message + "\n" + ex.ToString(),
+                    IsDone = false,
+
+                };
+
+            }
+
+        }
+
+        public async Task<BaseResponse> SendReconciliationFeesRequestPaid(Guid litigationId)
+        {
+            try
+            {
+                var litigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>())
+                          .Where(x => x.Id == litigationId).ToList().FirstOrDefault();
+
+                if (litigationRequest == null)
+                    return new ExceptionResponse()
                     {
                         Exception = "لم يتم العثور على الدعوى",
                         IsDone = false,
-                    };                litigationRequest.IsReconciliationFeesHaveBeenCollected = true;
+                    };
+
+                litigationRequest.IsReconciliationFeesHaveBeenCollected = true;
 
 
-                var saveResponse = _repository.SaveChangesAsync().Result;                if (!saveResponse.IsDone)                    return saveResponse;
+                var saveResponse = _repository.SaveChangesAsync().Result;
+                if (!saveResponse.IsDone)
+                    return saveResponse;
 
                 var _bpfService = _serviceProvider.GetRequiredService<IBpfService>();
                 var _stepService = _serviceProvider.GetRequiredService<IWorkFlowStepService>();
@@ -482,7 +533,22 @@ namespace REAC.Application.AppServices.Litigation
                 {
                     IsDone = true,
                     Message = ""
-                };            }            catch (Exception ex)            {                return new ExceptionResponse()                {                    Exception = ex.Message + "\n" + ex.ToString(),                    IsDone = false,                };            }        }        public async Task<Guid> GetAddedLitigation()
+                };
+
+            }
+            catch (Exception ex)
+            {
+                return new ExceptionResponse()
+                {
+                    Exception = ex.Message + "\n" + ex.ToString(),
+                    IsDone = false,
+
+                };
+
+            }
+
+        }
+        public async Task<Guid> GetAddedLitigation()
         {
             var quarable = await GetQueryableAsync();
             var latestAdded = quarable.OrderByDescending(x => x.CreatedOn).First();
@@ -796,8 +862,8 @@ namespace REAC.Application.AppServices.Litigation
                           .Include(x => x.Contract.FirstPartyCitizen)
                           .Include(x => x.Contract.SecondPartyFacility)
                           .Include(x => x.Contract.SecondPartyCitizen)
-                          .Include(x => x.WorkFlowProcessingLogs.Where(z => z.RequestId == assignRequestPayload.RequestId & !z.IsFinished))
-                          .Where(x => x.Id == assignRequestPayload.RequestId).ToList().FirstOrDefault();
+                          .Include(x => x.WorkFlowProcessingLogs.Where(z => z.RequestId == assignRequestPayload.RequestId && !z.IsFinished))
+                          .FirstOrDefault(x => x.Id == assignRequestPayload.RequestId);
             var deptAdminInfoReview = await _employeeService.GetAdminsByDepartmentType(DepartmentType.Review);
             var deptEmployeeInfoReview = (await _repository.GetQueryable<SysEmployee, Guid>())
                              .Include(e => e.Department)
@@ -875,10 +941,6 @@ namespace REAC.Application.AppServices.Litigation
                             request.EmployeeId = assignRequestPayload.EmployeeId;
                         }
 
-                        var saveResponse = await _repository.SaveChangesAsync(new CancellationToken());
-                        if (!saveResponse.IsDone)
-                            return saveResponse;
-
                         await _repository.AddAsync<WorkFlowLog, Guid>(new WorkFlowLog()
                         {
                             Id = Guid.NewGuid(),
@@ -887,6 +949,11 @@ namespace REAC.Application.AppServices.Litigation
                             ShowForApplicant = false,
                             LogMessage = "تم إعادة تعيين المدقق " + request.Employee?.EmployeeName
                         });
+
+                        var saveResponse = await _repository.SaveChangesAsync(new CancellationToken());
+                        if (!saveResponse.IsDone)
+                            return saveResponse;
+
                         // Send Notification
                         // تم إلغاء المهمة (دعوى تدقيق)
                         try
@@ -2857,7 +2924,7 @@ namespace REAC.Application.AppServices.Litigation
             try
             {
 
-                
+
 
                 Guid referenceId = Guid.Empty;
                 _jwtReader.GetReferenceId(ref referenceId);
@@ -2883,7 +2950,7 @@ namespace REAC.Application.AppServices.Litigation
                         && x.Contract.ContractKey == litigationRequestDto.key
                         && (x.Contract.SecondPartyCitizen.IdentityNumber == litigationRequestDto.SecondPartyNationalId || x.Contract.SecondPartyFacility.CommercialRegisterNumber == litigationRequestDto.SecondPartyFacilityCommercialRegistrationNo));
 
-                    if(existLitigationRequest != null)
+                    if (existLitigationRequest != null)
                     {
                         return new BaseResponse()
                         {
