@@ -11,7 +11,7 @@ namespace Bpf.Application.ModuleServices
 {
     public partial class BpfService
     {
-        public async Task<BaseResponse> ExcuteWorkFlow(Guid requestId,  CancellationToken cancellationToken, int? orderId = null)
+        public async Task<BaseResponse> ExcuteWorkFlow(Guid requestId,  CancellationToken cancellationToken, int? orderId = null,bool? sameEmployee = null)
         {
             try
             {
@@ -30,9 +30,9 @@ namespace Bpf.Application.ModuleServices
                 BaseResponse response;
 
                 if (orderId is not null)
-                     response = await ExecuteWorkFlowSteps(litigationRequest.LitigationRequestCategory.BpfId, requestId, null, (int)orderId, null, cancellationToken);
+                     response = await ExecuteWorkFlowSteps(litigationRequest.LitigationRequestCategory.BpfId, requestId, null, (int)orderId, sameEmployee, cancellationToken);
                 else
-                    response = await ExecuteWorkFlowSteps(litigationRequest.LitigationRequestCategory.BpfId, requestId, null, 1, null, cancellationToken);
+                    response = await ExecuteWorkFlowSteps(litigationRequest.LitigationRequestCategory.BpfId, requestId, null, 1, sameEmployee, cancellationToken);
 
 
 
