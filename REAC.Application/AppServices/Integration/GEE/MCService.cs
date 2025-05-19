@@ -4,7 +4,6 @@ using REAC.Application.Contracts.Dtos.Integration.GEE;
 using REAC.Application.Contracts.IAppServices.Integration;
 using REAC.Application.Contracts.IAppServices.System;
 using REAC.Domain.Shared.Constants;
-using REAC.Domain.Shared.Enum;
 using System.Globalization;
 using System.Net;
 using System.Net.Http.Json;
@@ -168,8 +167,8 @@ namespace REAC.Application.AppServices.Integration.GEE
 
                     var cRInformationByCRNumberDto = await MapCRInformationByCRNumber(basicInfoDto.crBasicInfo!);
 
-                    if (cRInformationByCRNumberDto.CRExpiryDate < DateTime.Now)
-                        return new DataResponse<CRInformationByCRNumberDto> { IsDone = false, Message = "رقم السجل التجاري منتهي" };
+                    //if (cRInformationByCRNumberDto.CRExpiryDate < DateTime.Now)
+                    //    return new DataResponse<CRInformationByCRNumberDto> { IsDone = false, Message = "رقم السجل التجاري منتهي" };
 
 
                     return new DataResponse<CRInformationByCRNumberDto>

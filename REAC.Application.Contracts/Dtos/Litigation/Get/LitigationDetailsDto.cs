@@ -18,6 +18,8 @@ namespace REAC.Application.Contracts.Dtos.Litigation.Get
         public string? Title { get; set; }
         public string? Description { get; set; }
         public decimal Fees { get; set; }
+
+        public bool? IsExemptionReduction { get; set; }
         public Guid ContractId { get; set; }
         public LitigationRequestContractType LitigationRequestContractTypeId { get; set; }
         public LitigationRequestCategory LitigationRequestCategoryId { get; set; }
