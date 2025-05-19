@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using REAC.Application.AppServices.System;
 using REAC.Application.Contracts.Dtos.Arbitration;
+using REAC.Application.Contracts.Dtos.Integration.GEE;
 using REAC.Application.Contracts.Dtos.Notification;
 using REAC.Application.Contracts.Dtos.Reconciliation;
 using REAC.Application.Contracts.Dtos.Reconciliation.Process;
@@ -396,6 +397,10 @@ namespace REAC.Application.ModuleServices
                     {
                         case ArbitratorAssigningRequestType.Arbitrator:
 
+
+                            var updateAssigingRequest = (await _repository.GetQueryable<LitigationRequestArbitratorAssigningRequest, Guid>())
+                                     .Where(x => x.CitizenId == litigationRequestArbitratorList.ArbitratorCitizenId)
+                                     .ExecuteUpdateAsync(upd => upd.SetProperty(cr => cr.Response, LitigationRequestArbitratorAssigningRequestStatus.Cancelled));
 
                             _repository.Remove<LitigationRequestArbitratorList, Guid>(litigationRequestArbitratorList);
                             // Send Notification

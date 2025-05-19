@@ -12,7 +12,7 @@ namespace REAC.Application.Contracts.IModuleServices
         /// <param name="requestId"></param>
         /// <param name="workflowId"></param>
         /// <returns>Return BaseResponse include process status in isDone Flage and responsed data</returns>
-        public Task<BaseResponse> ExcuteWorkFlow(Guid requestId,  CancellationToken cancellationToken ,int? orderId = null);
+        public Task<BaseResponse> ExcuteWorkFlow(Guid requestId,  CancellationToken cancellationToken ,int? orderId = null, bool? sameEmployee = null);
         
         /// <summary>
         /// Excute Workflow

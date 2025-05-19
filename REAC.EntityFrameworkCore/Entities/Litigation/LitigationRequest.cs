@@ -2,6 +2,7 @@
 using REAC.Domain.Shared.Enum;
 using REAC.EntityFrameworkCore.Entities.Actor;
 using REAC.EntityFrameworkCore.Entities.Arbitration;
+using REAC.EntityFrameworkCore.Entities.Invoice;
 using REAC.EntityFrameworkCore.Entities.Reconciliation;
 using REAC.EntityFrameworkCore.Entities.System;
 using REAC.EntityFrameworkCore.Entities.Wpf.Business;
@@ -104,6 +105,7 @@ public partial class LitigationRequest : BaseEntity<Guid>
     public Guid? LitigationRequestAmountId { get; set; }
 
     public decimal Fees { get; set; } = 0;
+    public decimal FeesDifference { get; set; } = 0;
     public decimal ReconciliationFees { get; set; } = 0;
     public decimal ArbitrationFees { get; set; } = 0;
 
@@ -212,6 +214,7 @@ public partial class LitigationRequest : BaseEntity<Guid>
 
 
     public virtual SysLitigationRequestOwnerType LitigationRequestOwnerType { get; set; } = null!;
+    public virtual SysInvoice LitigationRequestInvoice { get; set; } = null!;
 
     public virtual ICollection<LitigationRequestRequest> LitigationRequestRequests { get; set; } = new List<LitigationRequestRequest>();
     public virtual ICollection<WorkFlowProcessingLog> WorkFlowProcessingLogs { get; set; } = new List<WorkFlowProcessingLog>();

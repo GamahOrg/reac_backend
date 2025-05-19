@@ -3,7 +3,8 @@
     public enum ReformerStatus
     {
         Certified = 1,
-        Stopped = 2
+        Stopped = 2,
+        PendingStop = 3
     }
     public enum ArbitratorStatus
     {

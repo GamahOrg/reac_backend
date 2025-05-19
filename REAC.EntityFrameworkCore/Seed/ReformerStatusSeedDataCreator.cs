@@ -51,6 +51,24 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                                 LanguageCode=Constants.ArabicLanguage
                             }
                         }
+                    },
+                    new SysReformerStatus
+                    {
+                        Id = ReformerStatus.PendingStop,
+                        StatusName = "بأنتظار الايقاف",
+                        Translations=new List<SysReformerStatusTranslation>
+                        {
+                            new SysReformerStatusTranslation
+                            {
+                                StatusName = "بأنتظار الايقاف",
+                                LanguageCode=Constants.EnglishLanguage
+                            },
+                             new SysReformerStatusTranslation
+                            {
+                                StatusName = "PendingStop",
+                                LanguageCode=Constants.ArabicLanguage
+                            }
+                        }
                     }
                 });
             context.SaveChanges();

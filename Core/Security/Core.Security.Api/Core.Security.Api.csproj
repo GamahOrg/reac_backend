@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Core\Core.csproj" />
+    <ProjectReference Include="..\..\Log\Core.Log.Application\Core.Log.Application.csproj" />
     <ProjectReference Include="..\Core.Security\Core.Security.csproj" />
   </ItemGroup>
 

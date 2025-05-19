@@ -13,11 +13,15 @@ namespace REAC.Application.Contracts.Dtos.Citizen
         public string? Email { get; set; } = null!;
 
         public int RequestsCount { get; set; }
+        public int AllRequestsCount { get; set; }
+        public int FinishedRequestsCount { get; set; }
 
         public string? ReformerStatus { get; set; }
 
         public DateTime? ReformerStatusDate { get; set; }
 
+        public DateTime? StoppedFromDate { get; set; }
+        public DateTime? StoppedToDate { get; set; }
 
     }
 

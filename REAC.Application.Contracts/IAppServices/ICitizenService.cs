@@ -24,10 +24,10 @@ namespace REAC.Application.Contracts.IAppServices
         Task<BaseResponse> GetOwnerFacilities();
         Task<BaseResponse> GetReformersLookup(Guid? citizenId, Guid requestId);
         Task<BaseResponse> GetArbitratorsLookup(Guid? citizenId, Guid requestId);
-        Task<BaseResponse> GetArbitratorsFullLookup(Guid? citizenId, Guid requestId);
-        Task<BaseResponse> GetReformersDecisions(int pageIndex, int pageSize, CancellationToken cancellationToken = default);
+        Task<BaseResponse> GetArbitratorsFullLookup(Guid? citizenId, Guid requestId, string? fullName = null, string? area = null, string? arbitratorClass = null);
+        Task<BaseResponse> GetReformersDecisions(int pageIndex, int pageSize, string? searchKey, bool? isActive, CancellationToken cancellationToken = default);
         Task<BaseResponse> GetReformersDecisions(Guid citizenId);
-        Task<BaseResponse> GetArbitratorsDecisions(int pageIndex, int pageSize, CancellationToken cancellationToken = default);
+        Task<BaseResponse> GetArbitratorsDecisions(int pageIndex, int pageSize, string? searchKey, bool? isActive, CancellationToken cancellationToken = default);
         Task<BaseResponse> GetArbitratorsDecisions(Guid citizenId);
 
 

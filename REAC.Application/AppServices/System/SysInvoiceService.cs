@@ -47,6 +47,7 @@ namespace REAC.Application.AppServices.System
 
             var invoices = (await _repository.GetQueryable<SysInvoice, Guid>())
                 .Where(x => x.ApplicantCitizenId == citizenId)
+                .Include(x => x.LitigationRequest)
                 .Include(x => x.InvoiceType.Translations)
                 .Include(x => x.InvoiceStatus.Translations)
                 .OrderByDescending(x => x.CreatedOn)

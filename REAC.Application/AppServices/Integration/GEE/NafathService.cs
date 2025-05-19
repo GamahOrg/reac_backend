@@ -590,12 +590,12 @@ namespace REAC.Application.AppServices.Integration.GEE
             }
             catch (Exception e)
             {
-            _loggerManager.Log(Core.Log.Domain.Shared.Enums.LoggerType.Database
-              , new LogDto()
-              {
-                  Type = Core.Log.Domain.Shared.Enums.LogType.Exception,
-                  Message = $"Nafath Check Status ==> {e}"
-              });
+                _loggerManager.Log(Core.Log.Domain.Shared.Enums.LoggerType.Database
+                  , new LogDto()
+                  {
+                      Type = Core.Log.Domain.Shared.Enums.LogType.Exception,
+                      Message = $"Nafath Check Status ==> {e}"
+                  });
                 return new DataResponse<NafathCheckResponseDto>() { IsDone = false, Message = e.Message + e.InnerException };
             }
         }
@@ -884,7 +884,7 @@ namespace REAC.Application.AppServices.Integration.GEE
         {
             try
             {
-                
+
 
                 var nafathCheckList = _nafathAgreementRequestService.GetAll();
                 var removeList = new List<NafathAgreementRequestTransactionsDto>();
@@ -1050,7 +1050,7 @@ namespace REAC.Application.AppServices.Integration.GEE
         {
             try
             {
-                
+
                 var nafathCheckList = _nafathReconciliationReportService.GetAll();
                 var removeList = new List<NafathReconciliationReportTransactionDto>();
                 if (nafathCheckList is not null && nafathCheckList.Any())
@@ -1190,7 +1190,7 @@ namespace REAC.Application.AppServices.Integration.GEE
                         //if (nafathReconciliationReport.IsCompleted)
                         //{
                         //}
-                            return new BaseResponse() { IsDone = false, Message = "حدث خطأ او لم يتم تفعيل الرقم السري" };
+                        return new BaseResponse() { IsDone = false, Message = "حدث خطأ او لم يتم تفعيل الرقم السري" };
                     }
                 }
 
@@ -1217,7 +1217,7 @@ namespace REAC.Application.AppServices.Integration.GEE
             }
         }
 
-public async Task<BaseResponse> CheckNafathAgreementRequestStatusForMobile(string transactionId)
+        public async Task<BaseResponse> CheckNafathAgreementRequestStatusForMobile(string transactionId)
         {
             try
             {
@@ -1263,7 +1263,7 @@ public async Task<BaseResponse> CheckNafathAgreementRequestStatusForMobile(strin
                                   Type = Core.Log.Domain.Shared.Enums.LogType.Exception,
                                   Message = $"nafath Check Status Response ==> {nafathCheckStatusResponse}"
                               });
-                              
+
                 //var nafathCheckStatusResponse = new DataResponse<NafathCheckResponseDto>()
                 //{
                 //    IsDone = true,
@@ -1277,7 +1277,7 @@ public async Task<BaseResponse> CheckNafathAgreementRequestStatusForMobile(strin
                         var addCitizenLitigationRequestForAgreementRequestReplyReturnValue = await _agreementRequestService.AddCitizenLitigationRequestForAgreementRequestReply(nafathCheckItem.LitigationRequestId, nafathCheckItem.NationalId, nafathCheckItem.AgreementStatus);
                         //if (addCitizenLitigationRequestForAgreementRequestReplyReturnValue.IsDone)
                         //{
-                            return addCitizenLitigationRequestForAgreementRequestReplyReturnValue;
+                        return addCitizenLitigationRequestForAgreementRequestReplyReturnValue;
                         //}
 
                         //var nafathReconciliationReport = _nafathReconciliationReportHub.Clients.Group(nafathCheckItem.TransactionId).ReceivedNafathReconciliationReportStatus(addCitizenLitigationRequestForReportReply);

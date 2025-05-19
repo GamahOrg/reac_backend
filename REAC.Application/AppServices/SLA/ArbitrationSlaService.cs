@@ -872,13 +872,14 @@ namespace REAC.Application.AppServices.SLA
                                     litigationRequestArbitratorAssigningRequest.Response = LitigationRequestArbitratorAssigningRequestStatus.Cancelled;
                                     litigationRequestArbitratorAssigningRequest.ResponseOn = DateTime.Now;
                                     litigationRequestArbitratorAssigningRequest.LitigationRequest.IsArbitratorReminderForCancelArbitrationSent = true;
-                                    // Send Notification for old arbitrator
+                                    // Send Notification for old arbitrator and dept Admin
                                     // old arbitrator = litigationRequestArbitratorAssigningRequest.CitizenId
                                     // Mail - Sms - Application Notification
                                     // تم إلغاء طلب مهمة التحكيم كمحكم على الدعوى رقم ..... لتجاوز الرد على المهمة مهلته القصوى 
 
                                     try
                                     {
+                                        var deptAdminInfoArbitration = await _employeeService.GetAdminsByDepartmentType(DepartmentType.Arbitration);
                                         var msg = "";
                                         string body;
                                         var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
@@ -912,20 +913,32 @@ namespace REAC.Application.AppServices.SLA
                                             RequestTypeId = RequestType.ArbitratorTaskrequests,
                                             Message = msg
                                         });
+                                        
+                                        applicationNotifications.Add(new SysNotificationDto()
+                                        {
+                                            ActorId = deptAdminInfoArbitration.Data.Id,
+                                            CreatedOn = DateTime.Now,
+                                            ActorTypeId = NotificationActorType.Employee,
+                                            IsViewed = false,
+                                            ViewedOn = null,
+                                            RequestId = litigationRequestArbitratorAssigningRequest.LitigationRequest.Id,
+                                            RequestTypeId = RequestType.ArbitratorTaskrequests,
+                                            Message = msg
+                                        });
 
                                         var notificationResult = await _notificationService.SendNotifications(
                                             new SendEmailDto()
                                             {
                                                 Body = body,
                                                 Subject = "تم إلغاء طلب مهمة التحكيم كمحكم",
-                                                To = new List<string>() { litigationRequestArbitratorAssigningRequest.ArbitratorCitizen.Email }
+                                                To = new List<string>() { litigationRequestArbitratorAssigningRequest.ArbitratorCitizen.Email, deptAdminInfoArbitration.Data.Email }
 
                                             },
                                             new Contracts.Dtos.Integration.GEE.SMSRequestDto()
                                             {
                                                 message_text = msg,
                                                 notification_type = "SMS",
-                                                recipients = new List<string>() { litigationRequestArbitratorAssigningRequest.ArbitratorCitizen.Mobile }
+                                                recipients = new List<string>() { litigationRequestArbitratorAssigningRequest.ArbitratorCitizen.Mobile , deptAdminInfoArbitration.Data.Mobile }
                                             }, applicationNotifications
                                             );
                                     }
@@ -934,6 +947,7 @@ namespace REAC.Application.AppServices.SLA
 
                                     }
 
+                                    
 
                                     switch (litigationRequestArbitratorAssigningRequest.ArbitratorAssigningRequestTypeId)
                                     {

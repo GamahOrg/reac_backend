@@ -1,13 +1,13 @@
 ﻿using Core.Shared.Responses;
+using Newtonsoft.Json;
 using REAC.Application.Contracts.Dtos.Integration.GEE;
 using REAC.Application.Contracts.IAppServices.Integration;
 using REAC.Application.Contracts.IAppServices.System;
 using REAC.Domain.Shared.Constants;
-using System.Net.Http.Json;
-using System.Net;
+using REAC.Domain.Shared.Enum;
 using System.Globalization;
-using AutoMapper.Internal;
-using Newtonsoft.Json;
+using System.Net;
+using System.Net.Http.Json;
 
 namespace REAC.Application.AppServices.Integration.GEE
 {
@@ -22,7 +22,7 @@ namespace REAC.Application.AppServices.Integration.GEE
             _gEELoginService = gEELoginService;
         }
 
-        
+
         public async Task<DataResponse<CRInformationByCRNumberUpdatedDto>> GetCRInformationByCRNumber(string crNumber)
         {
             try
@@ -34,7 +34,7 @@ namespace REAC.Application.AppServices.Integration.GEE
                 var urlFromSetting = (await _sysSetting.GetBySettingKey(SysSettingKeyConstants.MC_GetCRInformationByCRNumber_URL))?.Data?.Value;
                 if (string.IsNullOrWhiteSpace(urlFromSetting))
                     return new DataResponse<CRInformationByCRNumberUpdatedDto>() { IsDone = false, Message = "" };
-                
+
                 string url = string.Format(urlFromSetting, crNumber);
 
                 var client = new HttpClient();
@@ -79,7 +79,7 @@ namespace REAC.Application.AppServices.Integration.GEE
                 var urlFromSetting = (await _sysSetting.GetBySettingKey(SysSettingKeyConstants.MC_GetCRInformationByCROwners_URL))?.Data?.Value;
                 if (string.IsNullOrWhiteSpace(urlFromSetting))
                     return new DataResponse<CRInformationByCROwnersUpdatedDto>() { IsDone = false, Message = "" };
-                
+
                 string url = string.Format(urlFromSetting, crNumber);
 
                 var client = new HttpClient();
@@ -94,7 +94,7 @@ namespace REAC.Application.AppServices.Integration.GEE
                 {
                     responseDto.Data = await MapResponseData(await response.Content.ReadAsStringAsync());
                     //responseDto.Data = await response.Content.ReadFromJsonAsync<CRInformationByCROwnersResponseDataDto>();
-                    if(responseDto.Data != null)
+                    if (responseDto.Data != null)
                     {
                         foreach (var item in responseDto.Data.GetCROwnersByCRNumberResponse.GetCROwnersByCRNumberResult.getCROwnersByCRNumberResponseDetailObject.CROwnersList.CROwner)
                         {
@@ -118,6 +118,120 @@ namespace REAC.Application.AppServices.Integration.GEE
             {
                 return new DataResponse<CRInformationByCROwnersUpdatedDto> { IsDone = false, Message = e.Message + e.InnerException?.Message };
             }
+        }
+
+
+        public async Task<DataResponse<CRInformationByCRNumberDto>> GetCRNationalNumberInformation(string CRNationalNumber)
+        {
+            DataResponse<CRInformationByCRNumberDto> dataResponse = new DataResponse<CRInformationByCRNumberDto>();
+
+            try
+            {
+                var token = (await _gEELoginService.Login()).Data?.Access_token;
+                if (token is null)
+                    return new DataResponse<CRInformationByCRNumberDto> { IsDone = false, Message = "حدث خطأ أثناء التحقق" };
+
+                var urlFromSetting = (await _sysSetting.GetBySettingKey(SysSettingKeyConstants.MC_GetCRBasicInfo_URL))?.Data?.Value;
+                if (string.IsNullOrWhiteSpace(urlFromSetting))
+                    return new DataResponse<CRInformationByCRNumberDto> { IsDone = false, Message = "حدث خطأ أثناء التحقق" };
+
+                string url = urlFromSetting;
+
+                var client = new HttpClient();
+                var request = new HttpRequestMessage(HttpMethod.Get, url);
+                request.Headers.Add("Authorization", $"Bearer {token}");
+                request.Headers.Add("Custom-CRNationalNumber", CRNationalNumber);
+                var response = await client.SendAsync(request);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var basicInfoDto = await response.Content.ReadFromJsonAsync<MCGEECRBasicInfoDto>();
+
+                    if (basicInfoDto == null)
+                        return new DataResponse<CRInformationByCRNumberDto> { Message = "البيانات المدخلة غير صحيحة" };
+
+                    if (basicInfoDto.yefiError != null)
+                    {
+                        return new DataResponse<CRInformationByCRNumberDto>() { IsDone = false, Message = basicInfoDto.yefiError.errorText };
+                    }
+
+                    if (basicInfoDto.YefiErrorResponse != null && basicInfoDto.YefiErrorResponse.yefiError != null)
+                    {
+                        return new DataResponse<CRInformationByCRNumberDto>() { IsDone = false, Message = basicInfoDto.YefiErrorResponse.yefiError.errorText };
+                    }
+
+
+                    if (basicInfoDto.crBasicInfo!.crStatus!.crStatusID!.Value != (int)CRStatusTypeEnum.Active)
+                    {
+                        return new DataResponse<CRInformationByCRNumberDto>() { IsDone = false, Message = "رقم السجل التجاري غير فعال" };
+                    }
+
+                    var cRInformationByCRNumberDto = await MapCRInformationByCRNumber(basicInfoDto.crBasicInfo!);
+
+                    //if (cRInformationByCRNumberDto.CRExpiryDate < DateTime.Now)
+                    //    return new DataResponse<CRInformationByCRNumberDto> { IsDone = false, Message = "رقم السجل التجاري منتهي" };
+
+
+                    return new DataResponse<CRInformationByCRNumberDto>
+                    {
+                        IsDone = true,
+                        Data = cRInformationByCRNumberDto
+                    };
+                }
+            }
+            catch (Exception e)
+            {
+                return new DataResponse<CRInformationByCRNumberDto> { IsDone = false, Message = e.Message + e.InnerException?.Message };
+            }
+
+            return dataResponse;
+        }
+        public async Task<BaseResponse> ValidateRelatedCRs(string crNationalNumber, string identifierTypeID, string identifierNo, string nationalityID)
+        {
+            try
+            {
+                var token = (await _gEELoginService.Login()).Data?.Access_token;
+                if (token is null)
+                    return new BaseResponse { IsDone = false, Message = "حدث خطأ أثناء التحقق" };
+
+                var urlFromSetting = (await _sysSetting.GetBySettingKey(SysSettingKeyConstants.MC_GetCRPersonRelated_URL))?.Data?.Value;
+                if (string.IsNullOrWhiteSpace(urlFromSetting))
+                    return new BaseResponse { IsDone = false, Message = "حدث خطأ أثناء التحقق" };
+
+                string url = urlFromSetting;
+
+                var client = new HttpClient();
+                var request = new HttpRequestMessage(HttpMethod.Get, url);
+                request.Headers.Add("Authorization", $"Bearer {token}");
+                request.Headers.Add("Custom-IdentifierTypeID", identifierTypeID.ToString());
+                request.Headers.Add("Custom-IdentifierNo", identifierNo.ToString());
+                request.Headers.Add("Custom-nationalityID", nationalityID.ToString());
+
+                var response = await client.SendAsync(request);
+                if (response.IsSuccessStatusCode)
+                {
+                    var personRelatedCRsDto = await response.Content.ReadFromJsonAsync<MCGEEPersonRelatedCRsDto>();
+
+                    if (personRelatedCRsDto == null)
+                        return new BaseResponse { Message = "البيانات المدخلة غير صحيحة" };
+
+                    if (personRelatedCRsDto.YefiErrorResponse != null)
+                        return new BaseResponse { IsDone = true, Message = personRelatedCRsDto?.YefiErrorResponse?.yefiError?.errorText ?? "خطأ اُثناء التحقق من الملاك" };
+
+
+                    if (personRelatedCRsDto.relatedCRList == null || (personRelatedCRsDto.relatedCRList != null && (!personRelatedCRsDto.relatedCRList.Any() || !personRelatedCRsDto.relatedCRList.Any(cr => cr.crBasicInfo.crNationalNumber == crNationalNumber))))
+                        return new BaseResponse { IsDone = false, Message = "ليس أحد ملاك المنشاة تأكد من البيانات المدخلة" };
+
+                    return new BaseResponse { IsDone = true };
+                }
+            }
+            catch (Exception e)
+            {
+                return new BaseResponse { Message = e.Message + e.InnerException?.Message };
+            }
+
+
+            return new BaseResponse { Message = "البيانات المدخلة غير صحيحة" };
         }
 
         private async Task<CRInformationByCROwnersResponseDataDto> MapResponseData(string response)
@@ -163,7 +277,7 @@ namespace REAC.Application.AppServices.Integration.GEE
                             }
                         },
                     },
-                        //testResponse.TestGetCROwnersByCRNumberResponse
+                    //testResponse.TestGetCROwnersByCRNumberResponse
                 };
                 return responseData;
             }
@@ -172,8 +286,8 @@ namespace REAC.Application.AppServices.Integration.GEE
         private async Task<CRInformationByCRNumberDto> MapCRInformationByCRNumber(MCCRInformationByCRNumberResponseDto mCResponseDto)
         {
             var cRExpiryHijriDate = DateTime.ParseExact(mCResponseDto.Data.GetCRInformationByCRNumberResponse.GetCRInformationByCRNumberResult.getCRInformationByCRNumberResponseDetailObject.CRExpiryHijriDate
-                ,"dd-MM-yyyy",CultureInfo.GetCultureInfo("ar-sa"),DateTimeStyles.None);
-            
+                , "dd-MM-yyyy", CultureInfo.GetCultureInfo("ar-sa"), DateTimeStyles.None);
+
             var cRIssueHijriDate = DateTime.ParseExact(mCResponseDto.Data.GetCRInformationByCRNumberResponse.GetCRInformationByCRNumberResult.getCRInformationByCRNumberResponseDetailObject.CRIssueHijriDate
                 , "dd-MM-yyyy", CultureInfo.GetCultureInfo("ar-SA"), DateTimeStyles.None);
 
@@ -187,6 +301,24 @@ namespace REAC.Application.AppServices.Integration.GEE
                 CRIssueDate = cRIssueHijriDate,
                 CRExpiryDate = cRExpiryHijriDate,
             };
+        }
+
+        private async Task<CRInformationByCRNumberDto> MapCRInformationByCRNumber(CrBasicInfo crBasicInfo)
+        {
+            var commercialRegisteStartDate = DateTime.ParseExact(crBasicInfo.crIssueDate.crIssueDateGregorian, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+            var commercialRegisteEndDate = DateTime.ParseExact(crBasicInfo.crConfirmDate.crConfirmDateGregorian, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+            CRInformationByCRNumberDto cRInformationByCRNumberDto = new CRInformationByCRNumberDto
+            {
+                CRNumber = crBasicInfo.crNumber,
+                CRNationalNumber = crBasicInfo.crNationalNumber,
+                CRName = crBasicInfo.entityFullNameAr,
+                CRExpiryDate = commercialRegisteEndDate,
+                CRIssueDate = commercialRegisteStartDate
+            };
+
+
+            return cRInformationByCRNumberDto;
         }
 
     }
