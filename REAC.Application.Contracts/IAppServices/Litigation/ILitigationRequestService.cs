@@ -41,6 +41,7 @@ namespace REAC.Application.Contracts.IAppServices.Litigation
         Task<BaseResponse> CreateLitigationRequest(LitigationRequestDto litigationRequestDto);
         Task<BaseResponse> CreateLitigationRequestManual(CreateLitigationRequestNoIntegrationDto litigationRequestDto);
         Task<BaseResponse> CreateEjarLitigationRequestManual(CreateLitigationRequestNoIntegrationDto litigationRequestDto);
+        Task<BaseResponse> CreatePropertiesLitigationRequestManual(CreateLitigationRequestNoIntegrationDto litigationRequestDto);
         Task<BaseResponse> AuditngListArbitration(int pageIndex, int pageSize, string? searchKey, AuditingListDto model);
 
         Task<BaseResponse> AuditngListReconciliation(int pageIndex, int pageSize, string? searchKey, AuditingListDto model);
