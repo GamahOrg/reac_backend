@@ -90,6 +90,12 @@ public class LitigationRequestController : BaseController<LitigationRequest,
                 var ejarReturnValue = await _litigationService.CreateEjarLitigationRequestManual(model);
                 return Ok(ejarReturnValue);
 
+            }else if (model.ContractType == Domain.Shared.Enum.LitigationRequestContractType.Properties)
+            {
+
+                var ejarReturnValue = await _litigationService.CreatePropertiesLitigationRequestManual(model);
+                return Ok(ejarReturnValue);
+
             }
 
             var returnValue = await _litigationService.CreateLitigationRequestManual(model);
