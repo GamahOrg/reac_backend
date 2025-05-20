@@ -46,6 +46,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using static REAC.Application.Contracts.IAppServices.Litigation.ILitigationRequestService;
 
 
@@ -240,6 +241,9 @@ namespace REAC.Application.AppServices.Litigation
                                 break;
                         }
 
+                        // Request Code Check
+
+                        requestCode = await EnsureUniqueRequestCodeAsync(requestCode, litigationRequest);
 
                         litigationRequest.IsSent = model.IsSent;
                         litigationRequest.SentOn = DateTime.Now;
@@ -385,6 +389,51 @@ namespace REAC.Application.AppServices.Litigation
 
             }
 
+        }
+
+        private async Task<string> EnsureUniqueRequestCodeAsync(string requestCode, LitigationRequest litigationRequest)
+        {
+            var requestCodeExistCheck = (await _repository.GetQueryable<LitigationRequest, Guid>())
+                .AsNoTracking()
+                .Any(x => x.RequestCode == requestCode);
+
+            if (requestCodeExistCheck)
+            {
+                var lastRequestCode = (await _repository.GetQueryable<LitigationRequest, Guid>())
+                    .Where(x => x.RequestCode != null && x.Contract.LitigationRequestContractType == litigationRequest.Contract.LitigationRequestContractType)
+                    .AsNoTracking()
+                    .OrderByDescending(x => x.RequestCode)
+                    .Select(x => x.RequestCode)
+                    .FirstOrDefault();
+
+                return IncrementGenericFormatString(lastRequestCode);
+            }
+
+            return requestCode;
+        }
+
+        private static string IncrementGenericFormatString(string input)
+        {
+            
+            Match match = Regex.Match(input, @"^([A-Za-z])(\d+)(-.*)$");
+
+            if (match.Success)
+            {
+                string prefix = match.Groups[1].Value;      // e.g., "B", "N", "X"
+                string numberString = match.Groups[2].Value; // e.g., "00007", "12345"
+                string suffix = match.Groups[3].Value;     // e.g., "-25", "-XYZ" (includes the dash)
+
+                if (int.TryParse(numberString, out int currentNumber))
+                {
+                    int nextNumber = currentNumber + 1;
+
+                    string nextNumberString = nextNumber.ToString().PadLeft(numberString.Length, '0');
+
+                    // Reconstruct the string using the captured prefix, the new number, and the original suffix
+                    return $"{prefix}{nextNumberString}{suffix}";
+                }
+            }
+            return null; // Format doesn't match or the captured number part is not a valid integer
         }
 
         public async Task<BaseResponse> ApproveArbitrationFeesPaid(Guid litigationId, CancellationToken cancellationToken)
