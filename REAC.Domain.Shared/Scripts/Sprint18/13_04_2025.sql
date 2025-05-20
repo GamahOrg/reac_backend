@@ -20,3 +20,11 @@ VALUES (
         {"LanguageCode":"ar", "RequestStatus":"بإنتظار تحديد عدد هيئة التحكيم"}
     ]'  
 );
+
+------------------------------------------
+
+insert into [dbo].[SysSetting] values (NEWID(),'Configurable.ArbitratorRegistrationFees','30')
+insert into [dbo].[SysSetting] values (NEWID(),'SLA.PayLitigationFees.Applicant','تم الغاء الدعوي رقم {LitigationCode} لعدم دفع الرسوم  ')
+insert into [REAC_Staging_Final].[dbo].[SysSetting] values (NEWID(),'Configurable.ArbitratorJoiningRequestFees','30')
+insert into [REAC_Staging_Final].[dbo].[SysSetting] values (NEWID(),'Configurable.ArbitratorRegisterationFees','200')
+insert into [REAC_Staging_Final].[dbo].[SysSetting] values (NEWID(),'EmailConfirmation_URL','')
