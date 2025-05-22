@@ -3488,6 +3488,7 @@ namespace REAC.Application.AppServices.Litigation
                     if (!identityUser.Succeeded || identityUser.Errors.Any())
                         return new BaseResponse() { IsDone = false, Message = "" };
 
+
                     defendantCitizen.Add(new Citizen()
                     {
                         Id = Guid.NewGuid(),
@@ -3503,7 +3504,7 @@ namespace REAC.Application.AppServices.Litigation
                     var addCitizenResponse = await _repository.SaveChangesAsync();
                     if (!addCitizenResponse.IsDone)
                         return addCitizenResponse;
-
+                        
                     user.ReferenceId = defendantCitizen.FirstOrDefault()?.Id;
                     var updateUser = await _userManager.UpdateAsync(user);
                     if (!identityUser.Succeeded || identityUser.Errors.Any())
@@ -3520,7 +3521,7 @@ namespace REAC.Application.AppServices.Litigation
 
 
                 TryGetFacilityAgian:
-                Facility? facility = null;
+                Facility? facility = null; 
 
                 if (!string.IsNullOrWhiteSpace(litigationRequestDto.SecondPartyFacilityCommercialRegistrationNo))
                 {
