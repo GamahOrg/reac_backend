@@ -323,6 +323,91 @@ namespace REAC.Application.AppServices
                 Data = citizenReformers.OrderBy(x => x.RequestsCount).ToList()
             };
         }
+        public async Task<BaseResponse> GetReformersLookup()
+        {
+
+
+            var citizens = (await _repository.GetQueryable<Citizen, Guid>())
+                             .Include(x => x.ReformerLitigationRequests)
+                             .Where(x => x.IsReformer == true && x.ReformerStatusId == ReformerStatus.Certified).ToList();
+            
+            if(citizens != null && citizens.Count > 0)
+            {
+                List<CitizenReformer> citizenReformers = new List<CitizenReformer>();
+                citizens.ForEach(t =>
+                {
+
+                    citizenReformers.Add(new CitizenReformer()
+                    {
+                        FullName = t.FullName,
+                        Id = t.Id,
+                        RequestsCount = t.ReformerLitigationRequests.Where(x => x.IsFinished == false).Count()
+                    });
+
+                });
+                return new DataResponse<List<CitizenReformer>>()
+                {
+                    IsDone = true,
+                    Data = citizenReformers.OrderBy(x => x.RequestsCount).ToList()
+                };
+
+                
+            }
+            else
+            {
+                return new DataResponse<List<CitizenReformer>>()
+                {
+                    IsDone = true,
+                    Data = new List<CitizenReformer>()
+                };
+            }
+
+           
+        }
+        
+        public async Task<BaseResponse> GetArbitratorsLookup()
+        {
+
+
+            var citizens = (await _repository.GetQueryable<Citizen, Guid>())
+                             .Include(x => x.ReformerLitigationRequests)
+                             .Where(x => x.IsReformer == true && x.ReformerStatusId == ReformerStatus.Certified).ToList();
+            
+            if(citizens != null && citizens.Count > 0)
+            {
+                List<CitizenReformer> citizenReformers = new List<CitizenReformer>();
+                citizens.ForEach(t =>
+                {
+
+                    citizenReformers.Add(new CitizenReformer()
+                    {
+                        FullName = t.FullName,
+                        Id = t.Id,
+                        RequestsCount = t.ReformerLitigationRequests.Where(x => x.IsFinished == false).Count()
+                    });
+
+                });
+                return new DataResponse<List<CitizenReformer>>()
+                {
+                    IsDone = true,
+                    Data = citizenReformers.OrderBy(x => x.RequestsCount).ToList()
+                };
+
+                
+            }
+            else
+            {
+                return new DataResponse<List<CitizenReformer>>()
+                {
+                    IsDone = true,
+                    Data = new List<CitizenReformer>()
+                };
+            }
+
+           
+        }
+        
+        
         public async Task<BaseResponse> GetArbitratorsLookup(Guid? citizenId, Guid requestId)
         {
             var litigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>())
@@ -1347,10 +1432,10 @@ namespace REAC.Application.AppServices
 
             var entitiesQuerable = await GetQueryableAsync();
 
-             entitiesQuerable = (entitiesQuerable
-                                     .Include(x => x.ReformerLitigationRequests)
-                                     .Include(x => x.ReformerStopFreeUpDecisions)
-                                     .Include(x => x.SysReformerStatus));
+            entitiesQuerable = (entitiesQuerable
+                                    .Include(x => x.ReformerLitigationRequests)
+                                    .Include(x => x.ReformerStopFreeUpDecisions)
+                                    .Include(x => x.SysReformerStatus));
 
             if (!string.IsNullOrEmpty(searchKey))
             {
@@ -1473,12 +1558,12 @@ namespace REAC.Application.AppServices
             entitiesQuerable = (entitiesQuerable
                                       .Include(x => x.ArbitratorStopFreeUpDecisions)
                                       .Include(x => x.CitizenRequests)
-                                      .ThenInclude(x=>x.SysArbitratorClass)
+                                      .ThenInclude(x => x.SysArbitratorClass)
                                       .Include(x => x.ArbitratorLitigationRequests)
                                       .Include(x => x.LitigationRequestArbitratorLists)
                                       .Include(x => x.SysArbitratorStatus)
-                                      .Include(x =>x.Area)
-                                      .Include(x =>x.City)
+                                      .Include(x => x.Area)
+                                      .Include(x => x.City)
                                       );
 
             if (!string.IsNullOrEmpty(searchKey))
@@ -1488,7 +1573,7 @@ namespace REAC.Application.AppServices
                                                                 l.Area != null && l.Area.AreaName.ToLower().Contains(searchKey.ToLower()) ||
                                                                          l.IdentityNumber.Contains(searchKey)));
             }
-            if (isActive.HasValue && isActive==true)
+            if (isActive.HasValue && isActive == true)
             {
                 entitiesQuerable = (entitiesQuerable.Where(l => l.ArbitratorStatusId == ArbitratorStatus.Certified));
 

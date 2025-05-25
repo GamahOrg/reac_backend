@@ -325,4 +325,28 @@ public class CitizenController : ControllerBase
 
         return BadRequest();
     }
+
+    #region Filter Drop down list
+    [HttpGet(nameof(GetReformersLookupForFilter))]
+    public async Task<ActionResult> GetReformersLookupForFilter()
+    {
+        if (ModelState.IsValid)
+        {
+            var returnValue = await _citizenService.GetReformersLookup();
+            return Ok(returnValue);
+        }
+
+        return BadRequest();
+    }
+    [HttpGet(nameof(GetArbitratorsLookupForFilter))]
+    public async Task<ActionResult> GetArbitratorsLookupForFilter()
+    {
+        if (ModelState.IsValid)
+        {
+            var returnValue = await _citizenService.GetArbitratorsLookup();
+            return Ok(returnValue);
+        }
+        return BadRequest();
+    }
+    #endregion
 }
