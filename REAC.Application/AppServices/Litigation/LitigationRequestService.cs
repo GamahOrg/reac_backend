@@ -1409,6 +1409,7 @@ namespace REAC.Application.AppServices.Litigation
                          .ThenInclude(x => x.SigntureFile)
                          .Include(x => x.LitigationRequestArbitratorAssigningRequests)
                          .ThenInclude(x => x.ArbitratorCitizen)
+                         .ThenInclude(x => x.SigntureFile)
                          .Include(x => x.LitigationRequestAmount)
                          .Include(x => x.InternalStatus)
                          .Include(x => x.ExternalStatus)
@@ -1432,9 +1433,9 @@ namespace REAC.Application.AppServices.Litigation
             var assigningRequest = litigationRequest.LitigationRequestArbitratorAssigningRequests.FirstOrDefault(l => l.Id == requestId);
 
             string base64String = string.Empty;
-            if (!string.IsNullOrEmpty(litigationRequest.ArbitratorCitizen?.SigntureFile?.FilePath))
+            if (!string.IsNullOrEmpty(assigningRequest?.ArbitratorCitizen?.SigntureFile?.FilePath))
             {
-                string inputFilePath = Path.Combine(Directory.GetCurrentDirectory(), litigationRequest.ArbitratorCitizen?.SigntureFile?.FilePath);
+                string inputFilePath = Path.Combine(Directory.GetCurrentDirectory(), assigningRequest?.ArbitratorCitizen?.SigntureFile?.FilePath);
                 // Read file and convert to Base64
                 byte[] fileBytes = File.ReadAllBytes(inputFilePath);
                 base64String = Convert.ToBase64String(fileBytes);
@@ -3488,7 +3489,6 @@ namespace REAC.Application.AppServices.Litigation
                     if (!identityUser.Succeeded || identityUser.Errors.Any())
                         return new BaseResponse() { IsDone = false, Message = "" };
 
-
                     defendantCitizen.Add(new Citizen()
                     {
                         Id = Guid.NewGuid(),
@@ -3504,7 +3504,7 @@ namespace REAC.Application.AppServices.Litigation
                     var addCitizenResponse = await _repository.SaveChangesAsync();
                     if (!addCitizenResponse.IsDone)
                         return addCitizenResponse;
-                        
+
                     user.ReferenceId = defendantCitizen.FirstOrDefault()?.Id;
                     var updateUser = await _userManager.UpdateAsync(user);
                     if (!identityUser.Succeeded || identityUser.Errors.Any())
@@ -3521,7 +3521,7 @@ namespace REAC.Application.AppServices.Litigation
 
 
                 TryGetFacilityAgian:
-                Facility? facility = null; 
+                Facility? facility = null;
 
                 if (!string.IsNullOrWhiteSpace(litigationRequestDto.SecondPartyFacilityCommercialRegistrationNo))
                 {

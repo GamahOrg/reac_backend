@@ -49,6 +49,19 @@ public class SysEmployeeController : BaseController<SysEmployee,
 
         return BadRequest();
     }
+    
+    [HttpGet(nameof(GetEmployeeByDepartmentType))]
+
+    public async Task<ActionResult<IEnumerable<SysEmployeeListDto>>> GetEmployeeByDepartmentType(DepartmentType departmentType)
+    {
+        if (ModelState.IsValid)
+        {
+            var returnValue = await _sysEmployeeService.GetAllEmployeeByDepartmentType(departmentType);
+            return Ok(returnValue);
+        }
+
+        return BadRequest();
+    }
 
     [HttpGet(nameof(GetDistributioonMode))]
 
