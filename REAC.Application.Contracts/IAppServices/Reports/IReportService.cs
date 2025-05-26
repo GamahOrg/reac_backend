@@ -11,15 +11,16 @@ namespace REAC.Application.Contracts.IAppServices.Reports
 {
     public interface IReportService
     {
-        public Task<BaseResponse> GetLitigationStatisticsReviewReport(GetLitigationStatisticsMainReportFilter filter);
-        public Task<BaseResponse> GetLitigationStatisticsReformerReport(GetLitigationStatisticsMainReportFilter filter);
-        public Task<BaseResponse> GetLitigationStatisticsArbitrationReport(GetLitigationStatisticsMainReportFilter filter);
-        public Task<BaseResponse> GetLitigationStatisticsGeneralReport(GetLitigationStatisticsMainReportFilter filter);
-        public Task<BaseResponse> GetListOfLitigationReviewReport(GetListOfLitigationReviewReportFilter filter);
-        public Task<BaseResponse> GetListOfLitigationReformerReport(GetListOfLitigationReformerReportFilter filter);
-        public Task<BaseResponse> GetListOfLitigationArbitrationReport(GetListOfLitigationArbitrationReportFilter filter);
-        public Task<BaseResponse> GetListOfLitigationGeneralReport(GetListOfLitigationGeneralReportFilter filter);
-        public Task<BaseResponse> GetLitigationStatisticsForAllStages(GetLitigationStatisticsMainReportFilter filter);
-        public Task<BaseResponse> GetLitigationStatisticsDetailsForAllStages(GetLitigationStatisticsMainReportFilter filter);
+        public Task<BaseResponse> GetLitigationStatisticsReviewReport(GenericReportsFilter filter);
+        public Task<BaseResponse> GetLitigationStatisticsReformerReport(GenericReportsFilter filter);
+        public Task<BaseResponse> GetLitigationStatisticsArbitrationReport(GenericReportsFilter filter);
+        public Task<BaseResponse> GetLitigationStatisticsGeneralReport(GenericReportsFilter filter);
+        public Task<BaseResponse> GetListOfLitigationReviewReport(GenericReportsFilter filter);
+        public Task<BaseResponse> GetListOfLitigationReformerReport(GenericReportsFilter filter);
+        public Task<BaseResponse> GetListOfLitigationArbitrationReport(GenericReportsFilter filter);
+        public Task<BaseResponse> GetListOfLitigationGeneralReport(GenericReportsFilter filter);
+        public Task<BaseResponse> GetLitigationStatisticsForAllStages(GenericReportsFilter filter);
+        public Task<BaseResponse> GetLitigationStatisticsDetailsForAllStages(GenericReportsFilter filter);
+        //public Task<BaseResponse> GetLitigationStatisticsReviewReports(GenericReportsFilter filter);
     }
 }

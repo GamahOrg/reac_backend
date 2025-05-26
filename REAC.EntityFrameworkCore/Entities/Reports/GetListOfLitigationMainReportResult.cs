@@ -12,7 +12,7 @@ namespace REAC.EntityFrameworkCore.Entities.Reports
         public DateTime? CreatedOn { get; set; }
         public string? RequestCode { get; set; }
         public string? ContractAddress { get; set; }
-        public decimal? Fees { get; set; }
+        //public decimal? Fees { get; set; }
         public string? AreaName { get; set; }
         public string? CityName { get; set; }
         public string? CategoryName { get; set; }

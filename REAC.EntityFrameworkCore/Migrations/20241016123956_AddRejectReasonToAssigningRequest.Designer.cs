@@ -2138,6 +2138,64 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.ToView(null, (string)null);
                 });
 
+            modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Reports.GetLitigationStatisticsReportResult", b =>
+            {
+                b.Property<int>("FinishedCount")
+                    .HasColumnType("int");
+
+                b.Property<decimal>("FinishedRatio")
+                    .HasColumnType("decimal(18,2)");
+
+                b.Property<int>("NotFinishedCount")
+                    .HasColumnType("int");
+
+                b.Property<decimal>("NotFinishedRatio")
+                    .HasColumnType("decimal(18,2)");
+
+                b.Property<int>("OtherServicesCount")
+                    .HasColumnType("int");
+
+                b.Property<decimal>("OtherServicesRatio")
+                    .HasColumnType("decimal(18,2)");
+
+                b.Property<int>("PropertiesCount")
+                    .HasColumnType("int");
+
+                b.Property<decimal>("PropertiesRatio")
+                    .HasColumnType("decimal(18,2)");
+
+                b.Property<int>("RealEstateBrokerageCount")
+                    .HasColumnType("int");
+
+                b.Property<decimal>("RealEstateBrokerageRatio")
+                    .HasColumnType("decimal(18,2)");
+
+                b.Property<int>("RentCount")
+                    .HasColumnType("int");
+
+                b.Property<decimal>("RentRatio")
+                    .HasColumnType("decimal(18,2)");
+
+                b.Property<int>("TotalLitigationCount")
+                    .HasColumnType("int");
+
+                b.Property<int>("WafiCount")
+                    .HasColumnType("int");
+
+                b.Property<decimal>("WafiRatio")
+                    .HasColumnType("decimal(18,2)");
+                b.Property<int>("TotalReviewDueDateCount")
+                    .HasColumnType("int");
+
+                b.Property<decimal>("TotalReviewDueDateRatio")
+                    .HasColumnType("decimal(18,2)");
+
+                b.ToTable((string)null);
+
+                b.ToView(null, (string)null);
+            });
+
+
             modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.System.DelegationRequest", b =>
                 {
                     b.Property<Guid>("Id")
