@@ -182,6 +182,7 @@ public partial class REACDBContext : DbContext
     public virtual DbSet<SysIdentityType> SysIdentityTypes { get; set; }
 
     public virtual DbSet<SysLitigationRequestAmount> SysLitigationRequestAmounts { get; set; }
+    public virtual DbSet<LitigationRequestAmountLog> LitigationRequestAmountLogs { get; set; }
 
     public virtual DbSet<SysLitigationRequestCategory> SysLitigationRequestCategories { get; set; }
 
@@ -1971,6 +1972,14 @@ public partial class REACDBContext : DbContext
             entity.Property(e => e.Fees).HasColumnType("money");
             entity.Property(e => e.LitigationAmount).HasMaxLength(50);
         });
+        modelBuilder.Entity<LitigationRequestAmountLog>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__LitigAmount__3214EC0729841352");
+
+            entity.ToTable("LitigationRequestAmountLog");
+
+            entity.Property(e => e.Id).ValueGeneratedNever();
+        });
 
         modelBuilder.Entity<SysLitigationRequestCategory>(entity =>
         {
@@ -2154,6 +2163,25 @@ public partial class REACDBContext : DbContext
             entity.OwnsMany(d => d.Translations, ownedNavigationBuilder => { ownedNavigationBuilder.ToJson(); });
 
         });
+        
+        modelBuilder.Entity<SysInvoice>(entity =>
+        {
+            entity.ToTable("Invoices");
+
+            entity.HasOne(d => d.LitigationRequest)
+          .WithOne(p => p.LitigationRequestInvoice)
+          .HasForeignKey<SysInvoice>(d => d.RequestId) 
+          .OnDelete(DeleteBehavior.ClientSetNull)
+          .HasConstraintName("FK_LitigationRequest_SysInvoice");
+
+          //  entity.HasOne(d => d.InvoiceStatus)
+          //.WithMany(p => p.Invoices)
+          //.HasForeignKey(d => d.InvoiceStatusId)
+          //.OnDelete(DeleteBehavior.ClientSetNull)
+          //.HasConstraintName("FK_SysInvoice_SysInvoiceStatus");
+
+
+        });
 
         modelBuilder.Entity<CitizenRequestProgramRealEstateInstituteFile>(entity =>
         {
@@ -2219,6 +2247,7 @@ public partial class REACDBContext : DbContext
     private void OnModelConfigureStoredProcedure(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<GetLitigationStatisticsMainReportResult>().HasNoKey().ToView(null);
+        modelBuilder.Entity<GetLitigationStatisticsReportResult>().HasNoKey().ToView(null);
         modelBuilder.Entity<GetListOfLitigationReviewReportResult>().HasNoKey().ToView(null);
         modelBuilder.Entity<GetListOfLitigationReformerReportResult>().HasNoKey().ToView(null);
         modelBuilder.Entity<GetListOfLitigationArbitrationReportResult>().HasNoKey().ToView(null);

@@ -6,6 +6,7 @@ namespace REAC.Application.Contracts.Dtos.Litigation.CreateUpdate.Litigation
     {
         public string key { get; set; } = null!;
         public string SubKey { get; set; } = null!;
+        public string? AssociationName { get; set; }
         public LitigationRequestContractType ContractType { get; set; }
         public LitigationRequestOwnerType LitigationRequestOwnerType { get; set; }
         public Guid? IncorporationContractFileId { get; set; }

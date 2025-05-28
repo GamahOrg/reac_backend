@@ -357,6 +357,10 @@ namespace REAC.Application.ModuleServices
                         }
                     }
                 }
+                if (reports.Count > 0)
+                {
+                    reports.FirstOrDefault().ArbitratorCitizenName = litigationRequest.ArbitratorCitizen?.FullName;
+                }
             }
 
             return new DataResponse<LitigationRequestForArbitrationReportDto>()

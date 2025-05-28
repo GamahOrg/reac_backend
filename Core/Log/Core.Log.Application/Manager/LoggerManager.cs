@@ -25,7 +25,7 @@ namespace Core.Log.Application.Manager
             _consoleLogger = new Lazy<ConsoleLogger>(() => new ConsoleLogger());
         }
 
-        public void Log(LoggerType loggerType, LogDto logDto)
+        public async void Log(LoggerType loggerType, LogDto logDto)
         {
             var loggers = loggerType.GetFlags();
             foreach (var type in loggers)
@@ -39,7 +39,7 @@ namespace Core.Log.Application.Manager
                         _dbLogger.Log(logDto);
                         break;
                     case LoggerType.File:
-                        _dbLogger.Log(logDto);
+                        await _fileLogger.Log(logDto);
                         break;
                         //case LoggerType.SMS:
                         //    _smsLogger.Value.Log(logDto);

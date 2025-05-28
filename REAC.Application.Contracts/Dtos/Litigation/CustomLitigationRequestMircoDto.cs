@@ -20,12 +20,15 @@ namespace REAC.Application.Contracts.Dtos.Litigation
 
         public int? ReconciliationPeriod { get; set; } 
         public DateTime? ResponseOn { get; set; }
+        public string RejectReason { get; set; }
         public LitigationRequestReformerAssigningRequestStatus? Response { get; set; }
     }
     public class CustomLitigationRequestMircoArbitratorDto : LitigationRequestMircoDto
     {
         public Guid RequestId { get; set; }
         public ArbitratorAssigningRequestType? ArbitratorAssigningRequestType { get; set; }
+        public DateTime ArbitratorAssigningRequestDate { get; set; }
+        public DateTime ArbitrationFinishedExpectedDate { get; set; }
         public DateTime? ResponseOn { get; set; }
         public LitigationRequestArbitratorAssigningRequestStatus? Response { get; set; }
     }

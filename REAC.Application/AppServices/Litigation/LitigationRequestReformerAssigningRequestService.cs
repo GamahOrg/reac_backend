@@ -120,14 +120,16 @@ namespace REAC.Application.AppServices.Litigation
 
                         try
                         {
-                            msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reconciliation_Reconciliator_AcceptTask).Result.Data?.Value;
+                            var settingResponse = await _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reconciliation_Reconciliator_AcceptTask);
+
+                            msg = settingResponse.Data?.Value;
                             msg = msg.Replace("{ReconciliatorName}", litigationRequestReformerAssigningRequest.ReformerCitizen.FullName);
                             msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
                             var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
                             using (StreamReader streamReader = File.OpenText(pathToFile))
                             {
                                 body = await streamReader.ReadToEndAsync();
-                                body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reconciliation_Reconciliator_AcceptTask).Result.Data?.Value);
+                                body = body?.Replace("{content}", msg);
                                 body = body.Replace("{ReconciliatorName}", litigationRequestReformerAssigningRequest.ReformerCitizen.FullName);
                                 body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
                             }
@@ -175,7 +177,7 @@ namespace REAC.Application.AppServices.Litigation
                                 Message = msg
                             });
 
-                            await _notificationService.SendNotifications(
+                           await _notificationService.SendNotifications(
                                 new SendEmailDto()
                                 {
                                     To = new List<string>() { citizenInfo.Email,litigationRequest.Contract.FirstPartyCitizen is not null ? litigationRequest.Contract.FirstPartyCitizen.Email : litigationRequest.Contract.FirstPartyFacility.Citizen.Email,
@@ -403,7 +405,7 @@ namespace REAC.Application.AppServices.Litigation
                                 Message = msg
                             });
 
-                            await _notificationService.SendNotifications(
+                           await _notificationService.SendNotifications(
                                new SendEmailDto()
                                {
                                    To = new List<string>() { citizenInfo.Email, deptAdminInfoReconciliation.Data.Email },
@@ -437,6 +439,20 @@ namespace REAC.Application.AppServices.Litigation
         {
             Guid referenceId = Guid.Empty;
             _jwtReader.GetReferenceId(ref referenceId);
+
+            // Check if reformer is certified
+            if(referenceId != Guid.Empty)
+            {
+                var reformerStatusId = (await _repository.GetQueryable<Citizen, Guid>())
+                    .FirstOrDefault(x => x.Id == referenceId)
+                    .ReformerStatusId;
+
+                if (reformerStatusId == ReformerStatus.Stopped)
+                {
+                    return new BaseResponse() { IsDone = false, Message = "تم ايقاف الحساب الخاص بك" };
+                }
+            }
+            
 
             var litigationRequests = (await _repository.GetQueryable<LitigationRequest, Guid>())
                          .Include(x => x.Area)
@@ -546,6 +562,7 @@ namespace REAC.Application.AppServices.Litigation
                 .Include(x => x.LitigationRequest.Contract.FirstPartyCitizen)
                 .Include(x => x.LitigationRequest.Contract.SecondPartyFacility)
                 .Include(x => x.LitigationRequest.Contract.SecondPartyCitizen)
+                //.Include(x => x.LitigationRequest.LitigationRequestReformerAssigningRequests)
                 .Include(x => x.LitigationRequest.Contract.LitigationRequestContractType);
 
 
@@ -568,6 +585,7 @@ namespace REAC.Application.AppServices.Litigation
                 .Take(pageSize)
                 .ToListAsync(cancellationToken);
 
+
             List<CustomLitigationRequestMircoAllDto> litigationRequestMircoDtos = new List<CustomLitigationRequestMircoAllDto>();
             if (results != null)
             {
@@ -582,6 +600,8 @@ namespace REAC.Application.AppServices.Litigation
 
                 foreach (var litigationRequest in results)
                 {
+                    //var RejectReason1 = (await _repository.GetQueryable<LitigationRequestReformerAssigningRequest, Guid>()).Where(s => s.LitigationRequestId == litigationRequest.LitigationRequestId && s.Response == LitigationRequestReformerAssigningRequestStatus.Cancelled)?.OrderBy(s => s.ResponseOn);
+                    var RejectReason = (await _repository.GetQueryable<LitigationRequestReformerAssigningRequest, Guid>()).Where(s => s.LitigationRequestId == litigationRequest.LitigationRequestId && s.Response == LitigationRequestReformerAssigningRequestStatus.Cancelled)?.OrderBy(s=>s.ResponseOn).LastOrDefault(s=>s.Reason != null)?.Reason;
                     CustomLitigationRequestMircoAllDto litigationRequestMircoDto = new CustomLitigationRequestMircoAllDto
                     {
                         Id = litigationRequest.Id,
@@ -598,6 +618,7 @@ namespace REAC.Application.AppServices.Litigation
                             : litigationRequest.LitigationRequest.Contract.SecondPartyCitizen.FullName,
                         RequestTypeName = litigationRequest.LitigationRequest.Contract.LitigationRequestContractType.TypeName,
                         Response = litigationRequest.Response,
+                        RejectReason = RejectReason,
                         ReformerName = litigationRequest.ReformerCitizen?.FullName,
                         ResponseOn = litigationRequest.ResponseOn,
                         IsDone = (litigationRequest.Response == LitigationRequestReformerAssigningRequestStatus.Approve ||

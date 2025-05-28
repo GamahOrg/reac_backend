@@ -47,11 +47,7 @@ public class LitigationRequestController : BaseController<LitigationRequest,
 
         return BadRequest();
     }
- [HttpGet("GetVersion")]
- public async Task<IActionResult> GetVersion(Guid litigationId, CancellationToken cancellationToken)
- {
-     return Ok(1);
- }
+
     [HttpGet("ApproveArbitrationFeesPaid/{litigationId}")]
     public async Task<IActionResult> ApproveArbitrationFeesPaid(Guid litigationId, CancellationToken cancellationToken)
     {
@@ -92,6 +88,12 @@ public class LitigationRequestController : BaseController<LitigationRequest,
             {
 
                 var ejarReturnValue = await _litigationService.CreateEjarLitigationRequestManual(model);
+                return Ok(ejarReturnValue);
+
+            }else if (model.ContractType == Domain.Shared.Enum.LitigationRequestContractType.Properties)
+            {
+
+                var ejarReturnValue = await _litigationService.CreatePropertiesLitigationRequestManual(model);
                 return Ok(ejarReturnValue);
 
             }

@@ -4,6 +4,7 @@ using REAC.Application.Contracts.Dtos.Reports;
 using REAC.Application.Contracts.IAppServices.Reports;
 using REAC.Domain.Shared.Constants;
 
+
 namespace REAC.Api.Controllers.Reports
 {
     [Route("api/[controller]")]
@@ -20,18 +21,28 @@ namespace REAC.Api.Controllers.Reports
             _IReportService = iReportService;
         }
 
+        //[HttpPost(nameof(GetLitigationStatisticsReviewReport))]
+        //[AllowAnonymous]
+        //public async Task<ActionResult> GetLitigationStatisticsReviewReport([FromBody] GenericReportsFilter filter)
+        //{
+
+        //    var response = await _IReportService.GetLitigationStatisticsReviewReport(filter);
+        //    return Ok(response);
+
+        //}
+
         [HttpPost(nameof(GetLitigationStatisticsReviewReport))]
         [AllowAnonymous]
-        public async Task<ActionResult> GetLitigationStatisticsReviewReport([FromBody]GetLitigationStatisticsMainReportFilter filter)
-        {           
-          
-                var response = await _IReportService.GetLitigationStatisticsReviewReport(filter);
-                return Ok(response);           
+        public async Task<ActionResult> GetLitigationStatisticsReviewReport([FromBody] GenericReportsFilter filter)
+        {
+
+            var response = await _IReportService.GetLitigationStatisticsReviewReport(filter);
+            return Ok(response);
 
         }
         [HttpPost(nameof(GetLitigationStatisticsReformerReport))]
         [AllowAnonymous]
-        public async Task<ActionResult> GetLitigationStatisticsReformerReport([FromBody] GetLitigationStatisticsMainReportFilter filter)
+        public async Task<ActionResult> GetLitigationStatisticsReformerReport([FromBody] GenericReportsFilter filter)
         {
 
             var response = await _IReportService.GetLitigationStatisticsReformerReport(filter);
@@ -40,7 +51,7 @@ namespace REAC.Api.Controllers.Reports
         }
         [HttpGet(nameof(GetLitigationStatisticsArbitrationReport))]
         [AllowAnonymous]
-        public async Task<ActionResult> GetLitigationStatisticsArbitrationReport([FromBody] GetLitigationStatisticsMainReportFilter filter)
+        public async Task<ActionResult> GetLitigationStatisticsArbitrationReport([FromBody] GenericReportsFilter filter)
         {
 
             var response = await _IReportService.GetLitigationStatisticsArbitrationReport(filter);
@@ -49,16 +60,16 @@ namespace REAC.Api.Controllers.Reports
         }
         [HttpGet(nameof(GetLitigationStatisticsGeneralReport))]
         [AllowAnonymous]
-        public async Task<ActionResult> GetLitigationStatisticsGeneralReport([FromBody] GetLitigationStatisticsMainReportFilter filter)
+        public async Task<ActionResult> GetLitigationStatisticsGeneralReport([FromBody] GenericReportsFilter filter)
         {
 
             var response = await _IReportService.GetLitigationStatisticsGeneralReport(filter);
             return Ok(response);
 
         }
-        [HttpGet(nameof(GetListOfLitigationReviewReport))]
+        [HttpPost(nameof(GetListOfLitigationReviewReport))]
         [AllowAnonymous]
-        public async Task<ActionResult> GetListOfLitigationReviewReport([FromBody] GetListOfLitigationReviewReportFilter filter)
+        public async Task<ActionResult> GetListOfLitigationReviewReport([FromBody] GenericReportsFilter filter)
         {
 
             var response = await _IReportService.GetListOfLitigationReviewReport(filter);
@@ -67,7 +78,7 @@ namespace REAC.Api.Controllers.Reports
         }
         [HttpGet(nameof(GetListOfLitigationReformerReport))]
         [AllowAnonymous]
-        public async Task<ActionResult> GetListOfLitigationReformerReport([FromBody] GetListOfLitigationReformerReportFilter filter)
+        public async Task<ActionResult> GetListOfLitigationReformerReport([FromBody] GenericReportsFilter filter)
         {
 
             var response = await _IReportService.GetListOfLitigationReformerReport(filter);
@@ -76,7 +87,7 @@ namespace REAC.Api.Controllers.Reports
         }
         [HttpGet(nameof(GetListOfLitigationArbitrationReport))]
         [AllowAnonymous]
-        public async Task<ActionResult> GetListOfLitigationArbitrationReport([FromBody] GetListOfLitigationArbitrationReportFilter filter)
+        public async Task<ActionResult> GetListOfLitigationArbitrationReport([FromBody] GenericReportsFilter filter)
         {
 
             var response = await _IReportService.GetListOfLitigationArbitrationReport(filter);
@@ -85,7 +96,7 @@ namespace REAC.Api.Controllers.Reports
         }
         [HttpGet(nameof(GetListOfLitigationGeneralReport))]
         [AllowAnonymous]
-        public async Task<ActionResult> GetListOfLitigationGeneralReport([FromBody] GetListOfLitigationGeneralReportFilter filter)
+        public async Task<ActionResult> GetListOfLitigationGeneralReport([FromBody] GenericReportsFilter filter)
         {
 
             var response = await _IReportService.GetListOfLitigationGeneralReport(filter);
@@ -95,7 +106,7 @@ namespace REAC.Api.Controllers.Reports
         
         [HttpPost(nameof(GetLitigationStatisticsForAllStages))]
         [AllowAnonymous]
-        public async Task<ActionResult> GetLitigationStatisticsForAllStages([FromBody] GetLitigationStatisticsMainReportFilter filter)
+        public async Task<ActionResult> GetLitigationStatisticsForAllStages([FromBody] GenericReportsFilter filter)
         {
 
             var response = await _IReportService.GetLitigationStatisticsForAllStages(filter);
@@ -105,7 +116,7 @@ namespace REAC.Api.Controllers.Reports
         
         [HttpPost(nameof(GetLitigationStatisticsDetailsForAllStages))]
         [AllowAnonymous]
-        public async Task<ActionResult> GetLitigationStatisticsDetailsForAllStages([FromBody] GetLitigationStatisticsMainReportFilter filter)
+        public async Task<ActionResult> GetLitigationStatisticsDetailsForAllStages([FromBody] GenericReportsFilter filter)
         {
 
             var response = await _IReportService.GetLitigationStatisticsDetailsForAllStages(filter);

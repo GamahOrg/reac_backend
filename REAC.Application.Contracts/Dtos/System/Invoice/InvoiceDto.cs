@@ -6,6 +6,7 @@ namespace REAC.Application.Contracts.Dtos.System.Invoice
     public class InvoiceDto : CreationBaseEntity<Guid>
     {
         public Guid RequestId { get; set; }
+        public string RequestCode { get; set; }
         public string InvoiceCode { get; set; } = null!;
         public decimal Amount { get; set; }
         public decimal InvoiceTax { get; set; }

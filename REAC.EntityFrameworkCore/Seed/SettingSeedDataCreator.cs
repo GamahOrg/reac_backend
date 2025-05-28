@@ -169,6 +169,20 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                         Value = "https://api-dev.rega.gov.sa/v1/mc/cr-information?CRNumber={0}",
                     },
 
+                    new SysSetting
+                    {
+                        Id = Guid.NewGuid(),
+                        Key = "MC_GetCRBasicInfo_URL",
+                        Value = "https://api-dev.rega.gov.sa/v1/mc/cr-basic-info",
+                    },
+
+                    new SysSetting
+                    {
+                        Id = Guid.NewGuid(),
+                        Key = "MC_GetCRPersonRelated_URL",
+                        Value = "https://api-dev.rega.gov.sa/v1/mc/person-related-crs",
+                    },
+
                     #endregion
 
                     #region SMS
@@ -297,6 +311,18 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                         Value="تم ارسال طلب {CitizenName} للانضمام كمحكم لدفع الرسوم"
                     },
 
+                       new SysSetting
+                    {
+                        Id = Guid.NewGuid(),
+                        Key=SysSettingKeyConstants.Arbitrator_UpdateJoiningRequest_ToPayEditFees,
+                        Value="تنويه برجاء دفع رسوم تعديل طلب الانضمام كمحكم {CitizenName}"
+                    },
+                     new SysSetting
+                    {
+                        Id = Guid.NewGuid(),
+                        Key=SysSettingKeyConstants.Employee_Arbitrator_UpdateJoiningRequest_ToPayEditFees,
+                        Value="تم ارسال طلب {CitizenName} للانضمام كمحكم لدفع رسوم تعديل الطلب"
+                    },
                      new SysSetting
                     {
                         Id = Guid.NewGuid(),
@@ -323,7 +349,12 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                          Key=SysSettingKeyConstants.Employee_Arbitrator_UpdateJoiningRequest_PaidFees,
                          Value="تم دفع رسوم طلب {CitizenName} للانضمام كمحكم "
                      },
-
+                         new SysSetting
+                     {
+                         Id= Guid.NewGuid(),
+                         Key=SysSettingKeyConstants.Employee_Arbitrator_UpdateJoiningRequest_PaidEditFees,
+                         Value="تم دفع رسوم طلب تعديل الطلب {CitizenName} للانضمام كمحكم "
+                     },
                      new SysSetting
                      {
                          Id= Guid.NewGuid(),
@@ -1296,6 +1327,11 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                         },new SysSetting
                         {
                             Id = Guid.NewGuid(),
+                            Key = "SLA.ArbitratorTaskRequest.FirstWarning.Admin",
+                            Value = "لم يقم المحكم {Arbitrator} بقبول طلب المهمه"
+                        },new SysSetting
+                        {
+                            Id = Guid.NewGuid(),
                             Key = "SLA.ArbitratorTaskRequest.Cancelled",
                             Value = "تم إلغاء طلب مهمة التحكيم كمحكم على الدعوى رقم {LitigationCode} لتجاوز الرد على المهمة مهلته القصوى"
                         },new SysSetting
@@ -1523,7 +1559,7 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                         #endregion
                 });
 
-            
+
             context.SaveChanges();
         }
 

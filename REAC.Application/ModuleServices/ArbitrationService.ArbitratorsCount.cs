@@ -41,6 +41,21 @@ namespace REAC.Application.ModuleServices
                         Message = "طلب غير موجود"
                     };
 
+                // Validate if the user is allowed to add arbitrators count
+                if (litigationRequest.ArbitratorsSelectionDurationDateTime is not null)
+                {
+                    var timePassedInHours = (DateTime.Now - litigationRequest.ArbitratorsSelectionDurationDateTime).Value.TotalHours;
+
+                    if (timePassedInHours < litigationRequest.ArbitratorSelectionDuration && (litigationRequest.FirstPartyArbitratorsCount is null || litigationRequest.SecondPartyArbitratorsCount is null))
+                    {
+                        return new BaseResponse()
+                        {
+                            IsDone = false,
+                            Message = "برجاء الانتظار حتي اختيار الاطراف او انقضاء مدة الاختيار"
+                        };
+                    }
+                }
+
                 bool allowAdd = true;
 
                 if (litigationRequest.ArbitratorsCount.HasValue)

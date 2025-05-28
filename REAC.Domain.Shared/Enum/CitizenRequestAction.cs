@@ -17,6 +17,10 @@
         ///<summary>ارسال اشعار لدفع الرسوم</summary>
         SendToPayFees = 7,
         ///<summary>اتمام دفع الرسوم</summary>
-        FeesPaid = 8
+        FeesPaid = 8,
+        ///<summary>   تم الارسال لدفع رسوم التعديل</summary>
+        SendToPayEditFees = 10,
+        ///<summary>تم دفع الرسوم التعديل</summary>
+        EditFeesPaid = 11,
     }
 }

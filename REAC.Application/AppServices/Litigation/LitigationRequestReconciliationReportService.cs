@@ -263,7 +263,7 @@ namespace REAC.Application.AppServices.Litigation
 
             if (litigationRequest.MintuesOfMeetingApprovalDefendantStatus.HasValue & litigationRequest.MintuesOfMeetingApprovalPlaintiffStatus.HasValue)
             {
-                if (litigationRequest.MintuesOfMeetingApprovalDefendantStatus == ApproveRejectStatus.Approve & litigationRequest.MintuesOfMeetingApprovalPlaintiffStatus == ApproveRejectStatus.Approve)
+                if (litigationRequest.MintuesOfMeetingApprovalDefendantStatus == ApproveRejectStatus.Approve && litigationRequest.MintuesOfMeetingApprovalPlaintiffStatus == ApproveRejectStatus.Approve)
                 {
                     litigationRequest.InternalStatusId = RequestStatus.ReconciliationWasMade;
                     litigationRequest.ExternalStatusId = RequestStatus.ReconciliationWasMade;
@@ -304,43 +304,89 @@ namespace REAC.Application.AppServices.Litigation
                 }
                 else
                 {
-                    litigationRequest.InternalStatusId = RequestStatus.ReconciliationWasNotMade;
-                    litigationRequest.ExternalStatusId = RequestStatus.ReconciliationWasNotMade;
+                    
                     if (litigationRequest.LitigationRequestCategoryId != LitigationRequestCategory.Reconciliation)
                     {
-                        litigationRequest.LitigationRequestStage = LitigationRequestStage.Arbitration;
-                        litigationRequest.LitigationRequestSubStage = LitigationRequestSubStage.ArbitratorSelectionDuration;
-
-                        await _repository.AddAsync<WorkFlowLog, Guid>(new WorkFlowLog()
+                        if(litigationRequest.PlaintiffAgreementRequestResponse != ApproveRejectStatus.Approve || litigationRequest.DefendantAgreementRequestResponse != ApproveRejectStatus.Approve)
                         {
-                            Id = Guid.NewGuid(),
-                            CreatedOn = DateTime.Now,
-                            RequestId = litigationRequest.Id,
-                            ShowForApplicant = false,
-                            LogMessage = "تم رفض الصلح والانتقال إلى التحكيم"
-                        });
+                            litigationRequest.InternalStatusId = RequestStatus.ReconciliationWasNotMade;
+                            litigationRequest.ExternalStatusId = RequestStatus.ReconciliationWasNotMade;
 
-                        // Send Notification
-                        // تم رفض الصلح والانتقال إلى التحكيم
-                        try
-                        {
-                            bool isAdminArbitrator = true;
-                            msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Decision_ReconciliationWasNotMadeAndMoveToArbitration).Result.Data?.Value;
-                            msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
-                            var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
-                            string body;
-                            using (StreamReader streamReader = File.OpenText(pathToFile))
+                            
+
+                            // Send Notification
+                            // تم رفض الصلح
+                            await _repository.AddAsync<WorkFlowLog, Guid>(new WorkFlowLog()
                             {
-                                body = await streamReader.ReadToEndAsync();
-                                body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Decision_ReconciliationWasNotMadeAndMoveToArbitration).Result.Data?.Value);
-                                body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
-                            }
-                            await SendNotificationMSWithAllTypes(body, msg, litigationRequest, "Citizen Litigation Request For Report Reply Refused", isAdminArbitrator);
-                        }
-                        catch (Exception e)
-                        {
+                                Id = Guid.NewGuid(),
+                                CreatedOn = DateTime.Now,
+                                RequestId = litigationRequest.Id,
+                                ShowForApplicant = false,
+                                LogMessage = "تم رفض الصلح"
+                            });
 
+                            try
+                            {
+                                msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Decision_ReconciliationWasNotMade).Result.Data?.Value;
+                                msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
+                                var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                string body;
+                                using (StreamReader streamReader = File.OpenText(pathToFile))
+                                {
+                                    body = await streamReader.ReadToEndAsync();
+                                    body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Decision_ReconciliationWasNotMade).Result.Data?.Value);
+                                    body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                                }
+                                await SendNotificationMSWithAllTypes(body, msg, litigationRequest, "Citizen Litigation Request For Report Reply Refused");
+
+                            }
+                            catch (Exception e)
+                            {
+
+
+                            }
                         }
+                        else
+                        {
+                            litigationRequest.InternalStatusId = RequestStatus.ReconciliationWasNotMadeAndMoveToArbitration;
+                            litigationRequest.ExternalStatusId = RequestStatus.ReconciliationWasNotMadeAndMoveToArbitration;
+
+                            litigationRequest.LitigationRequestStage = LitigationRequestStage.Arbitration;
+                            litigationRequest.LitigationRequestSubStage = LitigationRequestSubStage.ArbitratorSelectionDuration;
+
+                            await _repository.AddAsync<WorkFlowLog, Guid>(new WorkFlowLog()
+                            {
+                                Id = Guid.NewGuid(),
+                                CreatedOn = DateTime.Now,
+                                RequestId = litigationRequest.Id,
+                                ShowForApplicant = false,
+                                LogMessage = "تم رفض الصلح والانتقال إلى التحكيم"
+                            });
+
+                            // Send Notification
+                            // تم رفض الصلح والانتقال إلى التحكيم
+                            try
+                            {
+                                bool isAdminArbitrator = true;
+                                msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Decision_ReconciliationWasNotMadeAndMoveToArbitration).Result.Data?.Value;
+                                msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
+                                var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                string body;
+                                using (StreamReader streamReader = File.OpenText(pathToFile))
+                                {
+                                    body = await streamReader.ReadToEndAsync();
+                                    body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Decision_ReconciliationWasNotMadeAndMoveToArbitration).Result.Data?.Value);
+                                    body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                                }
+                                await SendNotificationMSWithAllTypes(body, msg, litigationRequest, "Citizen Litigation Request For Report Reply Refused", isAdminArbitrator);
+                            }
+                            catch (Exception e)
+                            {
+
+                            }
+                        }
+
+                        
 
                     }
                     else

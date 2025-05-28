@@ -38,7 +38,8 @@ namespace Bpf.Application.ModuleServices
                     {
                         x.LitigationRequestAmount,
                         x.LitigationRequestStage,
-                        x.IsLitigationFeesHaveBeenCollected
+                        x.IsLitigationFeesHaveBeenCollected,
+                        x.FeesDifference
                     }).First();
 
                 var processinglog = (await _repository.GetQueryable<WorkFlowProcessingLog, Guid>())?
@@ -62,8 +63,7 @@ namespace Bpf.Application.ModuleServices
 
                 WorkFlowStepEventForActorShortDtos.AllowAssign = employee.AllowAssign;
                 WorkFlowStepEventForActorShortDtos.AllowReAssign = employee.AllowReAssign;
-                WorkFlowStepEventForActorShortDtos.Fees = litigationStageFees.LitigationRequestStage == REAC.Domain.Shared.Enum.LitigationRequestStage.Review && !litigationStageFees.IsLitigationFeesHaveBeenCollected ? litigationStageFees.LitigationRequestAmount?.Fees.ToString("0.#")
-                    : null;
+                WorkFlowStepEventForActorShortDtos.Fees = litigationStageFees.LitigationRequestStage == REAC.Domain.Shared.Enum.LitigationRequestStage.Review && !litigationStageFees.IsLitigationFeesHaveBeenCollected ? litigationStageFees.FeesDifference != 0 ? litigationStageFees.FeesDifference.ToString("0.#") : litigationStageFees.LitigationRequestAmount?.Fees.ToString("0.#"): null;
                     
 
 

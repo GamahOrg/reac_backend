@@ -221,6 +221,7 @@ app.UseAuthorization();
 app.UseCors(_defaultCorsPolicyName);
 
 app.UseMiddleware<AuthMiddleware>();
+app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
 
 
 app.MapControllers();

@@ -3,6 +3,7 @@ using Core.GenericRepository.BaseRepository;
 using Core.GenericRepository.Shared.Pagging;
 using Core.Log.Application.Contracts.IAppServices;
 using Core.Shared.Responses;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using REAC.Application.Contracts.Dtos.Citizen;
 using REAC.Application.Contracts.Dtos.Integration.GEE;
@@ -226,9 +227,9 @@ namespace REAC.Application.AppServices
                           Citizen = x,
                           LatestDecision = x.ReformerStopFreeUpDecisions
                               .OrderByDescending(y => y.DecisionDate)
-                              .FirstOrDefault() 
+                              .FirstOrDefault()
                       })
-                      .FirstOrDefault(); 
+                      .FirstOrDefault();
 
 
             if (citizen is null) return new BaseResponse() { IsDone = false, Message = "Not Found" };
@@ -322,6 +323,91 @@ namespace REAC.Application.AppServices
                 Data = citizenReformers.OrderBy(x => x.RequestsCount).ToList()
             };
         }
+        public async Task<BaseResponse> GetReformersLookup()
+        {
+
+
+            var citizens = (await _repository.GetQueryable<Citizen, Guid>())
+                             .Include(x => x.ReformerLitigationRequests)
+                             .Where(x => x.IsReformer == true && x.ReformerStatusId == ReformerStatus.Certified).ToList();
+            
+            if(citizens != null && citizens.Count > 0)
+            {
+                List<CitizenReformer> citizenReformers = new List<CitizenReformer>();
+                citizens.ForEach(t =>
+                {
+
+                    citizenReformers.Add(new CitizenReformer()
+                    {
+                        FullName = t.FullName,
+                        Id = t.Id,
+                        RequestsCount = t.ReformerLitigationRequests.Where(x => x.IsFinished == false).Count()
+                    });
+
+                });
+                return new DataResponse<List<CitizenReformer>>()
+                {
+                    IsDone = true,
+                    Data = citizenReformers.OrderBy(x => x.RequestsCount).ToList()
+                };
+
+                
+            }
+            else
+            {
+                return new DataResponse<List<CitizenReformer>>()
+                {
+                    IsDone = true,
+                    Data = new List<CitizenReformer>()
+                };
+            }
+
+           
+        }
+        
+        public async Task<BaseResponse> GetArbitratorsLookup()
+        {
+
+
+            var citizens = (await _repository.GetQueryable<Citizen, Guid>())
+                             .Include(x => x.ReformerLitigationRequests)
+                             .Where(x => x.IsReformer == true && x.ReformerStatusId == ReformerStatus.Certified).ToList();
+            
+            if(citizens != null && citizens.Count > 0)
+            {
+                List<CitizenReformer> citizenReformers = new List<CitizenReformer>();
+                citizens.ForEach(t =>
+                {
+
+                    citizenReformers.Add(new CitizenReformer()
+                    {
+                        FullName = t.FullName,
+                        Id = t.Id,
+                        RequestsCount = t.ReformerLitigationRequests.Where(x => x.IsFinished == false).Count()
+                    });
+
+                });
+                return new DataResponse<List<CitizenReformer>>()
+                {
+                    IsDone = true,
+                    Data = citizenReformers.OrderBy(x => x.RequestsCount).ToList()
+                };
+
+                
+            }
+            else
+            {
+                return new DataResponse<List<CitizenReformer>>()
+                {
+                    IsDone = true,
+                    Data = new List<CitizenReformer>()
+                };
+            }
+
+           
+        }
+        
+        
         public async Task<BaseResponse> GetArbitratorsLookup(Guid? citizenId, Guid requestId)
         {
             var litigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>())
@@ -356,7 +442,7 @@ namespace REAC.Application.AppServices
             };
 
         }
-        public async Task<BaseResponse> GetArbitratorsFullLookup(Guid? citizenId, Guid requestId)
+        public async Task<BaseResponse> GetArbitratorsFullLookup(Guid? citizenId, Guid requestId, string? fullName = null, string? area = null, string? arbitratorClass = null)
         {
             var litigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>())
                 .Include(x => x.LitigationRequestArbitratorLists)
@@ -371,22 +457,47 @@ namespace REAC.Application.AppServices
                          .Include(x => x.LitigationRequestArbitratorLists)
                          .Include(x => x.Area)
                          .Include(x => x.CitizenRequests)
+                         .ThenInclude(t => t.SysArbitratorClass)
                          .Where(x => x.IsArbitrator == true & x.ArbitratorStatusId == ArbitratorStatus.Certified & x.Id != citizenId).ToList();
             List<CitizenFullLookupArbirator> citizenArbirators = new List<CitizenFullLookupArbirator>();
             citizens.ForEach(t =>
             {
+                var latestRequest = t.CitizenRequests?.OrderByDescending(r => r.RequestOn).FirstOrDefault();
+                // var areaName = latestRequest?.SysArea?.AreaName;
+                //  var arbitratorClassFilter = latestRequest?.SysArbitratorClass?.ArbitratorClassName;
                 if (t.Id != litigationRequest.ApplicantCitizenId & t.Id != litigationRequest.Contract.FirstPartyCitizenId & t.Id != litigationRequest.Contract.SecondPartyCitizenId)
                 {
                     if (t.Id != litigationRequest.ArbitratorCitizenId)
                     {
                         if (litigationRequest.LitigationRequestArbitratorLists?.Count(x => x.ArbitratorCitizenId == t.Id) == 0)
                         {
+
+                            if (!string.IsNullOrWhiteSpace(fullName) && !t.FullName.Contains(fullName, StringComparison.OrdinalIgnoreCase))
+                                return;
+                            var areaName = latestRequest?.SysArea?.AreaName;
+                            if (!string.IsNullOrWhiteSpace(area))
+                            {
+                                if (string.IsNullOrWhiteSpace(areaName) ||
+                                    !areaName.Contains(area, StringComparison.OrdinalIgnoreCase))
+                                    return;
+                            }
+
+                            var arbitratorClassName = latestRequest?.SysArbitratorClass?.ArbitratorClassName;
+
+                            if (!string.IsNullOrWhiteSpace(arbitratorClass))
+                            {
+                                if (string.IsNullOrWhiteSpace(arbitratorClassName) ||
+                                    !arbitratorClassName.Contains(arbitratorClass, StringComparison.OrdinalIgnoreCase))
+                                    return;
+                            }
+
                             citizenArbirators.Add(new CitizenFullLookupArbirator()
                             {
                                 ArbitratorClass = t.CitizenRequests?.FirstOrDefault()?.SysArbitratorClass?.ArbitratorClassName,
                                 AreaName = t.CitizenRequests?.FirstOrDefault()?.SysArea?.AreaName,
                                 Brief = t.CitizenRequests?.FirstOrDefault()?.Brief,
                                 FullName = t.FullName,
+                                ExperienceYears = t.CitizenRequests?.FirstOrDefault()?.ExperienceYears,
                                 Id = t.Id,
                                 RequestsCount = t.ArbitratorLitigationRequests.Where(x => x.IsFinished == false).Count() + t.LitigationRequestArbitratorLists.Count()
                             });
@@ -401,8 +512,6 @@ namespace REAC.Application.AppServices
             };
 
         }
-
-
         #region Backoffice
 
         public async Task<BaseResponse> AddArbitratorFreeUpDecision(ArbitratorFreeUpDecisionCreateDto arbitratorFreeUpDecisionCreateDto)
@@ -807,7 +916,7 @@ namespace REAC.Application.AppServices
                         Message = msg
                     });
 
-                    var notificationResultUpdatedArbitrator = _notificationService.SendNotifications(
+                    var notificationResultUpdatedArbitrator = await _notificationService.SendNotifications(
                         new SendEmailDto()
                         {
                             To = new List<string>() { citizen.Email, deptAdminInfoReconciliation.Data.Email },
@@ -833,12 +942,7 @@ namespace REAC.Application.AppServices
             }
             catch (Exception ex)
             {
-                return new ExceptionResponse()
-                {
-                    IsDone = false,
-                    Exception = ex.ToString(),
-                    Message = ex.Message
-                };
+                throw;
             }
 
         }
@@ -967,7 +1071,7 @@ namespace REAC.Application.AppServices
 
                 var litigationRequestArbitratorAssigningRequest = (await _repository.GetQueryable<LitigationRequestArbitratorAssigningRequest, Guid>())
                     .Include(x => x.LitigationRequest)
-                .Any(l => l.CitizenId == arbitratorStopDecisionCreateDto.CitizenId && l.Response == LitigationRequestArbitratorAssigningRequestStatus.Approve 
+                .Any(l => l.CitizenId == arbitratorStopDecisionCreateDto.CitizenId && l.Response == LitigationRequestArbitratorAssigningRequestStatus.Approve
                 && l.LitigationRequest.LitigationRequestStage == LitigationRequestStage.Arbitration && l.LitigationRequest.LitigationRequestSubStage != LitigationRequestSubStage.JudgmentDecisionIssued);
 
                 if (litigationRequestArbitratorAssigningRequest)
@@ -1083,96 +1187,129 @@ namespace REAC.Application.AppServices
                     };
 
                 var litigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>())
-                .Any(l => (l.ExternalStatusId != RequestStatus.Cancelled | l.InternalStatusId != RequestStatus.Cancelled) 
+                .Any(l => (l.ExternalStatusId != RequestStatus.Cancelled | l.InternalStatusId != RequestStatus.Cancelled)
                 & l.LitigationRequestStage == LitigationRequestStage.Reconciliation & l.ReformerCitizenId == reformerStopDecisionCreateDto.CitizenId);
 
                 if (litigationRequest)
                     return new BaseResponse() { IsDone = false, Message = "لا يمكن قبول الطلب لوجود دعوي لم تنته بعد من فترة الصُلح" };
 
-                var deptAdminInfoReconciliation = await _employeeService.GetAdminsByDepartmentType(DepartmentType.Reconciliation);
-                var msg = "";
-                string body;
-                var applicationNotifications = new List<SysNotificationDto>();
-                
 
-                citizen.ReformerStatusId = ReformerStatus.Stopped;
 
-                ReformerStopFreeUpDecision ReformerStopFreeUpDecision = new ReformerStopFreeUpDecision();
-                ReformerStopFreeUpDecision.CitizenId = reformerStopDecisionCreateDto.CitizenId;
-                ReformerStopFreeUpDecision.ReformerStatusId = ReformerStatus.Stopped;
-                ReformerStopFreeUpDecision.DecisionDate = DateTime.Now;
-                ReformerStopFreeUpDecision.LateLitigationRequestNumber = reformerStopDecisionCreateDto.LateLitigationRequestNumber;
-                ReformerStopFreeUpDecision.StoppingReason = reformerStopDecisionCreateDto.StoppingReason;
-                ReformerStopFreeUpDecision.DecisionFrom = reformerStopDecisionCreateDto.DecisionFrom;
-                ReformerStopFreeUpDecision.DecisionTo = reformerStopDecisionCreateDto.DecisionTo;
-                ReformerStopFreeUpDecision.CreatedBy = referenceId;
-                ReformerStopFreeUpDecision.CreatedByRole = EntityFrameworkCore.Seed.Roles.Reformer;
-                await _repository.AddAsync<ReformerStopFreeUpDecision, int>(ReformerStopFreeUpDecision);
-                var saveResponse = await _repository.SaveChangesAsync();
-                if (!saveResponse.IsDone)
-                    return saveResponse;
-
-                // Send Notification
-                // تم إيقاف المصلح
-
-                try
+                if (reformerStopDecisionCreateDto.DecisionFrom.Value.Date == DateTime.Now.Date)
                 {
-                    msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reformer_DeActivate).Result.Data?.Value;
-                    msg = msg.Replace("{CitizenName}", citizen.FullName);
-                    var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
-                    using (StreamReader streamReader = File.OpenText(pathToFile))
+
+                    var deptAdminInfoReconciliation = await _employeeService.GetAdminsByDepartmentType(DepartmentType.Reconciliation);
+                    var msg = "";
+                    string body;
+                    var applicationNotifications = new List<SysNotificationDto>();
+
+
+                    ReformerStopFreeUpDecision ReformerStopFreeUpDecision = new ReformerStopFreeUpDecision();
+                    ReformerStopFreeUpDecision.CitizenId = reformerStopDecisionCreateDto.CitizenId;
+                    ReformerStopFreeUpDecision.DecisionDate = DateTime.Now;
+                    ReformerStopFreeUpDecision.LateLitigationRequestNumber = reformerStopDecisionCreateDto.LateLitigationRequestNumber;
+                    ReformerStopFreeUpDecision.StoppingReason = reformerStopDecisionCreateDto.StoppingReason;
+                    ReformerStopFreeUpDecision.DecisionFrom = reformerStopDecisionCreateDto.DecisionFrom;
+                    ReformerStopFreeUpDecision.DecisionTo = reformerStopDecisionCreateDto.DecisionTo;
+                    ReformerStopFreeUpDecision.CreatedBy = referenceId;
+                    ReformerStopFreeUpDecision.CreatedByRole = EntityFrameworkCore.Seed.Roles.Reformer;
+                    citizen.ReformerStatusId = ReformerStatus.Stopped;
+                    ReformerStopFreeUpDecision.ReformerStatusId = ReformerStatus.Stopped;
+
+
+                    await _repository.AddAsync<ReformerStopFreeUpDecision, int>(ReformerStopFreeUpDecision);
+                    var saveResponse = await _repository.SaveChangesAsync();
+                    if (!saveResponse.IsDone)
+                        return saveResponse;
+
+                    // Send Notification
+                    // تم إيقاف المصلح
+
+                    try
                     {
-                        body = await streamReader.ReadToEndAsync();
-                        body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reformer_DeActivate).Result.Data?.Value);
-                        body = body?.Replace("{CitizenName}", citizen.FullName);
+                        msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reformer_DeActivate).Result.Data?.Value;
+                        msg = msg.Replace("{CitizenName}", citizen.FullName);
+                        var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                        using (StreamReader streamReader = File.OpenText(pathToFile))
+                        {
+                            body = await streamReader.ReadToEndAsync();
+                            body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reformer_DeActivate).Result.Data?.Value);
+                            body = body?.Replace("{CitizenName}", citizen.FullName);
+                        }
+                        applicationNotifications.Add(new SysNotificationDto()
+                        {
+                            ActorId = citizen.Id,
+                            CreatedOn = DateTime.Now,
+                            ActorTypeId = NotificationActorType.Reformer,
+                            IsViewed = false,
+                            ViewedOn = null,
+                            RequestId = citizen.Id,
+                            RequestTypeId = RequestType.StopFreeUpReformer,
+                            Message = msg
+                        });
+
+                        applicationNotifications.Add(new SysNotificationDto()
+                        {
+                            ActorId = deptAdminInfoReconciliation.Data.Id,
+                            CreatedOn = DateTime.Now,
+                            ActorTypeId = NotificationActorType.Employee,
+                            IsViewed = false,
+                            ViewedOn = null,
+                            RequestId = citizen.Id,
+                            RequestTypeId = RequestType.StopFreeUpArbitrator,
+                            Message = msg
+                        });
+
+                        var notificationResultUpdatedArbitrator = await _notificationService.SendNotifications(
+                            new SendEmailDto()
+                            {
+                                To = new List<string>() { citizen.Email, deptAdminInfoReconciliation.Data.Email },
+                                Subject = "Reformer DeActivated",
+                                Body = body
+                            },
+                            new SMSRequestDto()
+                            {
+                                message_text = msg,
+                                recipients = new List<string>() { citizen.Mobile, deptAdminInfoReconciliation.Data.Mobile },
+                                notification_type = "SMS",
+
+                            },
+                            applicationNotifications
+                            );
                     }
-                    applicationNotifications.Add(new SysNotificationDto()
+                    catch (Exception ex)
                     {
-                        ActorId = citizen.Id,
-                        CreatedOn = DateTime.Now,
-                        ActorTypeId = NotificationActorType.Reformer,
-                        IsViewed = false,
-                        ViewedOn = null,
-                        RequestId = citizen.Id,
-                        RequestTypeId = RequestType.StopFreeUpReformer,
-                        Message = msg
-                    });
 
-                    applicationNotifications.Add(new SysNotificationDto()
-                    {
-                        ActorId = deptAdminInfoReconciliation.Data.Id,
-                        CreatedOn = DateTime.Now,
-                        ActorTypeId = NotificationActorType.Employee,
-                        IsViewed = false,
-                        ViewedOn = null,
-                        RequestId = citizen.Id,
-                        RequestTypeId = RequestType.StopFreeUpArbitrator,
-                        Message = msg
-                    });
+                    }
 
-                    var notificationResultUpdatedArbitrator = await _notificationService.SendNotifications(
-                        new SendEmailDto()
-                        {
-                            To = new List<string>() { citizen.Email, deptAdminInfoReconciliation.Data.Email },
-                            Subject = "Reformer DeActivated",
-                            Body = body
-                        },
-                        new SMSRequestDto()
-                        {
-                            message_text = msg,
-                            recipients = new List<string>() { citizen.Mobile, deptAdminInfoReconciliation.Data.Mobile },
-                            notification_type = "SMS",
+                    return new DataResponse<CitizenReformerDetailShortDto>() { IsDone = true, Data = new CitizenReformerDetailShortDto() { ReformerStatusId = ReformerStatus.Stopped, StoppedFromDate = reformerStopDecisionCreateDto.DecisionFrom, StoppedToDate = reformerStopDecisionCreateDto.DecisionTo }, Message = " تم إلغاء تفعيل الحساب كمصلح" };
 
-                        },
-                        applicationNotifications
-                        );
                 }
-                catch (Exception ex)
+                else
                 {
+                    ReformerStopFreeUpDecision ReformerStopFreeUpDecision = new ReformerStopFreeUpDecision();
+                    ReformerStopFreeUpDecision.CitizenId = reformerStopDecisionCreateDto.CitizenId;
+                    ReformerStopFreeUpDecision.DecisionDate = DateTime.Now;
+                    ReformerStopFreeUpDecision.LateLitigationRequestNumber = reformerStopDecisionCreateDto.LateLitigationRequestNumber;
+                    ReformerStopFreeUpDecision.StoppingReason = reformerStopDecisionCreateDto.StoppingReason;
+                    ReformerStopFreeUpDecision.DecisionFrom = reformerStopDecisionCreateDto.DecisionFrom;
+                    ReformerStopFreeUpDecision.DecisionTo = reformerStopDecisionCreateDto.DecisionTo;
+                    ReformerStopFreeUpDecision.CreatedBy = referenceId;
+                    ReformerStopFreeUpDecision.CreatedByRole = EntityFrameworkCore.Seed.Roles.Reformer;
+                    citizen.ReformerStatusId = ReformerStatus.PendingStop;
+                    ReformerStopFreeUpDecision.ReformerStatusId = ReformerStatus.PendingStop;
 
+
+                    await _repository.AddAsync<ReformerStopFreeUpDecision, int>(ReformerStopFreeUpDecision);
+                    var saveResponse = await _repository.SaveChangesAsync();
+                    if (!saveResponse.IsDone)
+                        return saveResponse;
+
+                    return new DataResponse<CitizenReformerDetailShortDto>() { IsDone = true, Data = new CitizenReformerDetailShortDto() { ReformerStatusId = ReformerStatus.Certified }, Message = " تم تحديد موعد إلغاء تفعيل الحساب كمصلح" };
                 }
 
-                return new DataResponse<CitizenReformerDetailShortDto>() { IsDone = true , Data = new CitizenReformerDetailShortDto() { ReformerStatusId = ReformerStatus.Stopped}, Message = " تم إلغاء تفعيل الحساب كمصلح" };
+
+
             }
             catch (Exception ex)
             {
@@ -1289,15 +1426,32 @@ namespace REAC.Application.AppServices
         }
 
 
-        public async Task<BaseResponse> GetReformersDecisions(int pageIndex, int pageSize, CancellationToken cancellationToken = default)
+        public async Task<BaseResponse> GetReformersDecisions(int pageIndex, int pageSize, string? searchKey, bool? isActive, CancellationToken cancellationToken = default)
         {
             PagedResult<Citizen> citizens = null;
 
-            var entitiesQuerable = (await _repository.GetQueryable<Citizen, Guid>())
-                                     .Include(x => x.ReformerLitigationRequests)
-                         .Include(x => x.ReformerStopFreeUpDecisions)
-                         .Include(x => x.SysReformerStatus);
+            var entitiesQuerable = await GetQueryableAsync();
 
+            entitiesQuerable = (entitiesQuerable
+                                    .Include(x => x.ReformerLitigationRequests)
+                                    .Include(x => x.ReformerStopFreeUpDecisions)
+                                    .Include(x => x.SysReformerStatus));
+
+            if (!string.IsNullOrEmpty(searchKey))
+            {
+                entitiesQuerable = (entitiesQuerable.Where(l => l.FullName.Contains(searchKey) ||
+                                                                         l.IdentityNumber.Contains(searchKey)));
+            }
+            if (isActive.HasValue && isActive == true)
+            {
+                entitiesQuerable = (entitiesQuerable.Where(l => l.ReformerStatusId == ReformerStatus.Certified));
+
+            }
+
+            if (isActive.HasValue && isActive != true)
+            {
+                entitiesQuerable = (entitiesQuerable.Where(l => l.ReformerStatusId == ReformerStatus.Stopped));
+            }
 
             citizens = entitiesQuerable.Where(x => x.IsReformer == true)
                                        .OrderByDescending(x => x.FullName)
@@ -1316,8 +1470,12 @@ namespace REAC.Application.AppServices
                 citizenReformer.IdentityNumber = citizen.IdentityNumber;
                 citizenReformer.ReformerStatus = citizen.SysReformerStatus?.StatusName;
                 citizenReformer.Email = citizen.Email;
+                citizenReformer.AllRequestsCount = citizen.ReformerLitigationRequests.Count();
+                citizenReformer.FinishedRequestsCount = citizen.ReformerLitigationRequests.Count(x => x.IsFinished == true);
                 citizenReformer.RequestsCount = citizen.ReformerLitigationRequests.Count(x => x.IsFinished == false);
                 citizenReformer.ReformerStatusDate = citizen.ReformerStopFreeUpDecisions?.OrderBy(x => x.DecisionDate).LastOrDefault()?.DecisionDate;
+                citizenReformer.StoppedFromDate = citizen.ReformerStopFreeUpDecisions?.OrderBy(x => x.DecisionDate).LastOrDefault()?.DecisionFrom;
+                citizenReformer.StoppedToDate = citizen.ReformerStopFreeUpDecisions?.OrderBy(x => x.DecisionDate).LastOrDefault()?.DecisionTo;
                 citizenReformers.Add(citizenReformer);
 
             }
@@ -1377,6 +1535,8 @@ namespace REAC.Application.AppServices
                     reformerStopFreeUpDetailDecisionDto.DecisionDate = decision.DecisionDate;
                     reformerStopFreeUpDetailDecisionDto.ReformerStatus = decision.SysReformerStatus?.StatusName;
                     reformerStopFreeUpDetailDecisionDto.StoppingReason = decision.StoppingReason;
+                    reformerStopFreeUpDetailDecisionDto.StoppedFromDate = decision.DecisionFrom;
+                    reformerStopFreeUpDetailDecisionDto.StoppedToDate = decision.DecisionTo;
                     reformerStopFreeUpDetailDecisionDto.LateLitigationRequestNumber = decision.LateLitigationRequestNumber;
                     citizenReformer.ReformerStopFreeUpDetailDecisionDtos.Add(reformerStopFreeUpDetailDecisionDto);
                 }
@@ -1389,16 +1549,40 @@ namespace REAC.Application.AppServices
 
         }
 
-        public async Task<BaseResponse> GetArbitratorsDecisions(int pageIndex, int pageSize, CancellationToken cancellationToken = default)
+        public async Task<BaseResponse> GetArbitratorsDecisions(int pageIndex, int pageSize, string? searchKey, bool? isActive, CancellationToken cancellationToken = default)
         {
             PagedResult<Citizen> citizens = null;
 
-            var entitiesQuerable = (await _repository.GetQueryable<Citizen, Guid>())
+            var entitiesQuerable = await GetQueryableAsync();
+
+            entitiesQuerable = (entitiesQuerable
                                       .Include(x => x.ArbitratorStopFreeUpDecisions)
+                                      .Include(x => x.CitizenRequests)
+                                      .ThenInclude(x => x.SysArbitratorClass)
                                       .Include(x => x.ArbitratorLitigationRequests)
                                       .Include(x => x.LitigationRequestArbitratorLists)
-                       .Include(x => x.SysArbitratorStatus);
+                                      .Include(x => x.SysArbitratorStatus)
+                                      .Include(x => x.Area)
+                                      .Include(x => x.City)
+                                      );
 
+            if (!string.IsNullOrEmpty(searchKey))
+            {
+                entitiesQuerable = (entitiesQuerable.Where(l => l.FullName.Contains(searchKey) ||
+                                                                l.City != null && l.City.CityName.ToLower().Contains(searchKey.ToLower()) ||
+                                                                l.Area != null && l.Area.AreaName.ToLower().Contains(searchKey.ToLower()) ||
+                                                                         l.IdentityNumber.Contains(searchKey)));
+            }
+            if (isActive.HasValue && isActive == true)
+            {
+                entitiesQuerable = (entitiesQuerable.Where(l => l.ArbitratorStatusId == ArbitratorStatus.Certified));
+
+            }
+
+            if (isActive.HasValue && isActive != true)
+            {
+                entitiesQuerable = (entitiesQuerable.Where(l => l.ArbitratorStatusId == ArbitratorStatus.Stopped));
+            }
 
             citizens = entitiesQuerable.Where(x => x.IsArbitrator == true)
                                         .OrderByDescending(x => x.FullName)
@@ -1420,7 +1604,9 @@ namespace REAC.Application.AppServices
                 citizenArbitrator.ArbitratorClass = citizen.CitizenRequests?.OrderBy(x => x.RequestOn).LastOrDefault()?.SysArbitratorClass?.ArbitratorClassName;
                 citizenArbitrator.ExperienceYears = citizen.CitizenRequests?.OrderBy(x => x.RequestOn).LastOrDefault()?.ExperienceYears;
                 citizenArbitrator.Email = citizen.Email;
-                citizenArbitrator.RequestsCount = citizen.ArbitratorLitigationRequests.Count + citizen.LitigationRequestArbitratorLists.Count;
+                citizenArbitrator.AllRequestsCount = citizen.ArbitratorLitigationRequests.Count() + citizen.LitigationRequestArbitratorLists.Count();
+                citizenArbitrator.FinishedRequestsCount = citizen.ArbitratorLitigationRequests.Count(x => x.IsFinished == true);
+                citizenArbitrator.RequestsCount = citizen.ArbitratorLitigationRequests.Count(x => x.IsFinished != true) + citizen.LitigationRequestArbitratorLists.Count();
                 citizenArbitrator.ArbitratorStatusDate = citizen.ArbitratorStopFreeUpDecisions?.OrderBy(x => x.DecisionDate).LastOrDefault()?.DecisionDate;
                 citizenArbitrators.Add(citizenArbitrator);
 

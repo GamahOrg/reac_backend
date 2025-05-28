@@ -508,7 +508,7 @@ public partial class LitigationRequestStatusSeedDataCreator
                     new SysLitigationRequestStatus
                     {
                         Id = Domain.Shared.Enum.RequestStatus.LitigationFeesHaveBeenCollected,
-                        RequestStatus = "تم تحصيل رسوم الدعوة",
+                        RequestStatus = "تم دفع رسوم الدعوة",
                         CreatedOn = DateTime.Now,
                         Translations=new List<SysLitigationRequestStatusTranslation>
                         {
@@ -519,7 +519,7 @@ public partial class LitigationRequestStatusSeedDataCreator
                             },
                             new SysLitigationRequestStatusTranslation
                             {
-                                RequestStatus = "تم تحصيل رسوم الدعوة",
+                                RequestStatus = "تم دفع رسوم الدعوة",
                                 LanguageCode = Constants.ArabicLanguage
                             }
                         }
@@ -546,7 +546,7 @@ public partial class LitigationRequestStatusSeedDataCreator
                     new SysLitigationRequestStatus
                     {
                         Id = Domain.Shared.Enum.RequestStatus.ReconciliationFeesHaveBeenCollected,
-                        RequestStatus = "تم تحصيل رسوم الصلح",
+                        RequestStatus = "تم دفع رسوم الصلح",
                         CreatedOn = DateTime.Now,
                         Translations=new List<SysLitigationRequestStatusTranslation>
                         {
@@ -557,7 +557,7 @@ public partial class LitigationRequestStatusSeedDataCreator
                             },
                             new SysLitigationRequestStatusTranslation
                             {
-                                RequestStatus = "تم تحصيل رسوم الصلح",
+                                RequestStatus = "تم دفع رسوم الصلح",
                                 LanguageCode = Constants.ArabicLanguage
                             }
                         }
@@ -584,7 +584,7 @@ public partial class LitigationRequestStatusSeedDataCreator
                     new SysLitigationRequestStatus
                     {
                         Id = Domain.Shared.Enum.RequestStatus.ArbitrationFeesHaveBeenCollected,
-                        RequestStatus = "تم تحصيل رسوم التحكيم",
+                        RequestStatus = "تم دفع رسوم التحكيم",
                         CreatedOn = DateTime.Now,
                         Translations=new List<SysLitigationRequestStatusTranslation>
                         {
@@ -595,7 +595,25 @@ public partial class LitigationRequestStatusSeedDataCreator
                             },
                             new SysLitigationRequestStatusTranslation
                             {
-                                RequestStatus = "تم تحصيل رسوم التحكيم",
+                                RequestStatus = "تم دفع رسوم التحكيم",
+                                LanguageCode = Constants.ArabicLanguage
+                            }
+                        }
+                    },new SysLitigationRequestStatus
+                    {
+                        Id = Domain.Shared.Enum.RequestStatus.WaitingForArbitratorsSelection,
+                        RequestStatus = "بانتظار اختيار محكم",
+                        CreatedOn = DateTime.Now,
+                        Translations=new List<SysLitigationRequestStatusTranslation>
+                        {
+                            new SysLitigationRequestStatusTranslation
+                            {
+                                RequestStatus = "Waiting For Arbitrators Selection",
+                                LanguageCode = Constants.EnglishLanguage
+                            },
+                            new SysLitigationRequestStatusTranslation
+                            {
+                                RequestStatus = "بانتظار اختيار محكم",
                                 LanguageCode = Constants.ArabicLanguage
                             }
                         }
@@ -635,6 +653,26 @@ public partial class LitigationRequestStatusSeedDataCreator
                             new SysLitigationRequestStatusTranslation
                             {
                                 RequestStatus = "قيد دفع رسوم التحكيم",
+                                LanguageCode = Constants.ArabicLanguage
+                            }
+                        }
+                    }
+                    ,
+                    new SysLitigationRequestStatus
+                    {
+                        Id = Domain.Shared.Enum.RequestStatus.WaitingForDetermineArbitratorsNumber,
+                        RequestStatus = "بإنتظار تحديد عدد هيئة التحكيم",
+                        CreatedOn = DateTime.Now,
+                        Translations=new List<SysLitigationRequestStatusTranslation>
+                        {
+                            new SysLitigationRequestStatusTranslation
+                            {
+                                RequestStatus = "Waiting For Determine Arbitrators Number",
+                                LanguageCode = Constants.EnglishLanguage
+                            },
+                            new SysLitigationRequestStatusTranslation
+                            {
+                                RequestStatus = "بإنتظار تحديد عدد هيئة التحكيم",
                                 LanguageCode = Constants.ArabicLanguage
                             }
                         }

@@ -56,8 +56,8 @@ namespace REAC.Application.Contracts.Dtos.Integration.Rent
         public string realEstateDeveloperRepresentativeNID { get; set; }
         public List<Unit> units { get; set; }
         public string totalNumberOfUnits { get; set; }
-        public int totalLandAreaSize { get; set; }
-        public int totalAreaSizeForProject { get; set; }
+        public decimal totalLandAreaSize { get; set; }
+        public decimal totalAreaSizeForProject { get; set; }
         public int numberOfBlocks { get; set; }
         public int numberOfBuildings { get; set; }
         public List<object> attachments { get; set; }
