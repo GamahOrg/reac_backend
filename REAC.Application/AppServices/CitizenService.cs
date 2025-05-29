@@ -371,15 +371,15 @@ namespace REAC.Application.AppServices
 
             var citizens = (await _repository.GetQueryable<Citizen, Guid>())
                              .Include(x => x.ReformerLitigationRequests)
-                             .Where(x => x.IsReformer == true && x.ReformerStatusId == ReformerStatus.Certified).ToList();
+                             .Where(x => x.IsArbitrator == true && x.ArbitratorStatusId == ArbitratorStatus.Certified).ToList();
             
             if(citizens != null && citizens.Count > 0)
             {
-                List<CitizenReformer> citizenReformers = new List<CitizenReformer>();
+                List<CitizenAbitrator> citizenArbitrators = new List<CitizenAbitrator>();
                 citizens.ForEach(t =>
                 {
 
-                    citizenReformers.Add(new CitizenReformer()
+                    citizenArbitrators.Add(new CitizenAbitrator()
                     {
                         FullName = t.FullName,
                         Id = t.Id,
@@ -387,20 +387,20 @@ namespace REAC.Application.AppServices
                     });
 
                 });
-                return new DataResponse<List<CitizenReformer>>()
+                return new DataResponse<List<CitizenAbitrator>>()
                 {
                     IsDone = true,
-                    Data = citizenReformers.OrderBy(x => x.RequestsCount).ToList()
+                    Data = citizenArbitrators.OrderBy(x => x.RequestsCount).ToList()
                 };
 
                 
             }
             else
             {
-                return new DataResponse<List<CitizenReformer>>()
+                return new DataResponse<List<CitizenAbitrator>>()
                 {
                     IsDone = true,
-                    Data = new List<CitizenReformer>()
+                    Data = new List<CitizenAbitrator>()
                 };
             }
 

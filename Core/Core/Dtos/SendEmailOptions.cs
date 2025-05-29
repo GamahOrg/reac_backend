@@ -2,6 +2,7 @@
 {
     public class SendEmailOptions
     {
+        public string EmailURL { get; set; }
         public string From { get; set; }
         public string Passowrd { get; set; }
         public string Host { get; set; }

@@ -1,4 +1,4 @@
-CREATE TABLE [dbo].[LitigationRequestAmountLog](
+﻿CREATE TABLE [dbo].[LitigationRequestAmountLog](
 	[Id] [uniqueidentifier] NOT NULL,
 	[AmountId] [uniqueidentifier] NOT NULL,
 	[LitigationRequestId] [uniqueidentifier] NOT NULL,
@@ -30,3 +30,4 @@ GO
 Alter table dbo.LitigationRequest
 Add FeesDifference decimal (18, 2)  Default ((0.0))
 ----------------------------------------------
+

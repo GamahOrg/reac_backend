@@ -45,8 +45,8 @@ namespace REAC.Application.AppServices.SLA
                             var slaSendEmailService = scope.ServiceProvider.GetRequiredService<ISendEmailSLAService>();
                             var slaSendSMSService = scope.ServiceProvider.GetRequiredService<ISendSMSSLAService>();
 
-                            if (SendEmailSLAService.emailSetting is null)
-                                await slaSendEmailService.GetEmailSettings();
+                            //if (SendEmailSLAService.emailSetting is null)
+                            //    await slaSendEmailService.GetEmailSettings();
 
                             if (slaSendEmailService is not null)
                                 await slaSendEmailService.SendMail();

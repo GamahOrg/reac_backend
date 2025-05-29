@@ -147,7 +147,16 @@ END;
 
 ------------------------------------------------------------------
 
-Alter PROCEDURE [dbo].[GetLitigationStatisticsReviewReport] 
+DROP PROCEDURE [dbo].GetLitigationStatisticsReviewReport
+
+-------------------------------------------------------------------
+GO
+/****** Object:  StoredProcedure [dbo].[GetLitigationStatisticsReport]    Script Date: 5/29/2025 4:29:03 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+ALTER PROCEDURE [dbo].[GetLitigationStatisticsReport] 
     @EmployeeIds NVARCHAR(MAX) = NULL,
     @LitigationRequestStageId INT = NULL,
     @FromDate DATETIME = NULL,
@@ -182,14 +191,29 @@ BEGIN
 			L.IsReminderForReviewerManagerSent,
 			L.IsReminderForReviewerSent
         FROM LitigationRequest L
-              WHERE 
-            (
-                @EmployeeIds IS NULL OR 
-                EXISTS (
-                    SELECT 1 FROM WorkFlowProcessingLog WF 
-                    WHERE WF.RequestId = L.Id AND WF.EmployeeId IN (SELECT value FROM STRING_SPLIT(@EmployeeIds, ','))
-                )
-            )
+              WHERE
+			     (
+        @EmployeeIds IS NULL
+        OR (
+            (@LitigationRequestStageId = 1 AND EXISTS (
+                SELECT 1 
+                FROM WorkFlowProcessingLog WF 
+                WHERE WF.RequestId = L.Id 
+                  AND WF.EmployeeId IN (SELECT value FROM STRING_SPLIT(@EmployeeIds, ','))
+            ))
+            OR
+            (@LitigationRequestStageId = 2 AND L.ReformerCitizenId IN (SELECT value FROM STRING_SPLIT(@EmployeeIds, ',')))
+            OR
+            (@LitigationRequestStageId = 3 AND 
+			 (@EmployeeIds IS NULL OR L.Id IN (
+            SELECT LRA.LitigationRequestId
+            FROM LitigationRequestArbitrator LRA
+            WHERE LRA.ArbitratorCitizenId IN (SELECT TRY_CAST(value AS UNIQUEIDENTIFIER) FROM STRING_SPLIT(@EmployeeIds, ',') WHERE TRY_CAST(value AS UNIQUEIDENTIFIER) IS NOT NULL)
+        ) OR L.ArbitratorCitizenId IN (SELECT value FROM STRING_SPLIT(@EmployeeIds, ',') ))
+			)
+        )
+    )
+            
             AND (@LitigationRequestStageId IS NULL OR L.LitigationRequestStage = @LitigationRequestStageId)
           AND (@AreaIds IS NULL OR L.AreaId IN (SELECT value FROM STRING_SPLIT(@AreaIds, ',')))
           AND (@CitiesIds IS NULL OR L.CityId IN (SELECT value FROM STRING_SPLIT(@CitiesIds, ',')))
@@ -242,4 +266,3 @@ AS DECIMAL(5,2)) AS TotalReviewDueDateRatio
     FROM BaseLitigations L
     LEFT JOIN LitigationRequestContract C ON C.Id = L.ContractId;
 END
-GO
