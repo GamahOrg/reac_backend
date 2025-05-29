@@ -36,43 +36,7 @@ namespace REAC.Application.AppServices.Reports
             _configuration = configuration;
         }
 
-        //public async Task<BaseResponse> GetListOfLitigationReviewReport(GenericReportsFilter filter)
-        //{
-        //    if (filter.IsAdmin != true)
-        //    {
-
-        //        Guid employee = Guid.Empty;
-        //        _jwtReader.GetReferenceId(ref employee);
-
-        //        filter.EmployeeIds = new List<string>() { employee.ToString() };
-        //    }
-        //    var inputParms = BuildListOfLitigationReviewReport(filter);
-
-        //    //var baseResponseStaticsResult = await GetLitigationStatisticsReviewReports(filter);
-        //    var (resultList, outPut) = await _entityRepository.ExecuteStoredProcedureAsync<GetListOfLitigationReviewReportResult>("[dbo].[GetListOfLitigationReviewReport]", inputParms);
-        //    if (/*baseResponseStaticsResult.IsDone &&*/ resultList.IsDone)
-        //    {
-
-        //        dynamic obj = new ExpandoObject();
-        //        //obj.LitigationStatisticsReview = (baseResponseStaticsResult as DataResponse<List<GetLitigationStatisticsMainReportResult>>)?.Data;
-        //        obj.LitigationListReview = (resultList as DataResponse<List<GetListOfLitigationReviewReportResult>>)?.Data;
-        //        return new DataResponse<object>()
-        //        {
-        //            IsDone = true,
-        //            Data = obj
-        //        };
-        //    }
-        //    return new BaseResponse()
-        //    {
-        //        IsDone = false,
-        //        Message = string.Join(", ",
-        //                    new[] { resultList?.Message/*, baseResponseStaticsResult?.Message */}
-        //                    .Where(msg => !string.IsNullOrEmpty(msg)))
-
-        //    };
-        //}
-
-
+        #region List Of Litigation Reports
 
         public async Task<BaseResponse> GetListOfLitigationReviewReport(GenericReportsFilter filter)
         {
@@ -82,7 +46,7 @@ namespace REAC.Application.AppServices.Reports
                 _jwtReader.GetReferenceId(ref employee);
                 filter.EmployeeIds = new List<string>() { employee.ToString() };
             }
-            var inputParms = BuildListOfLitigationReviewReport(filter);
+            var inputParms = BuildListOfLitigationReviewParam(filter);
 
             var resultList = new List<GetListOfLitigationReviewReportResult>();
             int totalCount = 0;
@@ -148,10 +112,235 @@ namespace REAC.Application.AppServices.Reports
                 IsDone = true
             };
         }
+        public async Task<BaseResponse> GetListOfLitigationReformerReport(GenericReportsFilter filter)
+        {
+            if (filter.IsAdmin != true)
+            {
+                Guid reformer = Guid.Empty;
+                _jwtReader.GetReferenceId(ref reformer);
+                filter.ReformersIds = new List<string>() { reformer.ToString() };
+            }
+            var inputParms = BuildListOfLitigationReformerParam(filter);
 
+            var resultList = new List<GetListOfLitigationReformerReportResult>();
+            int totalCount = 0;
 
+            // Adjust this to get your connection string
 
-        public async Task<BaseResponse> GetLitigationStatisticsReviewReport(GenericReportsFilter filter)
+            using (var conn = new SqlConnection(_configuration.GetConnectionString("AppConnectionString")))
+            using (var cmd = new SqlCommand("[dbo].[GetListOfLitigationReformerReport]", conn))
+            {
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                // Add parameters
+                foreach (var kvp in inputParms)
+                {
+                    cmd.Parameters.AddWithValue("@" + kvp.Key, kvp.Value ?? DBNull.Value);
+                }
+
+                await conn.OpenAsync();
+
+                using (var reader = await cmd.ExecuteReaderAsync())
+                {
+                    // First result set: the list
+                    while (await reader.ReadAsync())
+                    {
+                        var item = new GetListOfLitigationReformerReportResult
+                        {
+                            ReformerName = reader["ReformerName"] as string,
+                            CreatedOn = reader["CreatedOn"] as DateTime?,
+                            RequestCode = reader["RequestCode"] as string,
+                            ContractAddress = reader["ContractAddress"] as string,
+                            LitigationAmount = reader["LitigationAmount"] as string,
+                            AreaName = reader["AreaName"] as string,
+                            CityName = reader["CityName"] as string,
+                            CategoryName = reader["CategoryName"] as string,
+                            RequestStatus = reader["RequestStatus"] as string,
+                            FirstParty = reader["FirstParty"] as string,
+                            SecondParty = reader["SecondParty"] as string,
+                        };
+                        resultList.Add(item);
+                    }
+
+                    // Second result set: the total count (if you return it separately)
+                    if (await reader.NextResultAsync() && await reader.ReadAsync())
+                    {
+                        totalCount = reader.GetInt32(0);
+                    }
+                }
+            }
+
+            var pageCount = (double)totalCount / filter.Take;
+
+            return new DataResponse<PagedResult<GetListOfLitigationReformerReportResult>>
+            {
+                Data =
+                  new PagedResult<GetListOfLitigationReformerReportResult>
+                  {
+                      Results = resultList,
+                      CurrentPage = (int)filter.Skip + 1,
+                      PageCount = (int)Math.Ceiling((double)pageCount),
+                      PageSize = (int)filter.Take,
+                      TotalCount = totalCount
+                  },
+                IsDone = true
+            };
+        }
+        
+        public async Task<BaseResponse> GetListOfLitigationArbitrationReport(GenericReportsFilter filter)
+        {
+            if (filter.IsAdmin != true)
+            {
+                Guid arbitrator = Guid.Empty;
+                _jwtReader.GetReferenceId(ref arbitrator);
+                filter.ArbitratorsIds = new List<string>() { arbitrator.ToString() };
+            }
+            var inputParms = BuildListOfLitigationArbitrationParam(filter);
+
+            var resultList = new List<GetListOfLitigationArbitrationReportResult>();
+            int totalCount = 0;
+
+            // Adjust this to get your connection string
+
+            using (var conn = new SqlConnection(_configuration.GetConnectionString("AppConnectionString")))
+            using (var cmd = new SqlCommand("[dbo].[GetListOfLitigationArbitrationReport]", conn))
+            {
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                // Add parameters
+                foreach (var kvp in inputParms)
+                {
+                    cmd.Parameters.AddWithValue("@" + kvp.Key, kvp.Value ?? DBNull.Value);
+                }
+
+                await conn.OpenAsync();
+
+                using (var reader = await cmd.ExecuteReaderAsync())
+                {
+                    // First result set: the list
+                    while (await reader.ReadAsync())
+                    {
+                        var item = new GetListOfLitigationArbitrationReportResult
+                        {
+                            ArbitratorChairmanName = reader["ArbitratorChairmanName"] as string,
+                            ArbitratorsFullNames = reader["ArbitratorsFullNames"] as string,
+                            CreatedOn = reader["CreatedOn"] as DateTime?,
+                            RequestCode = reader["RequestCode"] as string,
+                            ContractAddress = reader["ContractAddress"] as string,
+                            LitigationAmount = reader["LitigationAmount"] as string,
+                            AreaName = reader["AreaName"] as string,
+                            CityName = reader["CityName"] as string,
+                            CategoryName = reader["CategoryName"] as string,
+                            RequestStatus = reader["RequestStatus"] as string,
+                            FirstParty = reader["FirstParty"] as string,
+                            SecondParty = reader["SecondParty"] as string,
+                        };
+                        resultList.Add(item);
+                    }
+
+                    // Second result set: the total count (if you return it separately)
+                    if (await reader.NextResultAsync() && await reader.ReadAsync())
+                    {
+                        totalCount = reader.GetInt32(0);
+                    }
+                }
+            }
+
+            var pageCount = (double)totalCount / filter.Take;
+
+            return new DataResponse<PagedResult<GetListOfLitigationArbitrationReportResult>>
+            {
+                Data =
+                  new PagedResult<GetListOfLitigationArbitrationReportResult>
+                  {
+                      Results = resultList,
+                      CurrentPage = (int)filter.Skip + 1,
+                      PageCount = (int)Math.Ceiling((double)pageCount),
+                      PageSize = (int)filter.Take,
+                      TotalCount = totalCount
+                  },
+                IsDone = true
+            };
+        }
+        
+        public async Task<BaseResponse> GetListOfLitigationForAdminReport(GenericReportsFilter filter)
+        {
+            
+            var inputParms = BuildListOfLitigationForAdminParam(filter);
+
+            var resultList = new List<GetListOfLitigationForAdminReportResult>();
+            int totalCount = 0;
+
+            // Adjust this to get your connection string
+
+            using (var conn = new SqlConnection(_configuration.GetConnectionString("AppConnectionString")))
+            using (var cmd = new SqlCommand("[dbo].[GetListOfLitigationForAdminReport]", conn))
+            {
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                // Add parameters
+                foreach (var kvp in inputParms)
+                {
+                    cmd.Parameters.AddWithValue("@" + kvp.Key, kvp.Value ?? DBNull.Value);
+                }
+
+                await conn.OpenAsync();
+
+                using (var reader = await cmd.ExecuteReaderAsync())
+                {
+                    // First result set: the list
+                    while (await reader.ReadAsync())
+                    {
+                        var item = new GetListOfLitigationForAdminReportResult
+                        {
+                            ArbitratorChairmanName = reader["ArbitratorChairmanName"] as string,
+                            ArbitratorsFullNames = reader["ArbitratorsFullNames"] as string,
+                            ReformerName = reader["ReformerName"] as string,
+                            EmployeeName = reader["EmployeeName"] as string,
+                            CreatedOn = reader["CreatedOn"] as DateTime?,
+                            RequestCode = reader["RequestCode"] as string,
+                            ContractAddress = reader["ContractAddress"] as string,
+                            LitigationAmount = reader["LitigationAmount"] as string,
+                            AreaName = reader["AreaName"] as string,
+                            CityName = reader["CityName"] as string,
+                            CategoryName = reader["CategoryName"] as string,
+                            RequestStatus = reader["RequestStatus"] as string,
+                            FirstParty = reader["FirstParty"] as string,
+                            SecondParty = reader["SecondParty"] as string,
+                        };
+                        resultList.Add(item);
+                    }
+
+                    // Second result set: the total count (if you return it separately)
+                    if (await reader.NextResultAsync() && await reader.ReadAsync())
+                    {
+                        totalCount = reader.GetInt32(0);
+                    }
+                }
+            }
+
+            var pageCount = (double)totalCount / filter.Take;
+
+            return new DataResponse<PagedResult<GetListOfLitigationForAdminReportResult>>
+            {
+                Data =
+                  new PagedResult<GetListOfLitigationForAdminReportResult>
+                  {
+                      Results = resultList,
+                      CurrentPage = (int)filter.Skip + 1,
+                      PageCount = (int)Math.Ceiling((double)pageCount),
+                      PageSize = (int)filter.Take,
+                      TotalCount = totalCount
+                  },
+                IsDone = true
+            };
+        }
+
+        #endregion
+
+        #region Litigation Statistics Reports
+
+        public async Task<BaseResponse> GetLitigationStatisticsReconciliationReport(GenericReportsFilter filter)
         {
             Guid employee = Guid.Empty;
             _jwtReader.GetReferenceId(ref employee);
@@ -161,9 +350,10 @@ namespace REAC.Application.AppServices.Reports
                 filter.EmployeeIds = new List<string>() { employee.ToString() };
             }
             //"2025-05-21"
+            filter.LitigationRequestStageId = 2;
 
-            var inputParms = BuildReviewFilterParam(filter);
-            var (result, outPut) = await _entityRepository.ExecuteStoredProcedureAsync<GetLitigationStatisticsReportResult>("[dbo].[GetLitigationStatisticsReviewReport]", inputParms);
+            var inputParms = BuildFilterParam(filter);
+            var (result, outPut) = await _entityRepository.ExecuteStoredProcedureAsync<GetLitigationStatisticsReportResult>("[dbo].[GetLitigationStatisticsReport]", inputParms);
 
             if (result.IsDone)
             {
@@ -182,40 +372,96 @@ namespace REAC.Application.AppServices.Reports
 
         }
 
-        //public async Task<BaseResponse> GetLitigationStatisticsReviewReport(GenericReportsFilter filter)
-        //{
-        //    var inputParms = BuildMainFilterParam(filter);
-        //    var (result, outPut) = await _entityRepository.ExecuteStoredProcedureAsync<GetLitigationStatisticsMainReportResult>("[dbo].[GetLitigationStatisticsReviewReport]", inputParms);
-        //    return result;
-        //}
-        public async Task<BaseResponse> GetListOfLitigationReformerReport(GenericReportsFilter filter)
+        public async Task<BaseResponse> GetLitigationStatisticsArbitrationsReport(GenericReportsFilter filter)
         {
-            var inputParms = BuildMainFilterParam(filter);
-            //inputParms.Add("ReformerNames", filter.ReformerNames ?? Convert.DBNull);
-            //var out=new Dictionary(){{"id","int"}};for example
-            var baseResponseStaticsResult = await GetLitigationStatisticsReformerReport(filter);
-            var (resultList, outPut) = await _entityRepository.ExecuteStoredProcedureAsync<GetListOfLitigationReformerReportResult>("[dbo].[GetListOfLitigationReformerReport]", inputParms);
-            if (baseResponseStaticsResult.IsDone && resultList.IsDone)
-            {
+            Guid employee = Guid.Empty;
+            _jwtReader.GetReferenceId(ref employee);
 
-                dynamic obj = new ExpandoObject();
-                obj.LitigationStatisticsReformer = (baseResponseStaticsResult as DataResponse<List<GetLitigationStatisticsMainReportResult>>)?.Data;
-                obj.LitigationListReformer = (resultList as DataResponse<List<GetListOfLitigationReformerReportResult>>)?.Data;
-                return new DataResponse<object>()
-                {
-                    IsDone = true,
-                    Data = obj
-                };
+            if (filter.IsAdmin != true)
+            {
+                filter.EmployeeIds = new List<string>() { employee.ToString() };
+            }
+            //"2025-05-21"
+            filter.LitigationRequestStageId = 3;
+            var inputParms = BuildFilterParam(filter);
+            var (result, outPut) = await _entityRepository.ExecuteStoredProcedureAsync<GetLitigationStatisticsReportResult>("[dbo].[GetLitigationStatisticsReport]", inputParms);
+
+            if (result.IsDone)
+            {
+                return result;
             }
             return new BaseResponse()
             {
                 IsDone = false,
                 Message = string.Join(", ",
-                            new[] { resultList?.Message, baseResponseStaticsResult?.Message }
+                            new[] { result?.Message, result?.Message }
                             .Where(msg => !string.IsNullOrEmpty(msg)))
 
             };
+
+
+
         }
+
+        public async Task<BaseResponse> GetLitigationStatisticsReviewReport(GenericReportsFilter filter)
+        {
+            Guid employee = Guid.Empty;
+            _jwtReader.GetReferenceId(ref employee);
+
+            if (filter.IsAdmin != true)
+            {
+                filter.EmployeeIds = new List<string>() { employee.ToString() };
+            }
+            //"2025-05-21"
+            filter.LitigationRequestStageId = 1;
+
+            var inputParms = BuildFilterParam(filter);
+            var (result, outPut) = await _entityRepository.ExecuteStoredProcedureAsync<GetLitigationStatisticsReportResult>("[dbo].[GetLitigationStatisticsReport]", inputParms);
+
+            if (result.IsDone)
+            {
+                return result;
+            }
+            return new BaseResponse()
+            {
+                IsDone = false,
+                Message = string.Join(", ",
+                            new[] { result?.Message, result?.Message }
+                            .Where(msg => !string.IsNullOrEmpty(msg)))
+
+            };
+
+
+
+        }
+        
+        public async Task<BaseResponse> GetLitigationStatisticsForAdminReport(GenericReportsFilter filter)
+        {
+            var inputParms = BuildLitigationStatisticsForAdminParam(filter);
+            var (result, outPut) = await _entityRepository.ExecuteStoredProcedureAsync<GetLitigationStatisticsForAdminReportResult>("[dbo].[GetLitigationStatisticsForAdminReport]", inputParms);
+
+            if (result.IsDone)
+            {
+                return result;
+            }
+            return new BaseResponse()
+            {
+                IsDone = false,
+                Message = string.Join(", ",
+                            new[] { result?.Message, result?.Message }
+                            .Where(msg => !string.IsNullOrEmpty(msg)))
+
+            };
+
+
+
+        }
+
+
+        #endregion
+
+
+        
 
         public async Task<BaseResponse> GetLitigationStatisticsReformerReport(GenericReportsFilter filter)
         {
@@ -224,34 +470,34 @@ namespace REAC.Application.AppServices.Reports
             return result;
         }
 
-        public async Task<BaseResponse> GetListOfLitigationArbitrationReport(GenericReportsFilter filter)
-        {
-            var inputParms = BuildMainFilterParam(filter);
-            //inputParms.Add("ArbitrationNames", filter.ArbitrationNames ?? Convert.DBNull);
-            //var out=new Dictionary(){{"id","int"}};for example
-            var baseResponseStaticsResult = await GetLitigationStatisticsArbitrationReport(filter);
-            var (resultList, outPut) = await _entityRepository.ExecuteStoredProcedureAsync<GetListOfLitigationArbitrationReportResult>("[dbo].[GetListOfLitigationArbitrationReport]", inputParms);
-            if (baseResponseStaticsResult.IsDone && resultList.IsDone)
-            {
+        //public async Task<BaseResponse> GetListOfLitigationArbitrationReport(GenericReportsFilter filter)
+        //{
+        //    var inputParms = BuildMainFilterParam(filter);
+        //    //inputParms.Add("ArbitrationNames", filter.ArbitrationNames ?? Convert.DBNull);
+        //    //var out=new Dictionary(){{"id","int"}};for example
+        //    var baseResponseStaticsResult = await GetLitigationStatisticsArbitrationReport(filter);
+        //    var (resultList, outPut) = await _entityRepository.ExecuteStoredProcedureAsync<GetListOfLitigationArbitrationReportResult>("[dbo].[GetListOfLitigationArbitrationReport]", inputParms);
+        //    if (baseResponseStaticsResult.IsDone && resultList.IsDone)
+        //    {
 
-                dynamic obj = new ExpandoObject();
-                obj.LitigationStatisticsArbitration = (baseResponseStaticsResult as DataResponse<List<GetLitigationStatisticsMainReportResult>>)?.Data;
-                obj.LitigationListArbitration = (resultList as DataResponse<List<GetListOfLitigationArbitrationReportResult>>)?.Data;
-                return new DataResponse<object>()
-                {
-                    IsDone = true,
-                    Data = obj
-                };
-            }
-            return new BaseResponse()
-            {
-                IsDone = false,
-                Message = string.Join(", ",
-                            new[] { resultList?.Message, baseResponseStaticsResult?.Message }
-                            .Where(msg => !string.IsNullOrEmpty(msg)))
+        //        dynamic obj = new ExpandoObject();
+        //        obj.LitigationStatisticsArbitration = (baseResponseStaticsResult as DataResponse<List<GetLitigationStatisticsMainReportResult>>)?.Data;
+        //        obj.LitigationListArbitration = (resultList as DataResponse<List<GetListOfLitigationArbitrationReportResult>>)?.Data;
+        //        return new DataResponse<object>()
+        //        {
+        //            IsDone = true,
+        //            Data = obj
+        //        };
+        //    }
+        //    return new BaseResponse()
+        //    {
+        //        IsDone = false,
+        //        Message = string.Join(", ",
+        //                    new[] { resultList?.Message, baseResponseStaticsResult?.Message }
+        //                    .Where(msg => !string.IsNullOrEmpty(msg)))
 
-            };
-        }
+        //    };
+        //}
         public async Task<BaseResponse> GetLitigationStatisticsArbitrationReport(GenericReportsFilter filter)
         {
             var inputParms = BuildMainFilterParam(filter);
@@ -385,6 +631,209 @@ namespace REAC.Application.AppServices.Reports
             return result;
         }
 
+
+        public async Task<BaseResponse> GetReviewersReport(GenericEmployeeReportsFilter filter)
+        {
+            var inputParms = BuildReviewersReportsFilter(filter);
+
+            var resultList = new List<GetReviwersReportResult>();
+            int totalCount = 0;
+
+            // Adjust this to get your connection string
+
+            using (var conn = new SqlConnection(_configuration.GetConnectionString("AppConnectionString")))
+            using (var cmd = new SqlCommand("[dbo].[GetReviewersReport]", conn))
+            {
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                // Add parameters
+                foreach (var kvp in inputParms)
+                {
+                    cmd.Parameters.AddWithValue("@" + kvp.Key, kvp.Value ?? DBNull.Value);
+                }
+
+                await conn.OpenAsync();
+
+                using (var reader = await cmd.ExecuteReaderAsync())
+                {
+                    // First result set: the list
+                    while (await reader.ReadAsync())
+                    {
+                        var item = new GetReviwersReportResult
+                        {
+                            ReviewerName = reader["ReviewerName"] as string,
+                            ReviewerStatus = reader["ReviewerStatus"] as string,
+                            TotalLitigationCount = reader["TotalLitigationCount"]!=null? (int) reader["TotalLitigationCount"]:null,
+                            NotFinishedCount = reader["NotFinishedCount"] != null ? (int) reader["NotFinishedCount"]:null,
+                            FinishedCount = reader["FinishedCount"] != null ? (int)reader["FinishedCount"] : null,
+                            TotalReviewDueDateCount = reader["TotalReviewDueDateCount"] != null ? (int)reader["TotalReviewDueDateCount"] : null,
+                            NotFinishedRatio = reader["NotFinishedRatio"] != null ? (decimal)reader["NotFinishedRatio"] : null,
+                            FinishedRatio = reader["FinishedRatio"] != null ? (decimal)reader["FinishedRatio"] : null,
+                            TotalReviewDueDateRatio = reader["TotalReviewDueDateRatio"] != null ? (decimal)reader["TotalReviewDueDateRatio"] : null,
+                        };
+                        resultList.Add(item);
+                    }
+
+                    // Second result set: the total count (if you return it separately)
+                    if (await reader.NextResultAsync() && await reader.ReadAsync())
+                    {
+                        totalCount = reader.GetInt32(0);
+                    }
+                }
+            }
+
+            var pageCount = (double)totalCount / filter.Take;
+
+            return new DataResponse<PagedResult<GetReviwersReportResult>>
+            {
+                Data =
+                  new PagedResult<GetReviwersReportResult>
+                  {
+                      Results = resultList,
+                      CurrentPage = (int)filter.Skip + 1,
+                      PageCount = (int)Math.Ceiling((double)pageCount),
+                      PageSize = (int)filter.Take,
+                      TotalCount = totalCount
+                  },
+                IsDone = true
+            };
+        }
+
+        public async Task<BaseResponse> GetReformersReport(GenericEmployeeReportsFilter filter)
+        {
+            var inputParms = BuildReformersReportsFilter(filter);
+
+            var resultList = new List<GetReformersReportResult>();
+            int totalCount = 0;
+
+            // Adjust this to get your connection string
+
+            using (var conn = new SqlConnection(_configuration.GetConnectionString("AppConnectionString")))
+            using (var cmd = new SqlCommand("[dbo].[GetReformersReport]", conn))
+            {
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                // Add parameters
+                foreach (var kvp in inputParms)
+                {
+                    cmd.Parameters.AddWithValue("@" + kvp.Key, kvp.Value ?? DBNull.Value);
+                }
+
+                await conn.OpenAsync();
+
+                using (var reader = await cmd.ExecuteReaderAsync())
+                {
+                    // First result set: the list
+                    while (await reader.ReadAsync())
+                    {
+                        var item = new GetReformersReportResult
+                        {
+                            ReformerName = reader["ReformerName"] as string,
+                            ReformerStatus = reader["ReformerStatus"] as string,
+                            ExperienceYears = reader["ExperienceYears"] != null ? (int)reader["ExperienceYears"] : null,
+                            TotalLitigationCount = reader["TotalLitigationCount"] != null ? (int)reader["TotalLitigationCount"] : null,
+                            NotFinishedCount = reader["NotFinishedCount"] != null ? (int)reader["NotFinishedCount"] : null,
+                            FinishedCount = reader["FinishedCount"] != null ? (int)reader["FinishedCount"] : null,
+                             DueDateCount = reader["DueDateCount"] != null ? (int)reader["DueDateCount"] : null,
+                            NotFinishedRatio = reader["NotFinishedRatio"] != null ? (decimal)reader["NotFinishedRatio"] : null,
+                            FinishedRatio = reader["FinishedRatio"] != null ? (decimal)reader["FinishedRatio"] : null,
+                            DueDateRatio = reader["DueDateRatio"] != null ? (decimal)reader["DueDateRatio"] : null,
+                        };
+                        resultList.Add(item);
+                    }
+
+                    // Second result set: the total count (if you return it separately)
+                    if (await reader.NextResultAsync() && await reader.ReadAsync())
+                    {
+                        totalCount = reader.GetInt32(0);
+                    }
+                }
+            }
+
+            var pageCount = (double)totalCount / filter.Take;
+
+            return new DataResponse<PagedResult<GetReformersReportResult>>
+            {
+                Data =
+                  new PagedResult<GetReformersReportResult>
+                  {
+                      Results = resultList,
+                      CurrentPage = (int)filter.Skip + 1,
+                      PageCount = (int)Math.Ceiling((double)pageCount),
+                      PageSize = (int)filter.Take,
+                      TotalCount = totalCount
+                  },
+                IsDone = true
+            };
+        }
+
+        public async Task<BaseResponse> GetArbitratorsReport(GenericEmployeeReportsFilter filter)
+        {
+            var inputParms = BuildArbitratorReportsFilter(filter);
+
+            var resultList = new List<GetArbitratorsReportResult>();
+            int totalCount = 0;
+
+            // Adjust this to get your connection string
+
+            using (var conn = new SqlConnection(_configuration.GetConnectionString("AppConnectionString")))
+            using (var cmd = new SqlCommand("[dbo].[GetArbitratorsReport]", conn))
+            {
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                // Add parameters
+                foreach (var kvp in inputParms)
+                {
+                    cmd.Parameters.AddWithValue("@" + kvp.Key, kvp.Value ?? DBNull.Value);
+                }
+
+                await conn.OpenAsync();
+
+                using (var reader = await cmd.ExecuteReaderAsync())
+                {
+                    // First result set: the list
+                    while (await reader.ReadAsync())
+                    {
+                        var item = new GetArbitratorsReportResult
+                        {
+                            ArbitratorName = reader["ArbitratorName"] as string,
+                            ArbitratorStatus = reader["ArbitratorStatus"] as string,
+                            ExperienceYears = reader["ExperienceYears"] != null ? (int)reader["ExperienceYears"] : null,
+                            TotalLitigationCount = reader["TotalLitigationCount"] != null ? (int)reader["TotalLitigationCount"] : null,
+                            NotFinishedCount = reader["NotFinishedCount"] != null ? (int)reader["NotFinishedCount"] : null,
+                            FinishedCount = reader["FinishedCount"] != null ? (int)reader["FinishedCount"] : null,
+                            DueDateCount = reader["DueDateCount"] != null ? (int)reader["DueDateCount"] : null,
+                            NotFinishedRatio = reader["NotFinishedRatio"] != null ? (decimal)reader["NotFinishedRatio"] : null,
+                            FinishedRatio = reader["FinishedRatio"] != null ? (decimal)reader["FinishedRatio"] : null,
+                            DueDateRatio = reader["DueDateRatio"] != null ? (decimal)reader["DueDateRatio"] : null,
+                        };
+                        resultList.Add(item);
+                    }
+
+                    // Second result set: the total count (if you return it separately)
+                    if (await reader.NextResultAsync() && await reader.ReadAsync())
+                    {
+                        totalCount = reader.GetInt32(0);
+                    }
+                }
+            }
+
+            var pageCount = (double)totalCount / filter.Take;
+
+            return new DataResponse<PagedResult<GetArbitratorsReportResult>>
+            {
+                Data =
+                  new PagedResult<GetArbitratorsReportResult>
+                  {
+                      Results = resultList,
+                      CurrentPage = (int)filter.Skip + 1,
+                      PageCount = (int)Math.Ceiling((double)pageCount),
+                      PageSize = (int)filter.Take,
+                      TotalCount = totalCount
+                  },
+                IsDone = true
+            };
+        }
         #region helpers
 
         private Dictionary<string, object> BuildMainFilterParam(GenericReportsFilter filter)
@@ -400,8 +849,8 @@ namespace REAC.Application.AppServices.Reports
                         { "LitigationRequestStatusIds", filter.LitigationRequestStatusIds ?? (object)DBNull.Value },
                         { "LitigationRequestAmountIds", filter.LitigationRequestAmountId != null  ? filter.LitigationRequestAmountId :(object) DBNull.Value },
                         { "EmployeeIds", filter.EmployeeIds ?? (object)DBNull.Value },
-                        { "ReformerIds", filter.ReformerIds ?? (object)DBNull.Value },
-                        { "ArbitratorIds", filter.ArbitratorIds ?? (object)DBNull.Value },
+                        { "ReformerIds", filter.ReformersIds ?? (object)DBNull.Value },
+                        { "ArbitratorIds", filter.ArbitratorsIds ?? (object)DBNull.Value },
                         { "ArbitratorChairmanIds", filter.ArbitratorChairmanIds ?? (object)DBNull.Value },
                         { "Skip", filter.Skip ?? (object)DBNull.Value },
                         { "Take", filter.Take ?? (object)DBNull.Value }
@@ -409,12 +858,48 @@ namespace REAC.Application.AppServices.Reports
 
         }
 
-        private Dictionary<string, object> BuildReviewFilterParam(GenericReportsFilter filter)
+        private Dictionary<string, object> BuildReviewersReportsFilter(GenericEmployeeReportsFilter filter)
         {
-            var ss = filter.FromDate ?? (object)DBNull.Value;
+            return new Dictionary<string, object>()
+            {
+                        { "ReviewerName", filter.ReviewerName ?? (object)DBNull.Value },
+                        { "ReviewerStatus", filter.ReviewerStatus ?? (object)DBNull.Value },
+                        { "Skip", filter.Skip ?? (object)DBNull.Value },
+                        { "Take", filter.Take ?? (object)DBNull.Value }
+            };
+
+        }
+
+        private Dictionary<string, object> BuildReformersReportsFilter(GenericEmployeeReportsFilter filter)
+        {
+            return new Dictionary<string, object>()
+            {
+                        { "ReformerName", filter.ReformerName ?? (object)DBNull.Value },
+                        { "ReformerStatus", filter.ReformerStatus ?? (object)DBNull.Value },
+                        { "ExperienceYears", filter.ExperienceYears ?? (object)DBNull.Value },
+                        { "Skip", filter.Skip ?? (object)DBNull.Value },
+                        { "Take", filter.Take ?? (object)DBNull.Value }
+            };
+
+        }
+
+        private Dictionary<string, object> BuildArbitratorReportsFilter(GenericEmployeeReportsFilter filter)
+        {
+            return new Dictionary<string, object>()
+            {
+                        { "ArbitratorName", filter.ArbitratorName ?? (object)DBNull.Value },
+                        { "ArbitratorStatus", filter.ArbitratorStatus ?? (object)DBNull.Value },
+                        { "ExperienceYears", filter.ExperienceYears ?? (object)DBNull.Value },
+                        { "Skip", filter.Skip ?? (object)DBNull.Value },
+                        { "Take", filter.Take ?? (object)DBNull.Value }
+            };
+
+        }
+        private Dictionary<string, object> BuildFilterParam(GenericReportsFilter filter)
+        {
             return new Dictionary<string, object>()
            {
-               { "LitigationRequestStageId", "1"}, //for review stage
+               { "LitigationRequestStageId", filter.LitigationRequestStageId ?? (object)DBNull.Value}, 
                { "FromDate", filter.FromDate ?? (object)DBNull.Value },
                { "ToDate", filter.ToDate ?? (object)DBNull.Value },
                { "AreaIds", filter.AreaIds != null && filter.AreaIds.Any() ? string.Join(",", filter.AreaIds) : (object)DBNull.Value },
@@ -424,10 +909,26 @@ namespace REAC.Application.AppServices.Reports
                { "EmployeeIds", filter.EmployeeIds != null && filter.EmployeeIds.Any() ? string.Join(",", filter.EmployeeIds) :(object) DBNull.Value },
            };
         }
-
-        private Dictionary<string, object> BuildListOfLitigationReviewReport(GenericReportsFilter filter)
+        
+        private Dictionary<string, object> BuildLitigationStatisticsForAdminParam(GenericReportsFilter filter)
         {
-            var ss = filter.FromDate ?? (object)DBNull.Value;
+            return new Dictionary<string, object>()
+           {
+               { "FromDate", filter.FromDate ?? (object)DBNull.Value },
+               { "ToDate", filter.ToDate ?? (object)DBNull.Value },
+               { "AreaIds", filter.AreaIds != null && filter.AreaIds.Any() ? string.Join(",", filter.AreaIds) : (object)DBNull.Value },
+               { "CitiesIds", filter.CitiesIds != null && filter.CitiesIds.Any()  ? string.Join(",", filter.CitiesIds) : (object)DBNull.Value},
+               { "LitigationRequestCategoryIds", filter.LitigationRequestCategoryIds != null && filter.LitigationRequestCategoryIds.Any() ? string.Join(",", filter.LitigationRequestCategoryIds) :(object) DBNull.Value },
+               { "LitigationRequestStageIds", filter.LitigationRequestStageIds != null && filter.LitigationRequestStageIds.Any() ? string.Join(",", filter.LitigationRequestStageIds) :(object) DBNull.Value },
+               { "LitigationRequestAmountId", filter.LitigationRequestAmountId != null  ? filter.LitigationRequestAmountId :(object) DBNull.Value },
+               { "EmployeeIds", filter.EmployeeIds != null && filter.EmployeeIds.Any() ? string.Join(",", filter.EmployeeIds) :(object) DBNull.Value },
+               { "ReformersIds", filter.ReformersIds != null && filter.ReformersIds.Any() ? string.Join(",", filter.ReformersIds) :(object) DBNull.Value },
+               { "ArbitratorsIds", filter.ArbitratorsIds != null && filter.ArbitratorsIds.Any() ? string.Join(",", filter.ArbitratorsIds) :(object) DBNull.Value },
+           };
+        }
+
+        private Dictionary<string, object> BuildListOfLitigationReviewParam(GenericReportsFilter filter)
+        {
             return new Dictionary<string, object>()
            {
                { "RequestCode", filter.RequestCode ?? (object)DBNull.Value },
@@ -438,6 +939,68 @@ namespace REAC.Application.AppServices.Reports
                { "LitigationRequestCategoryIds", filter.LitigationRequestCategoryIds != null && filter.LitigationRequestCategoryIds.Any() ? string.Join(",", filter.LitigationRequestCategoryIds) :(object) DBNull.Value },
                { "LitigationRequestStatusIds", filter.LitigationRequestStatusIds != null && filter.LitigationRequestStatusIds.Any() ? string.Join(",", filter.LitigationRequestStatusIds) :(object) DBNull.Value },
                { "LitigationRequestAmountId", filter.LitigationRequestAmountId != null  ? filter.LitigationRequestAmountId :(object) DBNull.Value },
+               { "EmployeeIds", filter.EmployeeIds != null && filter.EmployeeIds.Any() ? string.Join(",", filter.EmployeeIds) :(object) DBNull.Value },
+               { "SortDirection", filter.SortDirection ?? (object)DBNull.Value },
+               { "Skip", filter.Skip ?? (object)DBNull.Value },
+               { "Take", filter.Take ?? (object)DBNull.Value },
+
+           };
+        }
+        
+        private Dictionary<string, object> BuildListOfLitigationReformerParam(GenericReportsFilter filter)
+        {
+            return new Dictionary<string, object>()
+           {
+               { "RequestCode", filter.RequestCode ?? (object)DBNull.Value },
+               { "FromDate", filter.FromDate ?? (object)DBNull.Value },
+               { "ToDate", filter.ToDate ?? (object)DBNull.Value },
+               { "AreaIds", filter.AreaIds != null && filter.AreaIds.Any() ? string.Join(",", filter.AreaIds) : (object)DBNull.Value },
+               { "CitiesIds", filter.CitiesIds != null && filter.CitiesIds.Any()  ? string.Join(",", filter.CitiesIds) : (object)DBNull.Value},
+               { "LitigationRequestCategoryIds", filter.LitigationRequestCategoryIds != null && filter.LitigationRequestCategoryIds.Any() ? string.Join(",", filter.LitigationRequestCategoryIds) :(object) DBNull.Value },
+               { "LitigationRequestStatusIds", filter.LitigationRequestStatusIds != null && filter.LitigationRequestStatusIds.Any() ? string.Join(",", filter.LitigationRequestStatusIds) :(object) DBNull.Value },
+               { "LitigationRequestAmountId", filter.LitigationRequestAmountId != null  ? filter.LitigationRequestAmountId :(object) DBNull.Value },
+               { "ReformersIds", filter.ReformersIds != null && filter.ReformersIds.Any() ? string.Join(",", filter.ReformersIds) :(object) DBNull.Value },
+               { "SortDirection", filter.SortDirection ?? (object)DBNull.Value },
+               { "Skip", filter.Skip ?? (object)DBNull.Value },
+               { "Take", filter.Take ?? (object)DBNull.Value },
+
+           };
+        }
+        
+        private Dictionary<string, object> BuildListOfLitigationArbitrationParam(GenericReportsFilter filter)
+        {
+            return new Dictionary<string, object>()
+           {
+               { "RequestCode", filter.RequestCode ?? (object)DBNull.Value },
+               { "FromDate", filter.FromDate ?? (object)DBNull.Value },
+               { "ToDate", filter.ToDate ?? (object)DBNull.Value },
+               { "AreaIds", filter.AreaIds != null && filter.AreaIds.Any() ? string.Join(",", filter.AreaIds) : (object)DBNull.Value },
+               { "CitiesIds", filter.CitiesIds != null && filter.CitiesIds.Any()  ? string.Join(",", filter.CitiesIds) : (object)DBNull.Value},
+               { "LitigationRequestCategoryIds", filter.LitigationRequestCategoryIds != null && filter.LitigationRequestCategoryIds.Any() ? string.Join(",", filter.LitigationRequestCategoryIds) :(object) DBNull.Value },
+               { "LitigationRequestStatusIds", filter.LitigationRequestStatusIds != null && filter.LitigationRequestStatusIds.Any() ? string.Join(",", filter.LitigationRequestStatusIds) :(object) DBNull.Value },
+               { "LitigationRequestAmountId", filter.LitigationRequestAmountId != null  ? filter.LitigationRequestAmountId :(object) DBNull.Value },
+               { "ArbitratorsIds", filter.ArbitratorsIds != null && filter.ArbitratorsIds.Any() ? string.Join(",", filter.ArbitratorsIds) :(object) DBNull.Value },
+               { "SortDirection", filter.SortDirection ?? (object)DBNull.Value },
+               { "Skip", filter.Skip ?? (object)DBNull.Value },
+               { "Take", filter.Take ?? (object)DBNull.Value },
+
+           };
+        }
+        
+        private Dictionary<string, object> BuildListOfLitigationForAdminParam(GenericReportsFilter filter)
+        {
+            return new Dictionary<string, object>()
+           {
+               { "RequestCode", filter.RequestCode ?? (object)DBNull.Value },
+               { "FromDate", filter.FromDate ?? (object)DBNull.Value },
+               { "ToDate", filter.ToDate ?? (object)DBNull.Value },
+               { "AreaIds", filter.AreaIds != null && filter.AreaIds.Any() ? string.Join(",", filter.AreaIds) : (object)DBNull.Value },
+               { "CitiesIds", filter.CitiesIds != null && filter.CitiesIds.Any()  ? string.Join(",", filter.CitiesIds) : (object)DBNull.Value},
+               { "LitigationRequestCategoryIds", filter.LitigationRequestCategoryIds != null && filter.LitigationRequestCategoryIds.Any() ? string.Join(",", filter.LitigationRequestCategoryIds) :(object) DBNull.Value },
+               { "LitigationRequestStatusIds", filter.LitigationRequestStatusIds != null && filter.LitigationRequestStatusIds.Any() ? string.Join(",", filter.LitigationRequestStatusIds) :(object) DBNull.Value },
+               { "LitigationRequestAmountId", filter.LitigationRequestAmountId != null  ? filter.LitigationRequestAmountId :(object) DBNull.Value },
+               { "ArbitratorsIds", filter.ArbitratorsIds != null && filter.ArbitratorsIds.Any() ? string.Join(",", filter.ArbitratorsIds) :(object) DBNull.Value },
+               { "ReformersIds", filter.ReformersIds != null && filter.ReformersIds.Any() ? string.Join(",", filter.ReformersIds) :(object) DBNull.Value },
                { "EmployeeIds", filter.EmployeeIds != null && filter.EmployeeIds.Any() ? string.Join(",", filter.EmployeeIds) :(object) DBNull.Value },
                { "SortDirection", filter.SortDirection ?? (object)DBNull.Value },
                { "Skip", filter.Skip ?? (object)DBNull.Value },

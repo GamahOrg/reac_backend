@@ -2248,12 +2248,14 @@ public partial class REACDBContext : DbContext
     {
         modelBuilder.Entity<GetLitigationStatisticsMainReportResult>().HasNoKey().ToView(null);
         modelBuilder.Entity<GetLitigationStatisticsReportResult>().HasNoKey().ToView(null);
+        modelBuilder.Entity<GetLitigationStatisticsForAdminReportResult>().HasNoKey().ToView(null);
         modelBuilder.Entity<GetListOfLitigationReviewReportResult>().HasNoKey().ToView(null);
         modelBuilder.Entity<GetListOfLitigationReformerReportResult>().HasNoKey().ToView(null);
         modelBuilder.Entity<GetListOfLitigationArbitrationReportResult>().HasNoKey().ToView(null);
         modelBuilder.Entity<GetListOfLitigationGeneralReportResult>().HasNoKey().ToView(null);
         modelBuilder.Entity<GetLitigationStatisticsForAllStagesReportResult>().HasNoKey().ToView(null);
         modelBuilder.Entity<GetLitigationStatisticsDetailsForAllStagesReportResult>().HasNoKey().ToView(null);
+        modelBuilder.Entity<GetReviwersReportResult>().HasNoKey().ToView(null);
 
     }
 }

@@ -352,6 +352,7 @@
         #region Email
         public const string PrefexEmailConfiguration = "EmailConfiguration_";
         public const string EmailConfiguration_SendEmail = "EmailConfiguration_SendEmail";
+        public const string EmailConfiguration_URL = "EmailConfiguration_URL";
         public const string EmailFromAddress = "EmailConfiguration_FromEmail";
         public const string DisplayNameFromEmailAddress = "EmailConfiguration_DisplayNameFromEmail";
         public const string EmailPassword = "EmailConfiguration_Passowrd";
