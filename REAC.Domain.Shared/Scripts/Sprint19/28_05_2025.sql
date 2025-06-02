@@ -194,7 +194,7 @@ END;
 
 GO
 -- تقرير اعداد الدعاوي لمدير النظام
-alter PROCEDURE [dbo].[GetLitigationStatisticsForAdminReport]
+create PROCEDURE [dbo].[GetLitigationStatisticsForAdminReport]
     @EmployeeIds NVARCHAR(MAX) = NULL,
     @ReformersIds NVARCHAR(MAX) = NULL,
     @ArbitratorsIds NVARCHAR(MAX) = NULL,

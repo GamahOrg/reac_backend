@@ -1,4 +1,6 @@
-﻿using System;
+﻿using REAC.EntityFrameworkCore.Entities.Actor;
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -16,6 +18,16 @@ namespace REAC.Application.Contracts.Dtos.Reports
 
         public string? ReformerName { get; set; } 
        public int? ReformerStatus { get; set; }
+
+
+      
+        public List<int>? PersonnelTypeId { get; set; }
+        public List<string>? EmployeeIds { get; set; }
+        public List<string>? ReformersIds { get; set; }
+        public List<string>? ArbitratorsIds { get; set; }
+        public List<string>? ArbitratorClassIds { get; set; }
+        public int? PersonnelStatusId { get; set; }
+        public string? PersonnelName { get; set; }
 
         public int? ExperienceYears { get; set; }
 
