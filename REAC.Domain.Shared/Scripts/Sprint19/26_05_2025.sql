@@ -6,6 +6,7 @@
 
             --تقرير قائمة الدعاوى في مرحلة الصلح
 
+GO
 Alter PROCEDURE [dbo].[GetListOfLitigationReformerReport]
     @RequestCode NVARCHAR(20) = NULL,
     @FromDate DATETIME = NULL,
@@ -131,7 +132,7 @@ END;
 
 ------------------------------------------------------------------------
 
-
+GO
             --تقرير قائمة الدعاوى في مرحلة التحكيم
 
 Alter PROCEDURE [dbo].[GetListOfLitigationArbitrationReport]

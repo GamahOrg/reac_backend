@@ -193,5 +193,36 @@ namespace REAC.Api.Controllers.Reports
             return Ok(response);
 
         }
+
+
+        [HttpPost(nameof(GetReviewDashbourdReport))]
+        [AllowAnonymous]
+        public async Task<ActionResult> GetReviewDashbourdReport([FromBody] GenericReportsFilter filter)
+        {
+
+            var response = await _IReportService.GetReviewDashbourdReport(filter);
+            return Ok(response);
+
+        }
+
+        [HttpPost(nameof(GetReconciliationDashbourdReport))]
+        [AllowAnonymous]
+        public async Task<ActionResult> GetReconciliationDashbourdReport([FromBody] GenericReportsFilter filter)
+        {
+
+            var response = await _IReportService.GetReconciliationDashbourdReport(filter);
+            return Ok(response);
+
+        }
+        
+        [HttpPost(nameof(GetReviewrsReformersArbitratorsReport))]
+        [AllowAnonymous]
+        public async Task<ActionResult> GetReviewrsReformersArbitratorsReport([FromBody] GenericEmployeeReportsFilter filter)
+        {
+
+            var response = await _IReportService.GetReviewrsReformersArbitratorsReport(filter);
+            return Ok(response);
+
+        }
     }
 }

@@ -7,7 +7,8 @@
 --   @FromDate/@ToDate: Date range filter based on SentOn date
 --   @ReviewerName: Partial name match filter for reviewer names
 --   @ReviewerStatus: Filter by reviewer status ('Active' or 'Inactive')
-ALTER PROCEDURE [dbo].[GetReviewersReport]
+GO
+Alter PROCEDURE [dbo].[GetReviewersReport]
     @EmployeeIds NVARCHAR(MAX) = NULL,              -- Filter by specific employee IDs
     @FromDate DATETIME = NULL,                      -- Start date for filtering
     @ToDate DATETIME = NULL,                        -- End date for filtering
@@ -25,306 +26,256 @@ BEGIN
     IF @Skip < 0 SET @Skip = 0;
     
     -- Set default date range if not provided
-    -- Default from date: earliest possible date to include all historical records
     SET @FromDate = ISNULL(@FromDate, '1900-01-01');
-    -- Default to date: current date and time to include all records up to now
     SET @ToDate = ISNULL(@ToDate, GETDATE());
 
     -- =============================================
-    -- CTE 1: LatestWorkFlowLog
-    -- Purpose: Get only the most recent WorkFlowProcessingLog entry for each LitigationRequest
-    -- This prevents duplicate litigation requests in the final result
+    -- CTE 1: AllReviewers - Get ALL reviewer employees
+    -- Purpose: Start with ALL reviewers first, regardless of litigation assignment
     -- =============================================
-    ;WITH LatestWorkFlowLog AS (
-        SELECT 
-            WF.RequestId,                           -- The litigation request ID
-            WF.EmployeeId,                          -- The employee assigned to this workflow step
-            -- Use ROW_NUMBER to rank workflow entries by recency for each request
-            -- Most recent entry gets rn=1, older entries get higher numbers
-            ROW_NUMBER() OVER (
-                PARTITION BY WF.RequestId           -- Group by each litigation request
-                ORDER BY WF.CreatedOn DESC,         -- Order by creation date (newest first)
-                         WF.Id DESC                 -- Use ID as tiebreaker for same timestamps
-            ) AS rn
-        FROM WorkFlowProcessingLog WF
-
-    ),
-    -- =============================================
-    -- CTE 2: BaseLitigations
-    -- Purpose: Main query that joins litigation requests with reviewer information
-    -- and applies all the filtering criteria specified in parameters
-    -- =============================================
-    BaseLitigations AS (
-        SELECT 
-            -- Core litigation request fields
-            L.Id,                                   -- Unique litigation request identifier
-            L.IsFinished,                           -- Boolean flag indicating if case is completed
-            L.LitigationRequestStage,               -- Current stage of the litigation process
-            L.ReconciliationPeriod,                 -- Days remaining in reconciliation period
-            L.ArbitrationPeriod,                    -- Days remaining in arbitration period
-            L.StartReconciliationDate,              -- When reconciliation phase started
-            L.StartArbitrationDate,                 -- When arbitration phase started
-            L.SentOn,                              -- Date when litigation request was sent
-            L.CreatedOn,                           -- Date when litigation request was created
-            L.AreaId,                              -- Geographic area identifier
-            L.CityId,                              -- City identifier
-            L.LitigationRequestCategoryId,         -- Category/type of litigation
-            L.Fees,                                -- Associated fees for the litigation
-            L.ContractId,                          -- Related contract identifier
-            L.IsReminderForReviewerManagerSent,    -- Flag for manager reminder status
-            L.IsReminderForReviewerSent,           -- Flag for reviewer reminder status
-            
-            -- Reviewer information from employee table
-            E.EmployeeName AS ReviewerName,         -- Name of assigned reviewer
-            -- Convert boolean IsActive to descriptive text
+    WITH AllReviewers AS (
+        SELECT DISTINCT
+            E.Id AS EmployeeId,
+            E.EmployeeName AS ReviewerName,
             CASE WHEN E.IsActive = 1 THEN 'Active' ELSE 'Inactive' END AS ReviewerStatus
-        FROM LitigationRequest L
-        
-        -- Join with latest workflow log (only one record per litigation request)
-           INNER JOIN
-    (
-        SELECT
-            WFP.*,
-            ROW_NUMBER() OVER (PARTITION BY WFP.RequestId ORDER BY WFP.CreatedOn DESC) AS rn
-        FROM
-            WorkFlowProcessingLog AS WFP
-        WHERE
-            WFP.EmployeeId IS NOT NULL
-    ) AS W ON W.RequestId = L.Id AND W.rn = 1
-        
-        -- Join with employee table to get reviewer details
-        LEFT JOIN SysEmployee E ON w.EmployeeId = E.Id
-        
-        -- =============================================
-        -- WHERE clause: Apply remaining filtering criteria
-        -- =============================================
-        WHERE
-		(L.LitigationRequestStage = 1)
-		And
-            -- Employee ID filtering (simplified - only checks workflow processing log employee)
-            (@EmployeeIds IS NULL OR w.EmployeeId IN (
-                SELECT value FROM STRING_SPLIT(@EmployeeIds, ',')
-            ))
+        FROM SysEmployee E
+        INNER JOIN SysDepartment D ON E.DepartmentId = D.Id
+        WHERE 
+            -- Get ALL employees from departments with DepartmentType = 1 (reviewer departments)
+            D.DepartmentType = 1
             
-            -- Filter by date range (SentOn date must be within specified range)
-            AND (L.SentOn >= @FromDate AND L.SentOn <= @ToDate)
-            
-            -- Filter by reviewer name (partial match, case-insensitive)
+            -- Apply reviewer-specific filters
+            AND (@EmployeeIds IS NULL OR E.Id IN (SELECT value FROM STRING_SPLIT(@EmployeeIds, ',')))
             AND (@ReviewerName IS NULL OR E.EmployeeName LIKE '%' + @ReviewerName + '%')
-            
-            -- Filter by reviewer status with proper boolean conversion
             AND (@ReviewerStatus IS NULL OR 
-                 (@ReviewerStatus = 'Active' AND E.IsActive = 1) OR 
-                 (@ReviewerStatus = 'Inactive' AND E.IsActive = 0))
-    )
+                 (@ReviewerStatus = 1 AND E.IsActive = 1) OR 
+                 (@ReviewerStatus = 0 AND E.IsActive = 0))
+    ),
+    
     -- =============================================
-    -- MAIN QUERY: Generate aggregated report by reviewer
-    -- Purpose: Group litigation data by reviewer and calculate key statistics
+    -- CTE 2: ReviewerLitigationStats - Get litigation statistics for each reviewer
+    -- Purpose: Calculate statistics for litigation requests assigned to each reviewer
+    -- =============================================
+    ReviewerLitigationStats AS (
+        SELECT 
+            R.EmployeeId,
+            R.ReviewerName,
+            R.ReviewerStatus,
+            
+            -- Reviewer litigation statistics
+            COUNT(L.Id) AS TotalLitigationCount,
+            SUM(CASE WHEN L.IsFinished = 0 THEN 1 ELSE 0 END) AS NotFinishedCount,
+            SUM(CASE WHEN L.IsFinished = 1 THEN 1 ELSE 0 END) AS FinishedCount,
+            
+            -- Review stage due date violations (when both reminder flags are set)
+            SUM(CASE 
+                WHEN L.LitigationRequestStage = 1                     -- Review stage
+                     AND L.IsReminderForReviewerManagerSent = 1       -- Manager reminder sent
+                     AND L.IsReminderForReviewerSent = 1              -- Reviewer reminder sent
+                     AND L.CreatedOn >= @FromDate                     -- Within date range
+                     AND L.CreatedOn <= @ToDate                       -- Within date range
+                THEN 1 ELSE 0 
+            END) AS TotalReviewDueDateCount
+            
+        FROM AllReviewers R
+        
+        -- Left join with WorkFlowProcessingLog to get litigation assignments
+        LEFT JOIN (
+            SELECT WFP.*,
+                   ROW_NUMBER() OVER (PARTITION BY WFP.RequestId ORDER BY WFP.CreatedOn DESC) AS rn
+            FROM WorkFlowProcessingLog WFP
+            WHERE WFP.EmployeeId IS NOT NULL
+        ) W ON W.EmployeeId = R.EmployeeId AND W.rn = 1
+        
+        -- Left join with LitigationRequest to get case details
+        LEFT JOIN LitigationRequest L ON L.Id = W.RequestId
+                                      AND L.LitigationRequestStage = 1
+                                      AND L.SentOn >= @FromDate 
+                                      AND L.SentOn <= @ToDate
+        
+        GROUP BY R.EmployeeId, R.ReviewerName, R.ReviewerStatus
+    )
+    
+    -- =============================================
+    -- MAIN QUERY: Generate final reviewer report with statistics
     -- =============================================
     SELECT
-        -- Reviewer identification with fallback for unassigned cases
-        ISNULL(ReviewerName, 'Unassigned') AS ReviewerName,
-        ISNULL(ReviewerStatus, 'Unknown') AS ReviewerStatus,
+        ReviewerName,
+        ReviewerStatus,
         
         -- Core count metrics
-        COUNT(1) AS TotalLitigationCount,                   -- Total cases assigned to this reviewer
-        
-        -- Completion status counts
-        SUM(CASE WHEN IsFinished = 0 THEN 1 ELSE 0 END) AS NotFinishedCount,  -- Cases in stage 1 (not finished)
-        SUM(CASE WHEN IsFinished = 1 THEN 1 ELSE 0 END) AS FinishedCount,     -- Cases not in stage 1 (finished)
-        
-
-        -- Review stage due date violations (when both reminder flags are set)
-        SUM(CASE 
-            WHEN LitigationRequestStage = 1                     -- Review stage
-                 AND IsReminderForReviewerManagerSent = 1       -- Manager reminder sent
-                 AND IsReminderForReviewerSent = 1              -- Reviewer reminder sent
-                 AND CreatedOn >= @FromDate                     -- Within date range
-                 AND CreatedOn <= @ToDate                       -- Within date range
-            THEN 1 ELSE 0 
-        END) AS TotalReviewDueDateCount,        -- Overdue review cases (both reminders sent)
+        ISNULL(TotalLitigationCount, 0) AS TotalLitigationCount,
+        ISNULL(NotFinishedCount, 0) AS NotFinishedCount,
+        ISNULL(FinishedCount, 0) AS FinishedCount,
+        ISNULL(TotalReviewDueDateCount, 0) AS TotalReviewDueDateCount,
         
         -- Performance ratios (percentages)
-        -- Calculate percentage of cases that are not finished (stage 1)
-        CAST(
-            SUM(CASE WHEN  IsFinished = 0 THEN 1 ELSE 0 END) * 100.0 / 
-            NULLIF(COUNT(1), 0)                 -- Avoid division by zero
+        ISNULL( CAST(
+            ISNULL(NotFinishedCount, 0) * 100.0 / 
+            NULLIF(ISNULL(TotalLitigationCount, 0), 0)
             AS DECIMAL(5,2)
-        ) AS NotFinishedRatio,                  -- Percentage of pending cases (stage 1)
+        ),0) AS NotFinishedRatio,
         
-        -- Calculate percentage of cases that are finished (not stage 1)
-        CAST(
-            SUM(CASE WHEN  IsFinished = 1 THEN 1 ELSE 0 END) * 100.0 / 
-            NULLIF(COUNT(1), 0)                 -- Avoid division by zero
+         ISNULL(CAST(
+            ISNULL(FinishedCount, 0) * 100.0 / 
+            NULLIF(ISNULL(TotalLitigationCount, 0), 0)
             AS DECIMAL(5,2)
-        ) AS FinishedRatio,                     -- Percentage of completed cases (not stage 1)
+        ),0) AS FinishedRatio,
         
-        -- Calculate percentage of review cases that are overdue (both reminders sent)
-        CAST(
-            SUM(CASE 
-                WHEN LitigationRequestStage = 1                     -- Review stage
-                     AND IsReminderForReviewerManagerSent = 1       -- Manager reminder sent
-                     AND IsReminderForReviewerSent = 1              -- Reviewer reminder sent
-                     AND CreatedOn >= @FromDate                     -- Within date range
-                     AND CreatedOn <= @ToDate                       -- Within date range
-                THEN 1 ELSE 0 
-            END) * 100.0 / NULLIF(COUNT(1), 0)  -- Avoid division by zero
+        ISNULL( CAST(
+            ISNULL(TotalReviewDueDateCount, 0) * 100.0 / 
+            NULLIF(ISNULL(TotalLitigationCount, 0), 0)
             AS DECIMAL(5,2)
-        ) AS TotalReviewDueDateRatio            -- Percentage of overdue review cases
+        ),0) AS TotalReviewDueDateRatio
         
-    FROM BaseLitigations
-    WHERE ReviewerName IS NOT NULL             -- Exclude records without assigned reviewers
-    GROUP BY ReviewerName, ReviewerStatus      -- Group by reviewer to get per-reviewer statistics
-    ORDER BY ReviewerName                      -- Sort results alphabetically by reviewer name
+    FROM ReviewerLitigationStats
+    -- Show ALL reviewers, even those with no litigation cases (they'll have zero statistics)
+    ORDER BY ReviewerName
     
     -- =============================================
     -- PAGINATION: Apply OFFSET and FETCH NEXT for pagination
     -- =============================================
-    OFFSET @Skip ROWS                          -- Skip the specified number of rows
+    OFFSET @Skip ROWS
     FETCH NEXT 
         CASE 
-            WHEN @Take IS NULL THEN 2147483647 -- If @Take is NULL, fetch maximum possible rows
+            WHEN @Take IS NULL THEN 2147483647
             ELSE @Take 
-        END ROWS ONLY                          -- Fetch only the specified number of rows
+        END ROWS ONLY
 END
 GO
 -----------------------------------------------------------------------------------------
 -----------------------------------------------------------------------------------------
-Alter PROCEDURE [dbo].[GetReformersReport]
-    @EmployeeIds NVARCHAR(MAX) = NULL,              -- Filter by specific reformer employee IDs
+
+ALTER PROCEDURE [dbo].[GetReformersReport]
     @FromDate DATETIME = NULL,                      -- Start date for filtering
     @ToDate DATETIME = NULL,                        -- End date for filtering
     @ReformerName NVARCHAR(200) = NULL,             -- Filter by reformer name (partial match)
-    @ReformerStatus NVARCHAR(50) = NULL,            -- Filter by reformer status (Active/Inactive)
-    @ExperienceYears INT = NULL                     -- Filter by years of experience
+    @ReformerStatus INT = NULL,                     -- Filter by reformer status (Active/Inactive)
+    @ExperienceYears INT = NULL,                    -- Filter by years of experience
+    @Skip INT = 0,                                  -- Number of records to skip (for pagination)
+    @Take INT = NULL                                -- Number of records to take (NULL = all records)
 AS
 BEGIN
     -- Prevent row count messages from being returned to improve performance
     SET NOCOUNT ON;
     
+    -- Validate pagination parameters
+    SET @Skip = ISNULL(@Skip, 0);
+    IF @Skip < 0 SET @Skip = 0;
+    
     -- Set default date range if not provided
-    -- Default from date: earliest possible date to include all historical records
     SET @FromDate = ISNULL(@FromDate, '1900-01-01');
-    -- Default to date: current date and time to include all records up to now
     SET @ToDate = ISNULL(@ToDate, GETDATE());
 
     -- =============================================
-    -- CTE: BaseReformerLitigations
-    -- Purpose: Main query that gets litigation requests assigned to reformers
-    -- and applies all the filtering criteria specified in parameters
+    -- CTE 1: AllReformers - Get ALL reformer citizens
+    -- Purpose: Start with ALL reformers first, regardless of litigation assignment
     -- =============================================
-    ;WITH BaseReformerLitigations AS (
-        SELECT 
-            -- Core litigation request fields
-            L.Id,                                   -- Unique litigation request identifier
-            L.LitigationRequestStage,               -- Current stage of the litigation process
-            L.ReconciliationPeriod,                 -- Days remaining in reconciliation period
-            L.StartReconciliationDate,              -- When reconciliation phase started
-            L.SentOn,                              -- Date when litigation request was sent
-            L.CreatedOn,                           -- Date when litigation request was created
-            L.ReformerCitizenId,                   -- Reformer citizen ID assigned to this case
+    WITH AllReformers AS (
+        SELECT DISTINCT
+            C.Id AS ReformerCitizenId,
+            C.FullName AS ReformerName,
+            CASE WHEN C.ReformerStatusId = 1 THEN 'Active' ELSE 'Inactive' END AS ReformerStatus,
+            ISNULL(CR.ExperienceYears, 0) AS ExperienceYears
+        FROM Citizen C
+        LEFT JOIN CitizenRequest CR ON C.Id = CR.Id
+        WHERE 
+            -- Get ALL citizens who are reformers (based on IsReformer flag)
+            C.IsReformer = 1
             
-            -- Reformer information from employee table
-            C.FullName AS ReformerName,         -- Name of assigned reformer
-            CR.ExperienceYears,                      -- Years of experience of the reformer
-            -- Convert boolean IsActive to descriptive text
-            CASE WHEN C.ReformerStatusId = 1 THEN 'Active' ELSE 'Inactive' END AS ReformerStatus
-        FROM LitigationRequest L
-        LEFT JOIN CitizenRequest CR ON L.ReformerCitizenId = CR.Id
-        -- Join with employee table to get reformer details
-        LEFT JOIN Citizen C ON L.ReformerCitizenId = C.Id
-        
-        -- =============================================
-        -- WHERE clause: Apply filtering criteria for reformers
-        -- =============================================
-        WHERE
-            -- Filter by stage 2 (Reconciliation) and specific reformer employee IDs
-            (L.LitigationRequestStage = 2)
-            And
-            (@EmployeeIds IS NULL OR 
-             (L.LitigationRequestStage = 2 AND L.ReformerCitizenId IN (
-                SELECT value FROM STRING_SPLIT(@EmployeeIds, ',')
-             )))
-            
-            -- Filter by date range (SentOn date must be within specified range)
-            AND (L.SentOn >= @FromDate AND L.SentOn <= @ToDate)
-            
-            -- Filter by reformer name (partial match, case-insensitive)
+            -- Apply reformer-specific filters
             AND (@ReformerName IS NULL OR C.FullName LIKE '%' + @ReformerName + '%')
-            
-            -- Filter by reformer status with proper boolean conversion
             AND (@ReformerStatus IS NULL OR 
                  (@ReformerStatus = 1 AND C.ReformerStatusId = 1) OR 
                  (@ReformerStatus = 0 AND C.ReformerStatusId = 0))
-            
-            -- Filter by years of experience
-            AND (@ExperienceYears IS NULL OR CR.ExperienceYears >= @ExperienceYears)
-    )
+            AND (@ExperienceYears IS NULL OR ISNULL(CR.ExperienceYears, 0) >= @ExperienceYears)
+    ),
+    
     -- =============================================
-    -- MAIN QUERY: Generate aggregated report by reformer
-    -- Purpose: Group litigation data by reformer and calculate key statistics
+    -- CTE 2: ReformerLitigationStats - Get litigation statistics for each reformer
+    -- Purpose: Calculate statistics for litigation requests assigned to each reformer
+    -- =============================================
+    ReformerLitigationStats AS (
+        SELECT 
+            R.ReformerCitizenId,
+            R.ReformerName,
+            R.ReformerStatus,
+            R.ExperienceYears,
+            
+            -- Reformer litigation statistics
+            COUNT(L.Id) AS TotalLitigationCount,
+            SUM(CASE WHEN L.IsFinished = 0 THEN 1 ELSE 0 END) AS NotFinishedCount,
+            SUM(CASE WHEN L.IsFinished = 1 THEN 1 ELSE 0 END) AS FinishedCount,
+            SUM(CASE WHEN L.LitigationRequestStage = 2 AND L.ReconciliationPeriod = 0 THEN 1 ELSE 0 END) AS DueDateCount
+            
+        FROM AllReformers R
+        
+        -- Left join with litigation requests where this person is the reformer
+        LEFT JOIN (
+            SELECT L.*,
+                   ROW_NUMBER() OVER (PARTITION BY L.Id ORDER BY L.CreatedOn DESC) AS rn
+            FROM LitigationRequest L
+            WHERE L.ReformerCitizenId IS NOT NULL
+              AND L.LitigationRequestStage = 2
+              AND L.SentOn >= @FromDate 
+              AND L.SentOn <= @ToDate
+        ) L ON L.ReformerCitizenId = R.ReformerCitizenId AND L.rn = 1
+        
+        GROUP BY R.ReformerCitizenId, R.ReformerName, R.ReformerStatus, R.ExperienceYears
+    )
+    
+    -- =============================================
+    -- MAIN QUERY: Generate final reformer report with statistics
     -- =============================================
     SELECT
-        -- Reformer identification with fallback for unassigned cases
-        ISNULL(ReformerName, 'غير مسند') AS ReformerName,                    -- اسم المصلح
-        ISNULL(ReformerStatus, 'غير معروف') AS ReformerStatus,              -- حالة المصلح
-        ISNULL(ExperienceYears, 0) AS ExperienceYears,                      -- عدد سنوات الخبرة
+        ReformerName,
+        ReformerStatus,
+        ExperienceYears,
         
         -- Core count metrics
-        COUNT(1) AS TotalLitigationCount,                                   -- عدد الدعاوى الإجمالية تم إسنادها للمصلح
-        
-        -- Current cases (cases still in reconciliation stage 2)
-        SUM(CASE 
-            WHEN LitigationRequestStage = 2 
-            THEN 1 ELSE 0 
-        END) AS CurrentCasesCount,                                          -- عدد الدعاوى الحالية قيد الدراسة المسندة للمصلح
-        
-        -- Delayed cases (cases in stage 2 that have exceeded reconciliation period)
-        SUM(CASE 
-            WHEN LitigationRequestStage = 2                                 -- في مرحلة المصالحة
-                 AND ReconciliationPeriod = 0                               -- انتهت المدة المقررة
-            THEN 1 ELSE 0 
-        END) AS DelayedCasesCount,                                          -- عدد الدعاوى المتأخرة قيد الدراسة وتجاوزت المدة المقررة
-        
-        -- Completed cases (cases that moved beyond stage 2)
-        SUM(CASE 
-            WHEN LitigationRequestStage > 2                                 -- تجاوزت مرحلة المصالحة
-            THEN 1 ELSE 0 
-        END) AS CompletedCasesCount,                                        -- عدد الدعاوى المنتهية المسندة للمصلح وتم الانتهاء منها
+        ISNULL(TotalLitigationCount, 0) AS TotalLitigationCount,
+        ISNULL(NotFinishedCount, 0) AS NotFinishedCount,
+        ISNULL(FinishedCount, 0) AS FinishedCount,
+        ISNULL(DueDateCount, 0) AS DueDateCount,
         
         -- Performance ratios (percentages)
-        -- Calculate percentage of current cases
-        CAST(
-            SUM(CASE WHEN LitigationRequestStage = 2 THEN 1 ELSE 0 END) * 100.0 / 
-            NULLIF(COUNT(1), 0)                                             -- Avoid division by zero
+        ISNULL(CAST(
+            ISNULL(NotFinishedCount, 0) * 100.0 / 
+            NULLIF(ISNULL(TotalLitigationCount, 0), 0)
             AS DECIMAL(5,2)
-        ) AS CurrentCasesRatio,                                             -- نسبة الدعاوى الحالية
+        ),0) AS NotFinishedRatio,
         
-        -- Calculate percentage of delayed cases
-        CAST(
-            SUM(CASE 
-                WHEN LitigationRequestStage = 2 AND ReconciliationPeriod = 0 
-                THEN 1 ELSE 0 
-            END) * 100.0 / NULLIF(COUNT(1), 0)                             -- Avoid division by zero
+       ISNULL(
+    CAST(
+        ISNULL(FinishedCount, 0) * 100.0 / NULLIF(ISNULL(TotalLitigationCount, 0), 0)
+        AS DECIMAL(5, 2)
+    ),
+0) AS FinishedRatio,
+        ISNULL(CAST(
+            ISNULL(DueDateCount, 0) * 100.0 / 
+            NULLIF(ISNULL(TotalLitigationCount, 0), 0)
             AS DECIMAL(5,2)
-        ) AS DelayedCasesRatio,                                             -- نسبة الدعاوى المتأخرة
+        ),0) AS DueDateRatio
         
-        -- Calculate percentage of completed cases
-        CAST(
-            SUM(CASE WHEN LitigationRequestStage > 2 THEN 1 ELSE 0 END) * 100.0 / 
-            NULLIF(COUNT(1), 0)                                             -- Avoid division by zero
-            AS DECIMAL(5,2)
-        ) AS CompletedCasesRatio                                            -- نسبة الدعاوى المنتهية
-        
-    FROM BaseReformerLitigations
-    WHERE ReformerName IS NOT NULL                                          -- Exclude records without assigned reformers
-    GROUP BY ReformerName, ReformerStatus, ExperienceYears                  -- Group by reformer to get per-reformer statistics
-    ORDER BY ReformerName                                                   -- Sort results alphabetically by reformer name
+    FROM ReformerLitigationStats
+    -- Show ALL reformers, even those with no litigation cases (they'll have zero statistics)
+    ORDER BY ReformerName
+    
+    -- =============================================
+    -- PAGINATION: Apply OFFSET and FETCH NEXT for pagination
+    -- =============================================
+    OFFSET @Skip ROWS
+    FETCH NEXT 
+        CASE 
+            WHEN @Take IS NULL THEN 2147483647
+            ELSE @Take 
+        END ROWS ONLY
 END
 GO
 ------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------
-ALTER PROCEDURE [dbo].[GetArbitratorsReport]
+
+alter PROCEDURE [dbo].[GetArbitratorsReport]
     @EmployeeIds NVARCHAR(MAX) = NULL,              -- Filter by specific arbitrator employee IDs
     @FromDate DATETIME = NULL,                      -- Start date for filtering
     @ToDate DATETIME = NULL,                        -- End date for filtering
@@ -343,166 +294,137 @@ BEGIN
     IF @Skip < 0 SET @Skip = 0;
     
     -- Set default date range if not provided
-    -- Default from date: earliest possible date to include all historical records
     SET @FromDate = ISNULL(@FromDate, '1900-01-01');
-    -- Default to date: current date and time to include all records up to now
     SET @ToDate = ISNULL(@ToDate, GETDATE());
 
     -- =============================================
-    -- CTE 1: LatestArbitratorAssignment
-    -- Purpose: Get the most recent arbitrator assignment for each LitigationRequest
-    -- This ensures we get the current arbitrator for each case
+    -- CTE 1: AllArbitrators - Get ALL arbitrator citizens
+    -- Purpose: Start with ALL arbitrators first, regardless of litigation assignment
     -- =============================================
-    ;WITH LatestArbitratorAssignment AS (
-        SELECT 
-            L.Id AS RequestId,                      -- The litigation request ID
-            L.ArbitratorCitizenId,                  -- The arbitrator citizen ID assigned to this case
-            -- Use ROW_NUMBER to rank assignments by recency for each request
-            -- Most recent assignment gets rn=1, older assignments get higher numbers
-            ROW_NUMBER() OVER (
-                PARTITION BY L.Id                   -- Group by each litigation request
-                ORDER BY L.CreatedOn DESC,          -- Order by creation date (newest first)
-                         L.Id DESC                  -- Use ID as tiebreaker for same timestamps
-            ) AS rn
-        FROM LitigationRequest L
-        WHERE L.ArbitratorCitizenId IS NOT NULL     -- Only include cases with assigned arbitrators
-    ),
-    -- =============================================
-    -- CTE 2: BaseArbitratorLitigations
-    -- Purpose: Main query that joins litigation requests with arbitrator information
-    -- and applies all the filtering criteria specified in parameters
-    -- =============================================
-    BaseArbitratorLitigations AS (
-        SELECT 
-            -- Core litigation request fields
-            L.Id,                                   -- Unique litigation request identifier
-            L.IsFinished,                           -- Boolean flag indicating if case is completed
-            L.LitigationRequestStage,               -- Current stage of the litigation process
-            L.ReconciliationPeriod,                 -- Days remaining in reconciliation period
-            L.ArbitrationPeriod,                    -- Days remaining in arbitration period
-            L.StartReconciliationDate,              -- When reconciliation phase started
-            L.StartArbitrationDate,                 -- When arbitration phase started
-            L.SentOn,                              -- Date when litigation request was sent
-            L.CreatedOn,                           -- Date when litigation request was created
-            L.AreaId,                              -- Geographic area identifier
-            L.CityId,                              -- City identifier
-            L.LitigationRequestCategoryId,         -- Category/type of litigation
-            L.Fees,                                -- Associated fees for the litigation
-            L.ContractId,                          -- Related contract identifier
-            L.ArbitratorCitizenId,                 -- Arbitrator citizen ID assigned to this case
+    WITH AllArbitrators AS (
+        SELECT DISTINCT
+            C.Id AS ArbitratorCitizenId,
+            C.FullName AS ArbitratorName,
+            CASE WHEN C.ArbitratorStatusId = 1 THEN 'Active' ELSE 'Inactive' END AS ArbitratorStatus,
+            ISNULL(CR.ExperienceYears, 0) AS ExperienceYears
+        FROM Citizen C
+        LEFT JOIN CitizenRequest CR ON C.Id = CR.Id
+        WHERE 
+            -- Get ALL citizens who are arbitrators (based on IsArbitrator flag)
+            C.IsArbitrator = 1
             
-            -- Arbitrator information from citizen and citizen request tables
-            C.FullName AS ArbitratorName,           -- Name of assigned arbitrator
-            CR.ExperienceYears,                     -- Years of experience of the arbitrator
-            -- Convert boolean ArbitratorStatusId to descriptive text
-            CASE WHEN C.ArbitratorStatusId = 1 THEN 'Active' ELSE 'Inactive' END AS ArbitratorStatus
-        FROM LitigationRequest L
-        
-        -- Join with latest arbitrator assignment (only one record per litigation request)
-        INNER JOIN
-        (
-            SELECT
-                L2.*,
-                ROW_NUMBER() OVER (PARTITION BY L2.Id ORDER BY L2.CreatedOn DESC) AS rn
-            FROM
-                LitigationRequest AS L2
-            WHERE
-                L2.ArbitratorCitizenId IS NOT NULL
-        ) AS LAA ON LAA.Id = L.Id AND LAA.rn = 1
-        
-        -- Join with citizen table to get arbitrator details
-        LEFT JOIN Citizen C ON L.ArbitratorCitizenId = C.Id
-        
-        -- Join with citizen request table to get experience information
-        LEFT JOIN CitizenRequest CR ON L.ArbitratorCitizenId = CR.Id
-        
-        -- =============================================
-        -- WHERE clause: Apply remaining filtering criteria
-        -- =============================================
-        WHERE
-            (L.LitigationRequestStage = 3)          -- Only arbitration stage cases
-            AND
-            -- Employee ID filtering (arbitrator citizen ID)
-            (@EmployeeIds IS NULL OR L.ArbitratorCitizenId IN (
-                SELECT value FROM STRING_SPLIT(@EmployeeIds, ',')
-            ))
-            
-            -- Filter by date range (SentOn date must be within specified range)
-            AND (L.SentOn >= @FromDate AND L.SentOn <= @ToDate)
-            
-            -- Filter by arbitrator name (partial match, case-insensitive)
+            -- Apply arbitrator-specific filters
+            AND (@EmployeeIds IS NULL OR C.Id IN (SELECT value FROM STRING_SPLIT(@EmployeeIds, ',')))
             AND (@ArbitratorName IS NULL OR C.FullName LIKE '%' + @ArbitratorName + '%')
-            
-            -- Filter by arbitrator status with proper boolean conversion
             AND (@ArbitratorStatus IS NULL OR 
-                 (@ArbitratorStatus = 1 AND C.ArbitratorStatusId = 1) OR 
-                 (@ArbitratorStatus = 0  AND C.ArbitratorStatusId = 0))
-            
-            -- Filter by years of experience
-            AND (@ExperienceYears IS NULL OR CR.ExperienceYears >= @ExperienceYears)
-    )
+                 (@ArbitratorStatus = '1' AND C.ArbitratorStatusId = 1) OR 
+                 (@ArbitratorStatus = '0' AND C.ArbitratorStatusId = 0))
+            AND (@ExperienceYears IS NULL OR ISNULL(CR.ExperienceYears, 0) >= @ExperienceYears)
+    ),
+    
     -- =============================================
-    -- MAIN QUERY: Generate aggregated report by arbitrator
-    -- Purpose: Group litigation data by arbitrator and calculate key statistics
+    -- CTE 2: ArbitratorLitigationStats - Get litigation statistics for each arbitrator
+    -- Purpose: Calculate statistics for litigation requests assigned to each arbitrator
+    -- =============================================
+    ArbitratorLitigationStats AS (
+        SELECT 
+            A.ArbitratorCitizenId,
+            A.ArbitratorName,
+            A.ArbitratorStatus,
+            A.ExperienceYears,
+            
+            -- Chairman litigation statistics (where arbitrator is the chairman)
+            COUNT(CASE WHEN L.ArbitratorCitizenId = A.ArbitratorCitizenId THEN 1 END) AS ChairmanTotalCount,
+            SUM(CASE WHEN L.ArbitratorCitizenId = A.ArbitratorCitizenId AND L.IsFinished = 0 THEN 1 ELSE 0 END) AS ChairmanNotFinishedCount,
+            SUM(CASE WHEN L.ArbitratorCitizenId = A.ArbitratorCitizenId AND L.IsFinished = 1 THEN 1 ELSE 0 END) AS ChairmanFinishedCount,
+            SUM(CASE WHEN L.ArbitratorCitizenId = A.ArbitratorCitizenId AND L.LitigationRequestStage = 3 AND L.ArbitrationPeriod = 0 THEN 1 ELSE 0 END) AS ChairmanDueDateCount,
+            
+            -- Regular arbitrator statistics (where arbitrator is a regular arbitrator)
+            COUNT(CASE WHEN LRA.ArbitratorCitizenId = A.ArbitratorCitizenId THEN 1 END) AS ArbitratorTotalCount,
+            SUM(CASE WHEN LRA.ArbitratorCitizenId = A.ArbitratorCitizenId AND L2.IsFinished = 0 THEN 1 ELSE 0 END) AS ArbitratorNotFinishedCount,
+            SUM(CASE WHEN LRA.ArbitratorCitizenId = A.ArbitratorCitizenId AND L2.IsFinished = 1 THEN 1 ELSE 0 END) AS ArbitratorFinishedCount,
+            SUM(CASE WHEN LRA.ArbitratorCitizenId = A.ArbitratorCitizenId AND L2.LitigationRequestStage = 3 AND L2.ArbitrationPeriod = 0 THEN 1 ELSE 0 END) AS ArbitratorDueDateCount
+            
+        FROM AllArbitrators A
+        
+        -- Left join with litigation requests where this person is chairman
+        LEFT JOIN (
+            SELECT L.*,
+                   ROW_NUMBER() OVER (PARTITION BY L.Id ORDER BY L.CreatedOn DESC) AS rn
+            FROM LitigationRequest L
+            WHERE L.ArbitratorCitizenId IS NOT NULL
+              AND L.LitigationRequestStage = 3
+              AND L.SentOn >= @FromDate 
+              AND L.SentOn <= @ToDate
+        ) L ON L.ArbitratorCitizenId = A.ArbitratorCitizenId AND L.rn = 1
+        
+        -- Left join with litigation requests where this person is a regular arbitrator
+        LEFT JOIN LitigationRequestArbitrator LRA ON LRA.ArbitratorCitizenId = A.ArbitratorCitizenId
+        LEFT JOIN LitigationRequest L2 ON L2.Id = LRA.LitigationRequestId 
+                                       AND L2.LitigationRequestStage = 3
+                                       AND L2.SentOn >= @FromDate 
+                                       AND L2.SentOn <= @ToDate
+        
+        GROUP BY A.ArbitratorCitizenId, A.ArbitratorName, A.ArbitratorStatus, A.ExperienceYears
+    )
+    
+    -- =============================================
+    -- MAIN QUERY: Generate final arbitrator report with combined statistics
     -- =============================================
     SELECT
-        -- Arbitrator identification with fallback for unassigned cases
-        ISNULL(ArbitratorName, 'Unassigned') AS ArbitratorName,
-        ISNULL(ArbitratorStatus, 'Unknown') AS ArbitratorStatus,
-        ISNULL(ExperienceYears, 0) AS ExperienceYears,
+        ArbitratorName,
+        ArbitratorStatus,
+        ExperienceYears,
         
-        -- Core count metrics
-        COUNT(1) AS TotalLitigationCount,                   -- Total cases assigned to this arbitrator
+        -- Combined totals (chairman + regular arbitrator roles)
+        (ChairmanTotalCount + ArbitratorTotalCount) AS TotalLitigationCount,
+        (ChairmanNotFinishedCount + ArbitratorNotFinishedCount) AS NotFinishedCount,
+        (ChairmanFinishedCount + ArbitratorFinishedCount) AS FinishedCount,
+        (ChairmanDueDateCount + ArbitratorDueDateCount) AS DueDateCount,
         
-        -- Completion status counts (following same pattern as reviewers/reformers)
-        SUM(CASE WHEN IsFinished = 0 THEN 1 ELSE 0 END) AS NotFinishedCount,    -- Cases not finished
-        SUM(CASE WHEN IsFinished = 1 THEN 1 ELSE 0 END) AS FinishedCount,       -- Cases finished
+        -- Separate statistics for chairman role
+        ChairmanTotalCount,
+        ChairmanNotFinishedCount,
+        ChairmanFinishedCount,
+        ChairmanDueDateCount,
         
+        -- Separate statistics for regular arbitrator role
+        ArbitratorTotalCount,
+        ArbitratorNotFinishedCount,
+        ArbitratorFinishedCount,
+        ArbitratorDueDateCount,
         
-        -- Delayed cases (cases in stage 3 that have exceeded arbitration period)
-        SUM(CASE 
-            WHEN LitigationRequestStage = 3                 -- In arbitration stage
-                 AND ArbitrationPeriod = 0                  -- Period has expired
-            THEN 1 ELSE 0 
-        END) AS DueDateCount,                          -- Overdue arbitration cases
-        
-        -- Performance ratios (percentages)
-        -- Calculate percentage of cases that are not finished
-        CAST(
-            SUM(CASE WHEN IsFinished = 0 THEN 1 ELSE 0 END) * 100.0 / 
-            NULLIF(COUNT(1), 0)                             -- Avoid division by zero
+        -- Performance ratios for combined statistics
+        ISNULL( CAST(
+            (ChairmanNotFinishedCount + ArbitratorNotFinishedCount) * 100.0 / 
+            NULLIF((ChairmanTotalCount + ArbitratorTotalCount), 0)
             AS DECIMAL(5,2)
-        ) AS NotFinishedRatio,                              -- Percentage of pending cases
+        ),0) AS NotFinishedRatio,
         
-        -- Calculate percentage of cases that are finished
-        CAST(
-            SUM(CASE WHEN IsFinished = 1 THEN 1 ELSE 0 END) * 100.0 / 
-            NULLIF(COUNT(1), 0)                             -- Avoid division by zero
+         ISNULL(CAST(
+            (ChairmanFinishedCount + ArbitratorFinishedCount) * 100.0 / 
+            NULLIF((ChairmanTotalCount + ArbitratorTotalCount), 0)
             AS DECIMAL(5,2)
-        ) AS FinishedRatio,                                 -- Percentage of completed cases
-                                -- Percentage of current arbitration cases
+        ),0) AS FinishedRatio,
         
-        -- Calculate percentage of delayed cases
-        CAST(
-            SUM(CASE 
-                WHEN LitigationRequestStage = 3 AND ArbitrationPeriod = 0 
-                THEN 1 ELSE 0 
-            END) * 100.0 / NULLIF(COUNT(1), 0)              -- Avoid division by zero
+         ISNULL(CAST(
+            (ChairmanDueDateCount + ArbitratorDueDateCount) * 100.0 / 
+            NULLIF((ChairmanTotalCount + ArbitratorTotalCount), 0)
             AS DECIMAL(5,2)
-        ) AS DueDateRatio                              -- Percentage of overdue arbitration cases
+        ),0) AS DueDateRatio
         
-    FROM BaseArbitratorLitigations
-    WHERE ArbitratorName IS NOT NULL                        -- Exclude records without assigned arbitrators
-    GROUP BY ArbitratorName, ArbitratorStatus, ExperienceYears  -- Group by arbitrator to get per-arbitrator statistics
-    ORDER BY ArbitratorName                                 -- Sort results alphabetically by arbitrator name
+    FROM ArbitratorLitigationStats
+    -- Show ALL arbitrators, even those with no litigation cases (they'll have zero statistics)
+    ORDER BY ArbitratorName
     
     -- =============================================
     -- PAGINATION: Apply OFFSET and FETCH NEXT for pagination
     -- =============================================
-    OFFSET @Skip ROWS                                       -- Skip the specified number of rows
+    OFFSET @Skip ROWS
     FETCH NEXT 
         CASE 
-            WHEN @Take IS NULL THEN 2147483647              -- If @Take is NULL, fetch maximum possible rows
+            WHEN @Take IS NULL THEN 2147483647
             ELSE @Take 
-        END ROWS ONLY                                       -- Fetch only the specified number of rows
+        END ROWS ONLY
 END
+GO

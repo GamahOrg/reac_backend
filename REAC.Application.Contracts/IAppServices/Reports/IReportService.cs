@@ -28,6 +28,9 @@ namespace REAC.Application.Contracts.IAppServices.Reports
         public Task<BaseResponse> GetReviewersReport(GenericEmployeeReportsFilter filter);
         public Task<BaseResponse> GetReformersReport(GenericEmployeeReportsFilter filter);
         public Task<BaseResponse> GetArbitratorsReport(GenericEmployeeReportsFilter filter);
+        public Task<BaseResponse> GetReviewDashbourdReport(GenericReportsFilter filter);
+        public Task<BaseResponse> GetReconciliationDashbourdReport(GenericReportsFilter filter);
+        public Task<BaseResponse> GetReviewrsReformersArbitratorsReport(GenericEmployeeReportsFilter filter);
 
     }
 }

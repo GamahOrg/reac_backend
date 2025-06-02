@@ -156,7 +156,7 @@ SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-ALTER PROCEDURE [dbo].[GetLitigationStatisticsReport] 
+create PROCEDURE [dbo].[GetLitigationStatisticsReport] 
     @EmployeeIds NVARCHAR(MAX) = NULL,
     @LitigationRequestStageId INT = NULL,
     @FromDate DATETIME = NULL,
