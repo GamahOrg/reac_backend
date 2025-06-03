@@ -214,7 +214,17 @@ namespace REAC.Api.Controllers.Reports
             return Ok(response);
 
         }
-        
+
+        [HttpPost(nameof(GetArbitrationDashbourdReport))]
+        [AllowAnonymous]
+        public async Task<ActionResult> GetArbitrationDashbourdReport([FromBody] GenericReportsFilter filter)
+        {
+
+            var response = await _IReportService.GetArbitrationDashbourdReport(filter);
+            return Ok(response);
+
+        }
+
         [HttpPost(nameof(GetReviewrsReformersArbitratorsReport))]
         [AllowAnonymous]
         public async Task<ActionResult> GetReviewrsReformersArbitratorsReport([FromBody] GenericEmployeeReportsFilter filter)
@@ -224,5 +234,7 @@ namespace REAC.Api.Controllers.Reports
             return Ok(response);
 
         }
+
+
     }
 }

@@ -722,6 +722,53 @@ namespace REAC.Application.AppServices.Reports
             }
         }
 
+        public async Task<BaseResponse> GetArbitrationDashbourdReport(GenericReportsFilter filter)
+        {
+            try
+            {
+                if (filter.IsAdmin != true)
+                {
+                    Guid employee = Guid.Empty;
+                    _jwtReader.GetReferenceId(ref employee);
+
+                    filter.EmployeeIds = new List<string>() { employee.ToString() };
+                }
+                CultureInfo provider = new CultureInfo("en-US");
+                CultureInfo.CurrentCulture = provider;
+                //var ss = DateTime.ParseExact("2025-02-25", "yyyy-MM-dd", provider);
+
+                var inputParms = new Dictionary<string, object>()
+            {
+                { "FromDate", filter.FromDate != null ? DateTime.ParseExact( filter.FromDate.ToString(),  "yyyy-MM-dd", provider ) : Convert.DBNull},
+                { "ToDate", filter.ToDate  != null ? DateTime.ParseExact( filter.ToDate.ToString(),  "yyyy-MM-dd", provider) :Convert.DBNull },
+                { "ArbitratorsIds", filter.EmployeeIds != null && filter.EmployeeIds.Any() ? string.Join(",", filter.EmployeeIds) :(object) DBNull.Value },
+            };
+
+
+
+                var (resultList, outPut) = await _entityRepository.ExecuteStoredProcedureAsync<GetReviwersDashbourdResult>("[dbo].[GetArbitrationDashbourdReport]", inputParms);
+                if (resultList.IsDone)
+                {
+                    return resultList;
+                }
+                return new BaseResponse()
+                {
+                    IsDone = false,
+                    Message = string.Join(", ",
+                                new[] { resultList?.Message }
+                                .Where(msg => !string.IsNullOrEmpty(msg)))
+
+                };
+
+            }
+            catch (Exception)
+            {
+
+                return new BaseResponse() { IsDone = false, Message = "خطأ داخلي" };
+
+            }
+        }
+
         #region Reviewer Arbitration Reformer Reports
         public async Task<BaseResponse> GetReviewersReport(GenericEmployeeReportsFilter filter)
         {
