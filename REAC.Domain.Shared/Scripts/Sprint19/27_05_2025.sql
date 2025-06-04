@@ -1,14 +1,11 @@
 ﻿
--- Procedure: GetReviewersReport
--- Description: Generates a comprehensive report of litigation reviewers and their case statistics
--- Parameters:
---   @EmployeeIds: Comma-separated list of employee IDs to filter by
---   @LitigationRequestStageId: Stage ID to filter litigation requests (1=Review, 2=Reconciliation, 3=Arbitration)
---   @FromDate/@ToDate: Date range filter based on SentOn date
---   @ReviewerName: Partial name match filter for reviewer names
---   @ReviewerStatus: Filter by reviewer status ('Active' or 'Inactive')
 GO
-Alter PROCEDURE [dbo].[GetReviewersReport]
+/****** Object:  StoredProcedure [dbo].[GetReviewersReport]    Script Date: 6/4/2025 1:57:15 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+ALTER PROCEDURE [dbo].[GetReviewersReport]
     @EmployeeIds NVARCHAR(MAX) = NULL,              -- Filter by specific employee IDs
     @FromDate DATETIME = NULL,                      -- Start date for filtering
     @ToDate DATETIME = NULL,                        -- End date for filtering
@@ -48,8 +45,8 @@ BEGIN
             AND (@EmployeeIds IS NULL OR E.Id IN (SELECT value FROM STRING_SPLIT(@EmployeeIds, ',')))
             AND (@ReviewerName IS NULL OR E.EmployeeName LIKE '%' + @ReviewerName + '%')
             AND (@ReviewerStatus IS NULL OR 
-                 (@ReviewerStatus = 1 AND E.IsActive = 1) OR 
-                 (@ReviewerStatus = 0 AND E.IsActive = 0))
+                 (@ReviewerStatus = 'Active' AND E.IsActive = 1) OR 
+                 (@ReviewerStatus = 'Inactive' AND E.IsActive = 0))
     ),
     
     -- =============================================
@@ -110,23 +107,24 @@ BEGIN
         ISNULL(TotalReviewDueDateCount, 0) AS TotalReviewDueDateCount,
         
         -- Performance ratios (percentages)
-        ISNULL( CAST(
+        CAST(
             ISNULL(NotFinishedCount, 0) * 100.0 / 
             NULLIF(ISNULL(TotalLitigationCount, 0), 0)
             AS DECIMAL(5,2)
-        ),0) AS NotFinishedRatio,
+        ) AS NotFinishedRatio,
         
-         ISNULL(CAST(
+        CAST(
             ISNULL(FinishedCount, 0) * 100.0 / 
             NULLIF(ISNULL(TotalLitigationCount, 0), 0)
             AS DECIMAL(5,2)
-        ),0) AS FinishedRatio,
+        ) AS FinishedRatio,
         
-        ISNULL( CAST(
+        CAST(
             ISNULL(TotalReviewDueDateCount, 0) * 100.0 / 
             NULLIF(ISNULL(TotalLitigationCount, 0), 0)
             AS DECIMAL(5,2)
-        ),0) AS TotalReviewDueDateRatio
+        ) AS TotalReviewDueDateRatio
+		,COUNT(*) OVER() AS TotalCount
         
     FROM ReviewerLitigationStats
     -- Show ALL reviewers, even those with no litigation cases (they'll have zero statistics)
@@ -142,10 +140,16 @@ BEGIN
             ELSE @Take 
         END ROWS ONLY
 END
-GO
+
 -----------------------------------------------------------------------------------------
 -----------------------------------------------------------------------------------------
 
+GO
+/****** Object:  StoredProcedure [dbo].[GetReformersReport]    Script Date: 6/4/2025 1:57:46 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
 ALTER PROCEDURE [dbo].[GetReformersReport]
     @FromDate DATETIME = NULL,                      -- Start date for filtering
     @ToDate DATETIME = NULL,                        -- End date for filtering
@@ -239,23 +243,24 @@ BEGIN
         ISNULL(DueDateCount, 0) AS DueDateCount,
         
         -- Performance ratios (percentages)
-        ISNULL(CAST(
+        CAST(
             ISNULL(NotFinishedCount, 0) * 100.0 / 
             NULLIF(ISNULL(TotalLitigationCount, 0), 0)
             AS DECIMAL(5,2)
-        ),0) AS NotFinishedRatio,
+        ) AS NotFinishedRatio,
         
-       ISNULL(
-    CAST(
-        ISNULL(FinishedCount, 0) * 100.0 / NULLIF(ISNULL(TotalLitigationCount, 0), 0)
-        AS DECIMAL(5, 2)
-    ),
-0) AS FinishedRatio,
-        ISNULL(CAST(
+        CAST(
+            ISNULL(FinishedCount, 0) * 100.0 / 
+            NULLIF(ISNULL(TotalLitigationCount, 0), 0)
+            AS DECIMAL(5,2)
+        ) AS FinishedRatio,
+        
+        CAST(
             ISNULL(DueDateCount, 0) * 100.0 / 
             NULLIF(ISNULL(TotalLitigationCount, 0), 0)
             AS DECIMAL(5,2)
-        ),0) AS DueDateRatio
+        ) AS DueDateRatio
+		,COUNT(*) OVER() AS TotalCount
         
     FROM ReformerLitigationStats
     -- Show ALL reformers, even those with no litigation cases (they'll have zero statistics)
@@ -271,11 +276,17 @@ BEGIN
             ELSE @Take 
         END ROWS ONLY
 END
-GO
+
 ------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------
 
-alter PROCEDURE [dbo].[GetArbitratorsReport]
+GO
+/****** Object:  StoredProcedure [dbo].[GetArbitratorsReport]    Script Date: 6/4/2025 1:58:07 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+ALTER PROCEDURE [dbo].[GetArbitratorsReport]
     @EmployeeIds NVARCHAR(MAX) = NULL,              -- Filter by specific arbitrator employee IDs
     @FromDate DATETIME = NULL,                      -- Start date for filtering
     @ToDate DATETIME = NULL,                        -- End date for filtering
@@ -395,23 +406,24 @@ BEGIN
         ArbitratorDueDateCount,
         
         -- Performance ratios for combined statistics
-        ISNULL( CAST(
+        CAST(
             (ChairmanNotFinishedCount + ArbitratorNotFinishedCount) * 100.0 / 
             NULLIF((ChairmanTotalCount + ArbitratorTotalCount), 0)
             AS DECIMAL(5,2)
-        ),0) AS NotFinishedRatio,
+        ) AS NotFinishedRatio,
         
-         ISNULL(CAST(
+        CAST(
             (ChairmanFinishedCount + ArbitratorFinishedCount) * 100.0 / 
             NULLIF((ChairmanTotalCount + ArbitratorTotalCount), 0)
             AS DECIMAL(5,2)
-        ),0) AS FinishedRatio,
+        ) AS FinishedRatio,
         
-         ISNULL(CAST(
+        CAST(
             (ChairmanDueDateCount + ArbitratorDueDateCount) * 100.0 / 
             NULLIF((ChairmanTotalCount + ArbitratorTotalCount), 0)
             AS DECIMAL(5,2)
-        ),0) AS DueDateRatio
+        ) AS DueDateRatio
+		,COUNT(*) OVER() AS TotalCount
         
     FROM ArbitratorLitigationStats
     -- Show ALL arbitrators, even those with no litigation cases (they'll have zero statistics)
@@ -427,4 +439,3 @@ BEGIN
             ELSE @Take 
         END ROWS ONLY
 END
-GO

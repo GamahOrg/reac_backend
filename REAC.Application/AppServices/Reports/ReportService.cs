@@ -470,34 +470,7 @@ namespace REAC.Application.AppServices.Reports
             return result;
         }
 
-        //public async Task<BaseResponse> GetListOfLitigationArbitrationReport(GenericReportsFilter filter)
-        //{
-        //    var inputParms = BuildMainFilterParam(filter);
-        //    //inputParms.Add("ArbitrationNames", filter.ArbitrationNames ?? Convert.DBNull);
-        //    //var out=new Dictionary(){{"id","int"}};for example
-        //    var baseResponseStaticsResult = await GetLitigationStatisticsArbitrationReport(filter);
-        //    var (resultList, outPut) = await _entityRepository.ExecuteStoredProcedureAsync<GetListOfLitigationArbitrationReportResult>("[dbo].[GetListOfLitigationArbitrationReport]", inputParms);
-        //    if (baseResponseStaticsResult.IsDone && resultList.IsDone)
-        //    {
-
-        //        dynamic obj = new ExpandoObject();
-        //        obj.LitigationStatisticsArbitration = (baseResponseStaticsResult as DataResponse<List<GetLitigationStatisticsMainReportResult>>)?.Data;
-        //        obj.LitigationListArbitration = (resultList as DataResponse<List<GetListOfLitigationArbitrationReportResult>>)?.Data;
-        //        return new DataResponse<object>()
-        //        {
-        //            IsDone = true,
-        //            Data = obj
-        //        };
-        //    }
-        //    return new BaseResponse()
-        //    {
-        //        IsDone = false,
-        //        Message = string.Join(", ",
-        //                    new[] { resultList?.Message, baseResponseStaticsResult?.Message }
-        //                    .Where(msg => !string.IsNullOrEmpty(msg)))
-
-        //    };
-        //}
+        
         public async Task<BaseResponse> GetLitigationStatisticsArbitrationReport(GenericReportsFilter filter)
         {
             var inputParms = BuildMainFilterParam(filter);
@@ -808,17 +781,17 @@ namespace REAC.Application.AppServices.Reports
                             NotFinishedRatio = !Convert.IsDBNull(reader["NotFinishedRatio"]) ? (decimal)reader["NotFinishedRatio"] : (decimal?)null,
                             FinishedRatio = !Convert.IsDBNull(reader["FinishedRatio"]) ? (decimal)reader["FinishedRatio"] : (decimal?)null,
                             TotalReviewDueDateRatio = !Convert.IsDBNull(reader["TotalReviewDueDateRatio"]) ? (decimal)reader["TotalReviewDueDateRatio"] : (decimal?)null,
+                            TotalCount = reader["TotalCount"] != DBNull.Value ? (int)reader["TotalCount"] : 0,
+
                         };
                         resultList.Add(item);
                     }
 
-                    // Second result set: the total count (if you return it separately)
-                    if (await reader.NextResultAsync() && await reader.ReadAsync())
-                    {
-                        totalCount = reader.GetInt32(0);
-                    }
+                    
                 }
             }
+
+            totalCount = resultList.Count > 0 ? resultList.First().TotalCount : 0;
 
             var pageCount = (double)totalCount / filter.Take;
 
@@ -876,17 +849,16 @@ namespace REAC.Application.AppServices.Reports
                             NotFinishedRatio = !Convert.IsDBNull(reader["NotFinishedRatio"])? (decimal)reader["NotFinishedRatio"]: (decimal?)null,
                             FinishedRatio = !Convert.IsDBNull(reader["FinishedRatio"]) ? (decimal)reader["FinishedRatio"] : (decimal?)null,
                             DueDateRatio = !Convert.IsDBNull(reader["DueDateRatio"]) ? (decimal)reader["DueDateRatio"] : (decimal?)null,
+                            TotalCount = reader["TotalCount"] != DBNull.Value ? (int)reader["TotalCount"] : 0,
+
                         };
                         resultList.Add(item);
                     }
 
-                    // Second result set: the total count (if you return it separately)
-                    if (await reader.NextResultAsync() && await reader.ReadAsync())
-                    {
-                        totalCount = reader.GetInt32(0);
-                    }
+                   
                 }
             }
+            totalCount = resultList.Count > 0 ? resultList.First().TotalCount : 0;
 
             var pageCount = (double)totalCount / filter.Take;
 
@@ -944,17 +916,17 @@ namespace REAC.Application.AppServices.Reports
                             NotFinishedRatio = !Convert.IsDBNull(reader["NotFinishedRatio"]) ? (decimal)reader["NotFinishedRatio"] : (decimal?)null,
                             FinishedRatio = !Convert.IsDBNull(reader["FinishedRatio"]) ? (decimal)reader["FinishedRatio"] : (decimal?)null,
                             DueDateRatio = !Convert.IsDBNull(reader["DueDateRatio"]) ? (decimal)reader["DueDateRatio"] : (decimal?)null,
+                            TotalCount = reader["TotalCount"] != DBNull.Value ? (int)reader["TotalCount"] : 0,
+
                         };
                         resultList.Add(item);
                     }
 
-                    // Second result set: the total count (if you return it separately)
-                    if (await reader.NextResultAsync() && await reader.ReadAsync())
-                    {
-                        totalCount = reader.GetInt32(0);
-                    }
+                   
                 }
             }
+
+            totalCount = resultList.Count > 0 ? resultList.First().TotalCount : 0;
 
             var pageCount = (double)totalCount / filter.Take;
 
@@ -973,7 +945,6 @@ namespace REAC.Application.AppServices.Reports
             };
         }
 
-        #endregion
         public async Task<BaseResponse> GetReviewrsReformersArbitratorsReport(GenericEmployeeReportsFilter filter)
         {
             var inputParms = BuildReviewerReformerArbitratorReportsFilter(filter);
@@ -1053,6 +1024,7 @@ namespace REAC.Application.AppServices.Reports
                 IsDone = true
             };
         }
+        #endregion
         
         #region helpers
 

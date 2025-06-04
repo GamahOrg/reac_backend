@@ -21,6 +21,8 @@ namespace REAC.EntityFrameworkCore.Entities.Reports
         public decimal? FinishedRatio { get; set; }
         public decimal? TotalReviewDueDateRatio { get; set; }
 
+        public int TotalCount { get; set; }
+
     }
 
     public class GetReformersReportResult
@@ -37,6 +39,7 @@ namespace REAC.EntityFrameworkCore.Entities.Reports
         public decimal? FinishedRatio { get; set; }
         public decimal? DueDateRatio { get; set; }
 
+        public int TotalCount { get; set; }
     }
 
 
@@ -53,6 +56,8 @@ namespace REAC.EntityFrameworkCore.Entities.Reports
         public decimal? NotFinishedRatio { get; set; }
         public decimal? FinishedRatio { get; set; }
         public decimal? DueDateRatio { get; set; }
+
+        public int TotalCount { get; set; }
 
     }
 
