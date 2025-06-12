@@ -91,5 +91,17 @@ namespace REAC.EntityFrameworkCore.Entities.Reports
         public int TotalCount { get; set; }
 
     }
+    
+    public class GetReviewersReformersArbitratorsStatisticsReportResult
+    {
+       
+        public int CertifiedReviewers { get; set; }
+        public int StoppedReviewers { get; set; }
+        public int CertifiedReformers { get; set; }
+        public int StoppedReformers { get; set; }
+        public int CertifiedArbitrators { get; set; }
+        public int StoppedArbitrators { get; set; }
+
+    }
 
 }

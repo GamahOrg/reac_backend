@@ -22,6 +22,11 @@ namespace REAC.EntityFrameworkCore.Entities.Reports
             public int TotalReconciliationAllCount { get; set; }
             public int TotalReconciliationNotFinishedCount { get; set; }
             public int TotalReconciliationFinishedCount { get; set; }
+            public int ReconciliationWasMadeCount { get; set; }
+            public int WaiverOfRightCount { get; set; }
+            public int WaiverOfTheLawSuitCount { get; set; }
+            public int LackOfReconciliationCount { get; set; }
+            public int TheReconciliationOnTradyPatformCount { get; set; }
             public int TotalReconciliationDueDateCount { get; set; }
             public int TotalReconciliationRealEstateBrokerageCount { get; set; }
             public int TotalReconciliationWafiCount { get; set; }
