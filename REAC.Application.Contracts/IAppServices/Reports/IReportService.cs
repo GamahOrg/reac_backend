@@ -32,6 +32,7 @@ namespace REAC.Application.Contracts.IAppServices.Reports
         public Task<BaseResponse> GetReconciliationDashbourdReport(GenericReportsFilter filter);
         public Task<BaseResponse> GetArbitrationDashbourdReport(GenericReportsFilter filter);
         public Task<BaseResponse> GetReviewrsReformersArbitratorsReport(GenericEmployeeReportsFilter filter);
+        public Task<BaseResponse> GetReviewrsReformersArbitratorsStatisticsReport();
 
     }
 }

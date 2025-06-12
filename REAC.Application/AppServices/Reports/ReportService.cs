@@ -1024,6 +1024,25 @@ namespace REAC.Application.AppServices.Reports
                 IsDone = true
             };
         }
+        public async Task<BaseResponse> GetReviewrsReformersArbitratorsStatisticsReport()
+        {
+
+            var result = await _entityRepository.ExecuteParameterlessStoredProcedureAsync<GetReviewersReformersArbitratorsStatisticsReportResult>("[dbo].[GetReviewrsReformersArbitratorsStatisticsReport]");
+
+            if (result.IsDone)
+            {
+                return result;
+            }
+            return new BaseResponse()
+            {
+                IsDone = false,
+                Message = string.Join(", ",
+                            new[] { result?.Message, result?.Message }
+                            .Where(msg => !string.IsNullOrEmpty(msg)))
+
+            };
+
+        }
         #endregion
         
         #region helpers

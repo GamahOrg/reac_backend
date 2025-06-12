@@ -9,7 +9,6 @@ namespace REAC.Api.Controllers.Reports
     [Route("api/[controller]")]
     [ApiController]
     [ApiExplorerSettings(GroupName = APISections.Security)]
-    [AllowAnonymous]
 
     public class ReportsController : ControllerBase
     {
@@ -231,6 +230,16 @@ namespace REAC.Api.Controllers.Reports
         {
 
             var response = await _IReportService.GetReviewrsReformersArbitratorsReport(filter);
+            return Ok(response);
+
+        }
+
+        [HttpGet(nameof(GetReviewrsReformersArbitratorsStatisticsReport))]
+        [AllowAnonymous]
+        public async Task<ActionResult> GetReviewrsReformersArbitratorsStatisticsReport()
+        {
+
+            var response = await _IReportService.GetReviewrsReformersArbitratorsStatisticsReport();
             return Ok(response);
 
         }
