@@ -11,5 +11,6 @@ namespace REAC.Application.Contracts.IAppServices.Integration
     public interface IGEELoginService
     {
         Task<DataResponse<GEELoginResponseDto>> Login();
+        Task<DataResponse<GEELoginResponseDto>> SMSLogin();
     }
 }

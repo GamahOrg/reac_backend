@@ -413,8 +413,8 @@ GO
 
         -------------------------------------------------------------------------------
         ------------------------------------------------------------------------------
-        GO
-        Alter PROCEDURE [dbo].[GetReconciliationDashbourdReport] 
+                     GO
+        alter PROCEDURE [dbo].[GetReconciliationDashbourdReport] 
     @ReformersId UNIQUEIDENTIFIER = NULL,  -- Changed from INT to UNIQUEIDENTIFIER
     @LitigationRequestStageId INT = NULL,
     @FromDate DATETIME = NULL,
@@ -465,7 +465,7 @@ BEGIN
 		   SUM(CASE WHEN ((L.IsFinished = 1 And L.LitigationRequestCategoryId = 1) or  (L.LitigationRequestCategoryId = 3 And L.LitigationRequestStage=3)) And L.InternalStatusId= 18 THEN 1 ELSE 0 END) AS ReconciliationWasMadeCount,
 		   SUM(CASE WHEN ((L.IsFinished = 1 And L.LitigationRequestCategoryId = 1) or  (L.LitigationRequestCategoryId = 3 And L.LitigationRequestStage=3)) And L.InternalStatusId= 7 THEN 1 ELSE 0 END) AS WaiverOfRightCount,
 		   SUM(CASE WHEN ((L.IsFinished = 1 And L.LitigationRequestCategoryId = 1) or  (L.LitigationRequestCategoryId = 3 And L.LitigationRequestStage=3)) And L.InternalStatusId= 8 THEN 1 ELSE 0 END) AS WaiverOfTheLawsuitCount,
-		   SUM(CASE WHEN ((L.IsFinished = 1 And L.LitigationRequestCategoryId = 1) or  (L.LitigationRequestCategoryId = 3 And L.LitigationRequestStage=3)) And L.InternalStatusId= 9 THEN 1 ELSE 0 END) AS LackOfReconciliationCount,
+		   SUM(CASE WHEN (((L.IsFinished = 1 And L.LitigationRequestCategoryId = 1) AND (L.InternalStatusId= 9)) or  (L.LitigationRequestCategoryId = 3 And L.LitigationRequestStage=3))  THEN 1 ELSE 0 END) AS LackOfReconciliationCount,
 		   SUM(CASE WHEN ((L.IsFinished = 1 And L.LitigationRequestCategoryId = 1) or  (L.LitigationRequestCategoryId = 3 And L.LitigationRequestStage=3)) And L.InternalStatusId= 25 THEN 1 ELSE 0 END) AS TheReconciliationOnTradyPatformCount,
 
         -- Real Estate Brokerage (66) breakdown
@@ -558,6 +558,7 @@ BEGIN
     LEFT JOIN LitigationRequestContract C ON L.ContractId = C.Id  -- Added missing table alias and join condition
 
 END
+
 
 --------------------------------------------------------------------------------
 -------------------------------------------------------------------------------

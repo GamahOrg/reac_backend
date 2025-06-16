@@ -62,13 +62,6 @@ namespace REAC.EntityFrameworkCore.Entities.Reports
         public decimal? PropertiesDueDateRatio { get; set; }
         public int? TotalReviewDueDateCount { get; set; }
         public decimal? TotalReviewDueDateRatio { get; set; }
-        public int? ReconciliationWasMadeCount { get; set; }
-        public int? WaiverOfRightCount { get; set; }
-        public int? WaiverOfTheLawsuitCount { get; set; }
-        public int? LackOfReconciliationCount { get; set; }
-        public int? TheReconciliationOnTradyPatformCount { get; set; }
-
-
 
     }
 
