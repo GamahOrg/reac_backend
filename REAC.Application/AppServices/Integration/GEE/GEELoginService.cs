@@ -39,11 +39,45 @@ namespace REAC.Application.AppServices.Integration.GEE
 
                 if (response.IsSuccessStatusCode)
                 {
+                    var content1 = response.Content.ReadAsStringAsync().Result;
                     var integrationResponse = await response.Content.ReadFromJsonAsync<GEELoginResponseDto>();
                     return new DataResponse<GEELoginResponseDto> { IsDone = true, Data = integrationResponse };
                 }
 
                 return new DataResponse<GEELoginResponseDto> { IsDone = false, Message = response.StatusCode.ToString() };
+            }
+            catch (Exception e)
+            {
+                return new DataResponse<GEELoginResponseDto> { IsDone = false, Message = e.Message + e.InnerException?.Message };
+            }
+        }
+        
+        public async Task<DataResponse<GEELoginResponseDto>> SMSLogin()
+        {
+            try
+            {
+                var settings = await GetLoginGEEData();
+                if (!settings.IsDone || settings.Data is null)
+                    return new DataResponse<GEELoginResponseDto>() { IsDone = false, Message = "" };
+
+                var client = new HttpClient();
+                var request = new HttpRequestMessage(HttpMethod.Post, settings.Data.LoginURL.ToString());
+                var collection = new List<KeyValuePair<string, string>>();
+                collection.Add(new("grant_type", settings.Data.authorizationDto.grant_type));
+                collection.Add(new("client_id", settings.Data.authorizationDto.client_id));
+                collection.Add(new("client_secret", settings.Data.authorizationDto.client_secret));
+                var content = new FormUrlEncodedContent(collection);
+                request.Content = content;
+                var response = await client.SendAsync(request);
+                response.EnsureSuccessStatusCode();
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var integrationResponse = await response.Content.ReadFromJsonAsync<GEELoginResponseDto>();
+                    return new DataResponse<GEELoginResponseDto> { IsDone = true, Data = integrationResponse };
+                }
+                
+                return new DataResponse<GEELoginResponseDto> { IsDone = false, Message = response.Content.ReadAsStringAsync().Result };
             }
             catch (Exception e)
             {

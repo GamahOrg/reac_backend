@@ -672,7 +672,7 @@ namespace REAC.Application.AppServices.Reports
 
 
 
-                var (resultList, outPut) = await _entityRepository.ExecuteStoredProcedureAsync<GetReviwersDashbourdResult>("[dbo].[GetReconciliationDashbourdReport]", inputParms);
+                var (resultList, outPut) = await _entityRepository.ExecuteStoredProcedureAsync<GetReformerDashbourdResult>("[dbo].[GetReconciliationDashbourdReport]", inputParms);
                 if (resultList.IsDone)
                 {
                     return resultList;
@@ -719,7 +719,7 @@ namespace REAC.Application.AppServices.Reports
 
 
 
-                var (resultList, outPut) = await _entityRepository.ExecuteStoredProcedureAsync<GetReviwersDashbourdResult>("[dbo].[GetArbitrationDashbourdReport]", inputParms);
+                var (resultList, outPut) = await _entityRepository.ExecuteStoredProcedureAsync<GetArbitratorDashbourdResult>("[dbo].[GetArbitrationDashbourdReport]", inputParms);
                 if (resultList.IsDone)
                 {
                     return resultList;
