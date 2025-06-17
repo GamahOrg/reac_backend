@@ -691,13 +691,13 @@ namespace REAC.Application.ModuleServices
                 {
                     // Get the next arbitrator
                     var nextArbitrator = (await _repository.GetQueryable<LitigationRequestArbitratorNominationList, Guid>())
-                        .Where(c => !c.IsSent)
+                        .Where(c => !c.IsSent && c.LitigationRequestId == arbitrationReportExplanationRequest.LitigationRequestId)
                         .OrderBy(c => c.TotalPriority)
                         .FirstOrDefault();
 
                     // Get the current arbitrator
                     var currentArbitrator = (await _repository.GetQueryable<LitigationRequestArbitratorList, Guid>())
-                        .FirstOrDefault(c => c.ArbitratorCitizenId == arbitrationReportExplanationRequest.ArbitratorCitizenId);
+                        .FirstOrDefault(c => c.ArbitratorCitizenId == arbitrationReportExplanationRequest.ArbitratorCitizenId && c.LitigationRequestId == arbitrationReportExplanationRequest.LitigationRequestId);
 
                     var assignRequest = new AssignArbitratorRequestPayload()
                     {
