@@ -491,7 +491,7 @@ namespace REAC.Application.ModuleServices
                                 .OrderBy(x => x.TotalPriority).ToList()[record].ArbitratorChairmanCitizen?.CitizenRequests?
                                 .Where(x => x.CitizenRequestTypeId == CitizenRequestType.Arbitrator & x.StatusId == CitizenRequestStatus.Certified)?
                                 .OrderBy(x => x.RequestOn).LastOrDefault()?.ExperienceYears;
-
+                       
                             citizenArbitratorShortStatusChairmanDto.TotalPriority = litigationRequest.LitigationRequestArbitratorsChairmanNominationLists
                                 .OrderBy(x => x.TotalPriority).ToList()[record].LitigationRequestArbitratorsChairmanNominationListValues.Sum(x => x.Priority);
 

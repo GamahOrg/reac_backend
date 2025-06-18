@@ -1440,6 +1440,8 @@ namespace REAC.Application.AppServices.Litigation
                 byte[] fileBytes = File.ReadAllBytes(inputFilePath);
                 base64String = Convert.ToBase64String(fileBytes);
             }
+            CultureInfo provider = new CultureInfo("en-US");
+            CultureInfo.CurrentCulture = provider;
 
             var response = new LitigationArbitrationTaskAcceptOrRejectDocumentDto()
             {
@@ -1448,7 +1450,7 @@ namespace REAC.Application.AppServices.Litigation
                         assigningRequest.ArbitratorCitizen?.FullName,
                 AssociationName = litigationRequest.Contract.AssociationName,
                 ContractNumber = litigationRequest.Contract.ContractKey,
-                ContractReleaseDate = litigationRequest.CreatedOn.ToString(),
+                ContractReleaseDate = litigationRequest.CreatedOn.ToString()?.Replace("بعد الهجرة", "هجرياً"),
                 LitigationNumber = litigationRequest.RequestCode,
                 LitigationType = litigationRequest.Contract.LitigationRequestContractType.TypeName,
                 Subject = "100",
@@ -1490,6 +1492,7 @@ namespace REAC.Application.AppServices.Litigation
                          .Include(x => x.Contract.SecondPartyFacility)
                          .Include(x => x.Contract.SecondPartyCitizen)
                          .Include(x => x.Contract.LitigationRequestContractType)
+                         .Include(x => x.LitigationRequestInvoice)
                          .FirstOrDefault(l => l.Id == litigationId)
                          ;
 
@@ -1515,19 +1518,19 @@ namespace REAC.Application.AppServices.Litigation
                 ArbitratorName = citizenInfo != null ? citizenInfo.FullName : null,
                 AssociationName = litigationRequest.Contract.AssociationName,
                 ContractNumber = litigationRequest.Contract.ContractKey,
-                ContractReleaseDate = litigationRequest.CreatedOn.ToString(),
+                ContractReleaseDate = litigationRequest.CreatedOn.ToLongDateString()?.Replace("بعد الهجرة","هجرياً"),
+                ArbitratorAssigningDate = litigationRequest.ArbitratorsNominationListSelectionDoneDateTime?.ToLongDateString()?.Replace("بعد الهجرة", "هجرياً"),
                 LitigationNumber = litigationRequest.RequestCode,
                 LitigationType = litigationRequest.Contract.LitigationRequestContractType.TypeName,
                 Subject = "100",
                 ArbitratorAssignerName = "مركز التحكيم العقاري",
-                ArbitratorAssigningCost = litigationRequest.LitigationRequestAmount?.Fees.ToString(),
+                ArbitratorAssigningCost = litigationRequest.LitigationRequestInvoice?.TotalAmount.ToString(),
                 RequestTypeId = litigationRequest.Contract.LitigationRequestContractType.Id.GetHashCode(),
                 FirstPartyName = (litigationRequest.Contract.FirstPartyCitizen == null) ? litigationRequest.Contract.FirstPartyFacility.ArabicFacilityName : litigationRequest.Contract.FirstPartyCitizen.FullName,
                 SecondPartyName = (litigationRequest.Contract.SecondPartyCitizen == null) ? litigationRequest.Contract.SecondPartyFacility.ArabicFacilityName : litigationRequest.Contract.SecondPartyCitizen.FullName,
                 SigntureFile = base64String
 
             };
-
             return new DataResponse<LitigationArbitrationTaskAcceptOrRejectDocumentDto> { Data = response, IsDone = true };
         }
         public async Task<BaseResponse> GetLitigationReconciliationTaskAcceptanceOrRejectDocumentData(Guid litigationId, Guid? requestId)
@@ -1578,7 +1581,7 @@ namespace REAC.Application.AppServices.Litigation
                         litigationRequest.ReformerCitizen?.FullName,
                 AssociationName = litigationRequest.Contract.AssociationName,
                 ContractNumber = litigationRequest.Contract.ContractKey,
-                ContractReleaseDate = litigationRequest.CreatedOn.ToString(),
+                ContractReleaseDate = litigationRequest.CreatedOn.ToString()?.Replace("بعد الهجرة", "هجرياً"),
                 LitigationNumber = litigationRequest.RequestCode,
                 LitigationType = litigationRequest.Contract.LitigationRequestContractType.TypeName,
                 Subject = "100",
@@ -1644,7 +1647,7 @@ namespace REAC.Application.AppServices.Litigation
                 ReformerName = citizenInfo != null ? citizenInfo.FullName : null,
                 AssociationName = litigationRequest.Contract.AssociationName,
                 ContractNumber = litigationRequest.Contract.ContractKey,
-                ContractReleaseDate = litigationRequest.CreatedOn.ToString(),
+                ContractReleaseDate = litigationRequest.CreatedOn.ToString()?.Replace("بعد الهجرة", "هجرياً"),
                 LitigationNumber = litigationRequest.RequestCode,
                 LitigationType = litigationRequest.Contract.LitigationRequestContractType.TypeName,
                 Subject = "100",
