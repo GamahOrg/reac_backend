@@ -62,7 +62,7 @@ namespace REAC.Application.ModuleServices
                         ModificationRequest = requestPayload.ModificationRequest,
                         Reasons = requestPayload.Reasons,
                         JudgmentDecisionPlace = requestPayload.JudgmentDecisionPlace,
-                        JudgmentDecisionDate = requestPayload.JudgmentDecisionDate,
+                        JudgmentDecisionDate = DateTime.Now,
                         LitigationRequestId = requestPayload.Id,
                     };
 
@@ -292,6 +292,7 @@ namespace REAC.Application.ModuleServices
                          .Include(x => x.Contract.SecondPartyFacility)
                          .Include(x => x.Contract.SecondPartyCitizen)
                          .Include(x => x.Contract.LitigationRequestContractType)
+                         .Include(x => x.LitigationRequestInvoice)
                          .Where(x => x.Id == requestId
                          & x.ArbitratorCitizenId == referenceId
                          | x.ApplicantCitizenId == referenceId & x.Id == requestId
@@ -312,6 +313,8 @@ namespace REAC.Application.ModuleServices
 
             var request = _mapper.Map<LitigationRequestShortDto>(litigationRequest);
 
+             //modifiy fees of arbitration amount 
+             request.LitigationRequestAmount.Fees = litigationRequest.LitigationRequestInvoice?.TotalAmount ?? 0;
             if (!string.IsNullOrEmpty(litigationRequest.ArbitratorCitizen?.SigntureFile?.FilePath))
             {
                 string inputFilePath = Path.Combine(Directory.GetCurrentDirectory(), litigationRequest.ArbitratorCitizen?.SigntureFile?.FilePath);
