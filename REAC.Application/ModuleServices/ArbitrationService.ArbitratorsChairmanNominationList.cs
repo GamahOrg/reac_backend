@@ -491,7 +491,7 @@ namespace REAC.Application.ModuleServices
                                 .OrderBy(x => x.TotalPriority).ToList()[record].ArbitratorChairmanCitizen?.CitizenRequests?
                                 .Where(x => x.CitizenRequestTypeId == CitizenRequestType.Arbitrator & x.StatusId == CitizenRequestStatus.Certified)?
                                 .OrderBy(x => x.RequestOn).LastOrDefault()?.ExperienceYears;
-
+                       
                             citizenArbitratorShortStatusChairmanDto.TotalPriority = litigationRequest.LitigationRequestArbitratorsChairmanNominationLists
                                 .OrderBy(x => x.TotalPriority).ToList()[record].LitigationRequestArbitratorsChairmanNominationListValues.Sum(x => x.Priority);
 
@@ -1041,7 +1041,7 @@ namespace REAC.Application.ModuleServices
             litigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>()).Include(x => x.Area).Include(x => x.City)
                                           .Include(x => x.LitigationRequestArbitratorNominationLists)
                           .Include(x => x.LitigationRequestArbitratorsChairmanNominationLists)
-                                                    .ThenInclude(x => x.LitigationRequestArbitratorsChairmanNominationListValues)
+                                                   .ThenInclude(x => x.LitigationRequestArbitratorsChairmanNominationListValues)
                           .Include(x => x.ApplicantCitizen)
                           .Where(x => x.Id == arbitratorNominationListRequestReplyPayload.RequestId).ToList().FirstOrDefault();
 
@@ -1104,7 +1104,7 @@ namespace REAC.Application.ModuleServices
                                 };
 
 
-                                _notificationService.SendNotifications(new Contracts.Dtos.Notification.SendEmailDto()
+                                await _notificationService.SendNotifications(new Contracts.Dtos.Notification.SendEmailDto()
                                 {
                                     To = emails,
                                     Subject = "اتخاذ قرار",
@@ -1175,7 +1175,7 @@ namespace REAC.Application.ModuleServices
                                 };
 
 
-                                _notificationService.SendNotifications(new Contracts.Dtos.Notification.SendEmailDto()
+                                await _notificationService.SendNotifications(new Contracts.Dtos.Notification.SendEmailDto()
                                 {
                                     To = emails,
                                     Subject = "إعلام بأرسال طلب مهمة",
@@ -1223,7 +1223,7 @@ namespace REAC.Application.ModuleServices
 
 
                         };
-                            _notificationService.SendNotifications(new Contracts.Dtos.Notification.SendEmailDto()
+                           await _notificationService.SendNotifications(new Contracts.Dtos.Notification.SendEmailDto()
                             {
                                 To = new List<string>() { arbitratorInfo.Email },
                                 Subject = "طلب مهمة جديدة",

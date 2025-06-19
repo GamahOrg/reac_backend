@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using REAC.Application.Contracts.Dtos.Arbitration;
 using REAC.Application.Contracts.Dtos.Notification;
 using REAC.Application.Contracts.Dtos.Reconciliation.Process;
+using REAC.Application.Contracts.Dtos.Wpf.Business;
 using REAC.Domain.Shared.Constants;
 using REAC.Domain.Shared.Enum;
 using REAC.EntityFrameworkCore.Entities.Actor;
@@ -192,7 +193,7 @@ namespace REAC.Application.ModuleServices
                         }
 
                         };
-                        _notificationService.SendNotifications(new Contracts.Dtos.Notification.SendEmailDto()
+                        await _notificationService.SendNotifications(new Contracts.Dtos.Notification.SendEmailDto()
                         {
                             To = new List<string>() { applicantInfo.Email, arbitrationAdmin.Data?.Email },
                             Subject = "أضافة طلب رد محكم",
@@ -683,6 +684,35 @@ namespace REAC.Application.ModuleServices
                         Message = "طلب غير موجود"
                     };
 
+                
+
+                // In Case of Accept, Re Assign the next highest periority Arbitrator
+                if (requestPayload.Response == ApproveRejectStatus.Approve)
+                {
+                    // Get the next arbitrator
+                    var nextArbitrator = (await _repository.GetQueryable<LitigationRequestArbitratorNominationList, Guid>())
+                        .Where(c => !c.IsSent && c.LitigationRequestId == arbitrationReportExplanationRequest.LitigationRequestId)
+                        .OrderBy(c => c.TotalPriority)
+                        .FirstOrDefault();
+
+                    // Get the current arbitrator
+                    var currentArbitrator = (await _repository.GetQueryable<LitigationRequestArbitratorList, Guid>())
+                        .FirstOrDefault(c => c.ArbitratorCitizenId == arbitrationReportExplanationRequest.ArbitratorCitizenId && c.LitigationRequestId == arbitrationReportExplanationRequest.LitigationRequestId);
+
+                    var assignRequest = new AssignArbitratorRequestPayload()
+                    {
+                        RequestId = arbitrationReportExplanationRequest.LitigationRequestId,
+                        ArbitratorAssigningRequestTypeId = ArbitratorAssigningRequestType.Arbitrator,
+                        ArbitratorId = nextArbitrator?.ArbitratorCitizenId ?? Guid.Empty,
+                        LitigationRequestArbitratorListId = currentArbitrator?.Id ?? Guid.Empty,
+                    };
+
+                    var assignResponse = await AssignAfterRecusal(assignRequest);
+
+                    if (assignResponse.IsDone && nextArbitrator is not null)
+                        nextArbitrator.IsSent = true;
+                }
+
                 arbitrationReportExplanationRequest.ResponseOn = DateTime.Now;
                 arbitrationReportExplanationRequest.ApproveRejectStatus = requestPayload.Response;
 
@@ -806,7 +836,7 @@ namespace REAC.Application.ModuleServices
                             });
                             emails.Add(litigationRequest.Contract.SecondPartyFacility.Citizen.Email);
                         };
-                        _notificationService.SendNotifications(new Contracts.Dtos.Notification.SendEmailDto()
+                        await _notificationService.SendNotifications(new Contracts.Dtos.Notification.SendEmailDto()
                         {
                             To = emails,
                             Subject = "طلب رد محكم",

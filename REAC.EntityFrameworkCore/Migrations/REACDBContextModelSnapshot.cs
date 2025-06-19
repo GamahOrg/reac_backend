@@ -2382,7 +2382,10 @@ namespace REAC.EntityFrameworkCore.Migrations
 
             modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Reports.GetListOfLitigationArbitrationReportResult", b =>
                 {
-                    b.Property<string>("ArbitrationName")
+                    b.Property<string>("ArbitratorChairmanName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ArbitratorsFullNames")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("AreaName")
@@ -2400,14 +2403,11 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Property<DateTime?>("CreatedOn")
                         .HasColumnType("datetime2");
 
-                    b.Property<decimal?>("Fees")
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<string>("FirstParty")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid>("LitigationRequestId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("LitigationAmount")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("RequestCode")
                         .HasColumnType("nvarchar(max)");
@@ -2439,9 +2439,6 @@ namespace REAC.EntityFrameworkCore.Migrations
 
                     b.Property<DateTime?>("CreatedOn")
                         .HasColumnType("datetime2");
-
-                    b.Property<decimal?>("Fees")
-                        .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("FirstParty")
                         .HasColumnType("nvarchar(max)");
@@ -2483,16 +2480,13 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Property<DateTime?>("CreatedOn")
                         .HasColumnType("datetime2");
 
-                    b.Property<decimal?>("Fees")
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<string>("FirstParty")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid>("LitigationRequestId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("LitigationAmount")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("RefomerName")
+                    b.Property<string>("ReformerName")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("RequestCode")
@@ -2529,14 +2523,11 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Property<string>("EmployeeName")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<decimal?>("Fees")
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<string>("FirstParty")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid>("LitigationRequestId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("LitigationAmount")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("RequestCode")
                         .HasColumnType("nvarchar(max)");
@@ -2545,6 +2536,9 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("SecondParty")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TotalCount")
                         .HasColumnType("nvarchar(max)");
 
                     b.ToTable((string)null);
@@ -2836,56 +2830,102 @@ namespace REAC.EntityFrameworkCore.Migrations
 
             modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Reports.GetLitigationStatisticsReportResult", b =>
                 {
-                    b.Property<int>("FinishedCount")
+                    b.Property<int?>("DueDateArbitrationCount")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("FinishedRatio")
+                    b.Property<decimal?>("DueDateArbitrationRatio")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<int>("NotFinishedCount")
+                    b.Property<int?>("DueDateReconciliationCount")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("NotFinishedRatio")
+                    b.Property<decimal?>("DueDateReconciliationRatio")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<int>("OtherServicesCount")
+                    b.Property<int?>("FinishedCount")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("OtherServicesRatio")
+                    b.Property<decimal?>("FinishedRatio")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<int>("PropertiesCount")
+                    b.Property<int?>("NotFinishedCount")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("PropertiesRatio")
+                    b.Property<decimal?>("NotFinishedRatio")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<int>("RealEstateBrokerageCount")
+                    b.Property<int?>("OtherServicesCount")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("RealEstateBrokerageRatio")
+                    b.Property<decimal?>("OtherServicesRatio")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<int>("RentCount")
+                    b.Property<int?>("PropertiesCount")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("RentRatio")
+                    b.Property<decimal?>("PropertiesRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("RealEstateBrokerageCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("RealEstateBrokerageRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("RentCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("RentRatio")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("TotalLitigationCount")
                         .HasColumnType("int");
 
-                    b.Property<int>("TotalReviewDueDateCount")
+                    b.Property<int?>("TotalReviewDueDateCount")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("TotalReviewDueDateRatio")
+                    b.Property<decimal?>("TotalReviewDueDateRatio")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<int>("WafiCount")
+                    b.Property<int?>("WafiCount")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("WafiRatio")
+                    b.Property<decimal?>("WafiRatio")
                         .HasColumnType("decimal(18,2)");
+
+                    b.ToTable((string)null);
+
+                    b.ToView(null, (string)null);
+                });
+
+            modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Reports.GetReviwersReportResult", b =>
+                {
+                    b.Property<string>("FinishedCount")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FinishedRatio")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NotFinishedCount")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NotFinishedRatio")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ReviewerName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ReviewerStatus")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TotalLitigationCount")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TotalReviewDueDateCount")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TotalReviewDueDateRatio")
+                        .HasColumnType("nvarchar(max)");
 
                     b.ToTable((string)null);
 

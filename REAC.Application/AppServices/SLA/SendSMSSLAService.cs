@@ -43,17 +43,18 @@ namespace REAC.Application.AppServices.SLA
                    .Where(x => !x.IsSent && x.RetryAttempt < 1)
                    .OrderBy(x => x.CreatedOn);
 
-                var token = (await _gEELoginService.Login()).Data?.Access_token;
-                var url = (await _sysSetting.GetBySettingKey(SysSettingKeyConstants.SMS_URL))?.Data?.Value;
-                var notificationType = (await _sysSetting.GetBySettingKey(SysSettingKeyConstants.SMS_Notification_Type))?.Data?.Value;
-
                 if (smsList.Any())
                 {
-                    if (token is null)
+
+                    var token = await _gEELoginService.SMSLogin();
+                    var url = (await _sysSetting.GetBySettingKey(SysSettingKeyConstants.SMS_URL))?.Data?.Value;
+                    var notificationType = (await _sysSetting.GetBySettingKey(SysSettingKeyConstants.SMS_Notification_Type))?.Data?.Value;
+
+                    if (!token.IsDone)
                     {
                         foreach (var smsObject in smsList)
                         {
-                            smsObject.Error = "Gee Login Token Error";
+                            smsObject.Error = token.Message;
                             smsObject.RetryAttempt++;
                         }
 
@@ -61,6 +62,7 @@ namespace REAC.Application.AppServices.SLA
                     }
                     else
                     {
+
                         foreach (var smsObject in smsList)
                         {
                             var body = new SMSRequestDto()
@@ -70,7 +72,7 @@ namespace REAC.Application.AppServices.SLA
                                 notification_type = notificationType
                             };
 
-                            var result = await SendSMS(body, token, url);
+                            var result = await SendSMS(body, token.Data?.Access_token, url);
 
                             if (!result.IsDone)
                             {
@@ -89,8 +91,6 @@ namespace REAC.Application.AppServices.SLA
                     }
                 }
                 
-                    
-
                 
             }
             catch (Exception ex)
@@ -109,26 +109,7 @@ namespace REAC.Application.AppServices.SLA
         {
             try
             {
-                //if (sMSRequest is null)
-                //    return new DataResponse<SMSResponseDto> { IsDone = false, Message = "" };
-
-                //var token = (await _gEELoginService.Login()).Data?.Access_token;
-                //_loggerManager.Log(Core.Log.Domain.Shared.Enums.LoggerType.Database
-                //      , new LogDto()
-                //      {
-                //          Type = Core.Log.Domain.Shared.Enums.LogType.Trace,
-                //          Message = $"SMS Service Token ===> {token}"
-                //      });
-                //if (token is null)
-                //    return new DataResponse<SMSResponseDto> { IsDone = false, Message = "" };
-
-                //var url = (await _sysSetting.GetBySettingKey(SysSettingKeyConstants.SMS_URL))?.Data?.Value;
-                //if (string.IsNullOrWhiteSpace(url))
-                //    return new DataResponse<SMSResponseDto>() { IsDone = false, Message = "" };
-
-                //sMSRequest.notification_type = (await _sysSetting.GetBySettingKey(SysSettingKeyConstants.SMS_Notification_Type))?.Data?.Value;
-                //if (string.IsNullOrWhiteSpace(sMSRequest.notification_type))
-                //    return new DataResponse<SMSResponseDto>() { IsDone = false, Message = "" };
+                
 
                 var client = new HttpClient();
                 var request = new HttpRequestMessage(HttpMethod.Post, url);

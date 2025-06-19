@@ -916,6 +916,12 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                         new SysSetting
                         {
                             Id = Guid.NewGuid(),
+                            Key = "EmailConfiguration_URL",
+                            Value = "https://api-dev.rega.gov.sa/v1/rega/notificationservice/send-email"
+
+                        },new SysSetting
+                        {
+                            Id = Guid.NewGuid(),
                             Key = "EmailConfiguration_SendEmail",
                             Value = "true"
 

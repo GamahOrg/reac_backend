@@ -80,37 +80,69 @@
         }
 
         public async Task<BaseResponse> GetById(Guid litigationId)        {
-            //var quarble = await GetQueryableAsync();
-            var result = (await _repository.GetQueryable<LitigationRequest, Guid>())
-.Include(x => x.SysExemptionReductionCategory)
-.Include(x => x.ExemptionReductionFile)
-.Include(x => x.LitigationRequestAmount)
-.Include(x => x.LitigationRequestExtendPeriodRequests)
-.Include(x => x.LitigationRequestSessions)
-.Include(x => x.Contract)
-.Include(x => x.LitigationRequestCategory)
-.Include(x => x.Area)
-.Include(x => x.City)
-.Include(x => x.ApplicantCitizen)
-.Include(x => x.Contract.SecondPartyCitizen)
-.Include(x => x.Contract.SecondPartyCitizen.Nationality)
-.Include(x => x.Contract.FirstPartyCitizen)
-.Include(x => x.Contract.FirstPartyCitizen.Nationality)
-.Include(x => x.Contract.FirstPartyFacility)
-.Include(x => x.Contract.SecondPartyFacility)
-.Include(x => x.Contract.ContractFile)
-.Include(x => x.Contract.AssociationRegistrationCertificateFile)
-.Include(x => x.Contract.FoundingLetterFile)
-.Include(x => x.Contract.InternalRegulationsFile)
+            Guid referenceId = Guid.Empty;
+            _jwtReader.GetReferenceId(ref referenceId);
 
-.Include(x => x.LitigationRequestGrounds)
-.ThenInclude(x => x.LitigationRequestGroundFiles)
-.ThenInclude(x => x.FileManager)
+            if (referenceId == Guid.Empty)
+                return new BaseResponse() { IsDone = false, Message = "غير مصرح" };
 
-.Include(x => x.LitigationRequestRequests)
-.FirstOrDefault(x => x.Id == litigationId);
 
-            //var request = _mapper.Map<LitigationRequestShortMobileDto>(result);
+
+            var quarble = await GetQueryableAsync();
+            var result = quarble
+                .Include(x => x.SysExemptionReductionCategory)
+                .Include(x => x.ExemptionReductionFile)
+                .Include(x => x.LitigationRequestAmount)
+                .Include(x => x.LitigationRequestExtendPeriodRequests)
+                .Include(x => x.LitigationRequestSessions)
+                .Include(x => x.LitigationRequestReformerAssigningRequests)
+                .Include(x => x.LitigationRequestArbitratorAssigningRequests)
+                .Include(x => x.Contract)
+
+                .Include(x => x.LitigationRequestCategory)
+                .Include(x => x.Area)
+                .Include(x => x.City)
+                .Include(x => x.ApplicantCitizen)
+                .Include(x => x.Contract.SecondPartyCitizen)
+                .Include(x => x.Contract.SecondPartyCitizen.Nationality)
+                .Include(x => x.Contract.FirstPartyCitizen)
+                .Include(x => x.Contract.FirstPartyCitizen.Nationality)
+                .Include(x => x.Contract.FirstPartyFacility)
+                .Include(x => x.Contract.SecondPartyFacility)
+                .Include(x => x.Contract.ContractFile)
+                .Include(x => x.Contract.AssociationRegistrationCertificateFile)
+                .Include(x => x.Contract.FoundingLetterFile)
+                .Include(x => x.Contract.InternalRegulationsFile)
+                .Include(x => x.WorkFlowProcessingLogs)
+                .ThenInclude(x => x.Employee)
+                .Include(x => x.WorkFlowProcessingLogs.Where(y => !string.IsNullOrEmpty(y.Notes)).OrderByDescending(h => h.CreatedOn))
+                .ThenInclude(x => x.WorkFlowProcessingLogFiles).ThenInclude(x => x.FileManager)
+                .Include(x => x.LitigationRequestGrounds)
+                .ThenInclude(x => x.LitigationRequestGroundFiles)
+                .ThenInclude(x => x.FileManager)
+
+                .Include(x => x.LitigationRequestRequests)
+                .FirstOrDefault(x => x.Id == litigationId &&
+                x.ApplicantCitizenId == referenceId
+                      |
+                      x.Contract.FirstPartyCitizenId == referenceId & x.Id == litigationId
+                      |
+                        x.Contract.SecondPartyCitizenId == referenceId & x.Id == litigationId
+                      |
+                       x.Contract.FirstPartyFacility.CitizenId == referenceId & x.Id == litigationId
+                      |
+                      x.Contract.SecondPartyFacility.CitizenId == referenceId & x.Id == litigationId
+                      | x.LitigationRequestReformerAssigningRequests.Any(l => l.CitizenId == referenceId) & x.Id == litigationId
+                      | x.LitigationRequestArbitratorAssigningRequests.Any(l => l.CitizenId == referenceId) & x.Id == litigationId
+                );
+
+            if (result is null)
+                return new ExceptionResponse { IsDone = false, Message = "غير مصرح بعرض الدعوي" };
+
+
+            var reconciliationFees = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reconciliation_Fees).Result.Data?.Value;
+
+            result.ReconciliationFees = decimal.Parse(reconciliationFees);
 
             return new DataResponse<LitigationRequest> { Data = result, IsDone = true };        }
 
