@@ -135,6 +135,7 @@ namespace REAC.Application.AppServices.Litigation
                 if (model.ExemptionReductionCategory.Id != Guid.Empty)
                     litigationRequest.ExemptionReductionCategoryId = model.ExemptionReductionCategory.Id;
 
+                var lastCategoryId = litigationRequest.LitigationRequestCategoryId;
                 litigationRequest.LitigationRequestCategoryId = model.LitigationRequestCategoryId;
 
                 if (model.Requests != null)
@@ -284,6 +285,7 @@ namespace REAC.Application.AppServices.Litigation
                         var currentAmount = (await _repository.GetQueryable<SysLitigationRequestAmount, Guid>())
                                                   .Where(s => s.Id == litigationRequest.LitigationRequestAmountId).FirstOrDefault();
 
+
                         //check amount change
                         if (lastAmountLog != null && currentAmount.Fees > lastAmountLog.Amounts.Fees)
                         {
@@ -320,17 +322,24 @@ namespace REAC.Application.AppServices.Litigation
                             }
 
                         }
+                      
                         else
                         {
                             var currentProcessingLog = processingLog.Where(t => t.IsFinished == false).OrderBy(t => t.CreatedOn).ToList();
-                            if (processingLog.Count > 0)
+                            if (processingLog.Count > 0 && currentProcessingLog.Count > 0)
                             {
+
                                 ProcessRequestPayload processRequestPayload = new ProcessRequestPayload();
                                 processRequestPayload.RequestId = litigationRequest.Id;
                                 processRequestPayload.ProcessingLogId = currentProcessingLog.LastOrDefault().Id;
                                 processRequestPayload.WorkflowStepEventId = currentProcessingLog.LastOrDefault().WorkFlowStep.WorkFlowStepEvents.FirstOrDefault().Id;
                                 processRequestPayload.Notes = "";
                                 processRequestPayload.UploadedFilesIds = new List<Guid>();
+                                if (lastCategoryId != model.LitigationRequestCategoryId)
+                                {
+                                    processRequestPayload.CategoryTypeChanged = true;
+                                    processRequestPayload.CategoryType = model.LitigationRequestCategoryId == LitigationRequestCategory.Arbitration ? "دعوة تحكيم" : "دعوة صلح";
+                                }
                                 await _bpfService.ProcessWorkFlow(processRequestPayload, default);
                                 return new DataResponse<LitigationCreateUpdateDto>()
                                 {
@@ -340,9 +349,14 @@ namespace REAC.Application.AppServices.Litigation
                                 };
                             }
                         }
+
+                        
+
                     }
                     else
                         await _bpfService.ExcuteWorkFlow(litigationRequest.Id, default, null);
+
+                   
 
                     #region billing 
                     // billing comparing last amount with current amount 
