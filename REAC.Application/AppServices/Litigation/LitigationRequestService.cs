@@ -857,8 +857,8 @@ namespace REAC.Application.AppServices.Litigation
                     litigationRequestMircoDto.FirstPartyName = (litigationRequest.Contract.FirstPartyCitizen == null) ? litigationRequest.Contract.FirstPartyFacility.ArabicFacilityName : litigationRequest.Contract.FirstPartyCitizen.FullName;
                     litigationRequestMircoDto.SecondPartyName = (litigationRequest.Contract.SecondPartyCitizen == null) ? litigationRequest.Contract.SecondPartyFacility.ArabicFacilityName : litigationRequest.Contract.SecondPartyCitizen.FullName;
                     litigationRequestMircoDto.RequestTypeName = litigationRequest.Contract.LitigationRequestContractType.TypeName;
-                    litigationRequestMircoDto.EmployeeId = litigationRequest.WorkFlowProcessingLogs.Last(z => z.EmployeeId != null).EmployeeId;
-                    litigationRequestMircoDto.EmployeeName = litigationRequest.WorkFlowProcessingLogs.Last(z => z.EmployeeId != null).Employee.EmployeeName;
+                    litigationRequestMircoDto.EmployeeId = litigationRequest.WorkFlowProcessingLogs.First(z => z.EmployeeId != null).EmployeeId;
+                    litigationRequestMircoDto.EmployeeName = litigationRequest.WorkFlowProcessingLogs.First(z => z.EmployeeId != null).Employee.EmployeeName;
                     litigationRequestMircoDtos.Add(litigationRequestMircoDto);
                 }
             }

@@ -79,6 +79,15 @@ namespace Core.Localizations {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Failed Upload File.
+        /// </summary>
+        public static string FailedUploadFile {
+            get {
+                return ResourceManager.GetString("FailedUploadFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Home.
         /// </summary>
         public static string Home {
