@@ -420,7 +420,8 @@ public class LitigationRequestController : BaseController<LitigationRequest,
     {
         if (ModelState.IsValid)
         {
-            var returnValue = await _mobileLitigationService.AddCitizenLitigationRequestForAgreementRequestReply(agreementRequestPayload.RequestId, agreementRequestPayload.agreementRequestStatus);
+            //var returnValue = await _mobileLitigationService.AddCitizenLitigationRequestForAgreementRequestReply(agreementRequestPayload.RequestId, agreementRequestPayload.agreementRequestStatus);
+            var returnValue = await _litigationService.CallNafathForAgreementRequestReply(agreementRequestPayload.RequestId, agreementRequestPayload.agreementRequestStatus);
             return Ok(returnValue);
         }
 
