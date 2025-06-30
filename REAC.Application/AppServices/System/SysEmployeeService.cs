@@ -74,8 +74,8 @@ namespace REAC.Application.AppServices.System
             var DeptObj = (await _repository.GetQueryable<SysDepartment, Guid>())
                              .Where(x => x.DepartmentType == DepartmentType.Reconciliation)
                              .Select(d => new SysDepartmentDistributionModeDto { DistributionMode = d.DistributionMode }).ToList();
-                             
-                             
+
+
             if (DeptObj != null)
                 return new DataResponse<List<SysDepartmentDistributionModeDto>> { Data = DeptObj, IsDone = true };
             else
@@ -103,9 +103,9 @@ namespace REAC.Application.AppServices.System
 
                 if (distributionMode == DepartmentDistributionMode.AutoDistribution)
                     return new BaseResponse() { IsDone = true, Message = "تم تفعيل وضع التوزيع التلقائي" };
-                else if(distributionMode == DepartmentDistributionMode.ManualDistribution)
+                else if (distributionMode == DepartmentDistributionMode.ManualDistribution)
                     return new BaseResponse() { IsDone = true, Message = "تم تفعيل وضع التوزيع اليدوي" };
-                else 
+                else
                     return new BaseResponse() { IsDone = true, Message = "تم ايقاف توزيع الدعاوي على المصلحين" };
 
             }
@@ -127,6 +127,16 @@ namespace REAC.Application.AppServices.System
             try
             {
 
+                // Check if Active Admin already exists
+                if (sysEmployeeDto.IsAdmin && sysEmployeeDto.IsActive == true)
+                {
+
+                    var existedActiveAdmin = (await _repository.GetQueryable<SysEmployee, Guid>())
+                   .Any(x => x.DepartmentId == sysEmployeeDto.DepartmentId && x.IsAdmin && x.IsActive == true);
+
+                    if (existedActiveAdmin)
+                        return new BaseResponse() { IsDone = false, Message = "لا يمكن اضافة اكثر من مدير مفعل لنفس الأدارة" };
+                }
                 // Check Asp User
                 var isExistUser = _userManager.Users.Any(x => x.UserName == sysEmployeeDto.IdentityNumber);
 
@@ -218,6 +228,16 @@ namespace REAC.Application.AppServices.System
                 if (employee == null)
                     return new BaseResponse() { IsDone = false, Message = "الموظف غير موجود" };
 
+                // Check if Active Admin already exists
+                if (sysEmployeeDto.IsAdmin && sysEmployeeDto.IsActive == true)
+                {
+
+                    var existedActiveAdmin = (await _repository.GetQueryable<SysEmployee, Guid>())
+                   .Any(x => x.DepartmentId == sysEmployeeDto.DepartmentId && x.IsAdmin && x.IsActive == true);
+
+                    if (existedActiveAdmin)
+                        return new BaseResponse() { IsDone = false, Message = "لا يمكن اضافة اكثر من مدير مفعل لنفس الأدارة" };
+                }
 
                 var isExistUser = _userManager.Users.Any(x => x.UserName == sysEmployeeDto.IdentityNumber && x.Id != employee.UserId);
                 if (isExistUser)
@@ -262,11 +282,11 @@ namespace REAC.Application.AppServices.System
                                                                             l.Department.DepartmentName.Contains(searchKey) ||
                                                                              l.EmployeeName.Contains(searchKey)));
             }
-            if (isActive.HasValue) 
+            if (isActive.HasValue)
             {
                 employees = (employees.Where(l => l.IsActive == isActive.Value));
 
-            } 
+            }
 
             sysEmployees = employees.OrderByDescending(x => x.CreatedOn)
                                                .AsSplitQuery()
@@ -298,7 +318,7 @@ namespace REAC.Application.AppServices.System
                 var employee = (await _repository.GetQueryable<SysEmployee, Guid>())?
                       .Where(x => x.Id == employeeId)
                       .SingleOrDefault();
-        
+
                 if (employee == null)
                     return new BaseResponse()
                     {
@@ -306,11 +326,22 @@ namespace REAC.Application.AppServices.System
                         Message = "موظف غير موجود"
                     };
 
-                employee.IsActive = isActive;   
+                // Check if Active Admin already exists
+                if (employee.IsAdmin && isActive == true)
+                {
+
+                    var existedActiveAdmin = (await _repository.GetQueryable<SysEmployee, Guid>())
+                   .Any(x => x.DepartmentId == employee.DepartmentId && x.IsAdmin && x.IsActive == true);
+
+                    if (existedActiveAdmin)
+                        return new BaseResponse() { IsDone = false, Message = "لا يمكن اضافة اكثر من مدير مفعل لنفس الأدارة" };
+                }
+
+                employee.IsActive = isActive;
 
                 await _repository.SaveChangesAsync();
-                
-                if (isActive == true)   
+
+                if (isActive == true)
                     return new BaseResponse() { IsDone = true, Message = "تم تفعيل حساب الوظف" };
                 else
                     return new BaseResponse() { IsDone = true, Message = "تم إيقاف حساب الوظف" };

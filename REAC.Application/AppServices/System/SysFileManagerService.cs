@@ -74,7 +74,7 @@ namespace REAC.Application.AppServices.System
             if (files == null)
                 throw new ArgumentNullException(nameof(files));
 
-            var allowedExtensions = new List<string> { ".jpg", ".png", ".pdf", ".docx", ".xlsx", ".xls",".jpeg" };
+            var allowedExtensions = new List<string> { ".jpg", ".png", ".pdf", ".docx", ".xlsx", ".xls", ".jpeg" };
             var pathToSave = CreateUploadRootFolder();
             List<FileDto> uploadedFiles = new();
             foreach (var file in files)
@@ -110,7 +110,13 @@ namespace REAC.Application.AppServices.System
                 path = path.Replace(@"\", @"/");
                 var uploadedFile = new FileDto(fileName, id, path, "");
                 await CreateNewFile(uploadedFile, extension, file);
-                await OpenFileStreamAsync(pathToSave, uploadedFile, extension, file);
+                // Check if file was saved successfully
+                var saveResult = await OpenFileStreamAsync(pathToSave, uploadedFile, extension, file);
+                if (!saveResult)
+                {
+                    return new DataResponse<List<FileDto>> { IsDone = false, Message = Localizations.FailedUploadFile, Data = null };
+                }
+
                 uploadedFiles.Add(uploadedFile);
             }
 
@@ -128,6 +134,10 @@ namespace REAC.Application.AppServices.System
 
 
         #region Private Methods
+        private bool IsFileSaved(string filePath)
+        {
+            return File.Exists(filePath);
+        }
 
         private static string ExtractExtension(IFormFile file, out ContentDispositionHeaderValue? contentDisposition)
         {
@@ -159,12 +169,52 @@ namespace REAC.Application.AppServices.System
             uploadedFile.FileType = extension;
         }
 
-        private static async Task OpenFileStreamAsync(string pathToSave, FileDto uploadedFile, string extension,
+        //private static async Task OpenFileStreamAsync(string pathToSave, FileDto uploadedFile, string extension,
+        //    IFormFile file)
+        //{
+        //    var combinedPath = Path.Combine(pathToSave, uploadedFile.Id + extension);
+        //    await using var stream = new FileStream(combinedPath, FileMode.Create);
+        //    await file.CopyToAsync(stream);
+        //}
+
+        // Modified OpenFileStreamAsync method
+        private static async Task<bool> OpenFileStreamAsync(string pathToSave, FileDto uploadedFile, string extension,
             IFormFile file)
         {
             var combinedPath = Path.Combine(pathToSave, uploadedFile.Id + extension);
-            await using var stream = new FileStream(combinedPath, FileMode.Create);
-            await file.CopyToAsync(stream);
+
+            try
+            {
+                await using var stream = new FileStream(combinedPath, FileMode.Create);
+                await file.CopyToAsync(stream);
+
+                // Ensure stream is properly closed before checking
+                await stream.FlushAsync();
+            }
+            catch (Exception ex)
+            {
+                // Log error and return false
+                return false;
+            }
+
+            // Check if file was saved after stream is closed
+            return IsFileSavedSuccessfully(combinedPath, file.Length);
+        }
+
+        private static bool IsFileSavedSuccessfully(string filePath, long expectedSize)
+        {
+            try
+            {
+                if (!File.Exists(filePath))
+                    return false;
+
+                var fileInfo = new FileInfo(filePath);
+                return fileInfo.Length == expectedSize && fileInfo.Length > 0;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         #endregion

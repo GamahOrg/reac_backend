@@ -168,4 +168,7 @@
   <data name="ContractNotFound" xml:space="preserve">
     <value>You are not permitted to view this contract</value>
   </data>
+  <data name="FailedUploadFile" xml:space="preserve">
+    <value>Failed Upload File</value>
+  </data>
 </root>
