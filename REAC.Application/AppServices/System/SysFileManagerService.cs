@@ -3,6 +3,7 @@ using Core.GenericRepository.BaseRepository;
 using Core.GenericRepository.Common;
 using Core.GenericRepository.Shared.BaseEntities;
 using Core.Localizations;
+using Core.Log.Application.Contracts.Dto;
 using Core.Log.Application.Contracts.IAppServices;
 using Core.Shared.Responses;
 using Microsoft.AspNetCore.Http;
@@ -24,10 +25,10 @@ namespace REAC.Application.AppServices.System
 {
     public class SysFileManagerService : BasicService<SysFileManager, Guid>, ISysFileManagerService
     {
-
+        public readonly ILoggerManager _loggerManager;
         public SysFileManagerService(IEntityRepository repository, IMapper mapper, ILoggerManager loggerManager, IJwtReader jwtReader) : base(repository, mapper, loggerManager, jwtReader)
         {
-
+            _loggerManager = loggerManager;
         }
         public async Task<BaseResponse> AddFile(SysFileManagerCreateUpdateDto model)
         {
@@ -71,57 +72,74 @@ namespace REAC.Application.AppServices.System
 
         public async Task<BaseResponse> UploadAsync(IFormFileCollection files)
         {
-            if (files == null)
-                throw new ArgumentNullException(nameof(files));
-
-            var allowedExtensions = new List<string> { ".jpg", ".png", ".pdf", ".docx", ".xlsx", ".xls", ".jpeg" };
-            var pathToSave = CreateUploadRootFolder();
-            List<FileDto> uploadedFiles = new();
-            foreach (var file in files)
+            try
             {
-                if (file.Length == 0) continue;
+                if (files == null)
+                    throw new ArgumentNullException(nameof(files));
 
-                var extension = ExtractExtension(file, out var contentDisposition);
-
-                var fileName = contentDisposition!.FileName!.Trim('"');
-                // Validate file extension 
-                if (!allowedExtensions.Contains(extension.ToLower()))
+                var allowedExtensions = new List<string> { ".jpg", ".png", ".pdf", ".docx", ".xlsx", ".xls", ".jpeg" };
+                var pathToSave = CreateUploadRootFolder();
+                List<FileDto> uploadedFiles = new();
+                foreach (var file in files)
                 {
-                    throw new Exception();
-                    // throw new ExceptionResponse(Localizations.ThisFileTypeNotAllowed);
+                    if (file.Length == 0) continue;
+
+                    var extension = ExtractExtension(file, out var contentDisposition);
+
+                    var fileName = contentDisposition!.FileName!.Trim('"');
+                    // Validate file extension 
+                    if (!allowedExtensions.Contains(extension.ToLower()))
+                    {
+                        _loggerManager.Log(Core.Log.Domain.Shared.Enums.LoggerType.Database, new LogDto()
+                        {
+                            Type = Core.Log.Domain.Shared.Enums.LogType.Exception,
+                            Message = Localizations.ThisFileTypeNotAllowed.ToString()
+                        });
+                        throw new Exception();
+                        // throw new ExceptionResponse(Localizations.ThisFileTypeNotAllowed);
+                    }
+
+                    //if(extension.ToLower() == ".pdf")
+                    //{
+                    //    var pdfMaliciousResult = await FileHelper.CheckMaliciousPdf(file);
+
+                    //    if (!pdfMaliciousResult.IsDone)
+                    //        return pdfMaliciousResult;
+                    //}
+
+                    var maliciousResult = await FileHelper.CheckMaliciousFile(file);
+
+                    if (!maliciousResult.IsDone)
+                        return maliciousResult;
+
+
+                    var id = Guid.NewGuid();
+                    var path = Path.Combine(SharedConstants.RootFolder, id + extension);
+                    path = path.Replace(@"\", @"/");
+                    var uploadedFile = new FileDto(fileName, id, path, "");
+                    await CreateNewFile(uploadedFile, extension, file);
+                    // Check if file was saved successfully
+                    var saveResult = await OpenFileStreamAsync(pathToSave, uploadedFile, extension, file, _loggerManager);
+                    if (!saveResult)
+                    {
+                        return new DataResponse<List<FileDto>> { IsDone = false, Message = Localizations.FailedUploadFile, Data = null };
+                    }
+
+                    uploadedFiles.Add(uploadedFile);
                 }
 
-                //if(extension.ToLower() == ".pdf")
-                //{
-                //    var pdfMaliciousResult = await FileHelper.CheckMaliciousPdf(file);
-
-                //    if (!pdfMaliciousResult.IsDone)
-                //        return pdfMaliciousResult;
-                //}
-
-                var maliciousResult = await FileHelper.CheckMaliciousFile(file);
-
-                if (!maliciousResult.IsDone)
-                    return maliciousResult;
-
-
-                var id = Guid.NewGuid();
-                var path = Path.Combine(SharedConstants.RootFolder, id + extension);
-                path = path.Replace(@"\", @"/");
-                var uploadedFile = new FileDto(fileName, id, path, "");
-                await CreateNewFile(uploadedFile, extension, file);
-                // Check if file was saved successfully
-                var saveResult = await OpenFileStreamAsync(pathToSave, uploadedFile, extension, file);
-                if (!saveResult)
-                {
-                    return new DataResponse<List<FileDto>> { IsDone = false, Message = Localizations.FailedUploadFile, Data = null };
-                }
-
-                uploadedFiles.Add(uploadedFile);
+                await _repository.SaveChangesAsync();
+                return new DataResponse<List<FileDto>> { IsDone = true, Message = Localizations.UploadSuccefully, Data = uploadedFiles };
             }
-
-            await _repository.SaveChangesAsync();
-            return new DataResponse<List<FileDto>> { IsDone = true, Message = Localizations.UploadSuccefully, Data = uploadedFiles };
+            catch (Exception ex)
+            {
+                _loggerManager.Log(Core.Log.Domain.Shared.Enums.LoggerType.Database, new LogDto()
+                {
+                    Type = Core.Log.Domain.Shared.Enums.LogType.Exception,
+                    Message = "upload file exception=>" + ex.ToString()
+                });
+                return new DataResponse<List<FileDto>> { IsDone = false, Message = Localizations.FailedUploadFile, Data = null };
+            }
         }
 
         private static string CreateUploadRootFolder()
@@ -178,8 +196,7 @@ namespace REAC.Application.AppServices.System
         //}
 
         // Modified OpenFileStreamAsync method
-        private static async Task<bool> OpenFileStreamAsync(string pathToSave, FileDto uploadedFile, string extension,
-            IFormFile file)
+        private static async Task<bool> OpenFileStreamAsync(string pathToSave, FileDto uploadedFile, string extension, IFormFile file, ILoggerManager loggerManager)
         {
             var combinedPath = Path.Combine(pathToSave, uploadedFile.Id + extension);
 
@@ -188,20 +205,25 @@ namespace REAC.Application.AppServices.System
                 await using var stream = new FileStream(combinedPath, FileMode.Create);
                 await file.CopyToAsync(stream);
 
-                // Ensure stream is properly closed before checking
+                // Ensure stream is properly closed before checking  
                 await stream.FlushAsync();
             }
             catch (Exception ex)
             {
-                // Log error and return false
+                // Log error and return false  
+                loggerManager.Log(Core.Log.Domain.Shared.Enums.LoggerType.Database, new LogDto()
+                {
+                    Type = Core.Log.Domain.Shared.Enums.LogType.Exception,
+                    Message = "upload file exception=>" + ex.ToString()
+                });
                 return false;
             }
 
-            // Check if file was saved after stream is closed
-            return IsFileSavedSuccessfully(combinedPath, file.Length);
+            // Check if file was saved after stream is closed  
+            return IsFileSavedSuccessfully(combinedPath, file.Length, loggerManager);
         }
 
-        private static bool IsFileSavedSuccessfully(string filePath, long expectedSize)
+        private static bool IsFileSavedSuccessfully(string filePath, long expectedSize, ILoggerManager loggerManager)
         {
             try
             {
@@ -211,8 +233,13 @@ namespace REAC.Application.AppServices.System
                 var fileInfo = new FileInfo(filePath);
                 return fileInfo.Length == expectedSize && fileInfo.Length > 0;
             }
-            catch
+            catch (Exception ex)
             {
+                loggerManager.Log(Core.Log.Domain.Shared.Enums.LoggerType.Database, new LogDto()
+                {
+                    Type = Core.Log.Domain.Shared.Enums.LogType.Exception,
+                    Message = "upload file exception=>" + ex.ToString()
+                });
                 return false;
             }
         }

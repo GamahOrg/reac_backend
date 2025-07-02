@@ -114,7 +114,9 @@ namespace REAC.Application.AppServices.SLA
         {
 
             var emails = (await _repository.GetQueryable<SysNotificationEmail, Guid>())
-           .Where(x => !x.IsSent);
+           .Where(x => !x.IsSent)
+           .OrderByDescending(x => x.CreatedOn)
+           .Take(10);
 
             if (emails.Any())
             {
