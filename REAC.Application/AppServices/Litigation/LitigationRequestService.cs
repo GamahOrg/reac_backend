@@ -322,7 +322,7 @@ namespace REAC.Application.AppServices.Litigation
                             }
 
                         }
-                      
+
                         else
                         {
                             var currentProcessingLog = processingLog.Where(t => t.IsFinished == false).OrderBy(t => t.CreatedOn).ToList();
@@ -350,13 +350,13 @@ namespace REAC.Application.AppServices.Litigation
                             }
                         }
 
-                        
+
 
                     }
                     else
                         await _bpfService.ExcuteWorkFlow(litigationRequest.Id, default, null);
 
-                   
+
 
                     #region billing 
                     // billing comparing last amount with current amount 
@@ -428,7 +428,7 @@ namespace REAC.Application.AppServices.Litigation
 
         private static string IncrementGenericFormatString(string input)
         {
-            
+
             Match match = Regex.Match(input, @"^([A-Za-z])(\d+)(-.*)$");
 
             if (match.Success)
@@ -996,6 +996,16 @@ namespace REAC.Application.AppServices.Litigation
 
                 if (litigationRequest.WorkFlowProcessingLogs.Any())
                 {
+                    var WorkFlowProcessingLogs = (await _repository.GetQueryable<WorkFlowProcessingLog, Guid>())?
+                      .Where(x => x.RequestId == assignRequestPayload.RequestId);
+
+                    foreach (var request in WorkFlowProcessingLogs.ToList())
+                    {
+                        if (request.RequestId == assignRequestPayload.RequestId)
+                        {
+                            request.EmployeeId = assignRequestPayload.EmployeeId;
+                        }
+                    }
 
                     foreach (var request in litigationRequest.WorkFlowProcessingLogs.ToList())
                     {
@@ -1532,7 +1542,7 @@ namespace REAC.Application.AppServices.Litigation
                 ArbitratorName = citizenInfo != null ? citizenInfo.FullName : null,
                 AssociationName = litigationRequest.Contract.AssociationName,
                 ContractNumber = litigationRequest.Contract.ContractKey,
-                ContractReleaseDate = litigationRequest.CreatedOn.ToLongDateString()?.Replace("بعد الهجرة","هجرياً"),
+                ContractReleaseDate = litigationRequest.CreatedOn.ToLongDateString()?.Replace("بعد الهجرة", "هجرياً"),
                 ArbitratorAssigningDate = litigationRequest.ArbitratorsNominationListSelectionDoneDateTime?.ToLongDateString()?.Replace("بعد الهجرة", "هجرياً"),
                 LitigationNumber = litigationRequest.RequestCode,
                 LitigationType = litigationRequest.Contract.LitigationRequestContractType.TypeName,
