@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Razor.Runtime.TagHelpers;
 using Microsoft.EntityFrameworkCore;
 using REAC.Application.Contracts;
+using REAC.Application.Contracts.Dtos.Integration.Rent;
 using REAC.Application.Contracts.Dtos.Shared;
 using REAC.Application.Contracts.IAppServices;
 using REAC.Application.Contracts.IAppServices.Litigation;
@@ -20,6 +21,7 @@ using REAC.Domain.Shared.Helpers;
 using REAC.EntityFrameworkCore.Entities.Litigation;
 using REAC.EntityFrameworkCore.Entities.System;
 using System.Net.Http.Headers;
+using System.Runtime.CompilerServices;
 
 namespace REAC.Application.AppServices.System
 {
@@ -70,7 +72,7 @@ namespace REAC.Application.AppServices.System
             }
         }
 
-        public async Task<BaseResponse> UploadAsync(IFormFileCollection files)
+        public async Task<DataResponse<List<FileDto>>> UploadAsync(IFormFileCollection files)
         {
             try
             {
@@ -110,7 +112,7 @@ namespace REAC.Application.AppServices.System
                     var maliciousResult = await FileHelper.CheckMaliciousFile(file);
 
                     if (!maliciousResult.IsDone)
-                        return maliciousResult;
+                        return new DataResponse<List<FileDto>> { IsDone = false, Message = Localizations.FailedUploadFile, Data =  null };
 
 
                     var id = Guid.NewGuid();
