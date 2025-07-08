@@ -79,7 +79,9 @@ public enum RequestStatus
     ///<summary>بإنتظار تحديد عدد هيئة التحكيم</summary>
     WaitingForDetermineArbitratorsNumber = 35,
     ///<summary>بانتظار اختيار محكم</summary>
-    WaitingForArbitratorsSelection = 36
+    WaitingForArbitratorsSelection = 36,
+    ///<summary>بأنتظار تحديد ميعاد جلسه</summary>
+    WaitingForAsessionTimeSelection = 37
 
 }
 

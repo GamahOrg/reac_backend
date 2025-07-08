@@ -1130,6 +1130,7 @@ namespace REAC.Application.ModuleServices
                         litigationRequestArbitratorAssigningRequest.CitizenId =
                             litigationRequest.LitigationRequestArbitratorsChairmanNominationLists.OrderBy(x => x.TotalPriority).ToList()[0].ArbitratorChairmanCitizenId;
                         litigationRequestArbitratorAssigningRequest.Response = LitigationRequestArbitratorAssigningRequestStatus.None;
+                        litigationRequest.LitigationRequestArbitratorsChairmanNominationLists.OrderBy(x => x.TotalPriority).ToList()[0].IsSent = true;
                         await _repository.AddAsync<LitigationRequestArbitratorAssigningRequest, Guid>(litigationRequestArbitratorAssigningRequest);
                         repositorySaveResponse = await _repository.SaveChangesAsync(new CancellationToken());
                         if (!repositorySaveResponse.IsDone)

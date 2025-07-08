@@ -1032,6 +1032,65 @@ namespace REAC.Application.ModuleServices
                         litigationRequestOneArbitratorAssigningRequest.Response = LitigationRequestArbitratorAssigningRequestStatus.None;
                         await _repository.AddAsync<LitigationRequestArbitratorAssigningRequest, Guid>(litigationRequestOneArbitratorAssigningRequest);
                         arbitratorsList[0].IsSent = true;
+                        // Send Notification
+                        // يوجد طلب مهمه جديده كمحكم علي الدعوي رقم
+                        try
+                        {
+                            var Fmsg = _settingService.GetBySettingKey(SysSettingKeyConstants.Arbitration_Arbitraor_Assigned).Result.Data?.Value;
+                            Fmsg = Fmsg?.Replace("{LitigationCode}", litigationRequest.RequestCode);
+                            var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                            string body;
+                            using (StreamReader streamReader = File.OpenText(pathToFile))
+                            {
+                                body = await streamReader.ReadToEndAsync();
+                                body = body?.Replace("{content}", _settingService.GetBySettingKey(SysSettingKeyConstants.Arbitration_Arbitraor_Assigned).Result.Data?.Value);
+                                body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                            }
+                            var citizenInfo = (await _repository.GetQueryable<Citizen, Guid>())
+                                                .Where(c => c.Id == litigationRequestOneArbitratorAssigningRequest.CitizenId)
+                                                .FirstOrDefault();
+
+
+                            List<SysNotificationDto> notificationList = new List<SysNotificationDto>() {
+
+                           new SysNotificationDto{
+                        ActorId = litigationRequestOneArbitratorAssigningRequest.CitizenId,
+                        RequestId=litigationRequest.Id,
+                        CreatedOn= DateTime.Now,
+                        RequestTypeId=RequestType.ArbitratorTaskrequests,
+                        ActorTypeId=NotificationActorType.Arbitrator,
+                        Message=Fmsg
+                        }
+
+                        };
+                            List<string> emailList = new List<string>() {
+                                  citizenInfo.Email
+                                };
+
+                            List<string> recipientList = new List<string>()
+                            {
+                                  citizenInfo.Mobile
+                            };
+
+                            await _notificationService.SendNotifications(new Contracts.Dtos.Notification.SendEmailDto()
+                            {
+                                To = emailList,
+                                Subject = "طلب مهمة جديدة كمحكم علي الدعوي",
+                                Body = body
+                            }, new Contracts.Dtos.Integration.GEE.SMSRequestDto()
+                            {
+                                message_text = Fmsg,
+                                recipients = recipientList,
+                                notification_type = "SMS",
+
+                            }, notificationList);
+
+                        }
+                        catch (Exception e)
+                        {
+
+
+                        }
                         break;
                     default:
                         for (int record = 0; record < litigationRequest.ArbitratorsCount - 1; record++)

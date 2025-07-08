@@ -676,6 +676,25 @@ public partial class LitigationRequestStatusSeedDataCreator
                                 LanguageCode = Constants.ArabicLanguage
                             }
                         }
+                    },
+                    new SysLitigationRequestStatus
+                    {
+                        Id = Domain.Shared.Enum.RequestStatus.WaitingForAsessionTimeSelection,
+                        RequestStatus = "بأنتظار تحديد ميعاد جلسه",
+                        CreatedOn = DateTime.Now,
+                        Translations=new List<SysLitigationRequestStatusTranslation>
+                        {
+                            new SysLitigationRequestStatusTranslation
+                            {
+                                RequestStatus = "Waiting For A session Time Selection",
+                                LanguageCode = Constants.EnglishLanguage
+                            },
+                            new SysLitigationRequestStatusTranslation
+                            {
+                                RequestStatus = "بأنتظار تحديد ميعاد جلسه",
+                                LanguageCode = Constants.ArabicLanguage
+                            }
+                        }
                     }
             });
         context.SaveChanges();
