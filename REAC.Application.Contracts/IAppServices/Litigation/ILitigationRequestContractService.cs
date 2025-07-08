@@ -24,5 +24,6 @@ namespace REAC.Application.Contracts.IAppServices.Litigation
         Task<int> GetContractCountByContractType(LitigationRequestContractType litigationRequestContractTypeId);
         Task<DataResponse<PagedResult<LitigationRequestModificationRequestsDto>>> GetModificationRequestForEmployee(int pageIndex, int pageSize);
         Task<BaseResponse> AddModificationRequestAction(AddModificationRequestActionDto addModificationRequestActionDto);
+        Task<BaseResponse> UpdateContractDocuments(CreateUpdateContractDocuments model);
     }
 }

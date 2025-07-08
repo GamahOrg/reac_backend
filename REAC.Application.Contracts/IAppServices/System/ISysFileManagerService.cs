@@ -9,7 +9,7 @@ namespace REAC.Application.Contracts.IAppServices.System
     {
         Task<BaseResponse> AddFile(SysFileManagerCreateUpdateDto model);
         Task<Guid> GetLatestFile();
-        Task<BaseResponse> UploadAsync(IFormFileCollection files);
+        Task<DataResponse<List<FileDto>>> UploadAsync(IFormFileCollection files);
         Task<List<SysFileManager>> GetAsync(List<Guid>? ids);
         Task RemoveAsync(Guid id);
     }
