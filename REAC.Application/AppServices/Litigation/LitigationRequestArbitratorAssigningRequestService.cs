@@ -144,13 +144,16 @@ namespace REAC.Application.AppServices.Litigation
                                     litigationRequest.LitigationRequestStage = LitigationRequestStage.Arbitration;
                                     litigationRequest.LitigationRequestSubStage = LitigationRequestSubStage.LitigationRequestAddArbitrationSession;
                                     litigationRequest.StartArbitrationDate = DateTime.Now;
+                                    litigationRequest.ExternalStatusId = RequestStatus.WaitingForAsessionTimeSelection;
+                                    litigationRequest.InternalStatusId = RequestStatus.WaitingForAsessionTimeSelection;
                                 }
 
-                                if (litigationRequestPendingArbitratorAssigningRequest.Count == 1 && 
+                                if (litigationRequestPendingArbitratorAssigningRequest.Count == 1 &&
                                     (litigationRequest.LitigationRequestSubStage == LitigationRequestSubStage.LitigationRequestAddArbitratorListNominationDone))
                                 {
                                     litigationRequest.LitigationRequestSubStage = LitigationRequestSubStage.LitigationRequestAddArbitratorChairmanListNomination;
                                 }
+
                                 break;
                             case ArbitratorAssigningRequestType.ArbitratorsChairman:
                                 await _repository.AddAsync<WorkFlowLog, Guid>(new WorkFlowLog()
@@ -361,6 +364,47 @@ namespace REAC.Application.AppServices.Litigation
                                         });
                                     }
                                 }
+
+                                // تم إرسال طلب مهمة تحكيم جديدة كمحكم على الدعوى رقم ..... 
+                                try
+                                {
+                                    var arbitratorInfo = (await _repository.GetQueryable<Citizen, Guid>()).FirstOrDefault(c => c.Id == chairmanArbitratorsList.FirstOrDefault().ArbitratorChairmanCitizenId);
+                                    var msgReassign = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.ArbitratorsChairmanNominationList_TaskSubmitedToArbitrator).Result.Data?.Value;
+                                    msgReassign = msgReassign.Replace("{LitigationCode}", litigationRequestArbitratorAssigningRequest.LitigationRequest.RequestCode);
+
+                                    applicationNotifications.Add(new SysNotificationDto()
+                                    {
+                                        ActorId = chairmanArbitratorsList.FirstOrDefault().ArbitratorChairmanCitizenId,
+                                        CreatedOn = DateTime.Now,
+                                        ActorTypeId = NotificationActorType.Arbitrator,
+                                        IsViewed = false,
+                                        ViewedOn = null,
+                                        RequestId = litigationRequest.Id,
+                                        RequestTypeId = RequestType.ArbitratorTaskrequests,
+                                        Message = msgReassign
+                                    });
+
+                                    var notificationResult = await _notificationService.SendNotifications(
+                                        new SendEmailDto()
+                                        {
+                                            Body = msgReassign,
+                                            Subject = "تم إرسال طلب مهمة تحكيم جديدة كمحكم",
+                                            To = new List<string>() { arbitratorInfo.Email }
+
+                                        },
+                                        new Contracts.Dtos.Integration.GEE.SMSRequestDto()
+                                        {
+                                            message_text = msgReassign,
+                                            notification_type = "SMS",
+                                            recipients = new List<string>() { arbitratorInfo.Mobile }
+                                        }, applicationNotifications
+                                        );
+                                }
+                                catch (Exception ex)
+                                {
+
+                                }
+
                                 break;
                         }
                         // Send Notification
@@ -425,6 +469,7 @@ namespace REAC.Application.AppServices.Litigation
 
                         }
 
+                  
                         break;
                 }
             }
