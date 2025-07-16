@@ -556,6 +556,50 @@ namespace Core.GenericRepository.BaseRepository
             }
         }
 
+        /// <summary>
+        /// Updates entities in the database matching the given filter using the provided update expression.
+        /// Uses EF Core's ExecuteUpdateAsync for efficient bulk updates.
+        /// </summary>
+        /// <typeparam name="TEntity">The entity type.</typeparam>
+        /// <typeparam name="TPrimaryKey">The primary key type.</typeparam>
+        /// <param name="filter">A filter expression to select entities to update.</param>
+        /// <param name="updateExpression">An update expression specifying property updates.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>BaseResponse with the number of affected rows.</returns>
+        public async Task<BaseResponse> ExecuteUpdateAsync<TEntity, TPrimaryKey>(
+            Expression<Func<TEntity, bool>> filter,
+            Expression<Func<SetPropertyCalls<TEntity>, SetPropertyCalls<TEntity>>> updateExpression,
+            CancellationToken cancellationToken = default)
+            where TEntity : BaseEntity<TPrimaryKey>
+        {
+            try
+            {
+                if (filter == null)
+                    throw new ArgumentNullException(nameof(filter));
+                if (updateExpression == null)
+                    throw new ArgumentNullException(nameof(updateExpression));
+
+                var affectedRows = await _dbContext.Set<TEntity>()
+                    .Where(filter)
+                    .ExecuteUpdateAsync(updateExpression, cancellationToken)
+                    .ConfigureAwait(false);
+
+                return new DataResponse<int>
+                {
+                    IsDone = true,
+                    Data = affectedRows
+                };
+            }
+            catch (Exception e)
+            {
+                return new ExceptionResponse
+                {
+                    IsDone = false,
+                    Exception = e.ToString()
+                };
+            }
+        }
+
         #endregion
 
         #region Query Functions

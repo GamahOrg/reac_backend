@@ -789,6 +789,67 @@ namespace REAC.Application.ModuleServices
 
             await _notificationService.SendNotifications(objEmail, objSms, lstNotification);
         }
+        
+        private async Task SendNotificationMSForReconciliationDeptOnly(string mailMsg,string msg, LitigationRequest litigationRequest, string Subject)
+        {
+            var deptAdminInfoReconciliation = await _employeeService.GetAdminsByDepartmentType(DepartmentType.Reconciliation);
+
+            //ApplicantCitizen
+            var objEmail = new SendEmailDto()
+            {
+                Body = mailMsg,
+                Subject = Subject,
+            };
+
+            var objSms = new Contracts.Dtos.Integration.GEE.SMSRequestDto()
+            {
+                message_text = msg,
+                notification_type = "SMS",
+            };
+            objSms.recipients = new List<string>();
+
+            var lstNotification = new List<SysNotificationDto>();
+            
+            //المصلح اللى على الدعوة
+            if (litigationRequest.ReformerCitizenId.HasValue)
+            {
+                objEmail.To.Add(litigationRequest?.ReformerCitizen.Email);
+                lstNotification.Add(new Contracts.Dtos.Notification.SysNotificationDto()
+                {
+                    ActorId = litigationRequest.ReformerCitizenId.Value,
+                    CreatedOn = DateTime.Now,
+                    ActorTypeId = NotificationActorType.Reformer,
+                    IsViewed = false,
+                    ViewedOn = null,
+                    RequestId = litigationRequest.Id,
+                    RequestTypeId = RequestType.ReformationReport,
+                    Message = msg,
+                });
+                objSms.recipients.Add(litigationRequest?.ReformerCitizen.Mobile);
+
+            }
+            //مدير ادارة الصلح
+            if (deptAdminInfoReconciliation is not null)
+            {
+                objEmail.To.Add(deptAdminInfoReconciliation?.Data?.Email);
+                objSms.recipients.Add(deptAdminInfoReconciliation?.Data?.Mobile);
+
+                lstNotification.Add(new Contracts.Dtos.Notification.SysNotificationDto()
+                {
+                    ActorId = deptAdminInfoReconciliation.Data.Id,
+                    CreatedOn = DateTime.Now,
+                    ActorTypeId = NotificationActorType.Employee,
+                    IsViewed = false,
+                    ViewedOn = null,
+                    RequestId = litigationRequest.Id,
+                    RequestTypeId = RequestType.ReformationReport,
+                    Message = msg,
+                });
+            }
+
+          
+            await _notificationService.SendNotifications(objEmail, objSms, lstNotification);
+        }
 
         #endregion
 

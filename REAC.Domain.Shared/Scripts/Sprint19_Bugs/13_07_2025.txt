@@ -1,0 +1,3 @@
+﻿  update dbo.SysArbitratorClass set YearsFrom = 0 , YearsTo = 5 where ArbitratorClassName = N'ج'
+  update dbo.SysArbitratorClass set YearsFrom = 6 , YearsTo = 15 where ArbitratorClassName = N'ب'
+  update dbo.SysArbitratorClass set YearsFrom = 16 , YearsTo = 100 where ArbitratorClassName = N'أ'
