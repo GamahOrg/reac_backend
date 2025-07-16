@@ -334,6 +334,7 @@ namespace REAC.Application.ModuleServices
                     };
 
                 var litigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>())?
+                       .Include(x => x.ArbitratorCitizen)
                        .Include(x => x.LitigationRequestArbitratorLists)
                        .Include(x => x.ArbitratorCitizen)
                        .Where(x => x.Id == assignRequestPayload.RequestId).SingleOrDefault();
@@ -391,7 +392,7 @@ namespace REAC.Application.ModuleServices
                 }
                 var litigationRequestArbitratorList = (await _repository.GetQueryable<LitigationRequestArbitratorList, Guid>())?
                            .Include(x => x.ArbitratorCitizen)
-                            .Where(x => x.Id == assignRequestPayload.LitigationRequestArbitratorListId).Single();
+                            .Where(x => x.Id == assignRequestPayload.LitigationRequestArbitratorListId).SingleOrDefault();
                 try
                 {
                     switch (assignRequestPayload.ArbitratorAssigningRequestTypeId)
@@ -548,7 +549,7 @@ namespace REAC.Application.ModuleServices
                                 CreatedOn = DateTime.Now,
                                 RequestId = litigationRequest.Id,
                                 ShowForApplicant = false,
-                                LogMessage = "تم إلغاء تعيين كرئيس هيئة المحكمين  للمحكم " + litigationRequestArbitratorList?.ArbitratorCitizen.FullName
+                                LogMessage = "تم إلغاء تعيين كرئيس هيئة المحكمين  للمحكم " + litigationRequest?.ArbitratorCitizen?.FullName
                             });
                             break;
                     }
@@ -560,8 +561,9 @@ namespace REAC.Application.ModuleServices
 
                 }
 
-                var citizen = (await _repository.GetQueryable<Citizen, Guid>())?
-                            .Where(x => x.Id == assignRequestPayload.ArbitratorId).Single();
+                var newArbitrator = (await _repository.GetQueryable<Citizen, Guid>())?
+                            .Where(x => x.Id == assignRequestPayload.ArbitratorId).SingleOrDefault();
+
 
                 LitigationRequestArbitratorAssigningRequest litigationRequestArbitratorAssigningRequest = new LitigationRequestArbitratorAssigningRequest();
                 litigationRequestArbitratorAssigningRequest.RequestOn = DateTime.Now;
@@ -644,11 +646,25 @@ namespace REAC.Application.ModuleServices
                             });
                             break;
                         case ArbitratorAssigningRequestType.ArbitratorsChairman:
+
+                          var updateOldLitigationRequestArbitratorAssigningRequests = await _repository.ExecuteUpdateAsync<LitigationRequestArbitratorAssigningRequest, Guid>(
+                              x => x.ArbitratorAssigningRequestTypeId == ArbitratorAssigningRequestType.ArbitratorsChairman 
+                            , y => y.SetProperty(z => z.Response, LitigationRequestArbitratorAssigningRequestStatus.Cancelled)
+                            , default);
+                            
+                            if (!updateOldLitigationRequestArbitratorAssigningRequests.IsDone)
+                            {
+                                return new BaseResponse()
+                                {
+                                    IsDone = false,
+                                    Message = "خطأ داخلي"
+                                };
+                            }
                             // Send Notification
-                            // تم قبول كرئيس هيئة تحكيم على الدعوى رقم كذا
+                            // تم ارسال طلب مهمة كرئيس هيئة تحكيم على الدعوى رقم كذا
 
                             var bossMsg = "";
-                            bossMsg = _settingService.GetBySettingKey(SysSettingKeyConstants.Arbitration_ArbitraorChairman_Assigned).Result.Data?.Value;
+                            bossMsg = _settingService.GetBySettingKey(SysSettingKeyConstants.ArbitratorsChairmanNominationList_TaskSubmitedToArbitrator).Result.Data?.Value;
                             bossMsg = bossMsg?.Replace("{LitigationCode}", litigationRequest?.RequestCode); 
                             pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
                             using (StreamReader streamReader = File.OpenText(pathToFile))
@@ -661,7 +677,7 @@ namespace REAC.Application.ModuleServices
                             List<SysNotificationDto> notificationList = new List<SysNotificationDto>() {
 
                            new SysNotificationDto{
-                        ActorId = (Guid)litigationRequest.ArbitratorCitizenId,
+                        ActorId = assignRequestPayload.ArbitratorId,
                         RequestId=litigationRequest.Id,
                         CreatedOn= DateTime.Now,
                         RequestTypeId=RequestType.LitigationRequest,
@@ -672,11 +688,11 @@ namespace REAC.Application.ModuleServices
                         };
                             List<string> emailList = new List<string>() {
 
-                                  litigationRequest.ArbitratorCitizen.Email
+                                  newArbitrator.Email
                                 };
                             List<string> recipientList = new List<string>() {
 
-                                  litigationRequest.ArbitratorCitizen.Mobile
+                                  newArbitrator.Mobile
                                 };
 
                             await _notificationService.SendNotifications(new Contracts.Dtos.Notification.SendEmailDto()
@@ -698,7 +714,7 @@ namespace REAC.Application.ModuleServices
                                 CreatedOn = DateTime.Now,
                                 RequestId = litigationRequest.Id,
                                 ShowForApplicant = false,
-                                LogMessage = "تم إرسال طلب مهمة كرئيس هيئة المحكمين للمحكم " + litigationRequestArbitratorList?.ArbitratorCitizen.FullName
+                                LogMessage = "تم إرسال طلب مهمة كرئيس هيئة المحكمين للمحكم " + newArbitrator.FullName
                             });
                             break;
                     }

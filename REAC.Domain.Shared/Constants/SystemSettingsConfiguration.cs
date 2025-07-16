@@ -26,6 +26,7 @@ namespace REAC.Domain.Shared.Constants
             "Reformer.Activate" ,
             "SLA.LitigationRequestReformerAssigningRequestResponsePeriod" ,
             "SLA.LitigationRequestExtendRequestReplyPeriod"
+ 
         };
 
         public static readonly List<string> ArbitrationFeesSystemSettings = new List<string>
@@ -73,7 +74,12 @@ namespace REAC.Domain.Shared.Constants
 
             "Arbitration.Period",
 
-            "SLA.AddLitigationRequestArbitrationSessionPeriod"
+            "SLA.AddLitigationRequestArbitrationSessionPeriod",
+            "SLA.AddLitigationRequestArbitrationSessionWarning",
+            "SLA.AddLitigationRequestArbitratorNominationListWarning",
+            "Arbitrators.Count.FromBothSides",
+            "Arbitrators.Count.Added",
+            "ArbitratorsNominationList.Added"
 
         };
 

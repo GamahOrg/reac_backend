@@ -148,6 +148,22 @@ namespace Core.GenericRepository.BaseRepository
         /// <param name="entities">The <typeparamref name="TEntity"/> objects to be deleted from the database on <see cref="SaveChangesAsync(CancellationToken)"/>.</param>
         BaseResponse RemoveRange<TEntity, TPrimaryKey>(IEnumerable<TEntity> entities)
             where TEntity : BaseEntity<TPrimaryKey>;
+
+        /// <summary>
+        /// Updates entities in the database matching the given filter using the provided update expression.
+        /// Uses EF Core's ExecuteUpdateAsync for efficient bulk updates.
+        /// </summary>
+        /// <typeparam name="TEntity">The entity type.</typeparam>
+        /// <typeparam name="TPrimaryKey">The primary key type.</typeparam>
+        /// <param name="filter">A filter expression to select entities to update.</param>
+        /// <param name="updateExpression">An update expression specifying property updates.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>BaseResponse with the number of affected rows.</returns>
+        Task<BaseResponse> ExecuteUpdateAsync<TEntity, TPrimaryKey>(
+            Expression<Func<TEntity, bool>> filter,
+            Expression<Func<SetPropertyCalls<TEntity>, SetPropertyCalls<TEntity>>> updateExpression,
+            CancellationToken cancellationToken = default)
+            where TEntity : BaseEntity<TPrimaryKey>;
         #endregion
         #region Query Functions
 
