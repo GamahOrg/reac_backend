@@ -2027,6 +2027,33 @@ namespace Core.GenericRepository.BaseRepository
         }
           
         }
+
+        public async Task<BaseResponse> ExecuteParameterlessStoredProcedureAsync<T>(string storedProcedureName, CancellationToken cancellationToken = default) where T : class
+        {
+            try
+            {
+                var sqlCommand = $"EXEC {storedProcedureName}";
+                var result = await SqlQueryAsync<T>(sqlCommand, Array.Empty<SqlParameter>(), cancellationToken);
+
+                var dataResponse = new DataResponse<List<T>>()
+                {
+                    IsDone = true,
+                    Data = result
+                };
+
+                return dataResponse;
+            }
+            catch (Exception e)
+            {
+                var excep = new BaseResponse()
+                {
+                    IsDone = false,
+                    Message = e.ToString()
+                };
+                return excep;
+            }
+        }
+
         private async Task<List<T>> SqlQueryAsync<T>(string sql, object[] parameters = null, CancellationToken cancellationToken = default) where T : class
         {
             if (parameters is null)

@@ -210,7 +210,7 @@ namespace REAC.Application.AppServices.Notification
 
                 if (email is not null)
                 {
-                    //var emailResultCitizen = await _emailService.SendMail(email.To, email.Subject, email.Body);
+                    await _emailService.SendMailToSLA(email.To, email.Subject, email.Body);
                 }
 
                 if (sms is not null)

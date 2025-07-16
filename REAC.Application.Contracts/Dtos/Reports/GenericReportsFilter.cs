@@ -10,11 +10,13 @@ namespace REAC.Application.Contracts.Dtos.Reports
     {
         public string? RequestCode { get; set; }
         public List<int>? LitigationRequestStatusIds { get; set; }
-        public List<string>? EmployeeIds { get; set; }
-        public List<string>? ReformerIds { get; set; }
-        public List<string>? ArbitratorIds { get; set; }
-        public List<string>? ArbitratorChairmanIds { get; set; }
         public int? LitigationRequestStageId { get; set; }
+
+        public List<string>? EmployeeIds { get; set; }
+        public List<string>? ReformersIds { get; set; }
+        public List<string>? ArbitratorsIds { get; set; }
+        public List<string>? ArbitratorChairmanIds { get; set; }
+        public List<int>? LitigationRequestStageIds { get; set; }
         public string? FromDate { get; set; }
         public string? ToDate { get; set; }
         public List<string>? AreaIds { get; set; }

@@ -23,3 +23,4 @@ include:
   - project: 'rega-softwares/rega-devops'
     file: 'pipelines/yaml-updater.yaml'
     
+  

@@ -694,6 +694,7 @@ namespace Core.GenericRepository.BaseRepository
         #endregion
         #region StoredProcedures Functions
         Task<(BaseResponse, Dictionary<string, object>)> ExecuteStoredProcedureAsync<T>(string storedProcedureName, Dictionary<string, object> parameters = null, Dictionary<string, object> outputParameters = null, CancellationToken cancellationToken = default) where T : class;
+        Task<BaseResponse> ExecuteParameterlessStoredProcedureAsync<T>(string storedProcedureName, CancellationToken cancellationToken = default) where T : class;
         #endregion
     }
 }
