@@ -263,5 +263,66 @@ namespace REAC.Application.AppServices.Notification
                 return new BaseResponse() { IsDone = false, Message = ex.Message };
             }
         }
+        
+        public async Task<BaseResponse> SendNotificationsWithoutDuplicationChecking(SendEmailDto email, SMSRequestDto sms, List<SysNotificationDto> notifications)
+        {
+            try
+            {
+               
+                if (email is not null)
+                {
+                    await _emailService.SendMailToSLA(email.To, email.Subject, email.Body);
+                }
+
+                if (sms is not null)
+                {
+                    var recipiants = new List<string>();
+                    foreach (var mobile in sms.recipients)
+                    {
+                        if (Regex.IsMatch(mobile, "^05[0-9]*$"))
+                            recipiants.Add(mobile);
+                    }
+
+                    sms.recipients = recipiants;
+                    //var smsResultCitizen = await _smsService.SendSMS(sms);
+                     await _smsService.SendSMSToSLA(sms);
+                }
+
+                if (notifications.Any())
+                {
+                    foreach (var notification in notifications)
+                    {
+                        switch (notification.ActorTypeId)
+                        {
+                            case Domain.Shared.Enum.NotificationActorType.Employee:
+                                //var notificationResultEmployee = _notificationHub.Clients.All.NotifyEmployee(notification);
+                                break;
+
+
+                            default:
+                                //var notificationResultCitizen = _notificationHub.Clients.All.NotifyCitizen(notification);
+
+                                break;
+                        }
+                        notification.Id = Guid.NewGuid();
+
+                        var notificationObject = _mapper.Map<SysNotification>(notification);
+                        notificationObject.NotificationActorTypeId = notification.ActorTypeId;
+
+                        var dbNotificationResult = await _repository.AddAsync<SysNotification, Guid>(notificationObject);
+
+
+                    }
+
+                    var res = await _repository.SaveChangesAsync();
+                }
+
+                return new BaseResponse() { IsDone = true };
+            }
+            catch (Exception ex)
+            {
+                return new BaseResponse() { IsDone = false, Message = ex.Message };
+            }
+        }
     }
 }

@@ -46,7 +46,7 @@ namespace REAC.Application.AppServices.SLA
                                 .Include(x => x.Contract).ThenInclude(x => x.FirstPartyFacility).ThenInclude(x => x.Citizen)
                                 .Include(x => x.Contract).ThenInclude(x => x.SecondPartyFacility).ThenInclude(x => x.Citizen)
                               .Where(x => x.LitigationRequestStage == LitigationRequestStage.Arbitration
-                              & x.IsFinished != true)
+                               & x.IsFinished != true & x.ArbitratorsSelectionDurationDateTime != null)
                               .ToList();
 
             if (litigationRequests != null)
@@ -60,6 +60,7 @@ namespace REAC.Application.AppServices.SLA
 
                     foreach (var litigationRequest in litigationRequests)
                     {
+                        var ss = litigationRequest;
                         if (LitigationRequestArbitratorCountSelectionResponsePeriod > 0)
                         {
                             if (litigationRequest.IsArbitratorCountSelectionResponsePeriodSent != true)
@@ -101,17 +102,17 @@ namespace REAC.Application.AppServices.SLA
                                         // Mail - Sms - Application Notification
                                         // تذكير يرجى سرعة اتمام عملية إختيار عدد المحكمين على الدعوى رقم ......
 
-                                        var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_ArbitratorsCount_SecondWarning).Result.Data?.Value;
+                                        var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_ArbitratorsCount_FirstWarning).Result.Data?.Value;
                                         msg = msg?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
                                         var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
                                         string body;
                                         using (StreamReader streamReader = File.OpenText(pathToFile))
                                         {
                                             body = await streamReader.ReadToEndAsync();
-                                            body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_ArbitratorsCount_SecondWarning).Result.Data?.Value);
+                                            body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_ArbitratorsCount_FirstWarning).Result.Data?.Value);
                                             body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
                                         }
-                                        await SendNotificationMS(body, msg, litigationRequest, "تذكير سرعة اتمام عملية إختيار عدد المحكمين", NotificationActorType.Defendant, RequestType.ArbitratorNominationList
+                                        await SendNotificationMS(body, msg, litigationRequest, " سرعة اتمام عملية إختيار عدد المحكمين", NotificationActorType.Defendant, RequestType.ArbitratorNominationList
                                           , notifySecondParty: true);
                                     }
                                 }
@@ -173,7 +174,7 @@ namespace REAC.Application.AppServices.SLA
                                                 body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
                                             }
                                             await SendNotificationMS(body, msg, litigationRequest, "سرعة اتمام عملية إختيار عدد المحكمين", NotificationActorType.Defendant, RequestType.ArbitratorNominationList
-                                              , notifyApplicant: true, notifyFirstParty: true);
+                                              , notifySecondParty: true);
                                         }
                                         catch (Exception ex) { }
 

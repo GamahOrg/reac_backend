@@ -135,7 +135,7 @@ namespace REAC.Application.AppServices
                             });
                         }
 
-                        var notificationResultReformer = _notificationService.SendNotifications(
+                        var notificationResultReformer = await _notificationService.SendNotifications(
                             new SendEmailDto()
                             {
                                 To = new List<string>() { citizenInfo.Email, deptAdminInfoReconciliation.Data.Email },
@@ -182,7 +182,7 @@ namespace REAC.Application.AppServices
                                 Message = msg
                             });
 
-                            var notificationResultReformer = _notificationService.SendNotifications(
+                            var notificationResultReformer = await _notificationService.SendNotifications(
                             new SendEmailDto()
                             {
                                 To = new List<string>() { citizenInfo.Email, deptAdminInfoArbitration.Data.Email },
@@ -287,7 +287,7 @@ namespace REAC.Application.AppServices
                             });
                         }
 
-                        var notificationResultReformer = _notificationService.SendNotifications(
+                        var notificationResultReformer = await _notificationService.SendNotifications(
                             new SendEmailDto()
                             {
                                 To = new List<string>() { citizenInfo.Email, deptAdminInfoReconciliation.Data.Email },
@@ -334,7 +334,7 @@ namespace REAC.Application.AppServices
                                 Message = msg
                             });
 
-                            var notificationResultReformer = _notificationService.SendNotifications(
+                            var notificationResultReformer = await _notificationService.SendNotifications(
                             new SendEmailDto()
                             {
                                 To = new List<string>() { citizenInfo.Email, deptAdminInfoArbitration.Data.Email },
