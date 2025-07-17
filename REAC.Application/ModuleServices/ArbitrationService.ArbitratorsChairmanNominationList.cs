@@ -44,7 +44,7 @@ namespace REAC.Application.ModuleServices
                         IsDone = false,
                         Message = "طلب غير موجود"
                     };
-                
+
                 if (litigationRequest.IsArbitrationFeesHaveBeenCollected != true)
                     return new BaseResponse()
                     {
@@ -379,48 +379,39 @@ namespace REAC.Application.ModuleServices
             try
             {
                 var litigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>())
-                               .Include(x => x.LitigationRequestArbitratorAssigningRequests)
-                               .Include(x => x.Area).Include(x => x.City)
-                                .Include(x => x.InternalStatus)
-                                .Include(x => x.ExternalStatus)
-                                .Include(x => x.LitigationRequestArbitratorLists)
-                                .Include(x => x.ArbitratorCitizen)
-                                .ThenInclude(x => x.ArbitratorLitigationRequests)
-                                .Include(x => x.ArbitratorCitizen)
-                                .ThenInclude(x => x.CitizenRequests)
-                                .ThenInclude(x => x.SysArbitratorClass)
-
-                                .Include(x => x.LitigationRequestArbitratorsChairmanNominationLists)
-                                .ThenInclude(x => x.ArbitratorChairmanCitizen)
-                                .ThenInclude(x => x.ArbitratorLitigationRequests)
-
-                                .Include(x => x.LitigationRequestArbitratorsChairmanNominationLists)
-                                .ThenInclude(x => x.ArbitratorChairmanCitizen)
-                                .ThenInclude(x => x.LitigationRequestArbitratorAssigningRequests)
-
-                                .Include(x => x.LitigationRequestArbitratorsChairmanNominationLists)
-                                .ThenInclude(x => x.LitigationRequestArbitratorsChairmanNominationListValues)
-
-                                .Include(x => x.LitigationRequestArbitratorNominationLists)
-                                .ThenInclude(x => x.ArbitratorCitizen)
-                                .ThenInclude(x => x.CitizenRequests)
-                                .ThenInclude(x => x.SysArbitratorClass)
-
-                                .Include(x => x.LitigationRequestArbitratorNominationLists)
-                                .ThenInclude(x => x.ArbitratorCitizen)
-                                .ThenInclude(x => x.LitigationRequestArbitratorLists)
-
-
-                                .Include(x => x.LitigationRequestArbitratorLists)
-                                .Include(x => x.Contract)
-
-                                .Include(x => x.Contract.LitigationRequestContractType)
-                                .Include(x => x.Contract.FirstPartyFacility)
-                                .Include(x => x.Contract.FirstPartyCitizen)
-                                .Include(x => x.Contract.SecondPartyFacility)
-                                .Include(x => x.Contract.SecondPartyCitizen)
-                                .Include(x => x.Contract.LitigationRequestContractType)
-                                .Where(x => x.Id == requestId).ToList().FirstOrDefault();
+         .Include(x => x.LitigationRequestArbitratorAssigningRequests)
+         .Include(x => x.Area)
+         .Include(x => x.City)
+         .Include(x => x.InternalStatus)
+         .Include(x => x.ExternalStatus)
+         .Include(x => x.LitigationRequestArbitratorLists)
+         .Include(x => x.ArbitratorCitizen)
+             .ThenInclude(x => x.CitizenRequests)
+             .ThenInclude(x => x.SysArbitratorClass)
+         .Include(x => x.LitigationRequestArbitratorsChairmanNominationLists)
+             .ThenInclude(x => x.ArbitratorChairmanCitizen)
+         // Removed: .ThenInclude(x => x.ArbitratorLitigationRequests)
+         .Include(x => x.LitigationRequestArbitratorsChairmanNominationLists)
+             .ThenInclude(x => x.ArbitratorChairmanCitizen)
+             .ThenInclude(x => x.LitigationRequestArbitratorAssigningRequests)
+         .Include(x => x.LitigationRequestArbitratorsChairmanNominationLists)
+             .ThenInclude(x => x.LitigationRequestArbitratorsChairmanNominationListValues)
+         .Include(x => x.LitigationRequestArbitratorNominationLists)
+             .ThenInclude(x => x.ArbitratorCitizen)
+             .ThenInclude(x => x.CitizenRequests)
+             .ThenInclude(x => x.SysArbitratorClass)
+         .Include(x => x.LitigationRequestArbitratorNominationLists)
+             .ThenInclude(x => x.ArbitratorCitizen)
+             .ThenInclude(x => x.LitigationRequestArbitratorLists)
+         .Include(x => x.LitigationRequestArbitratorLists)
+         .Include(x => x.Contract)
+             .ThenInclude(x => x.LitigationRequestContractType)
+         .Include(x => x.Contract.FirstPartyFacility)
+         .Include(x => x.Contract.FirstPartyCitizen)
+         .Include(x => x.Contract.SecondPartyFacility)
+         .Include(x => x.Contract.SecondPartyCitizen)
+         .AsNoTracking()
+         .FirstOrDefault(x => x.Id == requestId);
 
                 var request = _mapper.Map<LitigationRequestShortDto>(litigationRequest);
 
@@ -491,7 +482,7 @@ namespace REAC.Application.ModuleServices
                                 .OrderBy(x => x.TotalPriority).ToList()[record].ArbitratorChairmanCitizen?.CitizenRequests?
                                 .Where(x => x.CitizenRequestTypeId == CitizenRequestType.Arbitrator & x.StatusId == CitizenRequestStatus.Certified)?
                                 .OrderBy(x => x.RequestOn).LastOrDefault()?.ExperienceYears;
-                       
+
                             citizenArbitratorShortStatusChairmanDto.TotalPriority = litigationRequest.LitigationRequestArbitratorsChairmanNominationLists
                                 .OrderBy(x => x.TotalPriority).ToList()[record].LitigationRequestArbitratorsChairmanNominationListValues.Sum(x => x.Priority);
 
@@ -904,7 +895,7 @@ namespace REAC.Application.ModuleServices
                             .Where(x => x.Id == requestId
                             & x.LitigationRequestArbitratorLists.Any(l => l.ArbitratorCitizenId == referenceId)
                             ).ToList().FirstOrDefault();
-            
+
             if (litigationRequest == null)
                 return new BaseResponse() { IsDone = false, Message = "طلب غير موجود" };
 
@@ -1130,6 +1121,7 @@ namespace REAC.Application.ModuleServices
                         litigationRequestArbitratorAssigningRequest.CitizenId =
                             litigationRequest.LitigationRequestArbitratorsChairmanNominationLists.OrderBy(x => x.TotalPriority).ToList()[0].ArbitratorChairmanCitizenId;
                         litigationRequestArbitratorAssigningRequest.Response = LitigationRequestArbitratorAssigningRequestStatus.None;
+                        litigationRequest.LitigationRequestArbitratorsChairmanNominationLists.OrderBy(x => x.TotalPriority).ToList()[0].IsSent = true;
                         await _repository.AddAsync<LitigationRequestArbitratorAssigningRequest, Guid>(litigationRequestArbitratorAssigningRequest);
                         repositorySaveResponse = await _repository.SaveChangesAsync(new CancellationToken());
                         if (!repositorySaveResponse.IsDone)
@@ -1159,7 +1151,7 @@ namespace REAC.Application.ModuleServices
                                     body = body?.Replace("{ArbitratorName}", litigationRequest.LitigationRequestArbitratorsChairmanNominationLists.OrderBy(x => x.TotalPriority).ToList()[0].ArbitratorChairmanCitizen.FullName);
                                 }
 
-                                    List<SysNotificationDto> notifications = new List<SysNotificationDto>() {
+                                List<SysNotificationDto> notifications = new List<SysNotificationDto>() {
                            new SysNotificationDto{
                         ActorId = (Guid)arbitrationAdmin.Data?.Id,
                         RequestId=litigationRequest.Id,
@@ -1223,7 +1215,7 @@ namespace REAC.Application.ModuleServices
 
 
                         };
-                           await _notificationService.SendNotifications(new Contracts.Dtos.Notification.SendEmailDto()
+                            await _notificationService.SendNotifications(new Contracts.Dtos.Notification.SendEmailDto()
                             {
                                 To = new List<string>() { arbitratorInfo.Email },
                                 Subject = "طلب مهمة جديدة",

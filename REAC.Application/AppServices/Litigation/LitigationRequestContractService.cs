@@ -155,7 +155,78 @@ namespace REAC.Application.AppServices.Litigation
         }
         #endregion
 
+        public async Task<BaseResponse> UpdateContractDocuments(CreateUpdateContractDocuments model)
+        {
+            try
+            {
 
+                var result = await _fileService.UploadAsync(model.Files);
+                if (!result.IsDone)
+                {
+                    return new BaseResponse() { IsDone = false, Message = Localizations.FailedUploadFile };
+                }
+                var litigitionRequest = (await _repository.GetQueryable<LitigationRequest, Guid>())
+                                       .Include(s => s.Contract)
+                                       .FirstOrDefault(x => x.Id == model.LitigationRequestId);
+
+                var contract = litigitionRequest?.Contract;
+                if (contract == null)
+                    return new BaseResponse() { IsDone = false, Message = "لا يمكن الوصول لبيانات العقد" };
+
+                var resultDto = result.Data?.FirstOrDefault();
+                switch (contract.LitigationRequestContractTypeId)
+                {
+                    case LitigationRequestContractType.Rent:
+                        contract.ContractFileId = resultDto?.Id;
+                        break;
+                    case LitigationRequestContractType.Wafi:
+                        contract.ContractFileId = resultDto?.Id;
+                        break;
+                    case LitigationRequestContractType.Properties:
+                        switch (model.PropertiesDocumnetType)
+                        {
+                            case PropertiesDocumnetType.AssociationRegistrationCertificateFile:
+                                contract.AssociationRegistrationCertificateFileId = resultDto?.Id;
+                                break;
+                            case PropertiesDocumnetType.FoundingLetterFile:
+                                contract.FoundingLetterFileId = resultDto?.Id;
+                                break;
+                            case PropertiesDocumnetType.InternalRegulationsFile:
+                                contract.InternalRegulationsFileId = resultDto?.Id;
+                                break;
+
+                        }
+                        break;
+                    case LitigationRequestContractType.RealEstateBrokerage:
+                        contract.ContractFileId = resultDto?.Id;
+                        break;
+                    case LitigationRequestContractType.OtherServices:
+                        contract.ContractFileId = resultDto?.Id;
+                        break;
+                }
+                var response = _repository.SaveChangesAsync().Result;
+                if (!response.IsDone)
+                    return response;
+
+                return new DataResponse<string>()
+                {
+                    IsDone = response.IsDone,
+                    Data = "تم تعديل الملف بنجاح",
+                    Message = response.Message
+                };
+
+
+            }
+            catch (Exception ex)
+            {
+                return new ExceptionResponse()
+                {
+
+                    Exception = ex.Message + "\n" + ex.ToString(),
+                    IsDone = false
+                };
+            }
+        }
 
 
         #region Add Defendant 

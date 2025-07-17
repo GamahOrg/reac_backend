@@ -1,4 +1,7 @@
-﻿namespace REAC.Application.Contracts.Dtos.Litigation.Create.Contract
+﻿using Microsoft.AspNetCore.Http;
+using REAC.Domain.Shared.Enum;
+
+namespace REAC.Application.Contracts.Dtos.Litigation.Create.Contract
 {
     public class ContractDocuments
     {
@@ -8,4 +11,12 @@
         public Guid? FoundingLetterFileId { get; set; }
         public Guid? InternalRegulationsFileId { get; set; }
     }
+    public class CreateUpdateContractDocuments
+    {
+        public Guid LitigationRequestId { get; set; }
+        public IFormFileCollection? Files { get; set; }
+        public PropertiesDocumnetType? PropertiesDocumnetType { get; set; }
+
+    }
+
 }

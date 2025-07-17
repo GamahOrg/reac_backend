@@ -171,7 +171,7 @@ namespace REAC.Application.AppServices.SLA
                                 .Include(x => x.ReformerCitizen)//المصلح مواطن
                                 .Include(x => x.ApplicantCitizen)
                               .Where(x => x.LitigationRequestStage == LitigationRequestStage.Reconciliation
-                              & x.LitigationRequestSubStage == LitigationRequestSubStage.LitigationRequestReportAdded
+                              & x.ExternalStatusId == RequestStatus.TheMinutesOfTheMeetingWereWritten
                               & x.LitigationRequestReconciliationReports.Count > 0
                               & x.IsFinished != true)
                              .ToList();
