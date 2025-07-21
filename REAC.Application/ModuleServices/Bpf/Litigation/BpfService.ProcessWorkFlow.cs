@@ -578,6 +578,58 @@ namespace Bpf.Application.ModuleServices
                                                 {
 
                                                 }
+                                                
+                                                // Send Notification
+                                                // يوجد طلب مهمه جديدة كمصلح علي الدعوي رقم
+                                                try
+                                                {
+                                                    msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reconciliation_ReSendTask).Result.Data?.Value;
+                                                    msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
+                                                    msg = msg.Replace("{ReconciliatorName}", reformers.FirstOrDefault()?.FullName);
+                                                    var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                                    using (StreamReader streamReader = File.OpenText(pathToFile))
+                                                    {
+                                                        body = await streamReader.ReadToEndAsync();
+                                                        body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reconciliation_ReSendTask).Result.Data?.Value);
+                                                        body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                                                        body = body?.Replace("{ReconciliatorName}", reformers.FirstOrDefault()?.FullName);
+                                                    }
+
+                                                    var lstNotification = new List<SysNotificationDto>();
+                                                    lstNotification.Add(new SysNotificationDto()
+                                                    {
+                                                        ActorId = deptAdminInfoReconciliation.Data.Id,
+                                                        CreatedOn = DateTime.Now,
+                                                        ActorTypeId = NotificationActorType.Reformer,
+                                                        IsViewed = false,
+                                                        ViewedOn = null,
+                                                        RequestId = litigationRequest.Id,
+                                                        RequestTypeId = RequestType.ReformerTaskrequests,
+                                                        Message = msg
+                                                    });
+
+
+                                                    await _notificationService.SendNotifications(new SendEmailDto()
+                                                    {
+                                                        Body = body,
+                                                        Subject = "يوجد طلب مهمه جديدة لمصلح",
+                                                        To = new List<string>() { deptAdminInfoReconciliation.Data.Email }
+                                                    }, new SMSRequestDto()
+                                                    {
+                                                        message_text = msg,
+                                                        notification_type = "SMS",
+                                                        recipients = new List<string>() { deptAdminInfoReconciliation.Data.Mobile }
+                                                    }, lstNotification);
+
+
+                                                }
+                                                catch (Exception)
+                                                {
+
+                                                }
+
+
+
                                             }
                                             break;
                                     }
