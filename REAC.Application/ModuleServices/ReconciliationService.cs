@@ -3,6 +3,7 @@ using Core.GenericRepository.BaseRepository;
 using Core.Shared.Responses;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
+using REAC.Application.Contracts.Dtos.Integration.GEE;
 using REAC.Application.Contracts.Dtos.Notification;
 using REAC.Application.Contracts.Dtos.Reconciliation.Process;
 using REAC.Application.Contracts.Dtos.Wpf.Business;
@@ -147,10 +148,9 @@ namespace REAC.Application.ModuleServices
                     };
                 }
 
-                litigationRequestReformerAssigningRequests = (await _repository.GetQueryable<LitigationRequestReformerAssigningRequest, Guid>()).Include(x => x.ReformerCitizen)?
-
-
-                   .Where(x => x.LitigationRequestId == assignRequestPayload.RequestId & x.Response == 0);
+                litigationRequestReformerAssigningRequests = (await _repository.GetQueryable<LitigationRequestReformerAssigningRequest, Guid>())
+                    .Include(x => x.ReformerCitizen)?
+                    .Where(x => x.LitigationRequestId == assignRequestPayload.RequestId & x.Response == 0);
 
                 if (litigationRequestReformerAssigningRequests.Any())
                 {
@@ -263,7 +263,7 @@ namespace REAC.Application.ModuleServices
                         body = body.Replace("{ReformerName}", citizen?.FullName);
                     }
 
-                    await _notificationService.SendNotifications(
+                    var result = await _notificationService.SendNotifications(
                            new Contracts.Dtos.Notification.SendEmailDto()
                            {
                                To = new List<string>() { deptAdminInfoReconciliation.Data.Email },
@@ -298,6 +298,52 @@ namespace REAC.Application.ModuleServices
 
                 }
 
+                // Send Notification
+                // يوجد طلب مهمه جديدة كمصلح علي الدعوي رقم
+                try
+                {
+                    msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reconciliation_NewRequest).Result.Data?.Value;
+                    msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
+                    var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                    using (StreamReader streamReader = File.OpenText(pathToFile))
+                    {
+                        body = await streamReader.ReadToEndAsync();
+                        body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reconciliation_NewRequest).Result.Data?.Value);
+                        body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                    }
+
+                    var lstNotification = new List<SysNotificationDto>();
+                    lstNotification.Add(new SysNotificationDto()
+                    {
+                        ActorId = citizen.Id,
+                        CreatedOn = DateTime.Now,
+                        ActorTypeId = NotificationActorType.Reformer,
+                        IsViewed = false,
+                        ViewedOn = null,
+                        RequestId = litigationRequest.Id,
+                        RequestTypeId = RequestType.ReformerTaskrequests,
+                        Message = msg
+                    });
+
+
+                    var result = await _notificationService.SendNotifications(new SendEmailDto()
+                    {
+                        Body = body,
+                        Subject = "يوجد طلب مهمه جديدة كمصلح",
+                        To = new List<string>() { citizen.Email }
+                    }, new SMSRequestDto()
+                    {
+                        message_text = msg,
+                        notification_type = "SMS",
+                        recipients = new List<string>() { citizen.Mobile }
+                    }, lstNotification);
+
+
+                }
+                catch (Exception)
+                {
+
+                }
 
                 await _repository.AddAsync<WorkFlowLog, Guid>(new WorkFlowLog()
                 {

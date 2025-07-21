@@ -742,7 +742,7 @@ namespace REAC.Application.AppServices
                     return new BaseResponse()
                     {
                         IsDone = false,
-                        Message = "محكم غير موجود"
+                        Message = "مصلح غير موجود"
                     };
 
                 citizen.ReformerStatusId = ReformerStatus.Certified;
@@ -752,7 +752,7 @@ namespace REAC.Application.AppServices
                 ReformerStopFreeUpDecision.ReformerStatusId = ReformerStatus.Certified;
                 ReformerStopFreeUpDecision.DecisionDate = DateTime.Now;
                 ReformerStopFreeUpDecision.CreatedBy = referenceId;
-                ReformerStopFreeUpDecision.CreatedByRole = EntityFrameworkCore.Seed.Roles.ReAdmin;
+                ReformerStopFreeUpDecision.CreatedByRole = EntityFrameworkCore.Seed.Roles.CoAdmin;
                 await _repository.AddAsync<ReformerStopFreeUpDecision, int>(ReformerStopFreeUpDecision);
                 var saveResponse = await _repository.SaveChangesAsync();
                 if (!saveResponse.IsDone)
@@ -860,7 +860,7 @@ namespace REAC.Application.AppServices
                     return new BaseResponse()
                     {
                         IsDone = false,
-                        Message = "محكم غير موجود"
+                        Message = "مصلح غير موجود"
                     };
 
                 citizen.ReformerStatusId = ReformerStatus.Stopped;
@@ -872,7 +872,7 @@ namespace REAC.Application.AppServices
                 ReformerStopFreeUpDecision.LateLitigationRequestNumber = reformerStopDecisionCreateDto.LateLitigationRequestNumber;
                 ReformerStopFreeUpDecision.StoppingReason = reformerStopDecisionCreateDto.StoppingReason;
                 ReformerStopFreeUpDecision.CreatedBy = referenceId;
-                ReformerStopFreeUpDecision.CreatedByRole = EntityFrameworkCore.Seed.Roles.ReAdmin;
+                ReformerStopFreeUpDecision.CreatedByRole = EntityFrameworkCore.Seed.Roles.CoAdmin;
                 await _repository.AddAsync<ReformerStopFreeUpDecision, int>(ReformerStopFreeUpDecision);
                 var saveResponse = await _repository.SaveChangesAsync();
                 if (!saveResponse.IsDone)
@@ -958,10 +958,6 @@ namespace REAC.Application.AppServices
                 var citizen = (await _repository.GetQueryable<Citizen, Guid>())?
                      .Where(x => x.Id == arbitratorFreeUpDecisionCreateDto.CitizenId)
                      .SingleOrDefault();
-                var deptAdminInfoArbitration = await _employeeService.GetAdminsByDepartmentType(DepartmentType.Arbitration);
-                var msg = "";
-                string body;
-                var applicationNotifications = new List<SysNotificationDto>();
 
                 if (citizen == null)
                     return new BaseResponse()
@@ -970,6 +966,10 @@ namespace REAC.Application.AppServices
                         Message = "محكم غير موجود"
                     };
 
+                var deptAdminInfoArbitration = await _employeeService.GetAdminsByDepartmentType(DepartmentType.Arbitration);
+                var msg = "";
+                string body;
+                var applicationNotifications = new List<SysNotificationDto>();
                 citizen.ArbitratorStatusId = ArbitratorStatus.Certified;
 
                 ArbitratorStopFreeUpDecision arbitratorStopFreeUpDecision = new ArbitratorStopFreeUpDecision();
@@ -1058,16 +1058,18 @@ namespace REAC.Application.AppServices
                 var citizen = (await _repository.GetQueryable<Citizen, Guid>())?
                       .Where(x => x.Id == arbitratorStopDecisionCreateDto.CitizenId)
                       .SingleOrDefault();
-                var deptAdminInfoArbitration = await _employeeService.GetAdminsByDepartmentType(DepartmentType.Arbitration);
-                var msg = "";
-                string body;
-                var applicationNotifications = new List<SysNotificationDto>();
+                
                 if (citizen == null)
                     return new BaseResponse()
                     {
                         IsDone = false,
                         Message = "محكم غير موجود"
                     };
+
+                var deptAdminInfoArbitration = await _employeeService.GetAdminsByDepartmentType(DepartmentType.Arbitration);
+                var msg = "";
+                string body;
+                var applicationNotifications = new List<SysNotificationDto>();
 
                 var litigationRequestArbitratorAssigningRequest = (await _repository.GetQueryable<LitigationRequestArbitratorAssigningRequest, Guid>())
                     .Include(x => x.LitigationRequest)
@@ -1185,6 +1187,14 @@ namespace REAC.Application.AppServices
                         IsDone = false,
                         Message = "مصلح غير موجود"
                     };
+
+                var reformerStopDecisionByAdmin = (await _repository.GetQueryable<ReformerStopFreeUpDecision, int>())
+                    .OrderByDescending(x => x.DecisionDate)
+                   .FirstOrDefault(x => x.CitizenId == referenceId);
+
+                if (reformerStopDecisionByAdmin is not null && reformerStopDecisionByAdmin.CreatedByRole == EntityFrameworkCore.Seed.Roles.CoAdmin)
+                    return new BaseResponse() { IsDone = false, Message = "الحساب موقوف من قبل مدير ادارة الصلح" };
+
                 var whiteListStatuses = new List<RequestStatus>() { RequestStatus.Cancelled,RequestStatus.ReconciliationWasNotMade};
                 var litigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>())
                 .Any(l => (!whiteListStatuses.Contains(l.ExternalStatusId) | !whiteListStatuses.Contains(l.InternalStatusId))
@@ -1330,16 +1340,25 @@ namespace REAC.Application.AppServices
                 var citizen = (await _repository.GetQueryable<Citizen, Guid>())?
                     .Where(x => x.Id == reformerFreeUpDecisionCreateDto.CitizenId)
                     .SingleOrDefault();
-                var deptAdminInfoReconciliation = await _employeeService.GetAdminsByDepartmentType(DepartmentType.Reconciliation);
-                var msg = "";
-                string body;
-                var applicationNotifications = new List<SysNotificationDto>();
                 if (citizen == null)
                     return new BaseResponse()
                     {
                         IsDone = false,
                         Message = "مصلح غير موجود"
+                
                     };
+
+                var reformerStopDecisionByAdmin = (await _repository.GetQueryable<ReformerStopFreeUpDecision, int>())
+                    .OrderByDescending(x => x.DecisionDate)
+                    .FirstOrDefault(x => x.CitizenId == referenceId);
+
+                if (reformerStopDecisionByAdmin is not null && reformerStopDecisionByAdmin.CreatedByRole == EntityFrameworkCore.Seed.Roles.CoAdmin)
+                    return new BaseResponse() { IsDone = false, Message = "الحساب موقوف من قبل مدير ادارة الصلح" };
+
+                var deptAdminInfoReconciliation = await _employeeService.GetAdminsByDepartmentType(DepartmentType.Reconciliation);
+                var msg = "";
+                string body;
+                var applicationNotifications = new List<SysNotificationDto>();
 
                 citizen.ReformerStatusId = ReformerStatus.Certified;
 
@@ -1420,7 +1439,7 @@ namespace REAC.Application.AppServices
             }
             catch (Exception ex)
             {
-                return new BaseResponse() { IsDone = true, Message = "خطأ داخلي" };
+                return new BaseResponse() { IsDone = false, Message = "خطأ داخلي" };
 
             }
         }
