@@ -515,7 +515,7 @@ namespace REAC.Application.AppServices
                                     Message = msg
                                 });
 
-                                var notificationResultArbitrator = _notificationService.SendNotifications(
+                                var notificationResultArbitrator = await _notificationService.SendNotifications(
                                     new SendEmailDto()
                                     {
                                         To = new List<string>() { citizenInfo.Email, deptAdminInfoArbitration.Data.Email },
@@ -569,7 +569,7 @@ namespace REAC.Application.AppServices
 
                                 applicationNotifications.Add(new SysNotificationDto()
                                 {
-                                    ActorId = deptAdminInfoArbitration.Data.Id,
+                                    ActorId = deptAdminInfoReconciliation.Data.Id,
                                     CreatedOn = DateTime.Now,
                                     ActorTypeId = NotificationActorType.Employee,
                                     IsViewed = false,
@@ -579,7 +579,7 @@ namespace REAC.Application.AppServices
                                     Message = msg
                                 });
 
-                                var notificationResultArbitrator = _notificationService.SendNotifications(
+                                var notificationResultArbitrator = await _notificationService.SendNotifications(
                                     new SendEmailDto()
                                     {
                                         To = new List<string>() { citizenInfo.Email, deptAdminInfoReconciliation.Data.Email },
@@ -649,7 +649,7 @@ namespace REAC.Application.AppServices
 
                                 applicationNotifications.Add(new SysNotificationDto()
                                 {
-                                    ActorId = deptAdminInfoArbitration.Data.Id,
+                                    ActorId = deptAdminInfoReconciliation.Data.Id,
                                     CreatedOn = DateTime.Now,
                                     ActorTypeId = NotificationActorType.Employee,
                                     IsViewed = false,
@@ -659,17 +659,17 @@ namespace REAC.Application.AppServices
                                     Message = msg
                                 });
 
-                                var notificationResultUpdatedArbitrator = _notificationService.SendNotifications(
+                                var notificationResultUpdatedArbitrator = await _notificationService.SendNotifications(
                                     new SendEmailDto()
                                     {
-                                        To = new List<string>() { citizenInfo.Email, deptAdminInfoArbitration.Data.Email },
+                                        To = new List<string>() { citizenInfo.Email, deptAdminInfoReconciliation.Data.Email },
                                         Subject = "Arbitrator Joining Request Updated",
                                         Body = body
                                     },
                                     new SMSRequestDto()
                                     {
                                         message_text = msg,
-                                        recipients = new List<string>() { citizenInfo.Mobile, deptAdminInfoArbitration.Data.Mobile },
+                                        recipients = new List<string>() { citizenInfo.Mobile, deptAdminInfoReconciliation.Data.Mobile },
                                         notification_type = "SMS",
 
                                     },
@@ -711,7 +711,7 @@ namespace REAC.Application.AppServices
 
                                 applicationNotifications.Add(new SysNotificationDto()
                                 {
-                                    ActorId = deptAdminInfoArbitration.Data.Id,
+                                    ActorId = deptAdminInfoReconciliation.Data.Id,
                                     CreatedOn = DateTime.Now,
                                     ActorTypeId = NotificationActorType.Employee,
                                     IsViewed = false,
@@ -721,7 +721,7 @@ namespace REAC.Application.AppServices
                                     Message = msg
                                 });
 
-                                var notificationResultArbitrator = _notificationService.SendNotifications(
+                                var notificationResultArbitrator = await _notificationService.SendNotifications(
                                     new SendEmailDto()
                                     {
                                         To = new List<string>() { citizenInfo.Email, deptAdminInfoReconciliation.Data.Email },
@@ -791,7 +791,7 @@ namespace REAC.Application.AppServices
                                     Message = msg
                                 });
 
-                                var notificationResultUpdatedArbitrator = _notificationService.SendNotifications(
+                                var notificationResultUpdatedArbitrator = await _notificationService.SendNotifications(
                                     new SendEmailDto()
                                     {
                                         To = new List<string>() { citizenRequests.Citizen.Email, deptAdminInfoArbitration.Data.Email },
@@ -853,7 +853,7 @@ namespace REAC.Application.AppServices
                                     Message = msg
                                 });
 
-                                var notificationResultArbitrator = _notificationService.SendNotifications(
+                                var notificationResultArbitrator = await _notificationService.SendNotifications(
                                     new SendEmailDto()
                                     {
                                         To = new List<string>() { citizenRequests.Citizen.Email, deptAdminInfoReconciliation.Data.Email },
@@ -936,7 +936,7 @@ namespace REAC.Application.AppServices
                                     Message = msg
                                 });
 
-                                var notificationResultUpdatedArbitrator = _notificationService.SendNotifications(
+                                var notificationResultUpdatedArbitrator = await _notificationService.SendNotifications(
                                     new SendEmailDto()
                                     {
                                         To = new List<string>() { citizenInfo.Email, deptAdminInfoArbitration.Data.Email },
@@ -992,7 +992,7 @@ namespace REAC.Application.AppServices
                                     Message = msg
                                 });
 
-                                var notificationResultUpdatedArbitrator = _notificationService.SendNotifications(
+                                var notificationResultUpdatedArbitrator = await _notificationService.SendNotifications(
                                     new SendEmailDto()
                                     {
                                         To = new List<string>() { citizenRequests.Citizen.Email, deptAdminInfoReconciliation.Data.Email },
@@ -1082,7 +1082,7 @@ namespace REAC.Application.AppServices
                                     Message = msg
                                 });
 
-                                var notificationResultUpdatedArbitrator = _notificationService.SendNotifications(
+                                var notificationResultUpdatedArbitrator = await _notificationService.SendNotifications(
                                     new SendEmailDto()
                                     {
                                         To = new List<string>() { citizenRequests.Citizen.Email, deptAdminInfoArbitration.Data.Email },
@@ -1135,7 +1135,7 @@ namespace REAC.Application.AppServices
 
                                 applicationNotifications.Add(new SysNotificationDto()
                                 {
-                                    ActorId = deptAdminInfoArbitration.Data.Id,
+                                    ActorId = deptAdminInfoReconciliation.Data.Id,
                                     CreatedOn = DateTime.Now,
                                     ActorTypeId = NotificationActorType.Employee,
                                     IsViewed = false,
@@ -1145,7 +1145,7 @@ namespace REAC.Application.AppServices
                                     Message = msg
                                 });
 
-                                var notificationResultUpdatedArbitrator = _notificationService.SendNotifications(
+                                var notificationResultUpdatedArbitrator = await _notificationService.SendNotifications(
                                     new SendEmailDto()
                                     {
                                         To = new List<string>() { citizenRequests.Citizen.Email, deptAdminInfoReconciliation.Data.Email },
@@ -1225,7 +1225,7 @@ namespace REAC.Application.AppServices
                                     Message = msg
                                 });
 
-                                var notificationResultUpdatedArbitrator = _notificationService.SendNotifications(
+                                var notificationResultUpdatedArbitrator = await _notificationService.SendNotifications(
                                     new SendEmailDto()
                                     {
                                         To = new List<string>() { citizenRequests.Citizen.Email, deptAdminInfoArbitration.Data.Email },
@@ -1277,7 +1277,7 @@ namespace REAC.Application.AppServices
 
                                 applicationNotifications.Add(new SysNotificationDto()
                                 {
-                                    ActorId = deptAdminInfoArbitration.Data.Id,
+                                    ActorId = deptAdminInfoReconciliation.Data.Id,
                                     CreatedOn = DateTime.Now,
                                     ActorTypeId = NotificationActorType.Employee,
                                     IsViewed = false,
@@ -1287,7 +1287,7 @@ namespace REAC.Application.AppServices
                                     Message = msg
                                 });
 
-                                var notificationResultUpdatedArbitrator = _notificationService.SendNotifications(
+                                var notificationResultUpdatedArbitrator = await _notificationService.SendNotifications(
                                     new SendEmailDto()
                                     {
                                         To = new List<string>() { citizenInfo.Email, deptAdminInfoReconciliation.Data.Email },
@@ -1369,7 +1369,7 @@ namespace REAC.Application.AppServices
                                     Message = msg
                                 });
 
-                                var notificationResultUpdatedArbitrator = _notificationService.SendNotifications(
+                                var notificationResultUpdatedArbitrator = await _notificationService.SendNotifications(
                                     new SendEmailDto()
                                     {
                                         To = new List<string>() { citizenRequests.Citizen.Email, deptAdminInfoArbitration.Data.Email },
@@ -1428,7 +1428,7 @@ namespace REAC.Application.AppServices
                                 }
                                 applicationNotifications.Add(new SysNotificationDto()
                                 {
-                                    ActorId = deptAdminInfoArbitration.Data.Id,
+                                    ActorId = deptAdminInfoReconciliation.Data.Id,
                                     CreatedOn = DateTime.Now,
                                     ActorTypeId = NotificationActorType.Employee,
                                     IsViewed = false,
@@ -1438,7 +1438,7 @@ namespace REAC.Application.AppServices
                                     Message = msg
                                 });
 
-                                var notificationResultUpdatedArbitrator = _notificationService.SendNotifications(
+                                var notificationResultUpdatedArbitrator = await _notificationService.SendNotifications(
                                     new SendEmailDto()
                                     {
                                         To = new List<string>() { citizenInfo.Email, deptAdminInfoReconciliation.Data.Email },
@@ -1521,7 +1521,7 @@ namespace REAC.Application.AppServices
                                     Message = msg
                                 });
 
-                                var notificationResultUpdatedArbitrator = _notificationService.SendNotifications(
+                                var notificationResultUpdatedArbitrator = await _notificationService.SendNotifications(
                                     new SendEmailDto()
                                     {
                                         To = new List<string>() { citizenRequests.Citizen.Email, deptAdminInfoArbitration.Data.Email },
@@ -1580,7 +1580,7 @@ namespace REAC.Application.AppServices
                                 }
                                 applicationNotifications.Add(new SysNotificationDto()
                                 {
-                                    ActorId = deptAdminInfoArbitration.Data.Id,
+                                    ActorId = deptAdminInfoReconciliation.Data.Id,
                                     CreatedOn = DateTime.Now,
                                     ActorTypeId = NotificationActorType.Employee,
                                     IsViewed = false,
@@ -1590,7 +1590,7 @@ namespace REAC.Application.AppServices
                                     Message = msg
                                 });
 
-                                var notificationResultUpdatedArbitrator = _notificationService.SendNotifications(
+                                var notificationResultUpdatedArbitrator = await _notificationService.SendNotifications(
                                     new SendEmailDto()
                                     {
                                         To = new List<string>() { citizenInfo.Email, deptAdminInfoReconciliation.Data.Email },
@@ -1673,7 +1673,7 @@ namespace REAC.Application.AppServices
                                     Message = msg
                                 });
 
-                                var notificationResultUpdatedArbitrator = _notificationService.SendNotifications(
+                                var notificationResultUpdatedArbitrator = await _notificationService.SendNotifications(
                                     new SendEmailDto()
                                     {
                                         To = new List<string>() { citizenRequests.Citizen.Email, deptAdminInfoArbitration.Data.Email },
@@ -1733,7 +1733,7 @@ namespace REAC.Application.AppServices
                                 }
                                 applicationNotifications.Add(new SysNotificationDto()
                                 {
-                                    ActorId = deptAdminInfoArbitration.Data.Id,
+                                    ActorId = deptAdminInfoReconciliation.Data.Id,
                                     CreatedOn = DateTime.Now,
                                     ActorTypeId = NotificationActorType.Employee,
                                     IsViewed = false,
@@ -1743,7 +1743,7 @@ namespace REAC.Application.AppServices
                                     Message = msg
                                 });
 
-                                var notificationResultUpdatedArbitrator = _notificationService.SendNotifications(
+                                var notificationResultUpdatedArbitrator = await _notificationService.SendNotifications(
                                     new SendEmailDto()
                                     {
                                         To = new List<string>() { citizenInfo.Email, deptAdminInfoReconciliation.Data.Email },
@@ -1825,7 +1825,7 @@ namespace REAC.Application.AppServices
                                     Message = msg
                                 });
 
-                                var notificationResultUpdatedArbitrator = _notificationService.SendNotifications(
+                                var notificationResultUpdatedArbitrator = await _notificationService.SendNotifications(
                                     new SendEmailDto()
                                     {
                                         To = new List<string>() { citizenRequests.Citizen.Email, deptAdminInfoArbitration.Data.Email },
@@ -1885,7 +1885,7 @@ namespace REAC.Application.AppServices
                                 }
                                 applicationNotifications.Add(new SysNotificationDto()
                                 {
-                                    ActorId = deptAdminInfoArbitration.Data.Id,
+                                    ActorId = deptAdminInfoReconciliation.Data.Id,
                                     CreatedOn = DateTime.Now,
                                     ActorTypeId = NotificationActorType.Employee,
                                     IsViewed = false,
@@ -1895,7 +1895,7 @@ namespace REAC.Application.AppServices
                                     Message = msg
                                 });
 
-                                var notificationResultUpdatedArbitrator = _notificationService.SendNotifications(
+                                var notificationResultUpdatedArbitrator = await _notificationService.SendNotifications(
                                     new SendEmailDto()
                                     {
                                         To = new List<string>() { citizenInfo.Email, deptAdminInfoReconciliation.Data.Email },
