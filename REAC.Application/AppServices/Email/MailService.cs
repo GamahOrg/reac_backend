@@ -91,8 +91,16 @@ namespace REAC.Application.AppServices.Email
         {
             try
             {
-                foreach (var toAddress in toAddressList)
+                // Remove duplicates while preserving order
+                var uniqueAddresses = toAddressList
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToList();
+
+                foreach (var toAddress in uniqueAddresses)
                 {
+                    // Check if email already exists
+                    //var emailExist = (await _repository.GetQueryable<SysNotificationEmail, Guid>())
+                    //    .Any(x => x.ToAddressList == toAddress && x.Body == body && !x.IsSent && x.CreatedOn.Hour == DateTime.Now.Hour );
 
                     await _repository.AddAsync<SysNotificationEmail, Guid>(new SysNotificationEmail()
                     {
@@ -104,6 +112,8 @@ namespace REAC.Application.AppServices.Email
                         RetryAttempt = 0,
                         ToAddressList = toAddress
                     });
+
+
                 }
 
                 await _repository.SaveChangesAsync();

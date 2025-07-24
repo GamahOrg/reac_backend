@@ -97,17 +97,17 @@ namespace REAC.Application.ModuleServices
                     // تم إرسال طلب مد مدة الصلح
                     try
                     {
-                        msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Arbitration_ExtendRequest_Added).Result.Data?.Value;
+                        msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reconciliation_ExtendRequest_Added).Result.Data?.Value;
                         msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
                         var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
                         string body;
                         using (StreamReader streamReader = File.OpenText(pathToFile))
                         {
                             body = await streamReader.ReadToEndAsync();
-                            body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Arbitration_ExtendRequest_Added).Result.Data?.Value);
+                            body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reconciliation_ExtendRequest_Added).Result.Data?.Value);
                             body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
                         }
-                        SendNotificationMSWithAllTypes(body, msg, litigationRequest, "Citizen Litigation Request For Report Reply Added");
+                       await SendNotificationMSForReconciliationDeptOnly(body, msg, litigationRequest, "طلب مد مدة الصلح");
                     }
                     catch (Exception e)
                     {
@@ -229,7 +229,7 @@ namespace REAC.Application.ModuleServices
                                 body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reconciliation_ExtendRequest_Accepted).Result.Data?.Value);
                                 body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
                             }
-                            SendNotificationMSWithAllTypes(body, msg, litigationRequest, "Citizen Litigation Request For Report Reply Added");
+                            await SendNotificationMSWithAllTypes(body, msg, litigationRequest, "Citizen Litigation Request For Report Reply Added");
                         }
                         catch (Exception e)
                         {
@@ -262,7 +262,7 @@ namespace REAC.Application.ModuleServices
                                 body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Arbitration_ExtendRequest_Rejected).Result.Data?.Value);
                                 body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
                             }
-                            SendNotificationMSWithAllTypes(body, msg, litigationRequest, "Citizen Litigation Request For Report Reply Added");
+                            await SendNotificationMSWithAllTypes(body, msg, litigationRequest, "Citizen Litigation Request For Report Reply Added");
                         }
                         catch (Exception e)
                         {

@@ -114,7 +114,9 @@ namespace REAC.Application.AppServices.SLA
         {
 
             var emails = (await _repository.GetQueryable<SysNotificationEmail, Guid>())
-           .Where(x => !x.IsSent);
+           .Where(x => !x.IsSent)
+           .OrderByDescending(x => x.CreatedOn)
+           .Take(10);
 
             if (emails.Any())
             {
@@ -134,8 +136,8 @@ namespace REAC.Application.AppServices.SLA
                         }
                         else
                         {
-                            email.RetryAttempt++;
-                            email.Error = res.Data.SMSError != null ? res.Data.SMSError.ToString() : res.Data.SMSUnauthorized.ToString();
+                            email.RetryAttempt += 1;
+                            email.Error = res.Message;
                         }
                     }
                     catch (Exception ex)
@@ -217,13 +219,13 @@ namespace REAC.Application.AppServices.SLA
             //return emailSetting;
         }
 
-        private async Task<DataResponse<SMSResponseDto>> SendMail(SysNotificationEmail emailRequest, string token, string url)
+        private async Task<BaseResponse> SendMail(SysNotificationEmail emailRequest, string token, string url)
         {
 
             var client = new HttpClient();
             var request = new HttpRequestMessage(HttpMethod.Post, url);
             request.Headers.Add("Authorization", $"Bearer {token}");
-           
+
             var formData = new List<KeyValuePair<string, string>>
             {
                 new KeyValuePair<string, string>("subject", emailRequest.Subject),
@@ -236,26 +238,18 @@ namespace REAC.Application.AppServices.SLA
 
             var response = await client.SendAsync(request);
 
-            var x = await response.Content.ReadAsStringAsync();
-            SMSResponseDto responseDto = new SMSResponseDto();
             if (response.IsSuccessStatusCode)
             {
 
-                responseDto.Data = await response.Content.ReadFromJsonAsync<SMSDataDto>();
-                return new DataResponse<SMSResponseDto> { IsDone = true, Data = responseDto };
-            }
-            else if (response.StatusCode == HttpStatusCode.Unauthorized)
-            {
-                responseDto.SMSUnauthorized = await response.Content.ReadFromJsonAsync<GeneralGEEErrorDto>();
-
-                return new DataResponse<SMSResponseDto> { IsDone = false, Data = responseDto };
+                return new BaseResponse { IsDone = true, Message = "Success" };
             }
             else
             {
-                responseDto.SMSError = await response.Content.ReadFromJsonAsync<SMSErrorDto>();
+                var errorMessage = await response.Content.ReadAsStringAsync();
 
-                return new DataResponse<SMSResponseDto> { IsDone = false, Data = responseDto };
+                return new BaseResponse { IsDone = false, Message = errorMessage };
             }
+
 
         }
 

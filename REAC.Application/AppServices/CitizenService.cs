@@ -583,7 +583,7 @@ namespace REAC.Application.AppServices
                         Message = msg
                     });
 
-                    var notificationResultUpdatedArbitrator = await _notificationService.SendNotifications(
+                    var notificationResultUpdatedArbitrator = await _notificationService.SendNotificationsWithoutDuplicationChecking(
                         new SendEmailDto()
                         {
                             To = new List<string>() { citizen.Email, deptAdminInfoArbitration.Data.Email },
@@ -687,7 +687,7 @@ namespace REAC.Application.AppServices
                         Message = msg
                     });
 
-                    var notificationResultUpdatedArbitrator = await _notificationService.SendNotifications(
+                    var notificationResultUpdatedArbitrator = await _notificationService.SendNotificationsWithoutDuplicationChecking(
                         new SendEmailDto()
                         {
                             To = new List<string>() { citizen.Email, deptAdminInfoArbitration.Data.Email },
@@ -796,7 +796,7 @@ namespace REAC.Application.AppServices
                         Message = msg
                     });
 
-                    var notificationResultUpdatedArbitrator = await _notificationService.SendNotifications(
+                    var notificationResultUpdatedArbitrator = await _notificationService.SendNotificationsWithoutDuplicationChecking(
                         new SendEmailDto()
                         {
                             To = new List<string>() { citizen.Email, deptAdminInfoReconciliation.Data.Email },
@@ -916,7 +916,7 @@ namespace REAC.Application.AppServices
                         Message = msg
                     });
 
-                    var notificationResultUpdatedArbitrator = await _notificationService.SendNotifications(
+                    var notificationResultUpdatedArbitrator = await _notificationService.SendNotificationsWithoutDuplicationChecking(
                         new SendEmailDto()
                         {
                             To = new List<string>() { citizen.Email, deptAdminInfoReconciliation.Data.Email },
@@ -1019,7 +1019,7 @@ namespace REAC.Application.AppServices
                         Message = msg
                     });
 
-                    var notificationResultUpdatedArbitrator = await _notificationService.SendNotifications(
+                    var notificationResultUpdatedArbitrator = await _notificationService.SendNotificationsWithoutDuplicationChecking(
                         new SendEmailDto()
                         {
                             To = new List<string>() { citizen.Email, deptAdminInfoArbitration.Data.Email },
@@ -1131,7 +1131,7 @@ namespace REAC.Application.AppServices
                         Message = msg
                     });
 
-                    var notificationResultUpdatedArbitrator = await _notificationService.SendNotifications(
+                    var notificationResultUpdatedArbitrator = await _notificationService.SendNotificationsWithoutDuplicationChecking(
                         new SendEmailDto()
                         {
                             To = new List<string>() { citizen.Email, deptAdminInfoArbitration.Data.Email },
@@ -1185,9 +1185,9 @@ namespace REAC.Application.AppServices
                         IsDone = false,
                         Message = "مصلح غير موجود"
                     };
-
+                var whiteListStatuses = new List<RequestStatus>() { RequestStatus.Cancelled,RequestStatus.ReconciliationWasNotMade};
                 var litigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>())
-                .Any(l => (l.ExternalStatusId != RequestStatus.Cancelled | l.InternalStatusId != RequestStatus.Cancelled)
+                .Any(l => (!whiteListStatuses.Contains(l.ExternalStatusId) | !whiteListStatuses.Contains(l.InternalStatusId))
                 & l.LitigationRequestStage == LitigationRequestStage.Reconciliation & l.ReformerCitizenId == reformerStopDecisionCreateDto.CitizenId);
 
                 if (litigationRequest)
@@ -1260,7 +1260,7 @@ namespace REAC.Application.AppServices
                             Message = msg
                         });
 
-                        var notificationResultUpdatedArbitrator = await _notificationService.SendNotifications(
+                        var notificationResultUpdatedArbitrator = await _notificationService.SendNotificationsWithoutDuplicationChecking(
                             new SendEmailDto()
                             {
                                 To = new List<string>() { citizen.Email, deptAdminInfoReconciliation.Data.Email },
@@ -1392,7 +1392,7 @@ namespace REAC.Application.AppServices
                         Message = msg
                     });
 
-                    var notificationResultUpdatedArbitrator = await _notificationService.SendNotifications(
+                    var notificationResultUpdatedArbitrator = await _notificationService.SendNotificationsWithoutDuplicationChecking(
                         new SendEmailDto()
                         {
                             To = new List<string>() { citizen.Email, deptAdminInfoReconciliation.Data.Email },

@@ -188,16 +188,27 @@ namespace Bpf.Application.ModuleServices
 
                             if (previoudProcessingLog != null)
                             {
-                                var newProcessingLog = new WorkFlowProcessingLog()
+                                var newProcessingLog = new WorkFlowProcessingLog();
                                 {
-                                    CreatedOn = DateTime.Now,
-                                    IsFinished = false,
-                                    EmployeeId = previoudProcessingLog.EmployeeId,
-                                    RequestId = previoudProcessingLog.RequestId,
-                                    SourceWorkFlowProcessingLogId = processingLog.Id,
-                                    WorkFlowStepId = previoudProcessingLog.WorkFlowStepId
-                                };
-
+                                    newProcessingLog.CreatedOn = DateTime.Now;
+                                    newProcessingLog.IsFinished = false;
+                                    newProcessingLog.EmployeeId = previoudProcessingLog.EmployeeId;
+                                    newProcessingLog.RequestId = previoudProcessingLog.RequestId;
+                                    newProcessingLog.SourceWorkFlowProcessingLogId = processingLog.Id;
+                                }
+                                //get step id depend on workflow category type which order is equal 2 (reconciliation , arbitration)  
+                                if (requestPayload.CategoryTypeChanged == true)
+                                {
+                                    var workflowId = (await _repository.GetQueryable<WorkFlow, Guid>())?
+                                               .Include(x=>x.WorkFlowSteps)
+                                               .Where(x => x.WorkFlowName.ToLower() == requestPayload.CategoryType.ToLower())
+                                               .Single();
+                                    newProcessingLog.WorkFlowStepId = workflowId?.WorkFlowSteps.FirstOrDefault(s => s.Order == 2)?.Id ?? previoudProcessingLog.WorkFlowStepId;
+                                }
+                                else
+                                {
+                                    newProcessingLog.WorkFlowStepId = previoudProcessingLog.WorkFlowStepId;
+                                }
                                 var newProcessingLogResponse = await _workFlowProcessingLogService.AddAsync(newProcessingLog, cancellationToken);
                                 if (!newProcessingLogResponse.IsDone)
                                     return newProcessingLogResponse;

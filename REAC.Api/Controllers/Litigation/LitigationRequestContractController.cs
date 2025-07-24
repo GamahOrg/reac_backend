@@ -43,7 +43,17 @@ public class LitigationRequestContractController : BaseController<LitigationRequ
 
 
 
-
+    [HttpPost(nameof(UpdateContractDocumentFiles))]
+    public async Task<IActionResult> UpdateContractDocumentFiles( CreateUpdateContractDocuments contractDocuments,
+     CancellationToken cancellationToken)
+    {
+        if (ModelState.IsValid)
+        {
+            var returnValue = await _contractService.UpdateContractDocuments(contractDocuments);
+            return Ok(returnValue);
+        }
+        return BadRequest();
+    }
 
     [HttpPost(nameof(CreateOther))]
     [AllowAnonymous]

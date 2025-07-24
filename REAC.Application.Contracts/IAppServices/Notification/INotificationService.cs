@@ -12,5 +12,6 @@ namespace REAC.Application.Contracts.IAppServices.Notification
         Task<BaseResponse> GetNotificationListForBackOffice(int pageIndex, int pageSize);
         Task<BaseResponse> MarkNotificationViewed(Guid notificationId);
         Task<BaseResponse> SendNotifications(SendEmailDto email, SMSRequestDto sms, List<SysNotificationDto> notifications);
+        Task<BaseResponse> SendNotificationsWithoutDuplicationChecking(SendEmailDto email, SMSRequestDto sms, List<SysNotificationDto> notifications);
     }
 }

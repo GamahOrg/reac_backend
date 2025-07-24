@@ -135,6 +135,7 @@ namespace REAC.Application.AppServices.Litigation
                 if (model.ExemptionReductionCategory.Id != Guid.Empty)
                     litigationRequest.ExemptionReductionCategoryId = model.ExemptionReductionCategory.Id;
 
+                var lastCategoryId = litigationRequest.LitigationRequestCategoryId;
                 litigationRequest.LitigationRequestCategoryId = model.LitigationRequestCategoryId;
 
                 if (model.Requests != null)
@@ -284,6 +285,7 @@ namespace REAC.Application.AppServices.Litigation
                         var currentAmount = (await _repository.GetQueryable<SysLitigationRequestAmount, Guid>())
                                                   .Where(s => s.Id == litigationRequest.LitigationRequestAmountId).FirstOrDefault();
 
+
                         //check amount change
                         if (lastAmountLog != null && currentAmount.Fees > lastAmountLog.Amounts.Fees)
                         {
@@ -320,17 +322,24 @@ namespace REAC.Application.AppServices.Litigation
                             }
 
                         }
+
                         else
                         {
                             var currentProcessingLog = processingLog.Where(t => t.IsFinished == false).OrderBy(t => t.CreatedOn).ToList();
-                            if (processingLog.Count > 0)
+                            if (processingLog.Count > 0 && currentProcessingLog.Count > 0)
                             {
+
                                 ProcessRequestPayload processRequestPayload = new ProcessRequestPayload();
                                 processRequestPayload.RequestId = litigationRequest.Id;
                                 processRequestPayload.ProcessingLogId = currentProcessingLog.LastOrDefault().Id;
                                 processRequestPayload.WorkflowStepEventId = currentProcessingLog.LastOrDefault().WorkFlowStep.WorkFlowStepEvents.FirstOrDefault().Id;
                                 processRequestPayload.Notes = "";
                                 processRequestPayload.UploadedFilesIds = new List<Guid>();
+                                if (lastCategoryId != model.LitigationRequestCategoryId)
+                                {
+                                    processRequestPayload.CategoryTypeChanged = true;
+                                    processRequestPayload.CategoryType = model.LitigationRequestCategoryId == LitigationRequestCategory.Arbitration ? "دعوة تحكيم" : "دعوة صلح";
+                                }
                                 await _bpfService.ProcessWorkFlow(processRequestPayload, default);
                                 return new DataResponse<LitigationCreateUpdateDto>()
                                 {
@@ -340,9 +349,14 @@ namespace REAC.Application.AppServices.Litigation
                                 };
                             }
                         }
+
+
+
                     }
                     else
                         await _bpfService.ExcuteWorkFlow(litigationRequest.Id, default, null);
+
+
 
                     #region billing 
                     // billing comparing last amount with current amount 
@@ -414,7 +428,7 @@ namespace REAC.Application.AppServices.Litigation
 
         private static string IncrementGenericFormatString(string input)
         {
-            
+
             Match match = Regex.Match(input, @"^([A-Za-z])(\d+)(-.*)$");
 
             if (match.Success)
@@ -843,8 +857,8 @@ namespace REAC.Application.AppServices.Litigation
                     litigationRequestMircoDto.FirstPartyName = (litigationRequest.Contract.FirstPartyCitizen == null) ? litigationRequest.Contract.FirstPartyFacility.ArabicFacilityName : litigationRequest.Contract.FirstPartyCitizen.FullName;
                     litigationRequestMircoDto.SecondPartyName = (litigationRequest.Contract.SecondPartyCitizen == null) ? litigationRequest.Contract.SecondPartyFacility.ArabicFacilityName : litigationRequest.Contract.SecondPartyCitizen.FullName;
                     litigationRequestMircoDto.RequestTypeName = litigationRequest.Contract.LitigationRequestContractType.TypeName;
-                    litigationRequestMircoDto.EmployeeId = litigationRequest.WorkFlowProcessingLogs.Last(z => z.EmployeeId != null).EmployeeId;
-                    litigationRequestMircoDto.EmployeeName = litigationRequest.WorkFlowProcessingLogs.Last(z => z.EmployeeId != null).Employee.EmployeeName;
+                    litigationRequestMircoDto.EmployeeId = litigationRequest.WorkFlowProcessingLogs.First(z => z.EmployeeId != null).EmployeeId;
+                    litigationRequestMircoDto.EmployeeName = litigationRequest.WorkFlowProcessingLogs.First(z => z.EmployeeId != null).Employee.EmployeeName;
                     litigationRequestMircoDtos.Add(litigationRequestMircoDto);
                 }
             }
@@ -982,6 +996,16 @@ namespace REAC.Application.AppServices.Litigation
 
                 if (litigationRequest.WorkFlowProcessingLogs.Any())
                 {
+                    var WorkFlowProcessingLogs = (await _repository.GetQueryable<WorkFlowProcessingLog, Guid>())?
+                      .Where(x => x.RequestId == assignRequestPayload.RequestId);
+
+                    foreach (var request in WorkFlowProcessingLogs.ToList())
+                    {
+                        if (request.RequestId == assignRequestPayload.RequestId)
+                        {
+                            request.EmployeeId = assignRequestPayload.EmployeeId;
+                        }
+                    }
 
                     foreach (var request in litigationRequest.WorkFlowProcessingLogs.ToList())
                     {
@@ -1518,7 +1542,7 @@ namespace REAC.Application.AppServices.Litigation
                 ArbitratorName = citizenInfo != null ? citizenInfo.FullName : null,
                 AssociationName = litigationRequest.Contract.AssociationName,
                 ContractNumber = litigationRequest.Contract.ContractKey,
-                ContractReleaseDate = litigationRequest.CreatedOn.ToLongDateString()?.Replace("بعد الهجرة","هجرياً"),
+                ContractReleaseDate = litigationRequest.CreatedOn.ToLongDateString()?.Replace("بعد الهجرة", "هجرياً"),
                 ArbitratorAssigningDate = litigationRequest.ArbitratorsNominationListSelectionDoneDateTime?.ToLongDateString()?.Replace("بعد الهجرة", "هجرياً"),
                 LitigationNumber = litigationRequest.RequestCode,
                 LitigationType = litigationRequest.Contract.LitigationRequestContractType.TypeName,

@@ -26,6 +26,7 @@ namespace REAC.Domain.Shared.Constants
             "Reformer.Activate" ,
             "SLA.LitigationRequestReformerAssigningRequestResponsePeriod" ,
             "SLA.LitigationRequestExtendRequestReplyPeriod"
+ 
         };
 
         public static readonly List<string> ArbitrationFeesSystemSettings = new List<string>
@@ -73,7 +74,12 @@ namespace REAC.Domain.Shared.Constants
 
             "Arbitration.Period",
 
-            "SLA.AddLitigationRequestArbitrationSessionPeriod"
+            "SLA.AddLitigationRequestArbitrationSessionPeriod",
+            "SLA.AddLitigationRequestArbitrationSessionWarning",
+            "SLA.AddLitigationRequestArbitratorNominationListWarning",
+            "Arbitrators.Count.FromBothSides",
+            "Arbitrators.Count.Added",
+            "ArbitratorsNominationList.Added"
 
         };
 
@@ -98,6 +104,7 @@ namespace REAC.Domain.Shared.Constants
             "SLA.ReminderForReviewer",
             "SLA.ReminderForReviewerManager",
             "SLA.FinishLitigation.ReviewerEmployee",
+            "Workflow.Condition",
             "Workflow.Condition.Review",
       //      "SLA.ReviewDelay.ReviewerAdmin",
             "SLA.FinishAgreementRequest",
@@ -109,6 +116,7 @@ namespace REAC.Domain.Shared.Constants
             "LitigationRequest.Reject.Agreement",
             "LitigationRequest.Creation.Accept.Defendant",
              "LitigationRequest.Creation.Accept",
+             "SLA.AgreementPeriodFinishedWarning"
         };
 
         public static readonly List<string> ReviewSystemSettingOrder = new List<string>
@@ -123,12 +131,14 @@ namespace REAC.Domain.Shared.Constants
             "SLA.ReminderForReviewerManager",
             "SLA.FinishLitigation.ReviewerEmployee",           
             "Arbitrators.Count.Added.AfterAgreement",
+            "Workflow.Condition",
             "Workflow.Condition.Review",
             "SLA.FinishAgreementRequest",
             "SLA.FirstAgreementRequestForRequest",
             "LitigationRequest.Accept.Agreement",
             "SLA.SecondAgreementRequestForForRequest",
             "SLA.AgreementCancelled",
+            "SLA.AgreementPeriodFinishedWarning",
             "LitigationRequest.Reject.Agreement",
             "LitigationRequest.Creation.Accept",
             "LitigationRequest.Creation.Accept.Defendant"

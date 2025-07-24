@@ -1,4 +1,6 @@
-﻿namespace REAC.Application.Contracts.Dtos.Wpf.Business
+﻿using REAC.Domain.Shared.Enum;
+
+namespace REAC.Application.Contracts.Dtos.Wpf.Business
 {
     public class ProcessRequestPayload
     {
@@ -6,6 +8,8 @@
         public Guid ProcessingLogId { get; set; }
         public Guid WorkflowStepEventId { get; set; }
         public string? Notes { get; set; }
+        public Boolean? CategoryTypeChanged { get; set; }
+        public string? CategoryType { get; set; }
         public List<Guid>? UploadedFilesIds { get; set; }
     }
 

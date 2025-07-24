@@ -168,7 +168,7 @@ namespace REAC.Application.AppServices.SLA
                             if (reminderForReviewerPeriod > 0)
                             {
                                 var workFlowProcessingLogs = litigationRequest.WorkFlowProcessingLogs.Where(x => x.EmployeeId.HasValue == true && !x.IsFinished).OrderBy(x => x.CreatedOn).ToList();
-                                Guid? employeeId = workFlowProcessingLogs.Last().EmployeeId;
+                                Guid? employeeId = workFlowProcessingLogs.Any() ? workFlowProcessingLogs.Last().EmployeeId : null;
                                 var employeeWorkFlowProcessingLogs = workFlowProcessingLogs.Where(x => x.EmployeeId == employeeId);
 
                                 if (employeeWorkFlowProcessingLogs.Any())
@@ -253,7 +253,7 @@ namespace REAC.Application.AppServices.SLA
                             if (reminderForReviewerManagerPeriod > 0)
                             {
                                 var workFlowProcessingLogs = litigationRequest.WorkFlowProcessingLogs.Where(x => x.EmployeeId.HasValue == true && !x.IsFinished).OrderBy(x => x.CreatedOn).ToList();
-                                Guid? employeeId = workFlowProcessingLogs.Last().EmployeeId;
+                                Guid? employeeId = workFlowProcessingLogs.Any() ? workFlowProcessingLogs.Last().EmployeeId : null;
                                 var employeeWorkFlowProcessingLogs = workFlowProcessingLogs.Where(x => x.EmployeeId == employeeId);
 
                                 if (employeeWorkFlowProcessingLogs.Any())
@@ -821,6 +821,7 @@ namespace REAC.Application.AppServices.SLA
             }
 
             litigationRequests = (await _repository.GetQueryable<LitigationRequest, Guid>())?
+                             .Include(x => x.Contract)
                              .Include(x => x.ApplicantCitizen)
                              .Include(x => x.WorkFlowProcessingLogs)
                              .ThenInclude(x => x.WorkFlowStep)
@@ -1000,34 +1001,34 @@ namespace REAC.Application.AppServices.SLA
                                                 emails.Add(litigationRequest.Contract.FirstPartyFacility.Citizen.Email);
                                                 recipients.Add(litigationRequest.Contract.FirstPartyFacility.Citizen.Mobile);
                                             };
-                                            if (litigationRequest?.Contract?.SecondPartyCitizenId != null)
-                                            {
-                                                notifications.Add(new SysNotificationDto
-                                                {
-                                                    ActorId = (Guid)litigationRequest.Contract.SecondPartyCitizenId,
-                                                    RequestId = litigationRequest.Id,
-                                                    CreatedOn = DateTime.Now,
-                                                    RequestTypeId = RequestType.LitigationRequest,
-                                                    ActorTypeId = NotificationActorType.Defendant,
-                                                    Message = msg
-                                                });
-                                                emails.Add(litigationRequest.Contract.SecondPartyCitizen.Email);
-                                                recipients.Add(litigationRequest.Contract.SecondPartyCitizen.Mobile);
-                                            };
-                                            if (litigationRequest?.Contract?.SecondPartyFacilityId != null)
-                                            {
-                                                notifications.Add(new SysNotificationDto
-                                                {
-                                                    ActorId = (Guid)litigationRequest.Contract.SecondPartyFacility.CitizenId,
-                                                    RequestId = litigationRequest.Id,
-                                                    CreatedOn = DateTime.Now,
-                                                    RequestTypeId = RequestType.LitigationRequest,
-                                                    ActorTypeId = NotificationActorType.Defendant,
-                                                    Message = msg
-                                                });
-                                                emails.Add(litigationRequest.Contract.SecondPartyFacility.Citizen.Email);
-                                                recipients.Add(litigationRequest.Contract.SecondPartyFacility.Citizen.Mobile);
-                                            };
+                                            //if (litigationRequest?.Contract?.SecondPartyCitizenId != null)
+                                            //{
+                                            //    notifications.Add(new SysNotificationDto
+                                            //    {
+                                            //        ActorId = (Guid)litigationRequest.Contract.SecondPartyCitizenId,
+                                            //        RequestId = litigationRequest.Id,
+                                            //        CreatedOn = DateTime.Now,
+                                            //        RequestTypeId = RequestType.LitigationRequest,
+                                            //        ActorTypeId = NotificationActorType.Defendant,
+                                            //        Message = msg
+                                            //    });
+                                            //    emails.Add(litigationRequest.Contract.SecondPartyCitizen.Email);
+                                            //    recipients.Add(litigationRequest.Contract.SecondPartyCitizen.Mobile);
+                                            //};
+                                            //if (litigationRequest?.Contract?.SecondPartyFacilityId != null)
+                                            //{
+                                            //    notifications.Add(new SysNotificationDto
+                                            //    {
+                                            //        ActorId = (Guid)litigationRequest.Contract.SecondPartyFacility.CitizenId,
+                                            //        RequestId = litigationRequest.Id,
+                                            //        CreatedOn = DateTime.Now,
+                                            //        RequestTypeId = RequestType.LitigationRequest,
+                                            //        ActorTypeId = NotificationActorType.Defendant,
+                                            //        Message = msg
+                                            //    });
+                                            //    emails.Add(litigationRequest.Contract.SecondPartyFacility.Citizen.Email);
+                                            //    recipients.Add(litigationRequest.Contract.SecondPartyFacility.Citizen.Mobile);
+                                            //};
 
 
                                             var notificationResult = await _notificationService.SendNotifications(
