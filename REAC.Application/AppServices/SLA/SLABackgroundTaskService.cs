@@ -25,7 +25,7 @@ namespace REAC.Application.AppServices.SLA
             {
                 await DoWork(stoppingToken); 
             }
-           , null, TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10));
+           , null, TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(3600));//to run every 1 hr
 
         }
 
