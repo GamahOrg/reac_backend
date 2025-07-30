@@ -46,6 +46,7 @@ public partial class LitigationRequest : BaseEntity<Guid>
     public bool? IsArbitratorAssigningRequestResponseSecondPeriodSent { get; set; }
 
     public bool? IsLitigationRequestReconciliationReportResponsePeriodSent { get; set; }
+    public bool? IsLitigationRequestReconciliationReportDecisionPeriodSent { get; set; }
 
     public bool? IsLitigationRequestReformerAssigningRequestResponsePeriodSent { get; set; }
     public bool? IsReminderForReviewerManagerSent { get; set; }

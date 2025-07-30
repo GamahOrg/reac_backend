@@ -3,6 +3,7 @@
     public class SysSettingKeyConstants
     {
         public const string SecurityApiUrl = "SecurityApiUrl"; // http://localhost:7144/
+        public const string REACPortalUrl = "REACPortalUrl"; // http://localhost:7144/
 
         #region Integration Keys
 

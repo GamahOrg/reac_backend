@@ -15,6 +15,12 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                     new SysSetting
                     {
                         Id = Guid.NewGuid(),
+                        Key = "REACPortalUrl",
+                        Value = "https://dev-reac-backoffice.rega.gov.sa/",
+                    },
+                    new SysSetting
+                    {
+                        Id = Guid.NewGuid(),
                         Key = "SecurityApiUrl",
                         Value = "http://localhost:7144/",
                     },
@@ -529,7 +535,7 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                     {
                         Id = Guid.NewGuid(),
                         Key = "Reconciliation.Reconciliator.AcceptTask",
-                        Value = "تم قبول طلب المهمة لدعوى رقم {LitigationCode} من قبل المصلح {ReconciliatorName}",
+                        Value = "تم قبول الدعوى رقم {LitigationCode} من قبل المصلح {ReconciliatorName} والبدء بإجراءات الصلح",
                     },new SysSetting
                     {
                        Id = Guid.NewGuid(),
@@ -539,7 +545,7 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                     {
                         Id = Guid.NewGuid(),
                         Key = "Reconciliation.Reconciliator.RejectTask",
-                        Value = "تم رفض طلب المهمة لدعوى رقم {LitigationCode} من قبل المصلح {ReconciliatorName}",
+                        Value = "تم رفض المصلح/ {ReconciliatorName} للدعوى رقم {LitigationCode}",
                     },new SysSetting
                     {
                        Id = Guid.NewGuid(),
@@ -693,19 +699,19 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                     {
                         Id = Guid.NewGuid(),
                         Key = "ArbitrationReport.Added.FirstParty",
-                        Value = "عزيزي {FirstPartyName}\r\n نود إبلاغكم بانه تم إصدار حكم التحكيم علي الدعوى رقم {LitigationCode}\r\n",
+                        Value = "عزيزي {FirstPartyName}\r\n نود إبلاغكم بانه تم إصدار حكم التحكيم علي الدعوى رقم {LitigationCode}\r\n برجاء الدخول علي موقع المنصه من خلال الرابط {PortalUrl}",
                     },new SysSetting
                     {
                         Id = Guid.NewGuid(),
                         Key = "ArbitrationReport.Added.SecondParty",
-                        Value = "عزيزي {SecondPartyName}\r\n نود إبلاغكم بانه تم إصدار حكم التحكيم علي الدعوى رقم {LitigationCode}\r\n",
+                        Value = "عزيزي {SecondPartyName}\r\n نود إبلاغكم بانه تم إصدار حكم التحكيم علي الدعوى رقم {LitigationCode}\r\n برجاء الدخول علي موقع المنصه من خلال الرابط {PortalUrl}",
                     },
 
                      new SysSetting
                     {
                         Id = Guid.NewGuid(),
                         Key = "ArbitrationService.JudgmentAdded",
-                        Value = "تم اضافةالحكم في الدعوي المسجلة برقم {LitigationCode} }",
+                        Value = "تم اضافةالحكم في الدعوي المسجلة برقم {LitigationCode} برجاء الدخول علي موقع المنصه من خلال الرابط {PortalUrl}",
                     }
                     ,new SysSetting
                     {
@@ -718,7 +724,7 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                     {
                         Id = Guid.NewGuid(),
                         Key = "ExcuteWorkflow",
-                        Value = "تم إرسال الدعوى رقم {LitigationCode}",
+                        Value = "تم تقديم دعوى جديدة رقم {LitigationCode}",
                     },new SysSetting
                     {
                         Id = Guid.NewGuid(),
@@ -733,7 +739,7 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                     {
                         Id = Guid.NewGuid(),
                         Key = "ProcessWorkflow.Reject",
-                        Value = "تم رفض الدعوى رقم {LitigationCode} بسبب {RejectionReason}",
+                        Value = "تم رفض الطلب للدعوى رقم {LitigationCode} بسبب {RejectionReason} ولمزيد من المعلومات فضلا زيارة منصة المركز السعودي للتحكيم العقاري",
                     },new SysSetting
                     {
                         Id = Guid.NewGuid(),
@@ -768,7 +774,7 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                     {
                         Id = Guid.NewGuid(),
                         Key = "LitigationRequest.Creation.Resent",
-                        Value = "تم تحويل الدعوي رقم {LitigationCode} الي معاده للتعديل لوجود ملاحظات, برجاء تعديل الدعوى علما بأنه سيتم انتهاء صلاحية التعديل في خلال {ExpirationDate} ايام",
+                        Value = "تم إعادة الطلب للتعديل للدعوى رقم {LitigationCode} ويجب تعديل الطلب خلال {ExpirationDate} يوم لتفادي اغلاق الدعوى",
                     },new SysSetting
                     {
                         Id = Guid.NewGuid(),
@@ -779,32 +785,32 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                     {
                         Id = Guid.NewGuid(),
                         Key = "LitigationRequest.Creation.Accept.Defendant",
-                        Value = "تم تقديم دعوى رقم {LitigationCode} والمقامة ضدكم ",
+                        Value = "تم تقديم دعوى رقم {LitigationCode} لدى المركز السعودي للتحكيم العقاري والمقامة ضدكم، وللإطلاع على تفاصيل الدعوى الدخول عبر الرابط التالي: {PortalUrl} ",
                     },new SysSetting
                     {
                         Id = Guid.NewGuid(),
                         Key = "LitigationRequest.Decision.WaiverOfRight",
-                        Value = "تم التنازل عن الحق لدعوي رقم {LitigationCode}",
+                        Value = "تم إصدار محضر صلح للدعوى رقم {LitigationCode} يرجى الرد على محضر الصلح",
                     },new SysSetting
                     {
                         Id = Guid.NewGuid(),
                         Key = "LitigationRequest.Decision.ReconciliationWasMade",
-                        Value = "تم الصلح لدعوي رقم {LitigationCode}",
+                        Value = "تم إصدار محضر صلح للدعوى رقم {LitigationCode} يرجى الرد على محضر الصلح",
                     },new SysSetting
                     {
                         Id = Guid.NewGuid(),
                         Key = "LitigationRequest.Decision.WaiverOfTheLitigation",
-                        Value = "تم التنازل عن الدعوى لدعوي رقم {LitigationCode}",
+                        Value = "تم إصدار محضر صلح للدعوى رقم {LitigationCode} يرجى الرد على محضر الصلح",
                     },new SysSetting
                     {
                         Id = Guid.NewGuid(),
                         Key = "LitigationRequest.Decision.ReconciliationWasNotMadeAndMoveToArbitration",
-                        Value = "تم رفض الصلح والانتقال للتحكيم لدعوي رقم {LitigationCode}",
+                        Value = "تم إصدار محضر عدم صلح للدعوى رقم {LitigationCode} وإحالة الدعوى للتحكيم",
                     },new SysSetting
                     {
                         Id = Guid.NewGuid(),
                         Key = "LitigationRequest.Decision.ReconciliationWasNotMade",
-                        Value = " رفض الصلح لدعوي رقم {LitigationCode}",
+                        Value = "تم إصدار محضر عدم صلح للدعوى رقم {LitigationCode} ",
                     },new SysSetting
                     {
                         Id = Guid.NewGuid(),
@@ -844,7 +850,7 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                     {
                         Id = Guid.NewGuid(),
                         Key = "Workflow.Condition.Review",
-                        Value = "تم ارسال طلب مشارطة الدعوى رقم {LitigationCode}",
+                        Value = "تم ارسال طلب مشارطة التحكيم للدعوى رقم {LitigationCode}",
                     }, new SysSetting
                     {
                         Id = Guid.NewGuid(),
@@ -861,7 +867,7 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                     {
                         Id = Guid.NewGuid(),
                         Key = "Reconciliation.Request.Added",
-                        Value = "تم إضافة محضر الصلح لدعوى رقم {LitigationCode}"
+                        Value = "تم إضافة محضر الصلح لدعوى رقم {LitigationCode} برجاء الدخول علي موقع المنصه من خلال الرابط {PortalUrl}"
                     },new SysSetting
                     {
                         Id = Guid.NewGuid(),
@@ -876,7 +882,7 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                     {
                         Id = Guid.NewGuid(),
                         Key = "LitigationRequestCorrespondenceAdded",
-                        Value = "تم اضافة مراسلة رقم {CorrespondenceCode} علي الدعوي رقم {LitigationCode}"
+                        Value = "يوجد رسالة واردة في منصة المركز رقم {CorrespondenceCode} علي الدعوي رقم {LitigationCode}"
                     },new SysSetting
                     {
                         Id = Guid.NewGuid(),
@@ -887,12 +893,12 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                     {
                         Id = Guid.NewGuid(),
                         Key = "LitigationRequest.Decision.ReconciliationOnTradyPlatform",
-                        Value = "تم الصلح بواسطة منصة تراضى لدعوي رقم {LitigationCode}",
+                        Value = "تم إصدار محضر صلح في منصة تراضى لدعوي رقم {LitigationCode}",
                     },new SysSetting
                     {
                         Id = Guid.NewGuid(),
                         Key = "LitigationRequest.CollectionOfLitigationFeesRequestIsBeingSent",
-                        Value = "تم إرسال طلب  دفع رسوم الدعوي لدعوي رقم {LitigationCode}",
+                        Value = "تم إصدار فاتورة الرسوم الإدارية للدعوى رقم {LitigationCode} عند سداد الرسوم فضلا تأكيد السداد عبر منصة المركز",
                     },new SysSetting
                     {
                         Id = Guid.NewGuid(),
@@ -902,7 +908,7 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                     {
                         Id = Guid.NewGuid(),
                         Key = "LitigationRequest.CollectionOfReconciliationFeesRequestIsBeingSent",
-                        Value = "تم إرسال طلب  دفع رسوم الصلح لدعوي رقم {LitigationCode}",
+                        Value = "تم إصدار رسوم المصالحة للدعوى رقم {LitigationCode}، عند سداد الرسوم فضلا تأكيد السداد عبر منصة المركز",
                     },new SysSetting
                     {
                         Id = Guid.NewGuid(),
@@ -1030,6 +1036,18 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                         {
                             Id = Guid.NewGuid(),
                             Key = "SLA.LitigationRequestFeesNotPaidReminderFirstPeriod",
+                            Value = "72"
+
+                        },new SysSetting
+                        {
+                            Id = Guid.NewGuid(),
+                            Key = "SLA.LitigationRequestReconciliationFeesNotPaidReminderFirstPeriod",
+                            Value = "72"
+
+                        },new SysSetting
+                        {
+                            Id = Guid.NewGuid(),
+                            Key = "SLA.LitigationRequestArbitrationFeesNotPaidReminderFirstPeriod",
                             Value = "72"
 
                         },new SysSetting
@@ -1193,7 +1211,7 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                         {
                             Id = Guid.NewGuid(),
                             Key = "SLA.WithdrewLitigation.OldReviewerEmployee",
-                            Value = "تم سحب دعوى جديدة رقم {LitigationCode} لتخطى مدة التدقيق الفصوى"
+                            Value = "تم سحب دعوي رقم {LitigationCode} لتخطى مدة التدقيق الفصوى"
                         },new SysSetting
                         {
                             Id = Guid.NewGuid(),
@@ -1233,7 +1251,7 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                         {
                             Id = Guid.NewGuid(),
                             Key = "SLA.FinishReconciliation",
-                            Value = "يرجى سرعة اتمام عملية الصلح على الدعوى رقم {LitigationCode}"
+                            Value = "يرجى سرعة إتمام إجراءات المصالحة قبل انتهاء الوقت على الدعوى رقم {LitigationCode}"
                         },new SysSetting
                         {
                             Id = Guid.NewGuid(),
@@ -1243,7 +1261,7 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                         {
                             Id = Guid.NewGuid(),
                             Key = "SLA.ReconciliationReport.PleaseReply",
-                            Value = "يرجى سرعة الرد على محضر الصلح الصادر على الدعوى رقم {LitigationCode}"
+                            Value = "يرجى سرعة الرد على محضر الصلح الصادر على الدعوى رقم {LitigationCode} برجاء الدخول علي موقع المنصه من خلال الرابط {PortalUrl}"
                         },new SysSetting
                         {
                             Id = Guid.NewGuid(),
@@ -1253,7 +1271,7 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                         {
                             Id = Guid.NewGuid(),
                             Key = "SLA.ReconciliationTask.PleaseReply",
-                            Value = "يرجى سرعة الرد على طلب مهمة الصلح على الدعوى رقم {LitigationCode}"
+                            Value = "يرجى سرعة الرد على الدعوى رقم {LitigationCode}"
                         },new SysSetting
                         {
                             Id = Guid.NewGuid(),
