@@ -1223,6 +1223,9 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Property<bool?>("IsLitigationRequestFeesNotPaidFirstReminderSent")
                         .HasColumnType("bit");
 
+                    b.Property<bool?>("IsLitigationRequestReconciliationReportDecisionPeriodSent")
+                        .HasColumnType("bit");
+
                     b.Property<bool?>("IsLitigationRequestReconciliationReportResponsePeriodSent")
                         .HasColumnType("bit");
 
@@ -2380,6 +2383,166 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.ToTable("ReformerStopFreeUpDecision", (string)null);
                 });
 
+            modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Reports.GetArbitratorDashbourdResult", b =>
+                {
+                    b.Property<int?>("DueDateArbitrationCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("DueDateArbitrationRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("DueDateReconciliationCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("DueDateReconciliationRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("FinishedCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("FinishedRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("NotFinishedCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("NotFinishedRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("OtherServicesCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("OtherServicesDueDateCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("OtherServicesDueDateRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("OtherServicesFinishedCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("OtherServicesFinishedRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("OtherServicesNotFinishedCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("OtherServicesNotFinishedRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("OtherServicesRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("PropertiesCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("PropertiesDueDateCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("PropertiesDueDateRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("PropertiesFinishedCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("PropertiesFinishedRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("PropertiesNotFinishedCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("PropertiesNotFinishedRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("PropertiesRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("RealEstateBrokerageCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("RealEstateBrokerageDueDateCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("RealEstateBrokerageDueDateRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("RealEstateBrokerageFinishedCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("RealEstateBrokerageFinishedRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("RealEstateBrokerageNotFinishedCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("RealEstateBrokerageNotFinishedRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("RealEstateBrokerageRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("RentCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("RentDueDateCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("RentDueDateRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("RentFinishedCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("RentFinishedRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("RentNotFinishedCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("RentNotFinishedRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("RentRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("TotalLitigationCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TotalReviewDueDateCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("TotalReviewDueDateRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("WafiCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("WafiDueDateCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("WafiDueDateRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("WafiFinishedCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("WafiFinishedRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("WafiNotFinishedCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("WafiNotFinishedRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("WafiRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.ToTable((string)null);
+
+                    b.ToView(null, (string)null);
+                });
+
             modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Reports.GetListOfLitigationArbitrationReportResult", b =>
                 {
                     b.Property<string>("ArbitratorChairmanName")
@@ -2688,8 +2851,91 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.ToView(null, (string)null);
                 });
 
+            modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Reports.GetLitigationStatisticsForAdminReportResult", b =>
+                {
+                    b.Property<int?>("DueDateArbitrationCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("DueDateArbitrationRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("DueDateReconciliationCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("DueDateReconciliationRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("FinishedCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("FinishedRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("LitigationRequestStage")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("NotFinishedCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("NotFinishedRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("OtherServicesCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("OtherServicesRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("PropertiesCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("PropertiesRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("RealEstateBrokerageCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("RealEstateBrokerageRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("RentCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("RentRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("TotalLitigationCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TotalReviewDueDateCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("TotalReviewDueDateRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("WafiCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("WafiRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.ToTable((string)null);
+
+                    b.ToView(null, (string)null);
+                });
+
             modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Reports.GetLitigationStatisticsForAllStagesReportResult", b =>
                 {
+                    b.Property<int>("LackOfReconciliationCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ReconciliationWasMadeCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TheReconciliationOnTradyPatformCount")
+                        .HasColumnType("int");
+
                     b.Property<int>("TotalArbitrationAllCount")
                         .HasColumnType("int");
 
@@ -2769,6 +3015,12 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("int");
 
                     b.Property<int>("TotalReviewWafiCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("WaiverOfRightCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("WaiverOfTheLawSuitCount")
                         .HasColumnType("int");
 
                     b.ToTable((string)null);
@@ -2898,19 +3150,379 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.ToView(null, (string)null);
                 });
 
+            modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Reports.GetReformerDashbourdResult", b =>
+                {
+                    b.Property<int?>("DueDateArbitrationCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("DueDateArbitrationRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("DueDateReconciliationCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("DueDateReconciliationRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("FinishedCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("FinishedRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("LackOfReconciliationCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("NotFinishedCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("NotFinishedRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("OtherServicesCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("OtherServicesDueDateCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("OtherServicesDueDateRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("OtherServicesFinishedCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("OtherServicesFinishedRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("OtherServicesNotFinishedCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("OtherServicesNotFinishedRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("OtherServicesRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("PropertiesCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("PropertiesDueDateCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("PropertiesDueDateRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("PropertiesFinishedCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("PropertiesFinishedRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("PropertiesNotFinishedCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("PropertiesNotFinishedRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("PropertiesRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("RealEstateBrokerageCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("RealEstateBrokerageDueDateCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("RealEstateBrokerageDueDateRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("RealEstateBrokerageFinishedCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("RealEstateBrokerageFinishedRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("RealEstateBrokerageNotFinishedCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("RealEstateBrokerageNotFinishedRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("RealEstateBrokerageRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("ReconciliationWasMadeCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("RentCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("RentDueDateCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("RentDueDateRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("RentFinishedCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("RentFinishedRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("RentNotFinishedCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("RentNotFinishedRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("RentRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("TheReconciliationOnTradyPatformCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TotalLitigationCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TotalReviewDueDateCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("TotalReviewDueDateRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("WafiCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("WafiDueDateCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("WafiDueDateRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("WafiFinishedCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("WafiFinishedRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("WafiNotFinishedCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("WafiNotFinishedRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("WafiRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("WaiverOfRightCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("WaiverOfTheLawsuitCount")
+                        .HasColumnType("int");
+
+                    b.ToTable((string)null);
+
+                    b.ToView(null, (string)null);
+                });
+
+            modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Reports.GetReviewersReformersArbitratorsStatisticsReportResult", b =>
+                {
+                    b.Property<int>("CertifiedArbitrators")
+                        .HasColumnType("int");
+
+                    b.Property<int>("CertifiedReformers")
+                        .HasColumnType("int");
+
+                    b.Property<int>("CertifiedReviewers")
+                        .HasColumnType("int");
+
+                    b.Property<int>("StoppedArbitrators")
+                        .HasColumnType("int");
+
+                    b.Property<int>("StoppedReformers")
+                        .HasColumnType("int");
+
+                    b.Property<int>("StoppedReviewers")
+                        .HasColumnType("int");
+
+                    b.ToTable((string)null);
+
+                    b.ToView(null, (string)null);
+                });
+
+            modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Reports.GetReviwersDashbourdResult", b =>
+                {
+                    b.Property<int?>("DueDateArbitrationCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("DueDateArbitrationRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("DueDateReconciliationCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("DueDateReconciliationRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("FinishedCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("FinishedRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("NotFinishedCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("NotFinishedRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("OtherServicesCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("OtherServicesDueDateCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("OtherServicesDueDateRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("OtherServicesFinishedCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("OtherServicesFinishedRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("OtherServicesNotFinishedCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("OtherServicesNotFinishedRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("OtherServicesRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("PropertiesCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("PropertiesDueDateCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("PropertiesDueDateRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("PropertiesFinishedCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("PropertiesFinishedRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("PropertiesNotFinishedCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("PropertiesNotFinishedRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("PropertiesRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("RealEstateBrokerageCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("RealEstateBrokerageDueDateCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("RealEstateBrokerageDueDateRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("RealEstateBrokerageFinishedCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("RealEstateBrokerageFinishedRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("RealEstateBrokerageNotFinishedCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("RealEstateBrokerageNotFinishedRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("RealEstateBrokerageRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("RentCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("RentDueDateCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("RentDueDateRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("RentFinishedCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("RentFinishedRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("RentNotFinishedCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("RentNotFinishedRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("RentRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("TotalLitigationCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TotalReviewDueDateCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("TotalReviewDueDateRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("WafiCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("WafiDueDateCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("WafiDueDateRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("WafiFinishedCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("WafiFinishedRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("WafiNotFinishedCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("WafiNotFinishedRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("WafiRatio")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.ToTable((string)null);
+
+                    b.ToView(null, (string)null);
+                });
+
             modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Reports.GetReviwersReportResult", b =>
                 {
-                    b.Property<string>("FinishedCount")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int?>("FinishedCount")
+                        .HasColumnType("int");
 
-                    b.Property<string>("FinishedRatio")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<decimal?>("FinishedRatio")
+                        .HasColumnType("decimal(18,2)");
 
-                    b.Property<string>("NotFinishedCount")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int?>("NotFinishedCount")
+                        .HasColumnType("int");
 
-                    b.Property<string>("NotFinishedRatio")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<decimal?>("NotFinishedRatio")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("ReviewerName")
                         .HasColumnType("nvarchar(max)");
@@ -2918,14 +3530,17 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Property<string>("ReviewerStatus")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("TotalLitigationCount")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("TotalCount")
+                        .HasColumnType("int");
 
-                    b.Property<string>("TotalReviewDueDateCount")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int?>("TotalLitigationCount")
+                        .HasColumnType("int");
 
-                    b.Property<string>("TotalReviewDueDateRatio")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int?>("TotalReviewDueDateCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("TotalReviewDueDateRatio")
+                        .HasColumnType("decimal(18,2)");
 
                     b.ToTable((string)null);
 

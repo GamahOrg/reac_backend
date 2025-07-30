@@ -204,8 +204,11 @@ namespace REAC.Application.AppServices.SLA
                                         // يرجى سرعة الرد على محضر الصلح الصادر على الدعوى رقم ......
                                         try
                                         {
+                                            var portalUrl = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.REACPortalUrl).Result.Data?.Value;
+
                                             var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_ReconciliationReport_PleaseReply).Result.Data?.Value;
                                             msg = msg?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                                            msg = msg?.Replace("{PortalUrl}", portalUrl);
                                             var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
                                             string body;
                                             using (StreamReader streamReader = File.OpenText(pathToFile))
@@ -229,8 +232,12 @@ namespace REAC.Application.AppServices.SLA
                                         // يرجى سرعة الرد على محضر الصلح الصادر على الدعوى رقم ......
                                         try
                                         {
+                                            var portalUrl = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.REACPortalUrl).Result.Data?.Value;
+
                                             var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_ReconciliationReport_PleaseReply).Result.Data?.Value;
                                             msg = msg?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                                            msg = msg?.Replace("{PortalUrl}", portalUrl);
+
                                             var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
                                             string body;
                                             using (StreamReader streamReader = File.OpenText(pathToFile))
@@ -253,7 +260,7 @@ namespace REAC.Application.AppServices.SLA
 
                         if (LitigationRequestReconciliationReportDecisionPeriod > 0)
                         {
-                            if (litigationRequest.IsLitigationRequestReconciliationReportResponsePeriodSent != true)
+                            if (litigationRequest.IsLitigationRequestReconciliationReportDecisionPeriodSent != true)
                             {
 
 
@@ -262,7 +269,7 @@ namespace REAC.Application.AppServices.SLA
                                 totalReviewHours += (DateTime.Now - litigationRequest.LitigationRequestReconciliationReports.FirstOrDefault().ReportDate).TotalHours;
                                 if (totalReviewHours >= LitigationRequestReconciliationReportDecisionPeriod)
                                 {
-                                    litigationRequest.IsLitigationRequestReconciliationReportResponsePeriodSent = true;
+                                    litigationRequest.IsLitigationRequestReconciliationReportDecisionPeriodSent = true;
                                     //Send Notification for reformer
                                     // Mail - Sms - Application Notification
                                     // يرجى العلم أن الرد على محضر الصلح الصادر على الدعوى رقم ..... قد تجاوز مهلته القصوى

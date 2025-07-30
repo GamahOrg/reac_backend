@@ -644,8 +644,12 @@ namespace Bpf.Application.ModuleServices
                         // تم قبول الدعوى واستلامها
                         try
                         {
+                            var portalUrl = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.REACPortalUrl).Result.Data?.Value;
+
                             msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Creation_Accept).Result.Data?.Value;
                             msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
+                            msg = msg?.Replace("{PortalUrl}", portalUrl);
+
                             string msgDefendant = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Creation_Accept_Defendant).Result.Data?.Value;
                             msgDefendant = msgDefendant.Replace("{LitigationCode}", litigationRequest.RequestCode);
                             var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");

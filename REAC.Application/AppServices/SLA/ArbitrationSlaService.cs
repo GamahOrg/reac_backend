@@ -60,7 +60,6 @@ namespace REAC.Application.AppServices.SLA
 
                     foreach (var litigationRequest in litigationRequests)
                     {
-                        var ss = litigationRequest;
                         if (LitigationRequestArbitratorCountSelectionResponsePeriod > 0)
                         {
                             if (litigationRequest.IsArbitratorCountSelectionResponsePeriodSent != true)
