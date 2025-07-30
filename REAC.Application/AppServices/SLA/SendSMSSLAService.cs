@@ -65,33 +65,62 @@ namespace REAC.Application.AppServices.SLA
 
                         foreach (var smsObject in smsList)
                         {
-                            var body = new SMSRequestDto()
+                            try
                             {
-                                message_text = smsObject.Message,
-                                recipients = new List<string> { smsObject.MobileNumber },
-                                notification_type = notificationType
-                            };
 
-                            var result = await SendSMS(body, token.Data?.Access_token, url);
+                                var body = new SMSRequestDto()
+                                {
+                                    message_text = smsObject.Message,
+                                    recipients = new List<string> { smsObject.MobileNumber },
+                                    notification_type = notificationType
+                                };
 
-                            if (!result.IsDone)
-                            {
+                                var result = await SendSMS(body, token.Data?.Access_token, url);
+
+                                if (!result.IsDone)
+                                {
                                 smsObject.Error = result?.Data?.ToString();
-                                smsObject.RetryAttempt++;
+                                    smsObject.RetryAttempt++;
 
+                                }
+                                else
+                                {
+                                    smsObject.IsSent = true;
+                                }
                             }
-                            else
+                            catch (Exception ex)
                             {
-                                smsObject.IsSent = true;
+                                _loggerManager.Log(Core.Log.Domain.Shared.Enums.LoggerType.Database
+                                    , new LogDto()
+                                    {
+                                        Type = Core.Log.Domain.Shared.Enums.LogType.Exception,
+                                        Message = $"Send SMS Exception ===> {JsonConvert.SerializeObject(ex)}" + "\r\n" +
+                                        $"; SMS Service Exception ===> {ex.ToString()}"
+                                    });
                             }
+
+
+                        }
+                        try
+                        {
 
                             await _repository.SaveChangesAsync();
-
+                        }
+                        catch (Exception ex)
+                        {
+                            _loggerManager.Log(Core.Log.Domain.Shared.Enums.LoggerType.Database
+                                    , new LogDto()
+                                    {
+                                        Type = Core.Log.Domain.Shared.Enums.LogType.Exception,
+                                        Message = $"Send SMS DBContext Exception ===> {JsonConvert.SerializeObject(ex)}" + "\r\n" +
+                                        $"; SMS Service DBContext Exception ===> {ex.ToString()}"
+                                    });
                         }
                     }
                 }
-                
-                
+
+
+
             }
             catch (Exception ex)
             {
@@ -109,7 +138,7 @@ namespace REAC.Application.AppServices.SLA
         {
             try
             {
-                
+
 
                 var client = new HttpClient();
                 var request = new HttpRequestMessage(HttpMethod.Post, url);
@@ -129,6 +158,9 @@ namespace REAC.Application.AppServices.SLA
 
                 var x = await response.Content.ReadAsStringAsync();
                 SMSResponseDto responseDto = new SMSResponseDto();
+
+                
+
                 if (response.IsSuccessStatusCode)
                 {
                     _loggerManager.Log(Core.Log.Domain.Shared.Enums.LoggerType.Database
@@ -171,6 +203,8 @@ namespace REAC.Application.AppServices.SLA
 
                     return new DataResponse<SMSResponseDto> { IsDone = false, Data = responseDto };
                 }
+                
+
             }
             catch (Exception e)
             {

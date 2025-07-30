@@ -1242,7 +1242,7 @@ namespace REAC.Application.AppServices.SLA
                                             using (StreamReader streamReader = File.OpenText(pathToFile))
                                             {
                                                 body = await streamReader.ReadToEndAsync();
-                                                body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.ExcuteWorkflow).Result.Data?.Value);
+                                                body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_AgreementPeriodFinishedWarning).Result.Data?.Value);
                                                 body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
                                             }
 
