@@ -79,7 +79,7 @@ namespace REAC.Application.AppServices.SLA
 
                                 if (!result.IsDone)
                                 {
-                                smsObject.Error = result?.Data?.ToString();
+                                    smsObject.Error = result?.Message?.ToString();
                                     smsObject.RetryAttempt++;
 
                                 }
@@ -158,9 +158,6 @@ namespace REAC.Application.AppServices.SLA
 
                 var x = await response.Content.ReadAsStringAsync();
                 SMSResponseDto responseDto = new SMSResponseDto();
-
-                
-
                 if (response.IsSuccessStatusCode)
                 {
                     _loggerManager.Log(Core.Log.Domain.Shared.Enums.LoggerType.Database
@@ -203,8 +200,6 @@ namespace REAC.Application.AppServices.SLA
 
                     return new DataResponse<SMSResponseDto> { IsDone = false, Data = responseDto };
                 }
-                
-
             }
             catch (Exception e)
             {
