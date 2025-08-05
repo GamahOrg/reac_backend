@@ -282,14 +282,14 @@ namespace REAC.Application.AppServices.Litigation
                     // تم قبول الصلح
                     try
                     {
-                        msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Decision_ReconciliationWasMade).Result.Data?.Value;
+                        msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Decision_ReconciliationAccepted).Result.Data?.Value;
                         msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
                         var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
                         string body;
                         using (StreamReader streamReader = File.OpenText(pathToFile))
                         {
                             body = await streamReader.ReadToEndAsync();
-                            body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Decision_ReconciliationWasMade).Result.Data?.Value);
+                            body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Decision_ReconciliationAccepted).Result.Data?.Value);
                             body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
                         }
                         await SendNotificationMSWithAllTypes(body, msg, litigationRequest, "Citizen Litigation Request For Report Reply Added");

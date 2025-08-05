@@ -137,7 +137,7 @@ namespace REAC.Application.AppServices.Integration.GEE
                 foreach (var recipient in sMSRequest.recipients)
                 {
                     var smsExist = (await _repository.GetQueryable<SysNotificationSMS, Guid>())
-                        .Any(x => x.MobileNumber == recipient && x.Message == sMSRequest.message_text && !x.IsSent);
+                        .Any(x => x.MobileNumber == recipient && x.Message == sMSRequest.message_text && !x.IsSent && x.CreatedOn.Day == DateTime.Today.Day);
 
                     if (!smsExist)
                     {

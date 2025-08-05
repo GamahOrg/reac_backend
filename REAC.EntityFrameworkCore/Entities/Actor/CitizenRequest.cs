@@ -33,6 +33,9 @@ public partial class CitizenRequest : BaseEntity<Guid>
     public string? ExperiencedInHousingstatuses { get; set; }
     public string? About { get; set; }
 
+    public int? ExperiencedInFreelanceArbitration { get; set; }
+    public bool IsregisteredWithBachelorShareaaDegree { get; set; }
+    public bool HaveExperiencedInFreelanceArbitration { get; set; }
 
     public bool? IsFeesPaid { get; set; }
     public CitizenRequestStatus StatusId { get; set; }

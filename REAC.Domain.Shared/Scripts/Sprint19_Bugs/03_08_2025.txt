@@ -1,0 +1,168 @@
+﻿Update dbo.SysSetting set 
+ Value = N'تم إضافة محضر الصلح لدعوى رقم {LitigationCode} برجاء الدخول علي موقع المنصه من خلال الرابط {PortalUrl}'
+  where [key] = 'Reconciliation.Request.Added'
+
+    INSERT [dbo].[SysSetting] ([Id], [Key], [Value]) VALUES (NEWID(), N'LitigationRequest.Decision.ReconciliationAccepted', N'تم اعتماد محضر الصلح للدعوى رقم {LitigationCode} ')
+
+
+	Update dbo.SysSetting set 
+ Value = N'تم قبولكم {CitizenName} كمصلح معتمد لدى المركز السعودي للتحكيم العقاري'
+  where [key] = 'Reformer.AcceptJoiningRequest'
+
+  	Update dbo.SysSetting set 
+ Value = N'نعتذر {CitizenName} لعدم قبولكم كمصلح معتمد لدى المركز السعودي للتحكيم العقاري ولمزيد من التفاصيل زيارة منصة المركز.'
+  where [key] = 'Reformer.RejectJoiningRequest'
+
+
+  
+  	Update dbo.SysSetting set 
+ Value = N'تم إعادة طلب انضمام {CitizenName} للتعديل لمزيد من المعلومات زيارة منصة المركز'
+  where [key] = 'Reformer.UpdateJoiningRequest.NoFees'
+
+
+  Update dbo.SysSetting set 
+ Value = N'تم إعادة طلب انضمام {CitizenName} للتعديل لمزيد من المعلومات زيارة منصة المركز'
+  where [key] = 'Reformer.UpdateJoiningRequest.WithFees'
+
+  Update dbo.SysSetting set 
+ Value = N'تم إيقاف حسابكم {CitizenName} لدى المركز السعودي للتحكيم العقاري، ولمزيد من التفاصيل زيارة منصة المركز.  كمصلح معتمد'
+  where [key] = 'Reformer.DeActivate'
+
+  Update dbo.SysSetting set 
+ Value = N'تم إصدار رسوم اتعاب هيئة التحكيم برقم فاتورة {InvoiceCode} للدعوى رقم {LitigationCode}، عند سداد الرسوم فضلا تأكيد السداد عبر منصة المركز.'
+  where [key] = 'Invoice.CreatedInvoiceMessage'
+
+
+    Update dbo.SysSetting set 
+ Value = N'تم إصدار رسوم اتعاب هيئة التحكيم برقم فاتورة {InvoiceCode} للدعوى رقم {LitigationCode}، عند سداد الرسوم فضلا تأكيد السداد عبر منصة المركز.'
+  where [key] = 'Invoice.CreatedInvoiceMessage'
+
+
+  Update dbo.SysSetting set 
+ Value = N'تم سداد رسوم التحكيم للدعوي رقم {LitigationCode}'
+  where [key] = 'Invoice.ArbitrationInvoicePaidMessage'
+
+   Update dbo.SysSetting set 
+ Value = N'تم إصدار قائمة المحكمين للدعوى رقم {LitigationCode}، يرجى ترتيب المحكمين بحسب رغبتكم'
+  where [key] = 'ArbitratorsChairmanNominationList.Added'
+
+     Update dbo.SysSetting set 
+ Value = N'تم إضافة دعوى جديدة رقم {LitigationCode}'
+  where [key] = 'Arbitration.Arbitraor.Assigned'
+
+       Update dbo.SysSetting set 
+ Value = N'تم قبول طلب المهمة لدعوى رقم {LitigationCode} من قبل المحكم {ArbitratorName} والبدء بإجراءات التحكيم'
+  where [key] = 'Arbitration.Arbitraor.AcceptTask'
+
+    Update dbo.SysSetting set 
+ Value = N'تم رفض المحكم/ {ArbitratorName} للدعوى رقم {LitigationCode}'
+  where [key] = 'Arbitration.Arbitraor.RejectTask'
+
+
+  Update dbo.SysSetting set 
+ Value = N'تم رفض طلب التمديد لدعوي رقم {LitigationCode} ولمزيد من التفاصيل زيارة منصة المركز'
+  where [key] = 'Arbitration.ExtendRequest.Rejected'
+
+
+  Update dbo.SysSetting set 
+ Value = N'تم الموافقة على طلب التمديد للدعوى رقم {LitigationCode}'
+  where [key] = 'Arbitration.ExtendRequest.Accepted'
+
+
+  Update dbo.SysSetting set 
+ Value = N'تم تقديم طلب تفسير حكم التحكيم للدعوى رقم {LitigationCode}'
+  where [key] = 'Arbitration.ExplanationReport.Added'
+
+
+    Update dbo.SysSetting set 
+ Value = N'تم تقديم طلب رد المحكم {ArbitratorName} للدعوى رقم {LitigationCode}'
+  where [key] = 'ArbitraorRecusal.AddRequest'
+
+
+    Update dbo.SysSetting set 
+ Value = N'تم قبول طلب رد محكم {ArbitratorName} للدعوي رقم {LitigationCode}'
+  where [key] = 'ArbitraorRecusal.AddRequest.Approve'
+
+
+  Update dbo.SysSetting set 
+ Value = N'تم تقديم طلب بالانضمام كمحكم بأسم {CitizenName} لدى المركز السعودي للتحكيم العقاري'
+  where [key] = 'Arbitrator.JoiningRequest'
+
+  
+  Update dbo.SysSetting set 
+ Value = N'تم قبول طلب {CitizenName} كمحكم معتمد لدى المركز السعودي للتحكيم العقاري مع عدم وجود رسوم.'
+  where [key] = 'Arbitrator.AcceptJoiningRequest.NoFees'
+
+
+    Update dbo.SysSetting set 
+ Value = N'تم قبول طلب {CitizenName} كمحكم معتمد لدى المركز السعودي للتحكيم العقاري و انتظار دفع رسوم العضوية.'
+  where [key] = 'Arbitrator.AcceptJoiningRequest.WaitingForFees'
+
+
+  Update dbo.SysSetting set 
+ Value = N'نعتذر لعدم قبولكم {CitizenName} كمحكم معتمد لدى المركز السعودي للتحكيم العقاري ولمزيد من التفاصيل زيارة منصة المركز.'
+  where [key] = 'Arbitrator.RejectJoiningRequest'
+
+
+  Update dbo.SysSetting set 
+ Value = N'تنويه بانه تم إعادة طلب {CitizenName} للانضمام كمحكم مع وجود رسوم للتعديل لوجود ملاحظات لمزيد من المعلومات زيارة منصة المركز'
+  where [key] = 'Arbitrator.UpdateJoiningRequest.WithFees'
+
+
+    Update dbo.SysSetting set 
+ Value = N'تنويه بانه تم إعادة طلب {CitizenName} للانضمام كمحكم مع عدم وجود رسوم للتعديل لوجود ملاحظات لمزيد من المعلومات زيارة منصة المركز'
+  where [key] = 'Arbitrator.UpdateJoiningRequest.NoFees'
+
+
+      Update dbo.SysSetting set 
+ Value = N'تم تفعيل حساب {CitizenName} كمحكم معتمد لدى المركز السعودي للتحكيم العقاري'
+  where [key] = 'Arbitrator.Activate'
+
+  Update dbo.SysSetting set 
+ Value = N'تم تفعيل حساب {CitizenName} كمحكم معتمد لدى المركز السعودي للتحكيم العقاري'
+  where [key] = 'Arbitrator.Activate'
+
+
+    Update dbo.SysSetting set 
+ Value = N'تم إيقاف حساب {CitizenName} كمحكم معتمد لدى المركز السعودي للتحكيم العقاري'
+  where [key] = 'Arbitrator.DeActivate'
+
+  Update dbo.SysSetting set 
+ Value = N'120'
+  where [key] = 'SLA.ReminderForReviewer'
+
+  INSERT [dbo].[SysSetting] ([Id], [Key], [Value]) VALUES (NEWID(), N'SLA.LitigationRequestFeesReminder', N'يرجى سرعة سداد الرسوم الإدارية للدعوى رقم {LitigationCode} تفادياً لإغلاق الدعوى')
+
+
+  INSERT [dbo].[SysSetting] ([Id], [Key], [Value]) VALUES (NEWID(), N'SLA.LitigationRequestFeesNotPaidReminderSecondPeriod', N'144')
+
+  INSERT [dbo].[SysSetting] ([Id], [Key], [Value]) VALUES (NEWID(), N'SLA.ReminderForReviewAdmin.ReAssign', N'فضلا إعادة تعيين مدقق للدعوى رقم {LitigationCode} لانتهاء مدة التدقيق')
+
+    INSERT [dbo].[SysSetting] ([Id], [Key], [Value]) VALUES (NEWID(), N'SLA.ReminderForApplicant.EditLitigationPeriod', N'24')
+
+    INSERT [dbo].[SysSetting] ([Id], [Key], [Value]) VALUES (NEWID(), N'SLA.ReminderForApplicant.EditLitigationPeriod', N'24')
+    INSERT [dbo].[SysSetting] ([Id], [Key], [Value]) VALUES (NEWID(), N'SLA.ReminderForApplicant.EditLitigationPeriod', N'24')
+    INSERT [dbo].[SysSetting] ([Id], [Key], [Value]) VALUES (NEWID(), N'SLA.LitigationRequestReconciliationFeesReminder', N'يرجى سرعة سداد رسوم المصالحة للدعوى رقم {LitigationCode} تفادياً لإغلاق الدعوى')
+    INSERT [dbo].[SysSetting] ([Id], [Key], [Value]) VALUES (NEWID(), N'SLA.PayLitigationReconciliationFees.Applicant', N'تم الغاء الدعوي رقم {LitigationCode} لعدم دفع رسوم الصلح')
+
+
+	Alter table [dbo].[LitigationRequest]
+	ADD IsLitigationRequestReconciliationFeesNotPaidFirstReminderSent bit NULL
+
+
+
+	Alter table [dbo].[LitigationRequest]
+	ADD IsLitigationRequestArbitrationFeesNotPaidFirstReminderSent bit NULL
+
+
+    INSERT [dbo].[SysSetting] ([Id], [Key], [Value]) VALUES (NEWID(), N'SLA.LitigationRequestArbitrationFeesNotPaidReminderFirstPeriod', N'72')
+    INSERT [dbo].[SysSetting] ([Id], [Key], [Value]) VALUES (NEWID(), N'SLA.LitigationRequestArbitrationFeesNotPaidReminderSecondPeriod', N'144')
+	    INSERT [dbo].[SysSetting] ([Id], [Key], [Value]) VALUES (NEWID(), N'SLA.LitigationRequestArbitrationFeesReminder', N'يرجى سرعة سداد رسوم أتعاب هيئة التحكيم للدعوى رقم {LitigationCode} تفادياً لإغلاق الدعوى')
+    INSERT [dbo].[SysSetting] ([Id], [Key], [Value]) VALUES (NEWID(), N'SLA.PayLitigationArbitrationFees.Applicant', N'تم الغاء الدعوي رقم {LitigationCode} لعدم دفع رسوم التحكيم')
+
+	select * from dbo.LitigationRequest where id = '79023f56-a67c-4edc-b3c0-d5d14aeb2e4d'
+	select * from dbo.WorkFlowProcessingLog where RequestId = '79023f56-a67c-4edc-b3c0-d5d14aeb2e4d'
+
+	Update dbo.SysSetting set 
+ Value = N'يرجى سرعة إتمام إجراءات التحكيم قبل انتهاء الوقت لدعوي رقم {LitigationRequest}'
+  where [key] = 'SLA.AddLitigationRequestArbitrationSessionWarning'

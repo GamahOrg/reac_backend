@@ -239,6 +239,9 @@ namespace REAC.Application.AppServices
                 citizenRequests.IsVolunteerApproval = citizenRequestCreateUpdateDto.IsVolunteerApproval;
                 citizenRequests.Brief = citizenRequestCreateUpdateDto.Brief;
                 citizenRequests.About = citizenRequestCreateUpdateDto.About;
+                citizenRequests.IsregisteredWithBachelorShareaaDegree = citizenRequestCreateUpdateDto.IsregisteredWithBachelorShareaaDegree;
+                citizenRequests.HaveExperiencedInFreelanceArbitration = citizenRequestCreateUpdateDto.HaveExperiencedInFreelanceArbitration;
+                citizenRequests.ExperiencedInFreelanceArbitration = citizenRequestCreateUpdateDto.ExperiencedInFreelanceArbitration;
                 citizenRequests.HaveArbitrationxperience = citizenRequestCreateUpdateDto.HaveArbitrationxperience;
                 citizenRequests.HaveHostingExperience = citizenRequestCreateUpdateDto.HaveHostingExperience;
                 citizenRequests.IspassedRealEstateProgram = citizenRequestCreateUpdateDto.IspassedRealEstateProgram;
@@ -649,7 +652,7 @@ namespace REAC.Application.AppServices
 
                                 applicationNotifications.Add(new SysNotificationDto()
                                 {
-                                    ActorId = deptAdminInfoReconciliation.Data.Id,
+                                    ActorId = deptAdminInfoArbitration.Data.Id,
                                     CreatedOn = DateTime.Now,
                                     ActorTypeId = NotificationActorType.Employee,
                                     IsViewed = false,

@@ -165,15 +165,19 @@ namespace REAC.Application.AppServices.Litigation
                 {
                     return new BaseResponse() { IsDone = false, Message = Localizations.FailedUploadFile };
                 }
-                var litigitionRequest = (await _repository.GetQueryable<LitigationRequest, Guid>())
+                var litigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>())
                                        .Include(s => s.Contract)
+                                       .Include(x => x.LitigationRequestGrounds)
+                                       .ThenInclude(x => x.LitigationRequestGroundFiles)
                                        .FirstOrDefault(x => x.Id == model.LitigationRequestId);
 
-                var contract = litigitionRequest?.Contract;
+                var contract = litigationRequest?.Contract;
                 if (contract == null)
                     return new BaseResponse() { IsDone = false, Message = "لا يمكن الوصول لبيانات العقد" };
 
                 var resultDto = result.Data?.FirstOrDefault();
+
+         
                 switch (contract.LitigationRequestContractTypeId)
                 {
                     case LitigationRequestContractType.Rent:
@@ -204,6 +208,48 @@ namespace REAC.Application.AppServices.Litigation
                         contract.ContractFileId = resultDto?.Id;
                         break;
                 }
+                if (model.SupportsFiles != null)
+                {
+                    var SupportsResult = await _fileService.UploadAsync(model.SupportsFiles);
+                    if (!SupportsResult.IsDone)
+                    {
+                        return new BaseResponse() { IsDone = false, Message = Localizations.FailedUploadFile };
+                    }
+                    var SupportsResultDto = result.Data?.FirstOrDefault();
+                    if (litigationRequest.LitigationRequestGrounds.Count() == 0)
+                    {
+                        LitigationRequestGround litigationRequestGround = new LitigationRequestGround();
+                        litigationRequestGround.Id = Guid.NewGuid();
+                        litigationRequestGround.LitigationRequestId = litigationRequest.Id;
+                        litigationRequestGround.Title = "اسانيد الدعوه تمت اضافتها من خلال التعديل ";
+
+                        foreach (var file in model.SupportsFiles)
+                        {
+                            litigationRequestGround.LitigationRequestGroundFiles.Add(new LitigationRequestGroundFile()
+                            {
+                                LitigationRequestGroundId = litigationRequestGround.Id,
+                                Id = Guid.NewGuid(),
+                                FileManagerId = SupportsResultDto.Id
+                            });
+                        }
+
+                        litigationRequest.LitigationRequestGrounds.Add(litigationRequestGround);
+                    }
+                    else
+                    {
+                        foreach (var file in model.SupportsFiles)
+                        {
+                            litigationRequest.LitigationRequestGrounds.FirstOrDefault(l => l.LitigationRequestId == litigationRequest.Id).LitigationRequestGroundFiles.Add(new LitigationRequestGroundFile()
+                            {
+                                LitigationRequestGroundId = litigationRequest.LitigationRequestGrounds.FirstOrDefault().Id,
+                                Id = Guid.NewGuid(),
+                                FileManagerId = SupportsResultDto.Id
+                            });
+                        }
+                    }
+
+                }
+
                 var response = _repository.SaveChangesAsync().Result;
                 if (!response.IsDone)
                     return response;

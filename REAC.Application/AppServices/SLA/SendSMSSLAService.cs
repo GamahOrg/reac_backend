@@ -36,103 +36,103 @@ namespace REAC.Application.AppServices.SLA
         }
 
         public async Task SendSMS()
-{
-    try
-    {
-        var smsList = (await _repository.GetQueryable<SysNotificationSMS, Guid>())
-           .Where(x => !x.IsSent && x.RetryAttempt < 1)
-           .OrderBy(x => x.CreatedOn);
-
-        if (smsList.Any())
         {
-
-            var token = await _gEELoginService.SMSLogin();
-            var url = (await _sysSetting.GetBySettingKey(SysSettingKeyConstants.SMS_URL))?.Data?.Value;
-            var notificationType = (await _sysSetting.GetBySettingKey(SysSettingKeyConstants.SMS_Notification_Type))?.Data?.Value;
-
-            if (!token.IsDone)
+            try
             {
-                foreach (var smsObject in smsList)
-                {
-                    smsObject.Error = token.Message;
-                    smsObject.RetryAttempt++;
-                }
+                var smsList = (await _repository.GetQueryable<SysNotificationSMS, Guid>())
+                   .Where(x => !x.IsSent && x.RetryAttempt < 1)
+                   .OrderBy(x => x.CreatedOn);
 
-                await _repository.SaveChangesAsync();
-            }
-            else
-            {
-
-                foreach (var smsObject in smsList)
+                if (smsList.Any())
                 {
-                    try
+
+                    var token = await _gEELoginService.SMSLogin();
+                    var url = (await _sysSetting.GetBySettingKey(SysSettingKeyConstants.SMS_URL))?.Data?.Value;
+                    var notificationType = (await _sysSetting.GetBySettingKey(SysSettingKeyConstants.SMS_Notification_Type))?.Data?.Value;
+
+                    if (!token.IsDone)
                     {
-
-                        var body = new SMSRequestDto()
+                        foreach (var smsObject in smsList)
                         {
-                            message_text = smsObject.Message,
-                            recipients = new List<string> { smsObject.MobileNumber },
-                            notification_type = notificationType
-                        };
-
-                        var result = await SendSMS(body, token.Data?.Access_token, url);
-
-                        if (!result.IsDone)
-                        {
-                            smsObject.Error = result?.Message?.ToString();
+                            smsObject.Error = token.Message;
                             smsObject.RetryAttempt++;
+                        }
 
-                        }
-                        else
-                        {
-                            smsObject.IsSent = true;
-                        }
+                        await _repository.SaveChangesAsync();
                     }
-                    catch (Exception ex)
+                    else
                     {
-                        _loggerManager.Log(Core.Log.Domain.Shared.Enums.LoggerType.Database
-                            , new LogDto()
+
+                        foreach (var smsObject in smsList)
+                        {
+                            try
                             {
-                                Type = Core.Log.Domain.Shared.Enums.LogType.Exception,
-                                Message = $"Send SMS Exception ===> {JsonConvert.SerializeObject(ex)}" + "\r\n" +
-                                $"; SMS Service Exception ===> {ex.ToString()}"
-                            });
+
+                                var body = new SMSRequestDto()
+                                {
+                                    message_text = smsObject.Message,
+                                    recipients = new List<string> { smsObject.MobileNumber },
+                                    notification_type = notificationType
+                                };
+
+                                var result = await SendSMS(body, token.Data?.Access_token, url);
+
+                                if (!result.IsDone)
+                                {
+                                    smsObject.Error = result?.Message?.ToString();
+                                    smsObject.RetryAttempt++;
+
+                                }
+                                else
+                                {
+                                    smsObject.IsSent = true;
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                _loggerManager.Log(Core.Log.Domain.Shared.Enums.LoggerType.Database
+                                    , new LogDto()
+                                    {
+                                        Type = Core.Log.Domain.Shared.Enums.LogType.Exception,
+                                        Message = $"Send SMS Exception ===> {JsonConvert.SerializeObject(ex)}" + "\r\n" +
+                                        $"; SMS Service Exception ===> {ex.ToString()}"
+                                    });
+                            }
+
+
+                        }
+                        try
+                        {
+
+                            await _repository.SaveChangesAsync();
+                        }
+                        catch (Exception ex)
+                        {
+                            _loggerManager.Log(Core.Log.Domain.Shared.Enums.LoggerType.Database
+                                    , new LogDto()
+                                    {
+                                        Type = Core.Log.Domain.Shared.Enums.LogType.Exception,
+                                        Message = $"Send SMS DBContext Exception ===> {JsonConvert.SerializeObject(ex)}" + "\r\n" +
+                                        $"; SMS Service DBContext Exception ===> {ex.ToString()}"
+                                    });
+                        }
                     }
+                }
 
 
-                }
-                try
-                {
 
-                    await _repository.SaveChangesAsync();
-                }
-                catch (Exception ex)
-                {
-                    _loggerManager.Log(Core.Log.Domain.Shared.Enums.LoggerType.Database
-                            , new LogDto()
-                            {
-                                Type = Core.Log.Domain.Shared.Enums.LogType.Exception,
-                                Message = $"Send SMS DBContext Exception ===> {JsonConvert.SerializeObject(ex)}" + "\r\n" +
-                                $"; SMS Service DBContext Exception ===> {ex.ToString()}"
-                            });
-                }
+            }
+            catch (Exception ex)
+            {
+                _loggerManager.Log(Core.Log.Domain.Shared.Enums.LoggerType.Database
+                       , new LogDto()
+                       {
+                           Type = Core.Log.Domain.Shared.Enums.LogType.Exception,
+                           Message = $"Send SMS From SLA ===> {JsonConvert.SerializeObject(ex)}" + "\r\n" +
+                           $"; SMS Service ===> {ex.ToString()}"
+                       });
             }
         }
-
-
-
-    }
-    catch (Exception ex)
-    {
-        _loggerManager.Log(Core.Log.Domain.Shared.Enums.LoggerType.Database
-               , new LogDto()
-               {
-                   Type = Core.Log.Domain.Shared.Enums.LogType.Exception,
-                   Message = $"Send SMS From SLA ===> {JsonConvert.SerializeObject(ex)}" + "\r\n" +
-                   $"; SMS Service ===> {ex.ToString()}"
-               });
-    }
-}
 
         private async Task<DataResponse<SMSResponseDto>> SendSMS(SMSRequestDto sMSRequest, string token, string url)
         {
