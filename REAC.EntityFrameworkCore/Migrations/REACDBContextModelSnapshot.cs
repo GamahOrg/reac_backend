@@ -257,10 +257,16 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Property<string>("ExperiencedInArbitrationFields")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("ExperiencedInFreelanceArbitration")
+                        .HasColumnType("int");
+
                     b.Property<string>("ExperiencedInHousingstatuses")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("HaveArbitrationxperience")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("HaveExperiencedInFreelanceArbitration")
                         .HasColumnType("bit");
 
                     b.Property<bool>("HaveHostingExperience")
@@ -276,6 +282,9 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("bit");
 
                     b.Property<bool>("IspassedRealEstateProgram")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsregisteredWithBachelorShareaaDegree")
                         .HasColumnType("bit");
 
                     b.Property<DateTime>("RequestOn")
@@ -1220,7 +1229,13 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Property<bool>("IsLitigationFeesHaveBeenCollected")
                         .HasColumnType("bit");
 
+                    b.Property<bool?>("IsLitigationRequestArbitrationFeesNotPaidFirstReminderSent")
+                        .HasColumnType("bit");
+
                     b.Property<bool?>("IsLitigationRequestFeesNotPaidFirstReminderSent")
+                        .HasColumnType("bit");
+
+                    b.Property<bool?>("IsLitigationRequestReconciliationFeesNotPaidFirstReminderSent")
                         .HasColumnType("bit");
 
                     b.Property<bool?>("IsLitigationRequestReconciliationReportDecisionPeriodSent")

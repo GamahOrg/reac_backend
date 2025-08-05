@@ -1334,6 +1334,8 @@ namespace REAC.Application.AppServices.Litigation
                 .Include(x => x.City)
                 .Include(x => x.ApplicantCitizen)
                 .Include(x => x.Contract.SecondPartyCitizen)
+                .Include(x => x.Contract.SecondPartyCitizen.Area)
+                .Include(x => x.Contract.SecondPartyCitizen.City)
                 .Include(x => x.Contract.SecondPartyCitizen.Nationality)
                 .Include(x => x.Contract.FirstPartyCitizen)
                 .Include(x => x.Contract.FirstPartyCitizen.Nationality)
@@ -1559,6 +1561,9 @@ namespace REAC.Application.AppServices.Litigation
         }
         public async Task<BaseResponse> GetLitigationReconciliationTaskAcceptanceOrRejectDocumentData(Guid litigationId, Guid? requestId)
         {
+            Guid citizenId = Guid.Empty;
+            _jwtReader.GetReferenceId(ref citizenId);
+
             var litigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>())
                          .Include(x => x.ReformerCitizen)
                          .ThenInclude(x => x.SigntureFile)
@@ -1588,10 +1593,15 @@ namespace REAC.Application.AppServices.Litigation
 
             var assigningRequest = litigationRequest.LitigationRequestReformerAssigningRequests.FirstOrDefault(l => l.Id == requestId);
 
+            var citizenInfo = (await _repository.GetQueryable<Citizen, Guid>())
+                .Include(x => x.SigntureFile)
+                .AsNoTracking()
+                .FirstOrDefault(x => x.Id == citizenId);
+
             string base64String = string.Empty;
-            if (!string.IsNullOrEmpty(litigationRequest.ReformerCitizen?.SigntureFile?.FilePath))
+            if (!string.IsNullOrEmpty(citizenInfo?.SigntureFile?.FilePath))
             {
-                string inputFilePath = Path.Combine(Directory.GetCurrentDirectory(), litigationRequest.ReformerCitizen?.SigntureFile?.FilePath);
+                string inputFilePath = Path.Combine(Directory.GetCurrentDirectory(), citizenInfo?.SigntureFile?.FilePath);
                 // Read file and convert to Base64
                 byte[] fileBytes = File.ReadAllBytes(inputFilePath);
                 base64String = Convert.ToBase64String(fileBytes);

@@ -26,7 +26,11 @@ namespace REAC.Application.Contracts.Dtos.CitizenRequests
         public bool? HaveHostingExperience { get; set; }
         public bool? IsRegisteredReconciliationCenter { get; set; }
         public bool? IspassedRealEstateProgram { get; set; }
-        
+
+        public int? ExperiencedInFreelanceArbitration { get; set; }
+        public bool IsregisteredWithBachelorShareaaDegree { get; set; }
+        public bool HaveExperiencedInFreelanceArbitration { get; set; }
+
         public CitizenRequestStatus StatusId { get; set; }
 
         public string? About { get; set; }

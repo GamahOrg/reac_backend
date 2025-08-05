@@ -1,5 +1,7 @@
 ﻿using AutoMapper;
 using Core.GenericRepository.BaseRepository;
+using Core.Log.Application.Contracts.Dto;
+using Core.Log.Application.Contracts.IAppServices;
 using Core.Shared.Responses;
 using Microsoft.EntityFrameworkCore;
 using REAC.Application.Contracts.Dtos.Litigation.CreateUpdate.Litigation;
@@ -28,17 +30,163 @@ namespace REAC.Application.AppServices.SLA
         protected ISysSettingService _sysSettingService;
         private readonly ISysEmployeeService _employeeService;
         private readonly INotificationService _notificationService;
-        public ArbitrationSlaService(ISysSettingService sysSettingService, IMapper mapper, IEntityRepository repository, ISysEmployeeService employeeService, INotificationService notificationService)
+        private readonly ILoggerManager _loggerManager;
+
+        public ArbitrationSlaService(ISysSettingService sysSettingService, IMapper mapper, IEntityRepository repository, ISysEmployeeService employeeService, INotificationService notificationService, ILoggerManager loggerManager)
         {
             _mapper = mapper;
             _repository = repository;
             _sysSettingService = sysSettingService;
             _employeeService = employeeService;
             _notificationService = notificationService;
+            _loggerManager = loggerManager;
         }
         public async Task<BaseResponse> Execute()
         {
+
             var litigationRequests = (await _repository.GetQueryable<LitigationRequest, Guid>())?
+                             .Include(x => x.ApplicantCitizen)
+                             .Include(x => x.WorkFlowProcessingLogs)
+                             .ThenInclude(x => x.WorkFlowStep)
+                             .Include(x => x.WorkFlowProcessingLogs)
+                             .ThenInclude(x => x.Employee)
+                             .Include(x => x.Contract)
+                             .Include(x => x.Contract.FirstPartyFacility).ThenInclude(x => x.Citizen)
+                             .Include(x => x.Contract.FirstPartyCitizen)
+                             .Include(x => x.Contract.SecondPartyFacility).ThenInclude(x => x.Citizen)
+                             .Include(x => x.Contract.SecondPartyCitizen)
+                             .Where(x => x.InternalStatusId == RequestStatus.CollectionOfArbitrationFeesRequestIsBeingSent && !x.IsArbitrationFeesHaveBeenCollected)
+                             .ToList();
+
+            if (litigationRequests != null)
+            {
+                if (litigationRequests.Any())
+                {
+                    int firstReminderForApplicantToPayLitigationRequestArbitrationFeesPeriod = 0;
+                    int.TryParse(_sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_LitigationRequestArbitrationFeesNotPaidReminderFirstPeriod).Result.Data?.Value, out firstReminderForApplicantToPayLitigationRequestArbitrationFeesPeriod);
+                    int secondReminderForApplicantToPayLitigationRequestArbitrationFeesPeriod = 0;
+                    int.TryParse(_sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_LitigationRequestArbitrationFeesNotPaidReminderSecondPeriod).Result.Data?.Value, out secondReminderForApplicantToPayLitigationRequestArbitrationFeesPeriod);
+
+
+                    foreach (var litigationRequest in litigationRequests)
+                    {
+                        if (litigationRequest.IsLitigationRequestArbitrationFeesNotPaidFirstReminderSent != true)
+                        {
+                            if (firstReminderForApplicantToPayLitigationRequestArbitrationFeesPeriod > 0)
+                            {
+
+                                if (litigationRequest.ArbitratorsCountDateTime is not null)
+                                {
+                                    double totalReviewHours = 0;
+                                    totalReviewHours = (DateTime.Now - (DateTime)litigationRequest.ArbitratorsCountDateTime).TotalHours;
+
+
+                                    if (totalReviewHours >= firstReminderForApplicantToPayLitigationRequestArbitrationFeesPeriod)
+                                    {
+                                        litigationRequest.IsLitigationRequestArbitrationFeesNotPaidFirstReminderSent = true;
+
+
+                                        // تذكير بدفع رسوم التحكيم للدعوي
+                                        try
+                                        {
+                                            var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_LitigationRequestArbitrationFeesReminder).Result.Data?.Value;
+                                            msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
+                                            var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                            string body;
+                                            using (StreamReader streamReader = File.OpenText(pathToFile))
+                                            {
+                                                body = await streamReader.ReadToEndAsync();
+                                                body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_LitigationRequestArbitrationFeesReminder).Result.Data?.Value);
+                                                body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                                            }
+
+                                            await SendNotificationMS(body, msg, litigationRequest, "دفع رسوم الدعوى", NotificationActorType.Applicant, RequestType.LitigationRequest,
+                                          notifyApplicant: true, notifyDeptAdmin: false, notifyFirstParty: true);
+                                        }
+                                        catch (Exception e)
+                                        {
+                                            _loggerManager.Log(Core.Log.Domain.Shared.Enums.LoggerType.Database
+                                            , new LogDto()
+                                            {
+                                                Type = Core.Log.Domain.Shared.Enums.LogType.Exception,
+                                                Message = e.ToString()
+                                            });
+
+
+                                        }
+
+
+                                    }
+                                }
+
+                            }
+                        }
+                        else
+                        {
+                            if (secondReminderForApplicantToPayLitigationRequestArbitrationFeesPeriod > 0)
+                            {
+
+
+                                if (litigationRequest.ArbitratorsCountDateTime is not null)
+                                {
+                                    double totalReviewHours = 0;
+                                    totalReviewHours = (DateTime.Now - (DateTime)litigationRequest.ArbitratorsCountDateTime).TotalHours;
+
+                                    if (totalReviewHours >= secondReminderForApplicantToPayLitigationRequestArbitrationFeesPeriod)
+                                    {
+
+                                        litigationRequest.InternalStatusId = RequestStatus.Cancelled;
+                                        litigationRequest.ExternalStatusId = RequestStatus.Cancelled;
+
+                                        //Send Notification for Applicant 
+                                        // Mail - Sms - Application Notification
+                                        // تم الغاء الدعوي رقم لعدم دفع الرسوم   .....
+                                        try
+                                        {
+                                            var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_PayLitigationArbitrationFees_Applicant).Result.Data?.Value;
+                                            msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
+                                            var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                            string body;
+                                            using (StreamReader streamReader = File.OpenText(pathToFile))
+                                            {
+                                                body = await streamReader.ReadToEndAsync();
+                                                body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_PayLitigationArbitrationFees_Applicant).Result.Data?.Value);
+                                                body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                                            }
+
+                                            await SendNotificationMS(body, msg, litigationRequest, "الغاء دعوي التحكيم", NotificationActorType.Applicant, RequestType.LitigationRequest,
+                                           notifyApplicant:true,notifyFirstParty:true,notifyDeptAdmin:true);
+                                        }
+                                        catch (Exception e)
+                                        {
+                                            _loggerManager.Log(Core.Log.Domain.Shared.Enums.LoggerType.Database
+                                            , new LogDto()
+                                            {
+                                                Type = Core.Log.Domain.Shared.Enums.LogType.Exception,
+                                                Message = e.ToString()
+                                            });
+
+
+                                        }
+                                    }
+                                }
+                            }
+
+                        }
+
+                    }
+                    var repositorySaveResponse = await _repository.SaveChangesAsync(default);
+                    if (!repositorySaveResponse.IsDone)
+                        return repositorySaveResponse;
+                }
+            }
+
+
+
+
+
+
+             litigationRequests = (await _repository.GetQueryable<LitigationRequest, Guid>())?
                                 .Include(x => x.Contract)
                                 .ThenInclude(x => x.FirstPartyCitizen)
                                 .Include(x => x.Contract)
@@ -1002,7 +1150,7 @@ namespace REAC.Application.AppServices.SLA
                                                             body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_ArbitratorTaskRequest_ReAssign).Result.Data?.Value);
                                                             body = body?.Replace("{LitigationCode}", litigationRequestArbitratorAssigningRequest.LitigationRequest.RequestCode);
                                                         }
-                                                        await SendNotificationMS(body, msg, litigationRequestArbitratorAssigningRequest.LitigationRequest, "لم يتم تعيين رئيس هيئة التحكيم", NotificationActorType.Employee, RequestType.ArbitratorTaskrequests
+                                                        await SendNotificationMS(body, msg, litigationRequestArbitratorAssigningRequest.LitigationRequest, "تعيين رئيس هيئة التحكيم", NotificationActorType.Employee, RequestType.ArbitratorTaskrequests
                                                         , notifyDeptAdmin: true);
 
                                                         var applicationNotifications = new List<SysNotificationDto>();
