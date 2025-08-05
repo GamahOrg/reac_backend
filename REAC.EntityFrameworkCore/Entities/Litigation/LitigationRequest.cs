@@ -78,6 +78,8 @@ public partial class LitigationRequest : BaseEntity<Guid>
     public bool IsReminderForCancelLitigationForNotesSent { get; set; }
     public bool IsReminderForCancelLitigationForAgreementSent { get; set; }
     public bool? IsLitigationRequestFeesNotPaidFirstReminderSent { get; set; }
+    public bool? IsLitigationRequestReconciliationFeesNotPaidFirstReminderSent { get; set; }
+    public bool? IsLitigationRequestArbitrationFeesNotPaidFirstReminderSent { get; set; }
 
     public bool? IsAgreementRequestRequired { get; set; }
     public DateTime? AgreementRequestRequiredOn { get; set; }

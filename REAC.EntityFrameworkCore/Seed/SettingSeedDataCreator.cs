@@ -420,17 +420,17 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                     {
                         Id = Guid.NewGuid(),
                         Key = "Reformer.JoiningRequest",
-                        Value = "تم اضافة طلب جديد بالانضمام كمصلح بأسم {CitizenName} وبأنتظار الاعتماد",
+                        Value = "تم اضافة طلب جديد بالانضمام كمصلح بأسم {CitizenName} لدى المركز السعودي للتحكيم العقاري",
                     },new SysSetting
                     {
                         Id = Guid.NewGuid(),
                         Key = "Arbitrator.JoiningRequest",
-                        Value = "تم اضافة طلب جديد بالانضمام كمحكم بأسم {CitizenName} وبأنتظار الاعتماد",
+                        Value = "تم تقديم طلب بالانضمام كمحكم بأسم {CitizenName} لدى المركز السعودي للتحكيم العقاري",
                     },new SysSetting
                     {
                         Id = Guid.NewGuid(),
                         Key = "Reformer.AcceptJoiningRequest",
-                        Value = " تم اعتماد طلب {CitizenName} بالانضمام كمصلح ",
+                        Value = "تم قبولكم {CitizenName} كمصلح معتمد لدى المركز السعودي للتحكيم العقاري",
                     },new SysSetting
                     {
                         Id = Guid.NewGuid(),
@@ -445,7 +445,7 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                     {
                         Id = Guid.NewGuid(),
                         Key = "Arbitrator.AcceptJoiningRequest.WaitingForFees",
-                        Value = "تم اعتماد طلب {CitizenName} للانضمام كمحكم و انتظار دفع رسوم العضوية.",
+                        Value = "تم قبول طلب {CitizenName} كمحكم معتمد لدى المركز السعودي للتحكيم العقاري و انتظار دفع رسوم العضوية.",
                     },new SysSetting
                     {
                         Id = Guid.NewGuid(),
@@ -455,7 +455,7 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                     {
                         Id = Guid.NewGuid(),
                         Key = "Arbitrator.AcceptJoiningRequest.NoFees",
-                        Value = "تم اعتماد طلب {CitizenName} للانضمام كمحكم مع عدم وجود رسوم.",
+                        Value = "تم قبول طلب {CitizenName} كمحكم معتمد لدى المركز السعودي للتحكيم العقاري مع عدم وجود رسوم.",
                     },new SysSetting
                     {
                         Id = Guid.NewGuid(),
@@ -470,32 +470,33 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                     {
                         Id = Guid.NewGuid(),
                         Key = "Arbitrator.UpdateJoiningRequest.WithFees",
-                        Value = "تنويه بانه تم إعادة طلب {CitizenName} للانضمام كمحكم مع وجود رسوم للتعديل لوجود ملاحظات",
+                        Value = "تنويه بانه تم إعادة طلب {CitizenName}  للانضمام كمحكم مع وجود رسوم للتعديل لوجود ملاحظات لمزيد من المعلومات زيارة منصة المركز",
                     },new SysSetting
                     {
                         Id = Guid.NewGuid(),
                         Key = "Reformer.UpdateJoiningRequest.WithFees",
-                        Value = "تنويه بانه تم إعادة طلب {CitizenName} للانضمام كمصلح مع وجود رسوم للتعديل لوجود ملاحظات",
+                        Value = "تم إعادة طلب انضمام {CitizenName} للتعديل لمزيد من المعلومات زيارة منصة المركز",
+
                     },new SysSetting
                     {
                         Id = Guid.NewGuid(),
                         Key = "Reformer.UpdateJoiningRequest.NoFees",
-                        Value = "تنويه بانه تم إعادة طلب {CitizenName} للانضمام كمصلح مع للتعديل لوجود ملاحظات",
+                        Value = "تم إعادة طلب انضمام {CitizenName} للتعديل لمزيد من المعلومات زيارة منصة المركز",
                     },new SysSetting
                     {
                         Id = Guid.NewGuid(),
                         Key = "Arbitrator.UpdateJoiningRequest.NoFees",
-                        Value = "تنويه بانه تم إعادة طلب {CitizenName} للانضمام كمحكم مع عدم وجود رسوم للتعديل لوجود ملاحظات",
+                        Value = "تنويه بانه تم إعادة طلب {CitizenName} للانضمام كمحكم مع عدم وجود رسوم للتعديل لوجود ملاحظات لمزيد من المعلومات زيارة منصة المركز",
                     },new SysSetting
                     {
                         Id = Guid.NewGuid(),
                         Key = "Reformer.RejectJoiningRequest",
-                        Value = "تنويه بانه تم رفض طلب {CitizenName} للانضمام كمصلح",
+                        Value = "نعتذر {CitizenName} لعدم قبولكم كمصلح معتمد لدى المركز السعودي للتحكيم العقاري ولمزيد من التفاصيل زيارة منصة المركز.",
                     },new SysSetting
                     {
                         Id = Guid.NewGuid(),
                         Key = "Arbitrator.RejectJoiningRequest",
-                        Value = "تنويه بانه تم رفض طلب {CitizenName} للانضمام كمحكم",
+                        Value = "نعتذر لعدم قبولكم {CitizenName} كمحكم معتمد لدى المركز السعودي للتحكيم العقاري ولمزيد من التفاصيل زيارة منصة المركز.",
                     },new SysSetting
                     {
                         Id = Guid.NewGuid(),
@@ -505,22 +506,22 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                     {
                         Id = Guid.NewGuid(),
                         Key = "Arbitrator.Activate",
-                        Value = "تم تفعيل حساب {CitizenName} كمحكم معتمد",
+                        Value = "تم تفعيل حساب {CitizenName} كمحكم معتمد لدى المركز السعودي للتحكيم العقاري",
                     },new SysSetting
                     {
                         Id = Guid.NewGuid(),
                         Key = "Reformer.DeActivate",
-                        Value = "تم إيقاف حساب {CitizenName} كمصلح معتمد",
+                        Value = "تم إيقاف حسابكم {CitizenName} لدى المركز السعودي للتحكيم العقاري، ولمزيد من التفاصيل زيارة منصة المركز.  كمصلح معتمد",
                     },new SysSetting
                     {
                         Id = Guid.NewGuid(),
                         Key = "Arbitrator.DeActivate",
-                        Value = "تم إيقاف حساب {CitizenName} كمحكم معتمد",
+                        Value = "تم إيقاف حسابكم {CitizenName} كمحكم معتمد لدى المركز السعودي للتحكيم العقاري",
                     },new SysSetting
                     {
                        Id = Guid.NewGuid(),
                         Key = "Arbitration.Arbitraor.Assigned",
-                        Value = "يوجد طلب مهمه جديد كمحكم على الدعوى رقم {LitigationCode}",
+                        Value = "تم إضافة دعوى جديدة رقم {LitigationCode}",
                     },new SysSetting
                     {
                        Id = Guid.NewGuid(),
@@ -540,7 +541,7 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                     {
                        Id = Guid.NewGuid(),
                         Key = "Arbitration.Arbitraor.AcceptTask",
-                        Value = "تم قبول طلب المهمة لدعوى رقم {LitigationCode} من قبل المحكم {ArbitratorName}",
+                        Value = "تم قبول طلب المهمة لدعوى رقم {LitigationCode} من قبل المحكم {ArbitratorName} والبدء بإجراءات التحكيم",
                     },new SysSetting
                     {
                         Id = Guid.NewGuid(),
@@ -550,7 +551,7 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                     {
                        Id = Guid.NewGuid(),
                         Key = "Arbitration.Arbitraor.RejectTask",
-                        Value = "تم رفض طلب المهمة لدعوى رقم {LitigationCode} من قبل المحكم {ArbitratorName}",
+                        Value = "تم رفض المحكم/ {ArbitratorName} للدعوى رقم {LitigationCode}",
                     },new SysSetting
                     {
                         Id = Guid.NewGuid(),
@@ -560,12 +561,12 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                     {
                        Id = Guid.NewGuid(),
                         Key = "ArbitraorRecusal.AddRequest",
-                        Value = "يوجد طلب رد محكم جديد {ArbitratorName} للدعوي رقم {LitigationCode}",
+                        Value = "تم تقديم طلب رد المحكم {ArbitratorName} للدعوى رقم {LitigationCode}",
                     },new SysSetting
                     {
                        Id = Guid.NewGuid(),
                         Key = "ArbitraorRecusal.AddRequest.Approve",
-                        Value = "تم الموافقة على طلب رد محكم {ArbitratorName} للدعوي رقم {LitigationCode}",
+                        Value = "تم قبول طلب رد محكم {ArbitratorName} للدعوي رقم {LitigationCode}",
                     },new SysSetting
                     {
                        Id = Guid.NewGuid(),
@@ -618,7 +619,7 @@ namespace Ticketing.EntityFrameworkCore.SeedData
 
                        Id = Guid.NewGuid(),
                         Key ="ArbitratorsChairmanNominationList.Added" ,
-                        Value = "تم إضافة قائمة مرشحى رئيس هيئة التحكيم لدعوي رقم {LitigationCode}",
+                        Value = "تم إصدار قائمة المحكمين للدعوى رقم {LitigationCode}، يرجى ترتيب المحكمين بحسب رغبتكم",
                     }
                     ,new SysSetting
                     {
@@ -649,7 +650,7 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                     {
                         Id = Guid.NewGuid(),
                         Key = "Arbitration.ExplanationReport.Added",
-                        Value = "تم اضافة طلب تفسير على حكم التحكيم لدعوي رقم {LitigationCode}",
+                        Value ="تم تقديم طلب تفسير حكم التحكيم للدعوى رقم {LitigationCode}",
                     },new SysSetting
                     {
                         Id = Guid.NewGuid(),
@@ -664,12 +665,12 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                     {
                         Id = Guid.NewGuid(),
                         Key = "Arbitration.ExtendRequest.Accepted",
-                        Value = "تم قبول طلب مد مدة التحكيم لدعوي رقم {LitigationCode}",
+                        Value = "تم الموافقة على طلب التمديد للدعوى رقم {LitigationCode}",
                     },new SysSetting
                     {
                         Id = Guid.NewGuid(),
                         Key = "Arbitration.ExtendRequest.Rejected",
-                        Value = "تم رفض طلب مد مدة التحكيم لدعوي رقم {LitigationCode}",
+                        Value = "تم رفض طلب التمديد لدعوي رقم {LitigationCode} ولمزيد من التفاصيل زيارة منصة المركز",
                     },new SysSetting
                     {
                         Id = Guid.NewGuid(),
@@ -796,6 +797,11 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                         Id = Guid.NewGuid(),
                         Key = "LitigationRequest.Decision.ReconciliationWasMade",
                         Value = "تم إصدار محضر صلح للدعوى رقم {LitigationCode} يرجى الرد على محضر الصلح",
+                    },new SysSetting
+                    {
+                        Id = Guid.NewGuid(),
+                        Key = "LitigationRequest.Decision.ReconciliationAccepted",
+                        Value = "تم اعتماد محضر الصلح للدعوى رقم {LitigationCode} ",
                     },new SysSetting
                     {
                         Id = Guid.NewGuid(),
@@ -994,8 +1000,56 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                         },new SysSetting
                         {
                             Id = Guid.NewGuid(),
+                            Key = "SLA.LitigationRequestReconciliationFeesReminder",
+                            Value = "يرجى سرعة سداد رسوم المصالحة للدعوى رقم {LitigationCode} تفادياً لإغلاق الدعوى"
+
+                        },new SysSetting
+                        {
+                            Id = Guid.NewGuid(),
+                            Key = "SLA.LitigationRequestReconciliationFeesReminder",
+                            Value = "يرجى سرعة سداد رسوم اتعاب هيئة التحكيم للدعوى رقم {LitigationCode} تفادياً لإغلاق الدعوى"
+
+                        },new SysSetting
+                        {
+                            Id = Guid.NewGuid(),
                             Key = "SLA.ReminderForReviewer",
                             Value = "72"
+
+                        },new SysSetting
+                        {
+                            Id = Guid.NewGuid(),
+                            Key = "SLA.LitigationRequestReconciliationFeesNotPaidReminderFirstPeriod",
+                            Value = "72"
+
+                        },new SysSetting
+                        {
+                            Id = Guid.NewGuid(),
+                            Key = "SLA.LitigationRequestReconciliationFeesNotPaidReminderSecondPeriod",
+                            Value = "144"
+
+                        },new SysSetting
+                        {
+                            Id = Guid.NewGuid(),
+                            Key = "SLA.ReminderForReviewAdmin.ReAssign",
+                            Value = "فضلا إعادة تعيين مدقق للدعوى رقم {LitigationCode} لانتهاء مدة التدقيق"
+
+                        },new SysSetting
+                        {
+                            Id = Guid.NewGuid(),
+                            Key = "SLA.ReminderForApplicant.EditLitigationPeriod",
+                            Value = "24"
+
+                        },new SysSetting
+                        {
+                            Id = Guid.NewGuid(),
+                            Key = "SLA.LitigationRequestFeesReminder",
+                            Value = "يرجى سرعة سداد الرسوم الإدارية للدعوى رقم {LitigationCode} تفادياً لإغلاق الدعوى"
+
+                        },new SysSetting
+                        {
+                            Id = Guid.NewGuid(),
+                            Key = "SLA.LitigationRequestArbitrationFeesReminder",
+                            Value = "يرجى سرعة سداد رسوم أتعاب هيئة التحكيم للدعوى رقم {LitigationCode} تفادياً لإغلاق الدعوى"
 
                         },
                     new SysSetting
@@ -1041,14 +1095,20 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                         },new SysSetting
                         {
                             Id = Guid.NewGuid(),
-                            Key = "SLA.LitigationRequestReconciliationFeesNotPaidReminderFirstPeriod",
-                            Value = "72"
+                            Key = "SLA.LitigationRequestFeesNotPaidReminderSecondPeriod",
+                            Value = "124"
 
                         },new SysSetting
                         {
                             Id = Guid.NewGuid(),
                             Key = "SLA.LitigationRequestArbitrationFeesNotPaidReminderFirstPeriod",
                             Value = "72"
+
+                        },new SysSetting
+                        {
+                            Id = Guid.NewGuid(),
+                            Key = "SLA.LitigationRequestArbitrationFeesNotPaidReminderSecondPeriod",
+                            Value = "144"
 
                         },new SysSetting
                         {
@@ -1202,6 +1262,16 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                             Id = Guid.NewGuid(),
                             Key = "SLA.PayLitigationFees.Applicant",
                             Value = "تم الغاء الدعوي رقم {LitigationCode} لعدم دفع الرسوم  "
+                        },new SysSetting
+                        {
+                            Id = Guid.NewGuid(),
+                            Key = "SLA.PayLitigationReconciliationFees.Applicant",
+                            Value = "تم الغاء الدعوي رقم {LitigationCode} لعدم دفع رسوم الصلح  "
+                        },new SysSetting
+                        {
+                            Id = Guid.NewGuid(),
+                            Key = "SLA.PayLitigationReconciliationFees.Applicant",
+                            Value = "تم الغاء الدعوي رقم {LitigationCode} لعدم دفع رسوم التحكيم  "
                         },new SysSetting
                         {
                             Id = Guid.NewGuid(),
@@ -1395,7 +1465,7 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                     {
                         Id = Guid.NewGuid(),
                         Key = "SLA.AddLitigationRequestArbitrationSessionWarning",
-                        Value = "برجاء سرعة تحديد موعد الجلسه لدعوي رقم {LitigationRequest}"
+                        Value = "يرجى سرعة إتمام إجراءات التحكيم قبل انتهاء الوقت لدعوي رقم {LitigationRequest}"
                     },
 	#endregion
                     #endregion
@@ -1551,14 +1621,14 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                     {
                         Id = Guid.NewGuid(),
                         Key = SysSettingKeyConstants.Invoice_CreatedInvoiceMessage,
-                        Value = "تم انشاء فاتورة برقم {InvoiceCode} لدفع رسوم التحكيم للطلب {LitigationCode} لسدادها"
+                        Value = "تم إصدار رسوم اتعاب هيئة التحكيم برقم فاتورة {InvoiceCode} للدعوى رقم {LitigationCode}، عند سداد الرسوم فضلا تأكيد السداد عبر منصة المركز." 
 
                     },
                      new SysSetting
                     {
                         Id = Guid.NewGuid(),
                         Key = SysSettingKeyConstants.Invoice_ArbitrationInvoicePaidMessage,
-                        Value = "تم سداد رسوم التحكيم لطلب رقم {LitigationCode}"
+                        Value = "تم سداد رسوم التحكيم للدعوي رقم {LitigationCode}"
 
                     },
 	                #endregion

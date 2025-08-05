@@ -24,6 +24,11 @@ namespace REAC.Application.Contracts.Dtos.CitizenRequests
         public Guid? ArbitratorClassId { get; set; }
 
         public string? Brief { get; set; }
+
+        public int? ExperiencedInFreelanceArbitration { get; set; }
+        public bool IsregisteredWithBachelorShareaaDegree { get; set; }
+        public bool HaveExperiencedInFreelanceArbitration { get; set; }
+
         public virtual ICollection<CitizenRequestFreelanceWorkDocumentFileCreateUpdateDto> CitizenRequestFreelanceWorkDocumentFiles { get; set; } = new List<CitizenRequestFreelanceWorkDocumentFileCreateUpdateDto>();
         public virtual ICollection<CitizenRequestAcademicDegreeFileCreateUpdateDto> CitizenRequestAcademicDegreeFiles { get; set; } = new List<CitizenRequestAcademicDegreeFileCreateUpdateDto>();
         public virtual ICollection<CitizenRequestExperienceCertificateCreateUpdateDto> CitizenRequestExperienceCertificates { get; set; } = new List<CitizenRequestExperienceCertificateCreateUpdateDto>();
