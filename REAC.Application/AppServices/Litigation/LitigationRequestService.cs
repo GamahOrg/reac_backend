@@ -1334,6 +1334,8 @@ namespace REAC.Application.AppServices.Litigation
                 .Include(x => x.City)
                 .Include(x => x.ApplicantCitizen)
                 .Include(x => x.Contract.SecondPartyCitizen)
+                .Include(x => x.Contract.SecondPartyCitizen.Area)
+                .Include(x => x.Contract.SecondPartyCitizen.City)
                 .Include(x => x.Contract.SecondPartyCitizen.Nationality)
                 .Include(x => x.Contract.FirstPartyCitizen)
                 .Include(x => x.Contract.FirstPartyCitizen.Nationality)
