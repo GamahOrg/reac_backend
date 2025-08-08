@@ -9,7 +9,7 @@ namespace REAC.Application.Contracts.Dtos.Litigation.CreateUpdate.Litigation
 {
     public class LitigationRequests
     {
-        [MaxLength(200)]
+        [MaxLength(1000)]
         public string LitigationPurpose { get; set; }
         public Guid? RequestId { get; set; }
     }
