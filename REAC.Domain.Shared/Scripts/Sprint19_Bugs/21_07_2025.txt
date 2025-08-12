@@ -74,7 +74,7 @@ set AcknowledgmentContent = N'اقر أنا {اسم المدعي} هوية رق�
 
 
   Update dbo.SysSetting set 
- Value = N'تم رفض طلب المهمة لدعوى رقم {LitigationCode} من قبل المصلح {ReconciliatorName} والبدء بإجراءات الصلح'
+ Value = N'تم قبول طلب المهمة لدعوى رقم {LitigationCode} من قبل المصلح {ReconciliatorName} والبدء بإجراءات الصلح'
   where [key] = 'Reconciliation.Reconciliator.AcceptTask' 
 
   Update dbo.SysSetting set 
