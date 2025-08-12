@@ -1,0 +1,116 @@
+﻿GO
+/****** Object:  StoredProcedure [dbo].[sp_DeleteLitigationRequest]    Script Date: 8/11/2025 2:31:20 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+--IF EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'sp_DeleteLitigationRequest')
+--    DROP PROCEDURE sp_DeleteLitigationRequest
+--GO
+
+ALTER PROCEDURE [dbo].[sp_DeleteLitigationRequest]
+    @Id uniqueidentifier
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    BEGIN TRANSACTION;
+    BEGIN TRY
+        -- Delete from all dependent tables first (in reverse order of dependencies)
+        DELETE FROM WorkFlowProcessingLog WHERE RequestId = @Id;
+        
+        DELETE FROM LitigationRequestArbitratorsChairmanNominationList WHERE LitigationRequestId = @Id;
+        DELETE FROM LitigationRequestArbitratorNominationList WHERE LitigationRequestId = @Id;
+        DELETE FROM LitigationRequestArbitrator WHERE LitigationRequestId = @Id;
+        
+        -- Handle modification requests
+        DELETE FROM [dbo].[LititgationRequestModificationRequest] WHERE LitigationRequestId = @Id;
+        
+        -- Handle notes
+        DELETE FROM LitigationRequestNoteFile 
+        WHERE NoteId IN (
+            SELECT Id FROM LitigationRequestNote WHERE LitigationRequestId = @Id
+        );
+        DELETE FROM LitigationRequestNote WHERE LitigationRequestId = @Id;
+        
+        -- Handle reports
+        DELETE FROM LitigationRequestReconciliationReport WHERE LitigationRequestId = @Id;
+        DELETE FROM LitigationRequestArbitrationReport WHERE LitigationRequestId = @Id;
+        
+        -- Handle grounds
+        DELETE FROM LitigationRequestGroundFile 
+        WHERE LitigationRequestGroundId IN (
+            SELECT Id FROM LitigationRequestGround WHERE LitigationRequestId = @Id
+        );
+        DELETE FROM LitigationRequestGround WHERE LitigationRequestId = @Id;
+        
+        -- Delete from other dependent tables
+        DELETE FROM LitigationRequestArbitratorRecusalRequest WHERE LitigationRequestId = @Id;
+        DELETE FROM LitigationRequestExtendPeriodRequest WHERE LitigationRequestId = @Id;
+        DELETE FROM LitigationRequestCorrespondence WHERE LitigationRequestId = @Id;
+        DELETE FROM LitigationRequestArbitratorAssigningRequest WHERE LitigationRequestId = @Id;
+        DELETE FROM LitigationRequestReformerAssigningRequest WHERE LitigationRequestId = @Id;
+        DELETE FROM LitigationRequestSession WHERE LitigationRequestId = @Id;
+        DELETE FROM LitigationRequestRequest WHERE LitigationRequestId = @Id;
+        
+        -- Finally delete the main record
+        DELETE FROM LitigationRequest WHERE Id = @Id;
+        
+        -- Log the deletion
+        INSERT INTO WorkFlowLog (
+            Id,
+            CreatedOn,
+            RequestId, 
+            ShowForApplicant,
+            LogMessage
+        )
+        VALUES (
+            NEWID(),
+            GETDATE(),
+            @Id,
+            0,
+            'Litigation request was deleted successfully'
+        );
+
+        COMMIT;
+        
+        SELECT 'Deletion completed successfully' as Message;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0
+            ROLLBACK;
+            
+        DECLARE @ErrorMessage NVARCHAR(4000) = ERROR_MESSAGE();
+        DECLARE @ErrorSeverity INT = ERROR_SEVERITY();
+        DECLARE @ErrorState INT = ERROR_STATE();
+        DECLARE @ErrorLine INT = ERROR_LINE();
+        DECLARE @ErrorNumber INT = ERROR_NUMBER();
+        
+        -- Log the error
+        INSERT INTO WorkFlowLog (
+            Id,
+            CreatedOn,
+            RequestId,
+            ShowForApplicant,
+            LogMessage
+        )
+        VALUES (
+            NEWID(),
+            GETDATE(),
+            @Id,
+            0,
+            'Error deleting litigation request: ' + @ErrorMessage + 
+            ' at line ' + CAST(@ErrorLine AS NVARCHAR(10))
+        );
+
+        -- Re-raise the error with additional info
+        RAISERROR (
+            'Error deleting litigation request. Error %d at line %d: %s',
+            @ErrorSeverity,
+            @ErrorState,
+            @ErrorNumber,
+            @ErrorLine,
+            @ErrorMessage
+        );
+    END CATCH
+END
