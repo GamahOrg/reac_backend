@@ -7,14 +7,14 @@ namespace REAC.EntityFrameworkCore.Entities.Actor;
 public partial class CitizenRequest : BaseEntity<Guid>
 {
     //توع الطلب
-    public CitizenRequestType CitizenRequestTypeId { get; set; }
+    public CitizenRequestType? CitizenRequestTypeId { get; set; }
 
     public Guid CitizenId { get; set; }
 
 
     // Shared
     public string AcademicDegreeName { get; set; } = null!;
-    public bool IsVolunteerApproval { get; set; }
+    public bool? IsVolunteerApproval { get; set; }
     public DateTime RequestOn { get; set; }
 
 
@@ -25,14 +25,17 @@ public partial class CitizenRequest : BaseEntity<Guid>
     public string? Brief { get; set; }
 
     //مصلح
-    public bool IsRegisteredReconciliationCenter { get; set; }
-    public bool IspassedRealEstateProgram { get; set; }
-    public bool HaveArbitrationxperience { get; set; }
-    public bool HaveHostingExperience { get; set; }
+    public bool? IsRegisteredReconciliationCenter { get; set; }
+    public bool? IspassedRealEstateProgram { get; set; }
+    public bool? HaveArbitrationxperience { get; set; }
+    public bool? HaveHostingExperience { get; set; }
     public string? ExperiencedInArbitrationFields { get; set; }
     public string? ExperiencedInHousingstatuses { get; set; }
     public string? About { get; set; }
 
+    public int? ExperiencedInFreelanceArbitration { get; set; }
+    public bool? IsregisteredWithBachelorShareaaDegree { get; set; }
+    public bool? HaveExperiencedInFreelanceArbitration { get; set; }
 
     public bool? IsFeesPaid { get; set; }
     public CitizenRequestStatus StatusId { get; set; }

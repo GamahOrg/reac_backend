@@ -605,7 +605,7 @@ namespace REAC.Application.AppServices.Litigation
                     CustomLitigationRequestMircoAllDto litigationRequestMircoDto = new CustomLitigationRequestMircoAllDto
                     {
                         Id = litigationRequest.Id,
-                        RequestId = litigationRequest.Id,
+                        RequestId = litigationRequest.LitigationRequest.Id,
                         RequestDate = litigationRequest.LitigationRequest.CreatedOn,
                         ReformerAssigningDate = litigationRequest.RequestOn,
                         ReconciliationPeriod = litigationRequest.LitigationRequest.ReconciliationPeriod,

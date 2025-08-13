@@ -202,7 +202,9 @@ namespace REAC.Application.AppServices.Notification
                         && x.RequestId == notification.RequestId
                         && (int)x.NotificationActorTypeId == (int)notification.ActorTypeId
                         && (int)x.RequestTypeId == (int)notification.RequestTypeId
-                        && x.Message == notification.Message);
+                        && x.Message == notification.Message
+                        && x.CreatedOn.Day == DateTime.Today.Day
+                        );
 
                     if (!isExist)
                         newNotificationsList.Add(notification);

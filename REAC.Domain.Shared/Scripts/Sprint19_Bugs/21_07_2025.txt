@@ -1,0 +1,122 @@
+﻿
+  alter table dbo.LitigationRequest 
+  Add IsLitigationRequestReconciliationReportDecisionPeriodSent bit null
+
+
+    INSERT [dbo].[SysSetting] ([Id], [Key], [Value]) VALUES (NEWID(), N'SLA.LitigationRequestReconciliationFeesNotPaidReminderFirstPeriod', N'72')
+    INSERT [dbo].[SysSetting] ([Id], [Key], [Value]) VALUES (NEWID(), N'SLA.LitigationRequestArbitrationFeesNotPaidReminderFirstPeriod', N'72')
+    INSERT [dbo].[SysSetting] ([Id], [Key], [Value]) VALUES (NEWID(), N'REACPortalUrl', N'https://dev-reac-backoffice.rega.gov.sa/')
+
+    update dbo.SysLitigationRequestContractType 
+set AcknowledgmentContent = N'اقر أنا {اسم المدعي} هوية رقم {رقم هوية المدعي} بكامل أهليتي الشرعية وذلك بعدم وجود دعوى سابقة أو قائمة بيني وبين المدعى عليه في نفس الموضوع وألا تكون منظورة أمام أي جهة قضائية، وأتحمل كامل المسؤولية النظامية حيال صحة المعلومات المدخلة وهذا إقرار مني بذلك وفي حالة اتضح خلاف ما أقر عليه يحق للمركز اتخاذ الإجراء القانوني ضدي'
+
+
+
+    Update dbo.SysSetting set 
+ Value = N'تم إضافة محضر الصلح لدعوى رقم {LitigationCode} برجاء الدخول علي موقع المنصه من خلال الرابط {PortalUrl}'
+  where [key] = 'Reconciliation.Request.Added'
+
+    Update dbo.SysSetting set 
+ Value = N'يرجى سرعة الرد على محضر الصلح الصادر على الدعوى رقم {LitigationCode} برجاء الدخول علي موقع المنصه من خلال الرابط {PortalUrl}'
+  where [key] = 'SLA.ReconciliationReport.PleaseReply'
+
+  Update dbo.SysSetting set 
+ Value = N'تم اضافةالحكم في الدعوي المسجلة برقم {LitigationCode} برجاء الدخول علي موقع المنصه من خلال الرابط {PortalUrl}'
+  where [key] = 'ArbitrationService.JudgmentAdded'
+
+  update dbo.SysLitigationRequestContractType 
+set AcknowledgmentContent = N'اقر أنا {اسم المدعي} هوية رقم {رقم هوية المدعي} بكامل أهليتي الشرعية وذلك بعدم وجود دعوى سابقة أو قائمة بيني وبين المدعى عليه في نفس الموضوع وألا تكون منظورة أمام أي جهة قضائية، وأتحمل كامل المسؤولية النظامية حيال صحة المعلومات المدخلة وهذا إقرار مني بذلك وفي حالة اتضح خلاف ما أقر عليه يحق للمركز اتخاذ الإجراء القانوني ضدي'
+
+ Update dbo.SysSetting set 
+ Value = N'تم إصدار فاتورة الرسوم الإدارية للدعوى رقم {LitigationCode} عند سداد الرسوم فضلا تأكيد السداد عبر منصة المركز'
+  where [key] = 'LitigationRequest.CollectionOfLitigationFeesRequestIsBeingSent'
+
+  Update dbo.SysSetting set 
+ Value = N'تم رفض الطلب للدعوى رقم {LitigationCode} بسبب {RejectionReason} ولمزيد من المعلومات فضلا زيارة منصة المركز السعودي للتحكيم العقاري'
+  where [key] = 'ProcessWorkflow.Reject'
+
+  Update dbo.SysSetting set 
+ Value = N'تم إعادة الطلب للتعديل للدعوى رقم {LitigationCode} ويجب تعديل الطلب خلال {ExpirationDate} يوم لتفادي اغلاق الدعوى'
+  where [key] = 'LitigationRequest.Creation.Resent'
+
+
+  Update dbo.SysSetting set 
+ Value = N'تم سحب دعوي رقم {LitigationCode} لتخطى مدة التدقيق الفصوى'
+  where [key] = 'SLA.WithdrewLitigation.OldReviewerEmployee'
+
+  Update dbo.SysSetting set 
+ Value = N'تم ارسال دعوى جديدة رقم {LitigationCode} للتدقيق'
+  where [key] = 'SLA.AssignLitigation.NewReviewerEmployee'
+
+  Update dbo.SysSetting set 
+ Value = N'تم تقديم دعوى جديدة رقم {LitigationCode}'
+  where [key] = 'ExcuteWorkflow'
+
+
+  Update dbo.SysSetting set 
+ Value = N'تم ارسال طلب مشارطة التحكيم للدعوى رقم {LitigationCode}'
+  where [key] = 'Workflow.Condition.Review'
+
+
+  Update dbo.SysSetting set 
+ Value = N'تم تقديم دعوى رقم {LitigationCode} لدى المركز السعودي للتحكيم العقاري والمقامة ضدكم، وللإطلاع على تفاصيل الدعوى الدخول عبر الرابط التالي: {PortalUrl} '
+  where [key] = 'LitigationRequest.Creation.Accept.Defendant'
+
+
+  Update dbo.SysSetting set 
+ Value = N'تم إصدار رسوم المصالحة للدعوى رقم {LitigationCode}، عند سداد الرسوم فضلا تأكيد السداد عبر منصة المركز'
+  where [key] = 'LitigationRequest.CollectionOfReconciliationFeesRequestIsBeingSent'
+
+  
+  Update dbo.SysSetting set 
+ Value = N'يرجى سرعة الرد على الدعوى رقم {LitigationCode}'
+  where [key] = 'SLA.ReconciliationTask.PleaseReply'
+
+
+  Update dbo.SysSetting set 
+ Value = N'تم قبول طلب المهمة لدعوى رقم {LitigationCode} من قبل المصلح {ReconciliatorName} والبدء بإجراءات الصلح'
+  where [key] = 'Reconciliation.Reconciliator.AcceptTask' 
+
+  Update dbo.SysSetting set 
+ Value = N'تم رفض المصلح/ {ReconciliatorName} للدعوى رقم {LitigationCode}'
+  where [key] = 'Reconciliation.Reconciliator.RejectTask' 
+
+  Update dbo.SysSetting set 
+ Value = N'تم رفض المصلح/ {ReconciliatorName} للدعوى رقم {LitigationCode}'
+  where [key] = 'Reconciliation.Reconciliator.RejectTask' 
+
+    Update dbo.SysSetting set 
+ Value = N'يرجى سرعة إتمام إجراءات المصالحة قبل انتهاء الوقت على الدعوى رقم {LitigationCode}'
+  where [key] = 'SLA.FinishReconciliation' 
+
+  Update dbo.SysSetting set 
+ Value = N'يوجد رسالة واردة في منصة المركز رقم {CorrespondenceCode} علي الدعوي رقم {LitigationCode}'
+  where [key] = 'LitigationRequestCorrespondenceAdded' 
+
+  Update dbo.SysSetting set 
+ Value = N'تم إصدار محضر صلح للدعوى رقم {LitigationCode} يرجى الرد على محضر الصلح'
+  where [key] = 'LitigationRequest.Decision.ReconciliationWasMade' 
+
+  Update dbo.SysSetting set 
+ Value = N'تم إصدار محضر صلح للدعوى رقم {LitigationCode} يرجى الرد على محضر الصلح'
+  where [key] = 'LitigationRequest.Decision.ReconciliationWasMade' 
+
+  Update dbo.SysSetting set 
+ Value = N'تم إصدار محضر صلح للدعوى رقم {LitigationCode} يرجى الرد على محضر الصلح'
+  where [key] = 'LitigationRequest.Decision.WaiverOfRight' 
+
+  Update dbo.SysSetting set 
+ Value = N'تم إصدار محضر صلح للدعوى رقم {LitigationCode} يرجى الرد على محضر الصلح'
+  where [key] = 'LitigationRequest.Decision.WaiverOfTheLitigation' 
+
+  Update dbo.SysSetting set 
+ Value = N'تم إصدار محضر عدم صلح للدعوى رقم {LitigationCode}'
+  where [key] = 'LitigationRequest.Decision.ReconciliationWasNotMade' 
+
+  Update dbo.SysSetting set 
+ Value = N'تم إصدار محضر عدم صلح للدعوى رقم {LitigationCode} وإحالة الدعوى للتحكيم'
+  where [key] = 'LitigationRequest.Decision.ReconciliationWasNotMadeAndMoveToArbitration' 
+
+  Update dbo.SysSetting set 
+ Value = N'تم إصدار محضر صلح في منصة تراضى لدعوي رقم {LitigationCode}'
+  where [key] = 'LitigationRequest.Decision.ReconciliationOnTradyPlatform'

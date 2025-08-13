@@ -97,8 +97,12 @@ namespace REAC.Application.ModuleServices
                         var arbitrationAdmin = await _sysEmployeeService.GetAdminsByDepartmentType(DepartmentType.Arbitration);
                         if (arbitrationAdmin.IsDone)
                         {
+                            var portalUrl = _settingService.GetBySettingKey(SysSettingKeyConstants.REACPortalUrl).Result.Data?.Value;
+
                             var msg = _settingService.GetBySettingKey(SysSettingKeyConstants.ArbitrationService_JudgmentAdded).Result.Data?.Value;
                             msg = msg?.Replace("{LitigationCode}", litigationRequest.RequestCode);
+                            msg = msg?.Replace("{PortalUrl}", portalUrl);
+
                             var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
                             string body;
                             using (StreamReader streamReader = File.OpenText(pathToFile))

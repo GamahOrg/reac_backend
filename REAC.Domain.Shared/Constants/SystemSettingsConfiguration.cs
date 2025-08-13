@@ -25,8 +25,9 @@ namespace REAC.Domain.Shared.Constants
             "Reformer.DeActivate" ,
             "Reformer.Activate" ,
             "SLA.LitigationRequestReformerAssigningRequestResponsePeriod" ,
-            "SLA.LitigationRequestExtendRequestReplyPeriod"
- 
+            "SLA.LitigationRequestExtendRequestReplyPeriod",
+            "SLA.LitigationRequestReconciliationFeesNotPaidReminderFirstPeriod",
+
         };
 
         public static readonly List<string> ArbitrationFeesSystemSettings = new List<string>
@@ -79,7 +80,8 @@ namespace REAC.Domain.Shared.Constants
             "SLA.AddLitigationRequestArbitratorNominationListWarning",
             "Arbitrators.Count.FromBothSides",
             "Arbitrators.Count.Added",
-            "ArbitratorsNominationList.Added"
+            "ArbitratorsNominationList.Added",
+            "SLA.LitigationRequestArbitrationFeesNotPaidReminderFirstPeriod"
 
         };
 
@@ -116,7 +118,8 @@ namespace REAC.Domain.Shared.Constants
             "LitigationRequest.Reject.Agreement",
             "LitigationRequest.Creation.Accept.Defendant",
              "LitigationRequest.Creation.Accept",
-             "SLA.AgreementPeriodFinishedWarning"
+             "SLA.AgreementPeriodFinishedWarning",
+             "SLA.LitigationRequestFeesNotPaidReminderFirstPeriod",
         };
 
         public static readonly List<string> ReviewSystemSettingOrder = new List<string>
@@ -141,7 +144,9 @@ namespace REAC.Domain.Shared.Constants
             "SLA.AgreementPeriodFinishedWarning",
             "LitigationRequest.Reject.Agreement",
             "LitigationRequest.Creation.Accept",
-            "LitigationRequest.Creation.Accept.Defendant"
+            "LitigationRequest.Creation.Accept.Defendant",
+            "SLA.LitigationRequestFeesNotPaidReminderFirstPeriod"
+
         };
 
     }
