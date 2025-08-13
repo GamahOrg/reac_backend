@@ -4,6 +4,7 @@ using Core.Log.Application.Contracts.Dto;
 using Core.Log.Application.Contracts.IAppServices;
 using Core.Shared.Responses;
 using Microsoft.EntityFrameworkCore;
+using REAC.Application.Contracts.Dtos.Integration.GEE;
 using REAC.Application.Contracts.Dtos.Litigation.CreateUpdate.Litigation;
 using REAC.Application.Contracts.Dtos.Notification;
 using REAC.Application.Contracts.IAppServices.Litigation;
@@ -47,6 +48,149 @@ namespace REAC.Application.AppServices.SLA
         {
 
             var litigationRequests = (await _repository.GetQueryable<LitigationRequest, Guid>())?
+                             .Include(x => x.ApplicantCitizen)
+                             .Include(x => x.WorkFlowProcessingLogs)
+                             .ThenInclude(x => x.WorkFlowStep)
+                             .Include(x => x.WorkFlowProcessingLogs)
+                             .ThenInclude(x => x.Employee)
+                             .Include(x => x.Contract)
+                             .Include(x => x.Contract.FirstPartyFacility).ThenInclude(x => x.Citizen)
+                             .Include(x => x.Contract.FirstPartyCitizen)
+                             .Include(x => x.Contract.SecondPartyFacility).ThenInclude(x => x.Citizen)
+                             .Include(x => x.Contract.SecondPartyCitizen)
+                             .Where(x => x.InternalStatusId == RequestStatus.CollectionOfReconciliationFeesRequestIsBeingSent && !x.IsReconciliationFeesHaveBeenCollected)
+                             .ToList();
+
+            if (litigationRequests != null)
+            {
+                if (litigationRequests.Any())
+                {
+                    int firstReminderForApplicantToPayLitigationRequestReconciliationFeesPeriod = 0;
+                    int.TryParse(_sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_LitigationRequestFeesNotPaidReminderFirstPeriod).Result.Data?.Value, out firstReminderForApplicantToPayLitigationRequestReconciliationFeesPeriod);
+                    int secondReminderForApplicantToPayLitigationRequestReconciliationFeesPeriod = 0;
+                    int.TryParse(_sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_LitigationRequestFeesNotPaidReminderSecondPeriod).Result.Data?.Value, out secondReminderForApplicantToPayLitigationRequestReconciliationFeesPeriod);
+
+
+                    foreach (var litigationRequest in litigationRequests)
+                    {
+                        if (litigationRequest.IsLitigationRequestReconciliationFeesNotPaidFirstReminderSent != true)
+                        {
+                            if (firstReminderForApplicantToPayLitigationRequestReconciliationFeesPeriod > 0)
+                            {
+                                var workFlowProcessingLog = litigationRequest.WorkFlowProcessingLogs.Where(x => x.EmployeeId.HasValue == false & x.IsFinished == false).OrderBy(x => x.CreatedOn).LastOrDefault();
+
+                                if (workFlowProcessingLog is not null)
+                                {
+                                    double totalReviewHours = 0;
+                                    totalReviewHours = (DateTime.Now - workFlowProcessingLog.CreatedOn).TotalHours;
+
+
+                                    if (totalReviewHours >= firstReminderForApplicantToPayLitigationRequestReconciliationFeesPeriod)
+                                    {
+                                        litigationRequest.IsLitigationRequestReconciliationFeesNotPaidFirstReminderSent = true;
+
+
+                                        // تذكير بدفع رسوم الصلح للدعوي
+                                        try
+                                        {
+                                            var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_LitigationRequestReconciliationFeesReminder).Result.Data?.Value;
+                                            msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
+                                            var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                            string body;
+                                            using (StreamReader streamReader = File.OpenText(pathToFile))
+                                            {
+                                                body = await streamReader.ReadToEndAsync();
+                                                body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_LitigationRequestReconciliationFeesReminder).Result.Data?.Value);
+                                                body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                                            }
+
+                                            await SendNotificationMS(body, msg, litigationRequest, "دفع رسوم الدعوى", NotificationActorType.Applicant, RequestType.LitigationRequest,
+                                          notifyApplicant: true, notifyDeptAdmin: false, notifyFirstParty: true, notifyFirstPartyFacility: true);
+                                        }
+                                        catch (Exception e)
+                                        {
+                                            _loggerManager.Log(Core.Log.Domain.Shared.Enums.LoggerType.Database
+                                            , new LogDto()
+                                            {
+                                                Type = Core.Log.Domain.Shared.Enums.LogType.Exception,
+                                                Message = e.ToString()
+                                            });
+
+
+                                        }
+
+
+                                    }
+                                }
+
+                            }
+                        }
+                        else
+                        {
+                            if (secondReminderForApplicantToPayLitigationRequestReconciliationFeesPeriod > 0)
+                            {
+                                var workFlowProcessingLog = litigationRequest.WorkFlowProcessingLogs.Where(x => x.EmployeeId.HasValue == false & x.IsFinished == false).OrderBy(x => x.CreatedOn).LastOrDefault();
+
+
+                                if (workFlowProcessingLog is not null)
+                                {
+                                    double totalReviewHours = 0;
+                                    totalReviewHours = (DateTime.Now - workFlowProcessingLog.CreatedOn).TotalHours;
+
+
+                                    if (totalReviewHours >= secondReminderForApplicantToPayLitigationRequestReconciliationFeesPeriod)
+                                    {
+
+                                        litigationRequest.InternalStatusId = RequestStatus.Cancelled;
+                                        litigationRequest.ExternalStatusId = RequestStatus.Cancelled;
+
+                                        //Send Notification for Applicant 
+                                        // Mail - Sms - Application Notification
+                                        // تم الغاء الدعوي رقم لعدم دفع الرسوم   .....
+                                        try
+                                        {
+                                            var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_PayLitigationReconciliationFees_Applicant).Result.Data?.Value;
+                                            msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
+                                            var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                            string body;
+                                            using (StreamReader streamReader = File.OpenText(pathToFile))
+                                            {
+                                                body = await streamReader.ReadToEndAsync();
+                                                body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_PayLitigationReconciliationFees_Applicant).Result.Data?.Value);
+                                                body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                                            }
+
+                                            await SendNotificationMS(body, msg, litigationRequest, "دفع رسوم الصلح للدعوى", NotificationActorType.Applicant, RequestType.LitigationRequest,
+                                           true, false, true, true, false, true, false);
+                                        }
+                                        catch (Exception e)
+                                        {
+                                            _loggerManager.Log(Core.Log.Domain.Shared.Enums.LoggerType.Database
+                                            , new LogDto()
+                                            {
+                                                Type = Core.Log.Domain.Shared.Enums.LogType.Exception,
+                                                Message = e.ToString()
+                                            });
+
+
+                                        }
+                                    }
+                                }
+                            }
+
+                        }
+
+                    }
+                    var repositorySaveResponse = await _repository.SaveChangesAsync(default);
+                    if (!repositorySaveResponse.IsDone)
+                        return repositorySaveResponse;
+                }
+            }
+
+
+
+
+             litigationRequests = (await _repository.GetQueryable<LitigationRequest, Guid>())?
                                 .Include(x => x.Contract)
                                 .ThenInclude(x => x.FirstPartyCitizen)
                                 .Include(x => x.Contract)
@@ -204,8 +348,11 @@ namespace REAC.Application.AppServices.SLA
                                         // يرجى سرعة الرد على محضر الصلح الصادر على الدعوى رقم ......
                                         try
                                         {
+                                            var portalUrl = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.REACPortalUrl).Result.Data?.Value;
+
                                             var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_ReconciliationReport_PleaseReply).Result.Data?.Value;
                                             msg = msg?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                                            msg = msg?.Replace("{PortalUrl}", portalUrl);
                                             var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
                                             string body;
                                             using (StreamReader streamReader = File.OpenText(pathToFile))
@@ -229,8 +376,12 @@ namespace REAC.Application.AppServices.SLA
                                         // يرجى سرعة الرد على محضر الصلح الصادر على الدعوى رقم ......
                                         try
                                         {
+                                            var portalUrl = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.REACPortalUrl).Result.Data?.Value;
+
                                             var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_ReconciliationReport_PleaseReply).Result.Data?.Value;
                                             msg = msg?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                                            msg = msg?.Replace("{PortalUrl}", portalUrl);
+
                                             var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
                                             string body;
                                             using (StreamReader streamReader = File.OpenText(pathToFile))
@@ -253,7 +404,7 @@ namespace REAC.Application.AppServices.SLA
 
                         if (LitigationRequestReconciliationReportDecisionPeriod > 0)
                         {
-                            if (litigationRequest.IsLitigationRequestReconciliationReportResponsePeriodSent != true)
+                            if (litigationRequest.IsLitigationRequestReconciliationReportDecisionPeriodSent != true)
                             {
 
 
@@ -262,7 +413,7 @@ namespace REAC.Application.AppServices.SLA
                                 totalReviewHours += (DateTime.Now - litigationRequest.LitigationRequestReconciliationReports.FirstOrDefault().ReportDate).TotalHours;
                                 if (totalReviewHours >= LitigationRequestReconciliationReportDecisionPeriod)
                                 {
-                                    litigationRequest.IsLitigationRequestReconciliationReportResponsePeriodSent = true;
+                                    litigationRequest.IsLitigationRequestReconciliationReportDecisionPeriodSent = true;
                                     //Send Notification for reformer
                                     // Mail - Sms - Application Notification
                                     // يرجى العلم أن الرد على محضر الصلح الصادر على الدعوى رقم ..... قد تجاوز مهلته القصوى
@@ -570,6 +721,33 @@ namespace REAC.Application.AppServices.SLA
                                                         ShowForApplicant = false,
                                                         LogMessage = "تم إرسال طلب مهمة الصلح للمصلح " + reformer.FullName
                                                     });
+                                                }
+                                                break;
+                                            case DepartmentDistributionMode.ManualDistribution:
+                                                try
+                                                {
+                                                    var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reconciliation_NewRequest_ManualDistripution).Result.Data?.Value;
+                                                    msg = msg.Replace("{LitigationCode}", litigationRequestReformerAssigningRequest.LitigationRequest?.RequestCode);
+
+                                                    var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                                    string body;
+                                                    using (StreamReader streamReader = File.OpenText(pathToFile))
+                                                    {
+                                                        body = await streamReader.ReadToEndAsync();
+                                                        body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reconciliation_NewRequest_ManualDistripution).Result.Data?.Value);
+                                                        body = body?.Replace("{LitigationCode}", litigationRequestReformerAssigningRequest.LitigationRequest?.RequestCode);
+                                                      
+                                                    }
+
+
+                                                    await SendNotificationMS(body, msg, litigationRequestReformerAssigningRequest.LitigationRequest, "تعيين مصلح", NotificationActorType.Employee, RequestType.LitigationRequest,
+                                                           notifyDeptAdmin:true);
+
+
+                                                }
+                                                catch (Exception)
+                                                {
+
                                                 }
                                                 break;
                                         }

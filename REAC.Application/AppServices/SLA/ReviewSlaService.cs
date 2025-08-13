@@ -56,7 +56,7 @@ namespace REAC.Application.AppServices.SLA
                              .Include(x => x.Contract.FirstPartyCitizen)
                              .Include(x => x.Contract.SecondPartyFacility).ThenInclude(x => x.Citizen)
                              .Include(x => x.Contract.SecondPartyCitizen)
-                             .Where(x => x.InternalStatusId == RequestStatus.CollectionOfLitigationFeesRequestIsBeingSent)
+                             .Where(x => x.InternalStatusId == RequestStatus.CollectionOfLitigationFeesRequestIsBeingSent && !x.IsLitigationFeesHaveBeenCollected)
                              .ToList();
 
             if (litigationRequests != null)
@@ -65,6 +65,8 @@ namespace REAC.Application.AppServices.SLA
                 {
                     int firstReminderForApplicantToPayLitigationRequestFeesPeriod = 0;
                     int.TryParse(_sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_LitigationRequestFeesNotPaidReminderFirstPeriod).Result.Data?.Value, out firstReminderForApplicantToPayLitigationRequestFeesPeriod);
+                    int secondReminderForApplicantToPayLitigationRequestFeesPeriod = 0;
+                    int.TryParse(_sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_LitigationRequestFeesNotPaidReminderSecondPeriod).Result.Data?.Value, out secondReminderForApplicantToPayLitigationRequestFeesPeriod);
 
 
                     foreach (var litigationRequest in litigationRequests)
@@ -85,6 +87,59 @@ namespace REAC.Application.AppServices.SLA
                                     if (totalReviewHours >= firstReminderForApplicantToPayLitigationRequestFeesPeriod)
                                     {
                                         litigationRequest.IsLitigationRequestFeesNotPaidFirstReminderSent = true;
+
+
+                                        // تذكير بدفع رسوم الدعوي
+                                        try
+                                        {
+                                            var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_LitigationRequestFeesReminder).Result.Data?.Value;
+                                            msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
+                                            var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                            string body;
+                                            using (StreamReader streamReader = File.OpenText(pathToFile))
+                                            {
+                                                body = await streamReader.ReadToEndAsync();
+                                                body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_LitigationRequestFeesReminder).Result.Data?.Value);
+                                                body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                                            }
+
+                                            await SendNotificationMS(body, msg, litigationRequest, "دفع رسوم الدعوى", NotificationActorType.Applicant, RequestType.LitigationRequest,
+                                          notifyApplicant: true, notifyDeptAdmin: false, notifyFirstParty: true, notifyFirstPartyFacility: true);
+                                        }
+                                        catch (Exception e)
+                                        {
+                                            _loggerManager.Log(Core.Log.Domain.Shared.Enums.LoggerType.Database
+                                            , new LogDto()
+                                            {
+                                                Type = Core.Log.Domain.Shared.Enums.LogType.Exception,
+                                                Message = e.ToString()
+                                            });
+
+
+                                        }
+
+
+                                    }
+                                }
+
+                            }
+                        }
+                        else
+                        {
+                            if(secondReminderForApplicantToPayLitigationRequestFeesPeriod > 0)
+                            {
+                                var workFlowProcessingLog = litigationRequest.WorkFlowProcessingLogs.Where(x => x.EmployeeId.HasValue == false & x.IsFinished == false).OrderBy(x => x.CreatedOn).LastOrDefault();
+
+
+                                if (workFlowProcessingLog is not null)
+                                {
+                                    double totalReviewHours = 0;
+                                    totalReviewHours = (DateTime.Now - workFlowProcessingLog.CreatedOn).TotalHours;
+
+
+                                    if (totalReviewHours >= secondReminderForApplicantToPayLitigationRequestFeesPeriod)
+                                    {
+
                                         litigationRequest.InternalStatusId = RequestStatus.Cancelled;
                                         litigationRequest.ExternalStatusId = RequestStatus.Cancelled;
 
@@ -120,18 +175,16 @@ namespace REAC.Application.AppServices.SLA
 
 
                                         }
-
                                     }
                                 }
-
                             }
+
                         }
 
-
-                        var repositorySaveResponse = await _repository.SaveChangesAsync(default);
-                        if (!repositorySaveResponse.IsDone)
-                            return repositorySaveResponse;
                     }
+                    var repositorySaveResponse = await _repository.SaveChangesAsync(default);
+                    if (!repositorySaveResponse.IsDone)
+                        return repositorySaveResponse;
                 }
             }
 
@@ -483,14 +536,14 @@ namespace REAC.Application.AppServices.SLA
                                             // يوجد تأخير تجاوز المده المسموح بها للتدقيق على الدعوى رقم .....
                                             try
                                             {
-                                                var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_AssignLitigation_ReviewerAdmin).Result.Data?.Value;
+                                                var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_ReminderForReviewAdmin_ReAssign).Result.Data?.Value;
                                                 msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
                                                 var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
                                                 string body;
                                                 using (StreamReader streamReader = File.OpenText(pathToFile))
                                                 {
                                                     body = await streamReader.ReadToEndAsync();
-                                                    body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_AssignLitigation_ReviewerAdmin).Result.Data?.Value);
+                                                    body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_ReminderForReviewAdmin_ReAssign).Result.Data?.Value);
                                                     body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
                                                 }
 
@@ -514,7 +567,7 @@ namespace REAC.Application.AppServices.SLA
                                                     new SendEmailDto()
                                                     {
                                                         Body = body,
-                                                        Subject = "تم ارسال دعوى  إلى مدقق جديد لتخطى المدقق السابق مدة التدقيق الفصوى",
+                                                        Subject = "تخطى المدقق مدة التدقيق الفصوى",
                                                         To = new List<string>() { deptAdminInfoReview.Data.Email }
 
                                                     },
@@ -638,7 +691,8 @@ namespace REAC.Application.AppServices.SLA
                                                 recipients.Add(litigationRequest.Contract.FirstPartyCitizen.Mobile);
 
 
-                                            };
+                                            }
+                                            ;
                                             if (litigationRequest?.Contract?.FirstPartyFacility != null && litigationRequest?.Contract?.FirstPartyFacility.CitizenId != litigationRequest.ApplicantCitizenId)
                                             {
                                                 notifications.Add(new SysNotificationDto
@@ -652,7 +706,8 @@ namespace REAC.Application.AppServices.SLA
                                                 });
                                                 emails.Add(litigationRequest.Contract.FirstPartyFacility.Citizen.Email);
                                                 recipients.Add(litigationRequest.Contract.FirstPartyFacility.Citizen.Mobile);
-                                            };
+                                            }
+                                            ;
 
 
                                             var notificationResult = await _notificationService.SendNotifications(
@@ -771,7 +826,8 @@ namespace REAC.Application.AppServices.SLA
                                                 recipients.Add(litigationRequest.Contract.FirstPartyCitizen.Mobile);
 
 
-                                            };
+                                            }
+                                            ;
                                             if (litigationRequest?.Contract?.FirstPartyFacility != null && litigationRequest?.Contract?.FirstPartyFacility.CitizenId != litigationRequest.ApplicantCitizenId)
                                             {
                                                 notifications.Add(new SysNotificationDto
@@ -785,7 +841,8 @@ namespace REAC.Application.AppServices.SLA
                                                 });
                                                 emails.Add(litigationRequest.Contract.FirstPartyFacility.Citizen.Email);
                                                 recipients.Add(litigationRequest.Contract.FirstPartyFacility.Citizen.Mobile);
-                                            };
+                                            }
+                                            ;
 
 
                                             var notificationResult = await _notificationService.SendNotifications(
@@ -888,7 +945,8 @@ namespace REAC.Application.AppServices.SLA
                                                 });
                                                 emails.Add(litigationRequest.Contract.SecondPartyCitizen.Email);
                                                 recipients.Add(litigationRequest.Contract.SecondPartyCitizen.Mobile);
-                                            };
+                                            }
+                                            ;
                                             if (litigationRequest?.Contract?.SecondPartyFacilityId != null)
                                             {
                                                 notifications.Add(new SysNotificationDto
@@ -902,7 +960,8 @@ namespace REAC.Application.AppServices.SLA
                                                 });
                                                 emails.Add(litigationRequest.Contract.SecondPartyFacility.Citizen.Email);
                                                 recipients.Add(litigationRequest.Contract.SecondPartyFacility.Citizen.Mobile);
-                                            };
+                                            }
+                                            ;
 
 
                                             var notificationResult = await _notificationService.SendNotifications(
@@ -986,7 +1045,8 @@ namespace REAC.Application.AppServices.SLA
                                                 recipients.Add(litigationRequest.Contract.FirstPartyCitizen.Mobile);
 
 
-                                            };
+                                            }
+                                            ;
                                             if (litigationRequest?.Contract?.FirstPartyFacility != null && litigationRequest?.Contract?.FirstPartyFacility.CitizenId != litigationRequest.ApplicantCitizenId)
                                             {
                                                 notifications.Add(new SysNotificationDto
@@ -1000,7 +1060,8 @@ namespace REAC.Application.AppServices.SLA
                                                 });
                                                 emails.Add(litigationRequest.Contract.FirstPartyFacility.Citizen.Email);
                                                 recipients.Add(litigationRequest.Contract.FirstPartyFacility.Citizen.Mobile);
-                                            };
+                                            }
+                                            ;
                                             //if (litigationRequest?.Contract?.SecondPartyCitizenId != null)
                                             //{
                                             //    notifications.Add(new SysNotificationDto
@@ -1150,7 +1211,8 @@ namespace REAC.Application.AppServices.SLA
                                                 recipients.Add(litigationRequest.Contract.FirstPartyCitizen.Mobile);
 
 
-                                            };
+                                            }
+                                            ;
                                             if (litigationRequest?.Contract?.FirstPartyFacility != null && litigationRequest?.Contract?.FirstPartyFacility.CitizenId != litigationRequest.ApplicantCitizenId)
                                             {
                                                 notifications.Add(new SysNotificationDto
@@ -1164,7 +1226,8 @@ namespace REAC.Application.AppServices.SLA
                                                 });
                                                 emails.Add(litigationRequest.Contract.FirstPartyFacility.Citizen.Email);
                                                 recipients.Add(litigationRequest.Contract.FirstPartyFacility.Citizen.Mobile);
-                                            };
+                                            }
+                                            ;
                                             if (litigationRequest?.Contract?.SecondPartyCitizen != null)
                                             {
                                                 notifications.Add(new SysNotificationDto
@@ -1180,7 +1243,8 @@ namespace REAC.Application.AppServices.SLA
                                                 recipients.Add(litigationRequest.Contract.SecondPartyCitizen.Mobile);
 
 
-                                            };
+                                            }
+                                            ;
                                             if (litigationRequest?.Contract?.SecondPartyFacility != null)
                                             {
                                                 notifications.Add(new SysNotificationDto
@@ -1194,7 +1258,8 @@ namespace REAC.Application.AppServices.SLA
                                                 });
                                                 emails.Add(litigationRequest.Contract.SecondPartyFacility.Citizen.Email);
                                                 recipients.Add(litigationRequest.Contract.SecondPartyFacility.Citizen.Mobile);
-                                            };
+                                            }
+                                            ;
 
 
                                             var notificationResult = await _notificationService.SendNotifications(
@@ -1242,7 +1307,7 @@ namespace REAC.Application.AppServices.SLA
                                             using (StreamReader streamReader = File.OpenText(pathToFile))
                                             {
                                                 body = await streamReader.ReadToEndAsync();
-                                                body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.ExcuteWorkflow).Result.Data?.Value);
+                                                body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_AgreementPeriodFinishedWarning).Result.Data?.Value);
                                                 body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
                                             }
 

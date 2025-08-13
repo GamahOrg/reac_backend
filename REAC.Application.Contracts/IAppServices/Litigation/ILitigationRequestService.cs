@@ -15,6 +15,7 @@ namespace REAC.Application.Contracts.IAppServices.Litigation
         Task<BaseResponse> GetCitizenLitigationRequestForAgreementRequestReply();
         Task<BaseResponse> GetCitizenLitigationRequestForAgreementRequestReply(Guid requestId);
         Task<BaseResponse> AddCitizenLitigationRequestForAgreementRequestReply(Guid requestId, ApproveRejectStatus agreementRequestStatus);
+        Task<BaseResponse> DeleteByIdAsync(Guid id);
 
         Task<BaseResponse> Add(LitigationCreateUpdateDto model);
         Task<BaseResponse> SendLitigationFeesRequestPaid(Guid litigationId);
@@ -27,7 +28,7 @@ namespace REAC.Application.Contracts.IAppServices.Litigation
         Task<BaseResponse> ReformerList(int pageIndex, int pageSize, string? searchKey, LitigationListDto model);
 
         Task<BaseResponse> GetReviewersLookup(Guid requestId);
-
+        Task<BaseResponse> GetLitigationByIdForBackoffice(Guid litigationId);
         Task<BaseResponse> AuditngList(int pageIndex, int pageSize, string? searchKey, AuditingListDto model);
         Task<BaseResponse> GetLitigationRequestForFullAllReviewer(int pageIndex, int pageSize, CancellationToken cancellationToken);
         Task<BaseResponse> Get(Guid litigationId);

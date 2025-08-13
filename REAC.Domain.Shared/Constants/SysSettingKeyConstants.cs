@@ -3,6 +3,7 @@
     public class SysSettingKeyConstants
     {
         public const string SecurityApiUrl = "SecurityApiUrl"; // http://localhost:7144/
+        public const string REACPortalUrl = "REACPortalUrl"; // http://localhost:7144/
 
         #region Integration Keys
 
@@ -221,6 +222,7 @@
         public const string LitigationRequest_Creation_Accept = "LitigationRequest.Creation.Accept";
         public const string LitigationRequest_Creation_Accept_Defendant = "LitigationRequest.Creation.Accept.Defendant";
         public const string LitigationRequest_Decision_WaiverOfRight = "LitigationRequest.Decision.WaiverOfRight";
+        public const string LitigationRequest_Decision_ReconciliationAccepted = "LitigationRequest.Decision.ReconciliationAccepted";
         public const string LitigationRequest_Decision_ReconciliationWasMade = "LitigationRequest.Decision.ReconciliationWasMade";
         public const string LitigationRequest_Decision_WaiverOfTheLitigation = "LitigationRequest.Decision.WaiverOfTheLitigation";
         public const string ReconciliationOnTradyPlatform = "LitigationRequest.Decision.ReconciliationOnTradyPlatform";
@@ -245,6 +247,13 @@
         public const string LitigationRequest_ReconciliationFeesHaveBeenCollected = "LitigationRequest.ReconciliationFeesHaveBeenCollected";
 
         public const string SLA_LitigationRequestFeesNotPaidReminderFirstPeriod = "SLA.LitigationRequestFeesNotPaidReminderFirstPeriod";
+        public const string SLA_LitigationRequestFeesNotPaidReminderSecondPeriod = "SLA.LitigationRequestFeesNotPaidReminderSecondPeriod";
+        public const string SLA_LitigationRequestReconciliationFeesNotPaidReminderFirstPeriod = "SLA.LitigationRequestReconciliationFeesNotPaidReminderFirstPeriod";
+        public const string SLA_LitigationRequestReconciliationFeesNotPaidReminderSecondPeriod = "SLA.LitigationRequestReconciliationFeesNotPaidReminderSecondPeriod";
+        public const string SLA_LitigationRequestArbitrationFeesNotPaidReminderFirstPeriod = "SLA.LitigationRequestArbitrationFeesNotPaidReminderFirstPeriod";
+        public const string SLA_LitigationRequestArbitrationFeesNotPaidReminderSecondPeriod = "SLA.LitigationRequestArbitrationFeesNotPaidReminderSecondPeriod";
+        public const string SLA_LitigationRequestFeesReminder = "SLA.LitigationRequestFeesReminder";
+        public const string SLA_LitigationRequestReconciliationFeesReminder = "SLA.LitigationRequestReconciliationFeesReminder";
         public const string SLA_ReminderForReviewer = "SLA.ReminderForReviewer";
         public const string SLA_ReminderForReviewerManager = "SLA.ReminderForReviewerManager";
         public const string SLA_FirstEditReminderForRequestApplicant = "SLA.FirstEditReminderForRequestApplicant";
@@ -302,10 +311,14 @@
         #region Sla Notification Messages
 
         public const string SLA_PayLitigationFees_Applicant = "SLA.PayLitigationFees.Applicant";
+        public const string SLA_PayLitigationReconciliationFees_Applicant = "SLA.PayLitigationReconciliationFees.Applicant";
+        public const string SLA_PayLitigationArbitrationFees_Applicant = "SLA.PayLitigationArbitrationFees.Applicant";
+        public const string SLA_LitigationRequestArbitrationFeesReminder = "SLA.LitigationRequestArbitrationFeesReminder";
         public const string SLA_FinishLitigation_ReviewerEmployee = "SLA.FinishLitigation.ReviewerEmployee";
         public const string SLA_WithdrewLitigation_OldReviewerEmployee = "SLA.WithdrewLitigation.OldReviewerEmployee";
         public const string SLA_AssignLitigation_NewReviewerEmployee = "SLA.AssignLitigation.NewReviewerEmployee";
         public const string SLA_AssignLitigation_ReviewerAdmin = "SLA.AssignLitigation.ReviewerAdmin";
+        public const string SLA_ReminderForReviewAdmin_ReAssign = "SLA.ReminderForReviewAdmin.ReAssign";
         public const string SLA_ReviewDelay_ReviewerAdmin = "SLA.ReviewDelay.ReviewerAdmin";
         public const string SLA_FinishNotes = "SLA.FinishNotes";
         public const string SLA_LitigationCancelled = "SLA.LitigationCancelled";

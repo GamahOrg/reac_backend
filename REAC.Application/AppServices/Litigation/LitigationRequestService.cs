@@ -3,9 +3,11 @@ using Core.GenericRepository.BaseRepository;
 using Core.GenericRepository.Shared.Pagging;
 using Core.Log.Application.Contracts.Dto;
 using Core.Log.Application.Contracts.IAppServices;
+using Core.Log.Domain.Shared.Enums;
 using Core.Security.Entities;
 using Core.Shared.Responses;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -1079,13 +1081,13 @@ namespace REAC.Application.AppServices.Litigation
                         }
                         try
                         {
-                            msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.ExcuteWorkflow).Result.Data?.Value;
+                            msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_AssignLitigation_NewReviewerEmployee).Result.Data?.Value;
                             msg = msg?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
                             var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
                             using (StreamReader streamReader = File.OpenText(pathToFile))
                             {
                                 body = await streamReader.ReadToEndAsync();
-                                body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.ExcuteWorkflow).Result.Data?.Value);
+                                body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_AssignLitigation_NewReviewerEmployee).Result.Data?.Value);
                                 body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
                             }
                             var newReviewerEmail = deptNewEmployeeInfoReview.Email;
@@ -1334,6 +1336,8 @@ namespace REAC.Application.AppServices.Litigation
                 .Include(x => x.City)
                 .Include(x => x.ApplicantCitizen)
                 .Include(x => x.Contract.SecondPartyCitizen)
+                .Include(x => x.Contract.SecondPartyCitizen.Area)
+                .Include(x => x.Contract.SecondPartyCitizen.City)
                 .Include(x => x.Contract.SecondPartyCitizen.Nationality)
                 .Include(x => x.Contract.FirstPartyCitizen)
                 .Include(x => x.Contract.FirstPartyCitizen.Nationality)
@@ -1424,7 +1428,60 @@ namespace REAC.Application.AppServices.Litigation
             return new DataResponse<LitigationRequest> { Data = result, IsDone = true };
         }
 
+        public async Task<BaseResponse> GetLitigationByIdForBackoffice(Guid litigationId)
+        {
+            Guid referenceId = Guid.Empty;
+            _jwtReader.GetReferenceId(ref referenceId);
 
+            if (referenceId == Guid.Empty)
+                return new BaseResponse() { IsDone = false, Message = "غير مصرح" };
+
+
+
+            var quarble = await GetQueryableAsync();
+            var result = quarble
+                .Include(x => x.SysExemptionReductionCategory)
+                .Include(x => x.ExemptionReductionFile)
+                .Include(x => x.LitigationRequestAmount)
+                .Include(x => x.LitigationRequestExtendPeriodRequests)
+                .Include(x => x.LitigationRequestSessions)
+                .Include(x => x.LitigationRequestReformerAssigningRequests)
+                .Include(x => x.LitigationRequestArbitratorAssigningRequests)
+                .Include(x => x.Contract)
+
+                .Include(x => x.LitigationRequestCategory)
+                .Include(x => x.Area)
+                .Include(x => x.City)
+                .Include(x => x.ApplicantCitizen)
+                .Include(x => x.Contract.SecondPartyCitizen)
+                .Include(x => x.Contract.SecondPartyCitizen.Area)
+                .Include(x => x.Contract.SecondPartyCitizen.City)
+                .Include(x => x.Contract.SecondPartyCitizen.Nationality)
+                .Include(x => x.Contract.FirstPartyCitizen)
+                .Include(x => x.Contract.FirstPartyCitizen.Nationality)
+                .Include(x => x.Contract.FirstPartyFacility)
+                .Include(x => x.Contract.SecondPartyFacility)
+                .Include(x => x.Contract.ContractFile)
+                .Include(x => x.Contract.AssociationRegistrationCertificateFile)
+                .Include(x => x.Contract.FoundingLetterFile)
+                .Include(x => x.Contract.InternalRegulationsFile)
+                .Include(x => x.WorkFlowProcessingLogs)
+                .ThenInclude(x => x.Employee)
+                .Include(x => x.WorkFlowProcessingLogs.Where(y => !string.IsNullOrEmpty(y.Notes)).OrderByDescending(h => h.CreatedOn))
+                .ThenInclude(x => x.WorkFlowProcessingLogFiles).ThenInclude(x => x.FileManager)
+                .Include(x => x.LitigationRequestGrounds)
+                .ThenInclude(x => x.LitigationRequestGroundFiles)
+                .ThenInclude(x => x.FileManager)
+
+                .Include(x => x.LitigationRequestRequests)
+                .FirstOrDefault(x => x.Id == litigationId);
+
+
+            if (result is null)
+                return new ExceptionResponse { IsDone = false, Message = "دعوي غير موجودة" };
+
+            return new DataResponse<LitigationRequest> { Data = result, IsDone = true };
+        }
 
         public async Task<BaseResponse> GetLitigationArbitrationTaskAcceptanceOrRejectDocumentData(Guid litigationId, Guid? requestId)
         {
@@ -1559,6 +1616,9 @@ namespace REAC.Application.AppServices.Litigation
         }
         public async Task<BaseResponse> GetLitigationReconciliationTaskAcceptanceOrRejectDocumentData(Guid litigationId, Guid? requestId)
         {
+            Guid citizenId = Guid.Empty;
+            _jwtReader.GetReferenceId(ref citizenId);
+
             var litigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>())
                          .Include(x => x.ReformerCitizen)
                          .ThenInclude(x => x.SigntureFile)
@@ -1588,10 +1648,15 @@ namespace REAC.Application.AppServices.Litigation
 
             var assigningRequest = litigationRequest.LitigationRequestReformerAssigningRequests.FirstOrDefault(l => l.Id == requestId);
 
+            var citizenInfo = (await _repository.GetQueryable<Citizen, Guid>())
+                .Include(x => x.SigntureFile)
+                .AsNoTracking()
+                .FirstOrDefault(x => x.Id == citizenId);
+
             string base64String = string.Empty;
-            if (!string.IsNullOrEmpty(litigationRequest.ReformerCitizen?.SigntureFile?.FilePath))
+            if (!string.IsNullOrEmpty(citizenInfo?.SigntureFile?.FilePath))
             {
-                string inputFilePath = Path.Combine(Directory.GetCurrentDirectory(), litigationRequest.ReformerCitizen?.SigntureFile?.FilePath);
+                string inputFilePath = Path.Combine(Directory.GetCurrentDirectory(), citizenInfo?.SigntureFile?.FilePath);
                 // Read file and convert to Base64
                 byte[] fileBytes = File.ReadAllBytes(inputFilePath);
                 base64String = Convert.ToBase64String(fileBytes);
@@ -4687,6 +4752,67 @@ namespace REAC.Application.AppServices.Litigation
                 }
             }
         }
+      
+        public async Task<BaseResponse> DeleteByIdAsync(Guid id)
+        {
+            try
+            {
+                // Validate request exists and can be deleted
+                var entity = await _context.LitigationRequests
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(x => x.Id == id);
+
+                if (entity == null)
+                    return new BaseResponse { IsDone = false, Message = "دعوي غير موجودة" };
+
+                // Check if request can be deleted based on status
+                if (entity.InternalStatusId != RequestStatus.SaveAsDraft)
+                    return new BaseResponse { IsDone = false, Message = "لا يمكن مسح هذه الدعوي" };
+
+                try
+                {
+                    // Execute stored procedure directly
+                    var result = await _repository.ExecuteSqlCommandAsync(
+                         "EXEC sp_DeleteLitigationRequest @Id",
+                         new[] { new SqlParameter("@Id", id) });
+                    if (!result.IsDone)
+                        return new BaseResponse { IsDone = false, Message = "خطأ عند مسح الدعوي" };
+
+                    return new BaseResponse { IsDone = true, Message = "تم مسح الدعوي بنجاح" };
+
+                }
+                catch (SqlException sqlEx)
+                {
+                    _loggerManager.Log(LoggerType.Database, new LogDto
+                    {
+                        Type = Core.Log.Domain.Shared.Enums.LogType.Error,
+                        Message = $"SQL Error deleting litigation request: {sqlEx.Message}"
+                    });
+
+                    return new ExceptionResponse
+                    {
+                        IsDone = false,
+                        Exception = "خطأ داخلي"
+                    };
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _loggerManager.Log(LoggerType.Database, new LogDto
+                {
+                    Type = Core.Log.Domain.Shared.Enums.LogType.Error,
+                    Message = $"Error in DeleteByIdAsync: {ex.Message}\n{ex}"
+                });
+
+                return new ExceptionResponse
+                {
+                    IsDone = false,
+                    Exception = ex.Message + "\n" + ex.ToString()
+                };
+            }
+        }
+
 
         #endregion
 

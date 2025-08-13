@@ -90,7 +90,8 @@ public class LitigationRequestController : BaseController<LitigationRequest,
                 var ejarReturnValue = await _litigationService.CreateEjarLitigationRequestManual(model);
                 return Ok(ejarReturnValue);
 
-            }else if (model.ContractType == Domain.Shared.Enum.LitigationRequestContractType.Properties)
+            }
+            else if (model.ContractType == Domain.Shared.Enum.LitigationRequestContractType.Properties)
             {
 
                 var ejarReturnValue = await _litigationService.CreatePropertiesLitigationRequestManual(model);
@@ -232,6 +233,20 @@ public class LitigationRequestController : BaseController<LitigationRequest,
 
         return BadRequest();
     }
+
+    [HttpGet(nameof(GetLitigationByIdForBackoffice))]
+    public async Task<ActionResult<IEnumerable<LitigationRequest>>> GetLitigationByIdForBackoffice(Guid litigationId)
+    {
+        if (ModelState.IsValid)
+        {
+            var returnValue = await _litigationService.GetLitigationByIdForBackoffice(litigationId);
+
+            return Ok(returnValue);
+        }
+
+        return BadRequest();
+    }
+
 
     [HttpGet(nameof(GetLitigationByIdForEmployee))]
     public async Task<ActionResult<IEnumerable<LitigationRequest>>> GetLitigationByIdForEmployee(Guid litigationId)
@@ -452,4 +467,13 @@ public class LitigationRequestController : BaseController<LitigationRequest,
     #endregion
 
     #endregion
+    [AllowAnonymous]
+    [HttpDelete]
+    [Route(nameof(DeleteById))]
+    public async Task<IActionResult> DeleteById(Guid id)
+    {
+        var result = await _litigationService.DeleteByIdAsync(id);
+
+        return Ok(result);
+    }
 }

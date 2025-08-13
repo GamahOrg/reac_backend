@@ -16,6 +16,8 @@ namespace REAC.Application.Contracts.Dtos.Litigation.Create.Contract
         public Guid LitigationRequestId { get; set; }
         public IFormFileCollection? Files { get; set; }
         public PropertiesDocumnetType? PropertiesDocumnetType { get; set; }
+        public IFormFileCollection? SupportsFiles { get; set; }
+        
 
     }
 

@@ -68,9 +68,10 @@ namespace REAC.Application.ModuleServices
                         // تم إضافة محضر الصلح
                         try
                         {
-                            //msg = (await _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reconciliation_Report_Creation)).Data?.ToString();
+                            var portalUrl = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.REACPortalUrl).Result.Data?.Value;
                             msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reconciliation_Request_Added).Result.Data?.Value;
                             msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
+                            msg = msg.Replace("{PortalUrl}", portalUrl);
                             var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
                             using (StreamReader streamReader = File.OpenText(pathToFile))
                             {
