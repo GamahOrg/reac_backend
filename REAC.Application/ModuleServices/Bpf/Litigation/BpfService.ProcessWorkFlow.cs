@@ -778,7 +778,7 @@ namespace Bpf.Application.ModuleServices
             });
 
             //مدير ادارة التدقيق
-            if (deptAdminInfoReview is not null)
+            if (deptAdminInfoReview is not null && deptAdminInfoReview.Data is not null)
             {
                 objEmail.To.Add(deptAdminInfoReview?.Data?.Email);
                 objSms.recipients.Add(deptAdminInfoReview?.Data?.Mobile);

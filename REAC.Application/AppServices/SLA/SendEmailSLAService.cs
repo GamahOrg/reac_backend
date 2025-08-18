@@ -142,13 +142,31 @@ namespace REAC.Application.AppServices.SLA
                     }
                     catch (Exception ex)
                     {
+                        _loggerManager.Log(Core.Log.Domain.Shared.Enums.LoggerType.Database
+                                    , new LogDto()
+                                    {
+                                        Type = Core.Log.Domain.Shared.Enums.LogType.Exception,
+                                        Message = $"Send Email Exception ===> {JsonConvert.SerializeObject(ex)}" + "\r\n" +
+                                        $"; Email Service Exception ===> {ex.ToString()}"
+                                    });
                         email.Error = ex.ToString();
                     }
-                    finally
-                    {
-                        await _repository.SaveChangesAsync();
-                    }
+                }
 
+                try
+                {
+
+                    await _repository.SaveChangesAsync();
+                }
+                catch (Exception ex)
+                {
+                    _loggerManager.Log(Core.Log.Domain.Shared.Enums.LoggerType.Database
+                            , new LogDto()
+                            {
+                                Type = Core.Log.Domain.Shared.Enums.LogType.Exception,
+                                Message = $"Send Email DBContext Exception ===> {JsonConvert.SerializeObject(ex)}" + "\r\n" +
+                                $"; SMS Email DBContext Exception ===> {ex.ToString()}"
+                            });
                 }
             }
 
