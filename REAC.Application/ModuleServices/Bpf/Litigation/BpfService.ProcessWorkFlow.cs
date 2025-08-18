@@ -652,6 +652,7 @@ namespace Bpf.Application.ModuleServices
 
                             string msgDefendant = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Creation_Accept_Defendant).Result.Data?.Value;
                             msgDefendant = msgDefendant.Replace("{LitigationCode}", litigationRequest.RequestCode);
+                            msgDefendant = msgDefendant.Replace("{PortalUrl}", portalUrl);
                             var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
                             using (StreamReader streamReader = File.OpenText(pathToFile))
                             {
