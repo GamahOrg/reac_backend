@@ -336,15 +336,26 @@ namespace REAC.Application.AppServices.System
                     if (existedActiveAdmin)
                         return new BaseResponse() { IsDone = false, Message = "لا يمكن اضافة اكثر من مدير مفعل لنفس الأدارة" };
                 }
+                // Check at least one Active Admin
+                if (employee.IsAdmin && isActive == false)
+                {
+                    var CountActiveAdmins = (await _repository.GetQueryable<SysEmployee, Guid>())
+                   .Count(x => x.DepartmentId == employee.DepartmentId && x.IsActive == true);
 
-                employee.IsActive = isActive;
+                    if (CountActiveAdmins == 1)
+                    {
+                        return new BaseResponse() { IsDone = false, Message = "لا يمكن تعطيل حساب المدير ,يوجد مدير واحد فقط  فى الأدارة" };
+                    }
+                }
+                
+                    employee.IsActive = isActive;
 
                 await _repository.SaveChangesAsync();
 
                 if (isActive == true)
-                    return new BaseResponse() { IsDone = true, Message = "تم تفعيل حساب الوظف" };
+                    return new BaseResponse() { IsDone = true, Message = "تم تفعيل حساب الموظف" };
                 else
-                    return new BaseResponse() { IsDone = true, Message = "تم إيقاف حساب الوظف" };
+                    return new BaseResponse() { IsDone = true, Message = "تم إيقاف حساب الموظف" };
 
             }
             catch (Exception ex)

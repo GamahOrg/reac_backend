@@ -1421,7 +1421,6 @@ namespace REAC.Application.AppServices.Litigation
                 .Include(x => x.LitigationRequestGrounds)
                 .ThenInclude(x => x.LitigationRequestGroundFiles)
                 .ThenInclude(x => x.FileManager)
-
                 .Include(x => x.LitigationRequestRequests)
                 .FirstOrDefault(x => x.Id == litigationId);
 
@@ -3065,8 +3064,6 @@ namespace REAC.Application.AppServices.Litigation
         {
             try
             {
-
-
 
                 Guid referenceId = Guid.Empty;
                 _jwtReader.GetReferenceId(ref referenceId);

@@ -19,12 +19,14 @@ namespace REAC.Application.AppServices.Email
     {
         private readonly SendEmailOptions options;
         private readonly IEntityRepository _repository;
+        private readonly ILoggerManager _loggerManager;
         private SendEmailOptions sendEmail;
 
-        public MailService(IOptions<SendEmailOptions> options, IEntityRepository repository)
+        public MailService(IOptions<SendEmailOptions> options, IEntityRepository repository, ILoggerManager loggerManager)
         {
             this.options = options.Value;
             _repository = repository;
+            _loggerManager = loggerManager;
         }
         public async Task<BaseResponse> SendMail(List<string> toAddressList, string subject, string body)
         {
@@ -101,17 +103,17 @@ namespace REAC.Application.AppServices.Email
                     // Check if email already exists
                     //var emailExist = (await _repository.GetQueryable<SysNotificationEmail, Guid>())
                     //    .Any(x => x.ToAddressList == toAddress && x.Body == body && !x.IsSent && x.CreatedOn.Hour == DateTime.Now.Hour );
-
-                    await _repository.AddAsync<SysNotificationEmail, Guid>(new SysNotificationEmail()
-                    {
-                        Subject = subject,
-                        Body = body,
-                        CreatedOn = DateTime.Now,
-                        Id = Guid.NewGuid(),
-                        IsSent = false,
-                        RetryAttempt = 0,
-                        ToAddressList = toAddress
-                    });
+                    if (toAddress != null)
+                        await _repository.AddAsync<SysNotificationEmail, Guid>(new SysNotificationEmail()
+                        {
+                            Subject = subject,
+                            Body = body,
+                            CreatedOn = DateTime.Now,
+                            Id = Guid.NewGuid(),
+                            IsSent = false,
+                            RetryAttempt = 0,
+                            ToAddressList = toAddress
+                        });
 
 
                 }
@@ -120,12 +122,12 @@ namespace REAC.Application.AppServices.Email
             }
             catch (Exception e)
             {
-                //_loggerManager.Log(Core.Log.Domain.Shared.Enums.LoggerType.Database
-                //      , new LogDto()
-                //      {
-                //          Type = Core.Log.Domain.Shared.Enums.LogType.Trace,
-                //          Message = $"SendMailToSLA Exception ===> {e.ToString()}"
-                //      });
+                _loggerManager.Log(Core.Log.Domain.Shared.Enums.LoggerType.Database
+                      , new LogDto()
+                      {
+                          Type = Core.Log.Domain.Shared.Enums.LogType.Trace,
+                          Message = $"SendMailToSLA Exception ===> {e.ToString()}"
+                      });
 
             }
 

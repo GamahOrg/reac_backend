@@ -652,6 +652,7 @@ namespace Bpf.Application.ModuleServices
 
                             string msgDefendant = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Creation_Accept_Defendant).Result.Data?.Value;
                             msgDefendant = msgDefendant.Replace("{LitigationCode}", litigationRequest.RequestCode);
+                            msgDefendant = msgDefendant.Replace("{PortalUrl}", portalUrl);
                             var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
                             using (StreamReader streamReader = File.OpenText(pathToFile))
                             {
@@ -778,7 +779,7 @@ namespace Bpf.Application.ModuleServices
             });
 
             //مدير ادارة التدقيق
-            if (deptAdminInfoReview is not null)
+            if (deptAdminInfoReview is not null && deptAdminInfoReview.Data is not null)
             {
                 objEmail.To.Add(deptAdminInfoReview?.Data?.Email);
                 objSms.recipients.Add(deptAdminInfoReview?.Data?.Mobile);

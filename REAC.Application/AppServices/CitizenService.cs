@@ -3,9 +3,11 @@ using Core.GenericRepository.BaseRepository;
 using Core.GenericRepository.Shared.Pagging;
 using Core.Log.Application.Contracts.IAppServices;
 using Core.Shared.Responses;
+using iText.Layout.Splitting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using REAC.Application.Contracts.Dtos.Citizen;
+using REAC.Application.Contracts.Dtos.CitizenRequests;
 using REAC.Application.Contracts.Dtos.Integration.GEE;
 using REAC.Application.Contracts.Dtos.Litigation.CreateUpdate.Litigation;
 using REAC.Application.Contracts.Dtos.Notification;
@@ -19,6 +21,7 @@ using REAC.EntityFrameworkCore.Entities.Actor;
 using REAC.EntityFrameworkCore.Entities.Arbitration;
 using REAC.EntityFrameworkCore.Entities.Litigation;
 using REAC.EntityFrameworkCore.Entities.System;
+using System;
 
 namespace REAC.Application.AppServices
 {
@@ -214,6 +217,7 @@ namespace REAC.Application.AppServices
 
             var citizen = (await _repository.GetQueryable<Citizen, Guid>())
                       .Include(x => x.Gender)
+                      .Include(x => x.CitizenRequests)
                       .Include(x => x.City)
                       .Include(x => x.Area)
                       .Include(x => x.IdentityFile)
@@ -237,6 +241,20 @@ namespace REAC.Application.AppServices
 
             var citizendto = _mapper.Map<GetCitizenBasicDataProfileDto>(citizen.Citizen);
             citizendto.ReformerStopFreeUpDecision = citizen.LatestDecision;
+            var LastCitizenRequest = citizen.Citizen?.CitizenRequests?.OrderBy(x => x.RequestOn).LastOrDefault();
+            if (LastCitizenRequest != null)
+            {
+                var TypeId = LastCitizenRequest?.CitizenRequestTypeId;
+                switch (TypeId)
+                {
+                    case CitizenRequestType.Arbitrator:
+                        citizendto.About = LastCitizenRequest.Brief;
+                        break;
+                    case CitizenRequestType.Reformer:
+                        citizendto.About = LastCitizenRequest.About;
+                        break;
+                }
+            }
 
             return new DataResponse<GetCitizenBasicDataProfileDto>()
             {
@@ -282,7 +300,53 @@ namespace REAC.Application.AppServices
             citizen.HomeTelephone = citizenBasicDataProfileDto.HomeTelephone;
             citizen.WorkTelephone = citizenBasicDataProfileDto.WorkTelephone;
 
-            var saveResponse = _repository.SaveChangesAsync().Result;
+            //get citizen request for update about breif
+            var LastCitizenRequest = (await _repository.GetQueryable<CitizenRequest, Guid>())
+                                                       .Where(s=>s.CitizenId == citizen.Id)
+                                                       .OrderBy(x => x.RequestOn).LastOrDefault();
+
+            if (LastCitizenRequest != null)
+            {
+                var TypeId = LastCitizenRequest?.CitizenRequestTypeId;
+                switch (TypeId)
+                {
+                    case CitizenRequestType.Arbitrator:
+                        LastCitizenRequest.Brief = citizenBasicDataProfileDto.About;
+                        break;
+                    case CitizenRequestType.Reformer:
+                        LastCitizenRequest.About = citizenBasicDataProfileDto.About;
+                        break;
+                }
+            }
+            else
+            {
+                CitizenRequestCreateUpdateDto citizenRequestCreateUpdateDto = new CitizenRequestCreateUpdateDto();
+                citizenRequestCreateUpdateDto.CitizenRequestTypeId = citizen.IsArbitrator == true ? CitizenRequestType.Arbitrator : CitizenRequestType.Reformer;
+                citizenRequestCreateUpdateDto.AreaId = citizen.AreaId;
+                citizenRequestCreateUpdateDto.AcademicDegreeName = "0";
+                switch (citizenRequestCreateUpdateDto.CitizenRequestTypeId)
+                {
+                    case CitizenRequestType.Arbitrator:
+                        citizenRequestCreateUpdateDto.Brief = citizenBasicDataProfileDto.About;
+                        break;
+                    case CitizenRequestType.Reformer:
+                        citizenRequestCreateUpdateDto.About = citizenBasicDataProfileDto.About;
+                        break;
+                }
+
+                var request = _mapper.Map<CitizenRequest>(citizenRequestCreateUpdateDto);
+                request.CitizenId = referenceId;
+                request.Id = Guid.NewGuid();
+                if (citizenRequestCreateUpdateDto.IsSend)
+                    request.StatusId = CitizenRequestStatus.WaitingForCertify;
+                else
+                    request.StatusId = CitizenRequestStatus.Draft;
+
+                request.RequestOn = DateTime.Now;
+                await _repository.AddAsync<CitizenRequest, Guid>(request);
+            }
+
+                var saveResponse = _repository.SaveChangesAsync().Result;
             if (saveResponse.IsDone != true)
                 return response;
 
@@ -330,8 +394,8 @@ namespace REAC.Application.AppServices
             var citizens = (await _repository.GetQueryable<Citizen, Guid>())
                              .Include(x => x.ReformerLitigationRequests)
                              .Where(x => x.IsReformer == true && x.ReformerStatusId == ReformerStatus.Certified).ToList();
-            
-            if(citizens != null && citizens.Count > 0)
+
+            if (citizens != null && citizens.Count > 0)
             {
                 List<CitizenReformer> citizenReformers = new List<CitizenReformer>();
                 citizens.ForEach(t =>
@@ -351,7 +415,7 @@ namespace REAC.Application.AppServices
                     Data = citizenReformers.OrderBy(x => x.RequestsCount).ToList()
                 };
 
-                
+
             }
             else
             {
@@ -362,9 +426,9 @@ namespace REAC.Application.AppServices
                 };
             }
 
-           
+
         }
-        
+
         public async Task<BaseResponse> GetArbitratorsLookup()
         {
 
@@ -372,8 +436,8 @@ namespace REAC.Application.AppServices
             var citizens = (await _repository.GetQueryable<Citizen, Guid>())
                              .Include(x => x.ReformerLitigationRequests)
                              .Where(x => x.IsArbitrator == true && x.ArbitratorStatusId == ArbitratorStatus.Certified).ToList();
-            
-            if(citizens != null && citizens.Count > 0)
+
+            if (citizens != null && citizens.Count > 0)
             {
                 List<CitizenAbitrator> citizenArbitrators = new List<CitizenAbitrator>();
                 citizens.ForEach(t =>
@@ -393,7 +457,7 @@ namespace REAC.Application.AppServices
                     Data = citizenArbitrators.OrderBy(x => x.RequestsCount).ToList()
                 };
 
-                
+
             }
             else
             {
@@ -404,10 +468,10 @@ namespace REAC.Application.AppServices
                 };
             }
 
-           
+
         }
-        
-        
+
+
         public async Task<BaseResponse> GetArbitratorsLookup(Guid? citizenId, Guid requestId)
         {
             var litigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>())
@@ -1058,7 +1122,7 @@ namespace REAC.Application.AppServices
                 var citizen = (await _repository.GetQueryable<Citizen, Guid>())?
                       .Where(x => x.Id == arbitratorStopDecisionCreateDto.CitizenId)
                       .SingleOrDefault();
-                
+
                 if (citizen == null)
                     return new BaseResponse()
                     {
@@ -1195,7 +1259,7 @@ namespace REAC.Application.AppServices
                 if (reformerStopDecisionByAdmin is not null && reformerStopDecisionByAdmin.CreatedByRole == EntityFrameworkCore.Seed.Roles.CoAdmin)
                     return new BaseResponse() { IsDone = false, Message = "الحساب موقوف من قبل مدير ادارة الصلح" };
 
-                var whiteListStatuses = new List<RequestStatus>() { RequestStatus.Cancelled,RequestStatus.ReconciliationWasNotMade};
+                var whiteListStatuses = new List<RequestStatus>() { RequestStatus.Cancelled, RequestStatus.ReconciliationWasNotMade };
                 var litigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>())
                 .Any(l => (!whiteListStatuses.Contains(l.ExternalStatusId) | !whiteListStatuses.Contains(l.InternalStatusId))
                 & l.LitigationRequestStage == LitigationRequestStage.Reconciliation & l.ReformerCitizenId == reformerStopDecisionCreateDto.CitizenId);
@@ -1345,7 +1409,7 @@ namespace REAC.Application.AppServices
                     {
                         IsDone = false,
                         Message = "مصلح غير موجود"
-                
+
                     };
 
                 var reformerStopDecisionByAdmin = (await _repository.GetQueryable<ReformerStopFreeUpDecision, int>())
