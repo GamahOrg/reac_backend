@@ -58,6 +58,7 @@ namespace REAC.Application.Contracts.Dtos.Citizen
         public bool IsLawyer { get; set; } = false;
 
         public string? LawyerLicenseNumber { get; set; }
+        public string? About { get; set; }
 
         public DateTime? LawyerLicenseExpirationDate { get; set; }
         public Guid? IdentityFileId { get; set; }
