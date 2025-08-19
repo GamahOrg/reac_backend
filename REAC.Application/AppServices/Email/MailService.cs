@@ -101,7 +101,7 @@ namespace REAC.Application.AppServices.Email
                     // Check if email already exists
                     //var emailExist = (await _repository.GetQueryable<SysNotificationEmail, Guid>())
                     //    .Any(x => x.ToAddressList == toAddress && x.Body == body && !x.IsSent && x.CreatedOn.Hour == DateTime.Now.Hour );
-
+                  if (toAddress != null)
                     await _repository.AddAsync<SysNotificationEmail, Guid>(new SysNotificationEmail()
                     {
                         Subject = subject,
