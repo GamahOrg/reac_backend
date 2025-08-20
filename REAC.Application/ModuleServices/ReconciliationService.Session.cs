@@ -25,7 +25,7 @@ namespace REAC.Application.ModuleServices
             {
                 Guid referenceId = Guid.Empty;
                 _jwtReader.GetReferenceId(ref referenceId);
-                requestPayload.SessionDateTime = requestPayload.SessionDateTime.ToLocalTime();
+                requestPayload.SessionDateTime = requestPayload.SessionDateTimeStr != null ? DateTime.Parse(requestPayload.SessionDateTimeStr) : DateTime.Now;
                 var msg = "";
                 var sessionUrl = "";
                 var _zoomMeeting = new ZoomMeting();
