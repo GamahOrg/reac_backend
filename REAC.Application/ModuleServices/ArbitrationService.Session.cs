@@ -22,7 +22,8 @@ namespace REAC.Application.ModuleServices
             {
                 Guid referenceId = Guid.Empty;
                 _jwtReader.GetReferenceId(ref referenceId);
-                requestPayload.SessionDateTime = requestPayload.SessionDateTimeStr != null ? DateTime.Parse(requestPayload.SessionDateTimeStr):DateTime.Now;
+                CultureInfo saCulture = new CultureInfo("ar-SA");
+                requestPayload.SessionDateTime = requestPayload.SessionDateTimeStr != null ? DateTime.Parse(requestPayload.SessionDateTimeStr, saCulture) :DateTime.Now;
                 var litigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>())?
                         .Include(x => x.LitigationRequestSessions.Where(x => x.LitigationRequestSessionRequestTypeId == LitigationRequestSessionRequestType.Arbitration))
                         .Include(x => x.ArbitratorCitizen)
