@@ -1,5 +1,6 @@
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 RUN apt-get update && apt-get install -y --allow-unauthenticated libgdiplus
+
 USER app
 WORKDIR /app
 EXPOSE 8080
@@ -27,6 +28,7 @@ ENV TZ=Asia/Riyadh
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 RUN date
+
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
