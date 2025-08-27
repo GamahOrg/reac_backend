@@ -137,7 +137,7 @@ namespace REAC.Application.AppServices.SLA
 
                                         litigationRequest.InternalStatusId = RequestStatus.Cancelled;
                                         litigationRequest.ExternalStatusId = RequestStatus.Cancelled;
-
+                                        litigationRequest.IsFinished = true;
                                         //Send Notification for Applicant 
                                         // Mail - Sms - Application Notification
                                         // تم الغاء الدعوي رقم لعدم دفع الرسوم   .....
