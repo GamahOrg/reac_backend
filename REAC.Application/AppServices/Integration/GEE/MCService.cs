@@ -122,7 +122,7 @@ namespace REAC.Application.AppServices.Integration.GEE
 
 
         public async Task<DataResponse<CRInformationByCRNumberDto>> GetCRNationalNumberInformation(string CRNationalNumber)
-        {
+        { 
             DataResponse<CRInformationByCRNumberDto> dataResponse = new DataResponse<CRInformationByCRNumberDto>();
 
             try
@@ -161,12 +161,12 @@ namespace REAC.Application.AppServices.Integration.GEE
                     }
 
 
-                    if (basicInfoDto.crBasicInfo!.crStatus!.crStatusID!.Value != (int)CRStatusTypeEnum.Active)
+                    if (basicInfoDto.crInformation!.crStatus!.crStatusID!.Value != (int)CRStatusTypeEnum.Active)
                     {
                         return new DataResponse<CRInformationByCRNumberDto>() { IsDone = false, Message = "رقم السجل التجاري غير فعال" };
                     }
 
-                    var cRInformationByCRNumberDto = await MapCRInformationByCRNumber(basicInfoDto.crBasicInfo!);
+                    var cRInformationByCRNumberDto = await MapCRInformationByCRNumber(basicInfoDto.crInformation!);
 
                     //if (cRInformationByCRNumberDto.CRExpiryDate < DateTime.Now)
                     //    return new DataResponse<CRInformationByCRNumberDto> { IsDone = false, Message = "رقم السجل التجاري منتهي" };
