@@ -22,5 +22,5 @@ include:
     file: 'pipelines/Kaniko.gitlab-ci.yml'
   - project: 'rega-softwares/rega-devops'
     file: 'pipelines/yaml-updater.yaml'
-    
+      
   
