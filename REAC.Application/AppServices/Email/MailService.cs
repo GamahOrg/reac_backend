@@ -1,4 +1,4 @@
-﻿using Core.Contracts;
+using Core.Contracts;
 using Core.Dtos;
 using Core.GenericRepository.BaseRepository;
 using Core.Shared.Responses;
@@ -19,14 +19,14 @@ namespace REAC.Application.AppServices.Email
     {
         private readonly SendEmailOptions options;
         private readonly IEntityRepository _repository;
-        //private readonly ILoggerManager _loggerManager;
+        // private readonly ILoggerManager _loggerManager;
         private SendEmailOptions sendEmail;
 
         public MailService(IOptions<SendEmailOptions> options, IEntityRepository repository)
         {
             this.options = options.Value;
             _repository = repository;
-            //_loggerManager = loggerManager;
+            // _loggerManager = loggerManager;
         }
         public async Task<BaseResponse> SendMail(List<string> toAddressList, string subject, string body)
         {
@@ -122,12 +122,12 @@ namespace REAC.Application.AppServices.Email
             }
             catch (Exception e)
             {
-                //_loggerManager.Log(Core.Log.Domain.Shared.Enums.LoggerType.Database
-                //      , new LogDto()
-                //      {
-                //          Type = Core.Log.Domain.Shared.Enums.LogType.Trace,
-                //          Message = $"SendMailToSLA Exception ===> {e.ToString()}"
-                //      });
+                // _loggerManager.Log(Core.Log.Domain.Shared.Enums.LoggerType.Database
+                //       , new LogDto()
+                //       {
+                //           Type = Core.Log.Domain.Shared.Enums.LogType.Trace,
+                //           Message = $"SendMailToSLA Exception ===> {e.ToString()}"
+                //       });
 
             }
 
