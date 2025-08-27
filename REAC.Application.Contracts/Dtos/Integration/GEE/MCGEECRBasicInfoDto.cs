@@ -7,7 +7,7 @@ public class MCGEECRBasicInfoDto
     public YefiResponseHeader yefiResponseHeader { get; set; }
     public YefiErrorResponse? YefiErrorResponse { get; set; }
     public YefiError? yefiError { get; set; }
-    public CrBasicInfo? crBasicInfo { get; set; }
+    public CrBasicInfo? crInformation { get; set; }
     public CrActivities? crActivities { get; set; }
     public ContactInformation? contactInformation { get; set; }
 }

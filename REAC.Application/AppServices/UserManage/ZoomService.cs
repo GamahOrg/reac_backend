@@ -71,7 +71,7 @@ namespace REAC.Application.AppServices.UserManage
 
                 start_time = meetingDefaultStartTime,
                 duration = meetingDuration,
-                timezone = "UTC",
+                timezone = "Asia/Riyadh",
                 settings = new
                 {
                     host_video = true,
@@ -126,7 +126,7 @@ namespace REAC.Application.AppServices.UserManage
 
                 start_time = meetingStartTime,
                 duration = meetingDuration,
-                timezone = "UTC",
+                timezone = "Asia/Riyadh",
                 settings = new
                 {
                     host_video = true,
