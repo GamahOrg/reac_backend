@@ -3176,11 +3176,11 @@ namespace REAC.Application.AppServices.Litigation
 
                     if (facility == null)
                     {
-                        var addNewFacilityFromIntegrationResponse = await _facilityService.ValidateAndAddFacility(litigationRequestDto.SecondPartyFacilityCommercialRegistrationNo, citizen.FirstOrDefault().Id);
+                        var addNewFacilityFromIntegrationResponse = await _facilityService.ValidateAndAddFacility(litigationRequestDto.SecondPartyFacilityCommercialRegistrationNo, citizen.FirstOrDefault().Id, false);
                         if (!addNewFacilityFromIntegrationResponse.IsDone)
                             return addNewFacilityFromIntegrationResponse;
 
-                        goto TryGetFacilityAgian;
+                        //goto TryGetFacilityAgian;
                     }
                 }
 
@@ -3389,12 +3389,13 @@ namespace REAC.Application.AppServices.Litigation
 
                     if (facility == null)
                     {
-                        var addNewFacilityFromIntegrationResponse = await _facilityService.ValidateAndAddFacility(litigationRequestDto.SecondPartyFacilityCommercialRegistrationNo, citizen.FirstOrDefault().Id);
+                        var addNewFacilityFromIntegrationResponse = await _facilityService.ValidateAndAddFacility(litigationRequestDto.SecondPartyFacilityCommercialRegistrationNo, citizen.FirstOrDefault().Id, false);
                         if (!addNewFacilityFromIntegrationResponse.IsDone)
                             return addNewFacilityFromIntegrationResponse;
 
                         goto TryGetFacilityAgian;
                     }
+
                 }
 
                 LitigationRequestContract litigationRequestContract = new LitigationRequestContract()
@@ -3623,7 +3624,7 @@ namespace REAC.Application.AppServices.Litigation
 
                     if (facility == null)
                     {
-                        var addNewFacilityFromIntegrationResponse = await _facilityService.ValidateAndAddFacility(litigationRequestDto.SecondPartyFacilityCommercialRegistrationNo, defendantCitizen.FirstOrDefault().Id);
+                        var addNewFacilityFromIntegrationResponse = await _facilityService.ValidateAndAddFacility(litigationRequestDto.SecondPartyFacilityCommercialRegistrationNo, defendantCitizen.FirstOrDefault().Id, false);
                         if (!addNewFacilityFromIntegrationResponse.IsDone)
                             return addNewFacilityFromIntegrationResponse;
 
