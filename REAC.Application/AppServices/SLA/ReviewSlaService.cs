@@ -142,7 +142,7 @@ namespace REAC.Application.AppServices.SLA
 
                                         litigationRequest.InternalStatusId = RequestStatus.Cancelled;
                                         litigationRequest.ExternalStatusId = RequestStatus.Cancelled;
-
+                                        litigationRequest.IsFinished = true;
 
 
                                         //Send Notification for Applicant 

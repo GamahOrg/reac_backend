@@ -41,7 +41,7 @@ namespace REAC.Api.Controllers
 
         [HttpPost(nameof(ValidateAndAddFacility))]
         public async Task<ActionResult> ValidateAndAddFacility(AddFacilityRequestDto addFacilityRequestDto)
-           => Ok(await _facilityService.ValidateAndAddFacility(addFacilityRequestDto.CRNumber, Guid.Empty));
+           => Ok(await _facilityService.ValidateAndAddFacility(addFacilityRequestDto.CRNumber, Guid.Empty , true));
 
     }
 }
