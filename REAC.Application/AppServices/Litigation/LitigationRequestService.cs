@@ -1491,6 +1491,7 @@ namespace REAC.Application.AppServices.Litigation
                          .ThenInclude(x => x.ArbitratorCitizen)
                          .ThenInclude(x => x.SigntureFile)
                          .Include(x => x.LitigationRequestAmount)
+                         .ThenInclude(x=>x.LitigationRequestFees)
                          .Include(x => x.InternalStatus)
                          .Include(x => x.ExternalStatus)
                          .Include(x => x.LitigationRequestCategory)
@@ -1522,9 +1523,6 @@ namespace REAC.Application.AppServices.Litigation
             }
             CultureInfo provider = new CultureInfo("en-US");
             CultureInfo.CurrentCulture = provider;
-            TimeZoneInfo ksaTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Arab Standard Time");
-            DateTime ksaAssigningOnDateTime = TimeZoneInfo.ConvertTime(litigationRequest.LitigationRequestArbitratorAssigningRequests.FirstOrDefault(l => l.Id == requestId).ResponseOn != null ? DateTime.Parse(litigationRequest.LitigationRequestArbitratorAssigningRequests.FirstOrDefault(l => l.Id == requestId).ResponseOn.ToString()) : DateTime.Now, ksaTimeZone);
-
 
             var response = new LitigationArbitrationTaskAcceptOrRejectDocumentDto()
             {
@@ -1538,8 +1536,8 @@ namespace REAC.Application.AppServices.Litigation
                 LitigationType = litigationRequest.Contract.LitigationRequestContractType.TypeName,
                 Subject = "100",
                 ArbitratorAssignerName = "مركز التحكيم العقاري",
-                ArbitratorAssigningDate = ksaAssigningOnDateTime.ToString(),
-                ArbitratorAssigningCost = litigationRequest.LitigationRequestAmount?.Fees.ToString(),
+                ArbitratorAssigningDate = litigationRequest.LitigationRequestArbitratorAssigningRequests.FirstOrDefault(l => l.Id == requestId).ResponseOn.ToString(),
+                ArbitratorAssigningCost = litigationRequest.LitigationRequestAmount?.LitigationRequestFees.Where(x=>x.ArbitratorsCount == litigationRequest.ArbitratorsCount).FirstOrDefault()?.ArbitrationFees!=null? litigationRequest.LitigationRequestAmount?.LitigationRequestFees.Where(x => x.ArbitratorsCount == litigationRequest.ArbitratorsCount).FirstOrDefault()?.ArbitrationFees.ToString("G29") :litigationRequest.LitigationRequestAmount?.Fees.ToString(),
                 Response = litigationRequest.LitigationRequestArbitratorAssigningRequests.FirstOrDefault(l => l.Id == requestId).Response,
                 RequestTypeId = litigationRequest.Contract.LitigationRequestContractType.Id.GetHashCode(),
                 FirstPartyName = (litigationRequest.Contract.FirstPartyCitizen == null) ? litigationRequest.Contract.FirstPartyFacility.ArabicFacilityName : litigationRequest.Contract.FirstPartyCitizen.FullName,
@@ -1562,6 +1560,7 @@ namespace REAC.Application.AppServices.Litigation
                          .ThenInclude(x => x.SigntureFile)
                          .Include(x => x.LitigationRequestArbitratorAssigningRequests)
                          .Include(x => x.LitigationRequestAmount)
+                         .ThenInclude(x=>x.LitigationRequestFees)
                          .Include(x => x.InternalStatus)
                          .Include(x => x.ExternalStatus)
                          .Include(x => x.LitigationRequestCategory)
@@ -1607,7 +1606,7 @@ namespace REAC.Application.AppServices.Litigation
                 LitigationType = litigationRequest.Contract.LitigationRequestContractType.TypeName,
                 Subject = "100",
                 ArbitratorAssignerName = "مركز التحكيم العقاري",
-                ArbitratorAssigningCost = litigationRequest.LitigationRequestInvoice?.TotalAmount.ToString(),
+                ArbitratorAssigningCost = litigationRequest.LitigationRequestAmount?.LitigationRequestFees.Where(x => x.ArbitratorsCount == litigationRequest.ArbitratorsCount).FirstOrDefault()?.ArbitrationFees != null ? litigationRequest.LitigationRequestAmount?.LitigationRequestFees.Where(x => x.ArbitratorsCount == litigationRequest.ArbitratorsCount).FirstOrDefault()?.ArbitrationFees.ToString("G29") : litigationRequest.LitigationRequestAmount?.Fees.ToString(),
                 RequestTypeId = litigationRequest.Contract.LitigationRequestContractType.Id.GetHashCode(),
                 FirstPartyName = (litigationRequest.Contract.FirstPartyCitizen == null) ? litigationRequest.Contract.FirstPartyFacility.ArabicFacilityName : litigationRequest.Contract.FirstPartyCitizen.FullName,
                 SecondPartyName = (litigationRequest.Contract.SecondPartyCitizen == null) ? litigationRequest.Contract.SecondPartyFacility.ArabicFacilityName : litigationRequest.Contract.SecondPartyCitizen.FullName,
@@ -1678,7 +1677,7 @@ namespace REAC.Application.AppServices.Litigation
                 Subject = "100",
                 ReformerAssignerName = "مركز التحكيم العقاري",
                 ReformerAssigningDate = litigationRequest.LitigationRequestReformerAssigningRequests.FirstOrDefault(l => l.Id == requestId).ResponseOn.ToString(),
-                ReformerAssigningCost = litigationRequest.LitigationRequestAmount?.Fees.ToString(),
+                ReformerAssigningCost = "100",
                 Response = litigationRequest.LitigationRequestReformerAssigningRequests.FirstOrDefault(l => l.Id == requestId).Response,
                 RequestTypeId = litigationRequest.Contract.LitigationRequestContractType.Id.GetHashCode(),
                 FirstPartyName = (litigationRequest.Contract.FirstPartyCitizen == null) ? litigationRequest.Contract.FirstPartyFacility.ArabicFacilityName : litigationRequest.Contract.FirstPartyCitizen.FullName,
@@ -1743,7 +1742,7 @@ namespace REAC.Application.AppServices.Litigation
                 LitigationType = litigationRequest.Contract.LitigationRequestContractType.TypeName,
                 Subject = "100",
                 ReformerAssignerName = "مركز التحكيم العقاري",
-                ReformerAssigningCost = litigationRequest.LitigationRequestAmount == null ? "50" : litigationRequest.LitigationRequestAmount?.Fees.ToString(),
+                ReformerAssigningCost ="100",
                 RequestTypeId = litigationRequest.Contract.LitigationRequestContractType.Id.GetHashCode(),
                 FirstPartyName = (litigationRequest.Contract.FirstPartyCitizen == null) ? litigationRequest.Contract.FirstPartyFacility.ArabicFacilityName : litigationRequest.Contract.FirstPartyCitizen.FullName,
                 SecondPartyName = (litigationRequest.Contract.SecondPartyCitizen == null) ? litigationRequest.Contract.SecondPartyFacility.ArabicFacilityName : litigationRequest.Contract.SecondPartyCitizen.FullName,
