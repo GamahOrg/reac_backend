@@ -24,7 +24,7 @@ namespace REAC.Application.ModuleServices
                 _jwtReader.GetReferenceId(ref referenceId);
                 //CultureInfo saCulture = new CultureInfo("ar-SA");
                 TimeZoneInfo ksaTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Arab Standard Time");
-                DateTime ksaDateTime = TimeZoneInfo.ConvertTime(requestPayload.SessionDateTimeStr != null ? DateTime.Parse(requestPayload.SessionDateTimeStr) : DateTime.Now, ksaTimeZone);
+                DateTime ksaDateTime = TimeZoneInfo.ConvertTime(requestPayload.SessionDateTime != null ? DateTime.Parse(requestPayload.SessionDateTime.ToString()) : DateTime.Now, ksaTimeZone);
                 requestPayload.SessionDateTime = ksaDateTime;// requestPayload.SessionDateTimeStr != null ? DateTime.Parse(requestPayload.SessionDateTimeStr, saCulture) :DateTime.Now;
                 var litigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>())?
                         .Include(x => x.LitigationRequestSessions.Where(x => x.LitigationRequestSessionRequestTypeId == LitigationRequestSessionRequestType.Arbitration))
@@ -88,6 +88,18 @@ namespace REAC.Application.ModuleServices
                         {
 
                             session.SessionDatetime = requestPayload.SessionDateTime;
+                            // First, get all related modification requests
+                            var relatedModificationRequests = (await _repository.GetQueryable<LititgationRequestModificationRequest, Guid>())?
+                                
+                                .Where(x => x.LitigationRequestSessionId == session.Id)
+                                .ToList();
+
+                            // Delete related modification requests first
+                            foreach (var modRequest in relatedModificationRequests)
+                            {
+                                _repository.Remove<LititgationRequestModificationRequest, Guid>(modRequest);
+                            }
+
                             updateResponse = _repository.Remove<LitigationRequestSession, Guid>(session);
                             await _repository.SaveChangesAsync();
                             updatedSession = true;
