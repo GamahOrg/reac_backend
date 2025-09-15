@@ -48,7 +48,7 @@ namespace REAC.Application.ModuleServices
                     };
                 }
                 
-                if (requestPayload.SessionDateTime.Date <= nowInKsa.Date)
+                if (requestPayload.SessionDateTime.Date <= DateTime.Now)
                 {
                     return new BaseResponse()
                     {
