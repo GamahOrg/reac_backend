@@ -41,11 +41,11 @@ namespace REAC.Application.ModuleServices
                                       .Where(x => x.RequestCode != null
                                       & x.ApplicantCitizenId == referenceId & x.LitigationRequestReconciliationReports.Count > 0
 
-                                      |
+                                      //|
 
-                                      x.LitigationRequestReconciliationReports.Count > 0
-                                      & x.RequestCode != null & x.Contract.FirstPartyCitizenId == referenceId
-                                      & x.LitigationRequestCategoryId != LitigationRequestCategory.Arbitration
+                                      //x.LitigationRequestReconciliationReports.Count > 0
+                                      //& x.RequestCode != null & x.Contract.FirstPartyCitizenId == referenceId
+                                      //& x.LitigationRequestCategoryId != LitigationRequestCategory.Arbitration
 
                                       |
 

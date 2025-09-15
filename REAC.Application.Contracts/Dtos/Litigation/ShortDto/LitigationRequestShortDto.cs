@@ -31,6 +31,7 @@ public partial class LitigationRequestShortDto : BaseEntity<Guid>
     public string? Description { get; set; }
     public bool? IsFinancialLitigation { get; set; }
     public bool? IsExemptionReduction { get; set; }
+    public int? ArbitratorsCount { get; set; } 
     public virtual CitizenShortDto ApplicantCitizen { get; set; } = null!;
     public virtual CitizenShortDto ArbitratorCitizen { get; set; } = null!;
     public virtual CitizenShortDto ReformerCitizen { get; set; } = null!;

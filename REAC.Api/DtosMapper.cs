@@ -370,6 +370,24 @@ namespace REAC.Application.Contracts
             CreateMap<WorkFlowProcessingLogCreateUpdateDto, WorkFlowProcessingLog>();
             CreateMap<WorkFlowProcessingLog, WorkFlowProcessingLogCreateUpdateDto>();
 
+            CreateMap<DelegationRequest, GetDelegationRequest>()
+            .ForMember(dest => dest.LitigationRequestCode,
+               opt => opt.MapFrom(src => src.LitigationRequest != null ? src.LitigationRequest.RequestCode : null))
+            .ReverseMap(); 
+            
+            CreateMap<DelegationRequest, GetDelegationRequestForChangeOrStop>()
+            .ForMember(dest => dest.LitigationRequestCode,
+               opt => opt.MapFrom(src => src.LitigationRequest != null ? src.LitigationRequest.RequestCode : null))
+            .ForMember(dest => dest.DelegatorName,
+               opt => opt.MapFrom(src => src.Delegator.DelegatorCitizen != null ? src.Delegator.DelegatorCitizen.FullName : null))
+            .ForMember(dest => dest.LitigationRequestId,
+               opt => opt.MapFrom(src => src.LitigationRequestId != null ? src.LitigationRequestId : null))
+            .ForMember(dest => dest.DelegationParty,
+               opt => opt.MapFrom(src => src.DelegationParty))
+            .ReverseMap();
+
+            CreateMap<LitigationRequest, GetLitigationRequestWithoutDelegator>()
+                .ReverseMap();
 
             #region Mobile
             CreateMap<LitigationRequest, LitigationListMobileDto>()

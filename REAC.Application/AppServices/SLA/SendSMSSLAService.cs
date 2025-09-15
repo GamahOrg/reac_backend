@@ -40,7 +40,7 @@ namespace REAC.Application.AppServices.SLA
             try
             {
                 var smsList = (await _repository.GetQueryable<SysNotificationSMS, Guid>())
-                   .Where(x => !x.IsSent)
+                   .Where(x => !x.IsSent )
                    .OrderBy(x => x.CreatedOn);
 
                 if (smsList.Any())

@@ -13,7 +13,8 @@ public partial class LitigationRequestMircoDto : BaseEntity<Guid>
     public int RequestTypeId { get; set; }
     public int? ArbitrationPeriod { get; set; }
     public int? ReconciliationPeriod { get; set; }
-
+    public int? ArbitratorsCount { get; set; }
+    
     public string? Status { get; set; } = null!;
     public string IsDone { get; set; } = null!;
     public ApproveRejectStatus Response { get; set; }

@@ -15,36 +15,36 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                 {
                     new SysDelegationRelationshipType
                     {
-                        Id = DelegationRelationshipType.Lawyer,
-                        DelegationRelationshipTypeName="محامي",
+                        Id = DelegationRelationshipType.Individual,
+                        DelegationRelationshipTypeName="فرد",
                         Translations=new List<SysDelegationRelationshipTypeTranslation>
                         {
                             new SysDelegationRelationshipTypeTranslation
                             {
-                                DelegationRelationshipTypeName="محامي",
+                                DelegationRelationshipTypeName="فرد",
                                 LanguageCode=Constants.EnglishLanguage
                             },
                              new SysDelegationRelationshipTypeTranslation
                             {
-                                DelegationRelationshipTypeName="Lawyer",
+                                DelegationRelationshipTypeName="Individual",
                                 LanguageCode=Constants.ArabicLanguage
                             }
                         }
                     },
                     new SysDelegationRelationshipType
                     {
-                        Id = DelegationRelationshipType.Agent,
-                        DelegationRelationshipTypeName="وكيل",
+                        Id = DelegationRelationshipType.Facility,
+                        DelegationRelationshipTypeName="منشأة",
                         Translations=new List<SysDelegationRelationshipTypeTranslation>
                         {
                             new SysDelegationRelationshipTypeTranslation
                             {
-                                DelegationRelationshipTypeName="وكيل",
+                                DelegationRelationshipTypeName="منشأة",
                                 LanguageCode=Constants.EnglishLanguage
                             },
                              new SysDelegationRelationshipTypeTranslation
                             {
-                                DelegationRelationshipTypeName="Agent",
+                                DelegationRelationshipTypeName="Facility",
                                 LanguageCode=Constants.ArabicLanguage
                             }
                         }

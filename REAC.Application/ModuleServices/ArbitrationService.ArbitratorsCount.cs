@@ -210,7 +210,7 @@ namespace REAC.Application.ModuleServices
                 TotalAmount = TotalFees,
                 InvoiceTypeId = InvoiceType.ArbitrationFees,
                 RequestId = litigationRequest.Id,
-                ApplicantCitizenId = litigationRequest.ApplicantCitizenId,
+                ApplicantCitizenId = (Guid)litigationRequest.ApplicantCitizenId,
             });
             #endregion
         }
@@ -508,6 +508,10 @@ namespace REAC.Application.ModuleServices
 
                     if (allowAdd)
                         litigationRequestMircoDto.IsDone = "--";
+                    else if (!litigationRequest.FirstPartyArbitratorsCount.HasValue || !litigationRequest.SecondPartyArbitratorsCount.HasValue)
+                    {
+                        litigationRequestMircoDto.IsDone = "--";
+                    }
                     else
                         litigationRequestMircoDto.IsDone = "تم";
 
@@ -561,7 +565,7 @@ namespace REAC.Application.ModuleServices
             litigationRequests = entitiesQuerable.Where
                                       (x => x.RequestCode != null & x.ArbitratorSelectionDuration.HasValue
                                         & x.ApplicantCitizenId == referenceId & x.LitigationRequestStage == LitigationRequestStage.Arbitration & x.LitigationRequestStage == LitigationRequestStage.Arbitration
-                                      | x.RequestCode != null & x.ArbitratorSelectionDuration.HasValue & x.Contract.FirstPartyCitizenId == referenceId & x.LitigationRequestStage == LitigationRequestStage.Arbitration & x.LitigationRequestStage == LitigationRequestStage.Arbitration
+                                      //| x.RequestCode != null & x.ArbitratorSelectionDuration.HasValue & x.Contract.FirstPartyCitizenId == referenceId & x.LitigationRequestStage == LitigationRequestStage.Arbitration & x.LitigationRequestStage == LitigationRequestStage.Arbitration
                                       | x.RequestCode != null & x.ArbitratorSelectionDuration.HasValue & x.Contract.SecondPartyCitizenId == referenceId & x.LitigationRequestStage == LitigationRequestStage.Arbitration & x.LitigationRequestStage == LitigationRequestStage.Arbitration
                                       | x.RequestCode != null & x.ArbitratorSelectionDuration.HasValue & x.Contract.FirstPartyFacility.CitizenId == referenceId & x.LitigationRequestStage == LitigationRequestStage.Arbitration & x.LitigationRequestStage == LitigationRequestStage.Arbitration
                                       | x.RequestCode != null & x.ArbitratorSelectionDuration.HasValue & x.Contract.SecondPartyFacility.CitizenId == referenceId & x.LitigationRequestStage == LitigationRequestStage.Arbitration & x.LitigationRequestStage == LitigationRequestStage.Arbitration

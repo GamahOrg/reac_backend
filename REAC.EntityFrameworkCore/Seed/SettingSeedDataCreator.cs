@@ -307,6 +307,21 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                     new SysSetting
                     {
                         Id = Guid.NewGuid(),
+                        Key=SysSettingKeyConstants.Delegator_Stopped,
+                        Value="تم ايقاف المفوض {CitizenName} المقدم نيابة عن {Party} لدعوي رقم {LitigationCode}"
+                    },new SysSetting
+                    {
+                        Id = Guid.NewGuid(),
+                        Key=SysSettingKeyConstants.Delegator_Modified,
+                        Value="تم تعديل المفوض {CitizenName} المقدم نيابة عن {Party} لدعوي رقم {LitigationCode}"
+                    },new SysSetting
+                    {
+                        Id = Guid.NewGuid(),
+                        Key=SysSettingKeyConstants.Delegator_Assigned,
+                        Value="تم تعيين المفوض {CitizenName} المقدم نيابة عن {Party} لدعوي رقم {LitigationCode}"
+                    },new SysSetting
+                    {
+                        Id = Guid.NewGuid(),
                         Key=SysSettingKeyConstants.Arbitrator_UpdateJoiningRequest_ToPayFees,
                         Value="تنويه برجاء دفع رسوم الانضمام كمحكم {CitizenName}"
                     },
@@ -729,6 +744,26 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                     },new SysSetting
                     {
                         Id = Guid.NewGuid(),
+                        Key = "ExcuteWorkflow.DelegatorFirstParty",
+                        Value = "تم تقديم دعوى جديدة رقم {LitigationCode} بالنيابة عنك",
+                    },new SysSetting
+                    {
+                        Id = Guid.NewGuid(),
+                        Key = "DelegationRequest.Accepted",
+                        Value = "تم قبول طلب التفويض المقدم لدعوى رقم {LitigationCode}",
+                    },new SysSetting
+                    {
+                        Id = Guid.NewGuid(),
+                        Key = "DelegationRequest.Rejected",
+                        Value = "تم رفض طلب التفويض المقدم لدعوى رقم {LitigationCode} بسبب {RejectReason}",
+                    },new SysSetting
+                    {
+                        Id = Guid.NewGuid(),
+                        Key = "DelegationRequest.Added",
+                        Value = "تم تقديم طلب تفويض جديد لدعوى رقم {LitigationCode} و هو حاليا قيد المراجعة",
+                    },new SysSetting
+                    {
+                        Id = Guid.NewGuid(),
                         Key = "LitigationRequest.ModificationRequest",
                         Value = "تم أضافة طلب تعديل علي الدعوى رقم {LitigationCode}",
                     },new SysSetting
@@ -1006,7 +1041,7 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                         },new SysSetting
                         {
                             Id = Guid.NewGuid(),
-                            Key = "SLA.LitigationRequestReconciliationFeesReminder",
+                            Key = "SLA.LitigationRequestArbitrationFeesReminder",
                             Value = "يرجى سرعة سداد رسوم اتعاب هيئة التحكيم للدعوى رقم {LitigationCode} تفادياً لإغلاق الدعوى"
 
                         },new SysSetting
@@ -1044,12 +1079,6 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                             Id = Guid.NewGuid(),
                             Key = "SLA.LitigationRequestFeesReminder",
                             Value = "يرجى سرعة سداد الرسوم الإدارية للدعوى رقم {LitigationCode} تفادياً لإغلاق الدعوى"
-
-                        },new SysSetting
-                        {
-                            Id = Guid.NewGuid(),
-                            Key = "SLA.LitigationRequestArbitrationFeesReminder",
-                            Value = "يرجى سرعة سداد رسوم أتعاب هيئة التحكيم للدعوى رقم {LitigationCode} تفادياً لإغلاق الدعوى"
 
                         },
                     new SysSetting
@@ -1270,7 +1299,7 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                         },new SysSetting
                         {
                             Id = Guid.NewGuid(),
-                            Key = "SLA.PayLitigationReconciliationFees.Applicant",
+                            Key = "SLA.PayLitigationArbitrationFees.Applicant",
                             Value = "تم الغاء الدعوي رقم {LitigationCode} لعدم دفع رسوم التحكيم  "
                         },new SysSetting
                         {

@@ -35,4 +35,14 @@ namespace REAC.Application.Contracts.Dtos.Litigation.Get
         public List<LitigationRequestRequestCreateUpdateDto> Requests { get; set; } = new List<LitigationRequestRequestCreateUpdateDto>();
 
     }
+
+    public class LitigationShortDetailsDto : BaseEntity<Guid>
+    {
+        public Guid Id { get; set; }
+        public string? RequestCode { get; set; }
+        public string? PartyName { get; set; }
+        public string? PartyIdentity { get; set; }
+        public string? PartyCapacity { get; set; }
+        public DelegationRelationshipType? DelegationRelationshipTypeId { get; set; }
+    }
 }

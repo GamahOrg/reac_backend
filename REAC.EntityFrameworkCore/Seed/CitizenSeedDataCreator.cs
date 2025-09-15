@@ -12,6 +12,7 @@ namespace Ticketing.EntityFrameworkCore.SeedData
             try
             {
                 if (await context.Citizens.AnyAsync()) return;
+
                 await context.Citizens.AddRangeAsync(
                     new List<Citizen>
                     {
@@ -40,14 +41,14 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                         LawyerLicenseNumber = "1234567890",
                         Fax = null,
                         Email = "Citizen1@gmail.com",
-                        AreaId = context.SysAreas.ToList().FirstOrDefault().Id,
-                        CityId = context.SysAreas.ToList().FirstOrDefault().Cities.FirstOrDefault().Id,
+                        AreaId = context.SysAreas.FirstOrDefault().Id,
+                        CityId = context.SysAreas.Include(x => x.Cities).FirstOrDefault().Cities.FirstOrDefault().Id,
                         District = "السليمانية",
                         Street = "طريق الملك عبدالعزيز",
                         PostalCode = null,
                         SubNumber = "S123456",
                         BuildingNumber = "185",
-                        NationalityId = context.SysNationalities.ToList().LastOrDefault().Id,
+                        NationalityId = context.SysNationalities.FirstOrDefault().Id,
                         UnitNumber = "U-125",
                         NationalAddress="مكه المكرمه -ش 22 - 1200"
                     },
@@ -78,14 +79,14 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                         LawyerLicenseNumber = "2345678901",
                         Fax = null,
                         Email = "Citizen2@gmail.com",
-                        AreaId = context.SysAreas.ToList().FirstOrDefault().Id,
-                        CityId = context.SysAreas.ToList().FirstOrDefault().Cities.FirstOrDefault().Id,
+                        AreaId = context.SysAreas.FirstOrDefault().Id,
+                        CityId = context.SysAreas.Include(x => x.Cities).FirstOrDefault().Cities.FirstOrDefault().Id,
                         District = "بني عبدالاشهل",
                         Street = "الامير عبدالمجيد بن عبدالعزيز",
                         PostalCode = null,
                         SubNumber = "S158556",
                         BuildingNumber = "178",
-                        NationalityId = context.SysNationalities.ToList().LastOrDefault().Id,
+                        NationalityId = context.SysNationalities.FirstOrDefault().Id,
                         UnitNumber = "U-858"
 
                     },
@@ -114,14 +115,14 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                         IsLawyer = false,
                         Fax = null,
                         Email = "Citizen3@gmail.com",
-                        AreaId = context.SysAreas.ToList().FirstOrDefault().Id,
-                        CityId = context.SysAreas.ToList().FirstOrDefault().Cities.FirstOrDefault().Id,
+                        AreaId = context.SysAreas.FirstOrDefault().Id,
+                        CityId = context.SysAreas.Include(x => x.Cities).FirstOrDefault().Cities.FirstOrDefault().Id,
                         District = "بني عبدالاشهل",
                         Street = "الامير عبدالمجيد بن عبدالعزيز",
                         PostalCode = null,
                         SubNumber = "S158556",
                         BuildingNumber = "178",
-                        NationalityId = context.SysNationalities.ToList().LastOrDefault().Id,
+                        NationalityId = context.SysNationalities.FirstOrDefault().Id,
                         UnitNumber = "U-958"
 
                     },
@@ -149,14 +150,14 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                         IsLawyer = false,
                         Fax = null,
                         Email = "Citizen4@gmail.com",
-                        AreaId = context.SysAreas.ToList().FirstOrDefault().Id,
-                        CityId = context.SysAreas.ToList().FirstOrDefault().Cities.FirstOrDefault().Id,
+                        AreaId = context.SysAreas.FirstOrDefault().Id,
+                        CityId = context.SysAreas.Include(x => x.Cities).FirstOrDefault().Cities.FirstOrDefault().Id,
                         District = "بني عبدالاشهل",
                         Street = "الامير عبدالمجيد بن عبدالعزيز",
                         PostalCode = null,
                         SubNumber = "S158556",
                         BuildingNumber = "178",
-                        NationalityId = context.SysNationalities.ToList().LastOrDefault().Id,
+                        NationalityId = context.SysNationalities.FirstOrDefault().Id,
                         UnitNumber = "U-1258"
 
                     },
@@ -186,13 +187,13 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                         IsLawyer = false,
                         Fax = null,
                         Email = "Citizen5@gmail.com",
-                        AreaId = context.SysAreas.ToList().FirstOrDefault().Id,
-                        CityId = context.SysAreas.ToList().FirstOrDefault().Cities.FirstOrDefault().Id,
+                        AreaId = context.SysAreas.FirstOrDefault().Id,
+                        CityId = context.SysAreas.Include(x => x.Cities).FirstOrDefault().Cities.FirstOrDefault().Id,
                         District = "بني عبدالاشهل",
                         Street = "الامير عبدالمجيد بن عبدالعزيز",
                         PostalCode = null,
                         SubNumber = "S158556",
-                        NationalityId = context.SysNationalities.ToList().LastOrDefault().Id,
+                        NationalityId = context.SysNationalities.FirstOrDefault().Id,
                         BuildingNumber = "178",
                         UnitNumber = "U-1258"
 
@@ -220,14 +221,14 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                         IsLawyer = false,
                         Fax = null,
                         Email = "Citizen6@gmail.com",
-                        AreaId = context.SysAreas.ToList().FirstOrDefault().Id,
-                        CityId = context.SysAreas.ToList().FirstOrDefault().Cities.FirstOrDefault().Id,
+                        AreaId = context.SysAreas.FirstOrDefault().Id,
+                        CityId = context.SysAreas.Include(x => x.Cities).FirstOrDefault().Cities.FirstOrDefault().Id,
                         District = "السلامة",
                         Street = "حديقة رامي",
                         PostalCode = null,
                         SubNumber = "S158556",
                         BuildingNumber = "1878",
-                        NationalityId = context.SysNationalities.ToList().LastOrDefault().Id,
+                        NationalityId = context.SysNationalities.FirstOrDefault().Id,
                         UnitNumber = "U-058"
 
                     },
@@ -254,14 +255,14 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                         IsLawyer = false,
                         Fax = null,
                         Email = "Citizen7@gmail.com",
-                        AreaId = context.SysAreas.ToList().FirstOrDefault().Id,
-                        CityId = context.SysAreas.ToList().FirstOrDefault().Cities.FirstOrDefault().Id,
+                        AreaId = context.SysAreas.FirstOrDefault().Id,
+                        CityId = context.SysAreas.Include(x => x.Cities).FirstOrDefault().Cities.FirstOrDefault().Id,
                         District = "الصحافة",
                         Street = "العليا",
                         PostalCode = null,
                         SubNumber = "S178556",
                         BuildingNumber = "1178",
-                        NationalityId = context.SysNationalities.ToList().LastOrDefault().Id,
+                        NationalityId = context.SysNationalities.FirstOrDefault().Id,
                         UnitNumber = "U-0358"
                     },
                     new Citizen
@@ -288,14 +289,14 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                         IsLawyer = false,
                         Fax = null,
                         Email = "Citizen8@gmail.com",
-                        AreaId = context.SysAreas.ToList().FirstOrDefault().Id,
-                        CityId = context.SysAreas.ToList().FirstOrDefault().Cities.FirstOrDefault().Id,
+                        AreaId = context.SysAreas.FirstOrDefault().Id,
+                        CityId = context.SysAreas.Include(x => x.Cities).FirstOrDefault().Cities.FirstOrDefault().Id,
                         District = "الدعيثة",
                         Street = "الإمام البخاري",
                         PostalCode = null,
                         SubNumber = "S178556",
                         BuildingNumber = "1178",
-                        NationalityId = context.SysNationalities.ToList().LastOrDefault().Id,
+                        NationalityId = context.SysNationalities.FirstOrDefault().Id,
                         UnitNumber = "U-0358"
                     },
                     new Citizen
@@ -324,14 +325,14 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                         LawyerLicenseNumber = "5822255555",
                         Fax = null,
                         Email = "Citizen9@gmail.com",
-                        AreaId = context.SysAreas.ToList().FirstOrDefault().Id,
-                        CityId = context.SysAreas.ToList().FirstOrDefault().Cities.FirstOrDefault().Id,
+                        AreaId = context.SysAreas.FirstOrDefault().Id,
+                        CityId = context.SysAreas.Include(x => x.Cities).FirstOrDefault().Cities.FirstOrDefault().Id,
                         District = "الروضة",
                         Street = "امين مدني",
                         PostalCode = null,
                         SubNumber = "S178556",
                         BuildingNumber = "1178",
-                        NationalityId = context.SysNationalities.ToList().LastOrDefault().Id,
+                        NationalityId = context.SysNationalities.FirstOrDefault().Id,
                         UnitNumber = "U-0358"
                     },
                     new Citizen
@@ -358,13 +359,13 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                         IsLawyer = false,
                         Fax = null,
                         Email = "Citizen10@gmail.com",
-                        AreaId = context.SysAreas.ToList().FirstOrDefault().Id,
-                        CityId = context.SysAreas.ToList().FirstOrDefault().Cities.FirstOrDefault().Id,
+                        AreaId = context.SysAreas.FirstOrDefault().Id,
+                        CityId = context.SysAreas.Include(x => x.Cities).FirstOrDefault().Cities.FirstOrDefault().Id,
                         District = "الحوية",
                         Street = "امين مدني",
                         PostalCode = null,
                         SubNumber = "S178556",
-                        NationalityId = context.SysNationalities.ToList().LastOrDefault().Id,
+                        NationalityId = context.SysNationalities.FirstOrDefault().Id,
                         BuildingNumber = "1178",
                         UnitNumber = "U-04558"
                     }
