@@ -6,7 +6,7 @@
         CompanyRepresentative = 2, // ممثل شركة
         LawyerForCompany = 3, // محامي عن شركة
         AgentForCompany = 4, // وكيل عن شركة
-        LawyerForIndividual = 5, // محامي عن فرد
-        AgentForIndividual = 6, // وكيل عن فرد
+        Lawyer = 5, // محامي عن فرد
+        Agent = 6, // وكيل عن فرد
     }
 }

@@ -7,24 +7,7 @@ namespace REAC.EntityFrameworkCore.Seed;
 
 public partial class LitigationRequestOwnerTypeSeedDataCreator
 {
-    //public enum LitigationRequestOwnerType
-    //{
-    //    ///<summary>مقدم عن نفسه</summary>
-    //    Personal = 1,
-    //    ///<summary>ممثل شركة</summary>
-    //    CompanyRepresentative = 2,
-    //    ///<summary>محامي عن شركة</summary>
-    //    LawyerForCompany = 3,
-    //    ///<summary> وكيل عن شركة</summary>
-    //    AgentForCompany = 4,
-    //    ///<summary>محامي عن فرد</summary>
-    //    LawyerForIndividual = 3,
-    //    ///<summary> وكيل عن فرد</summary>
-    //    AgentForIndividual = 4
-    //}
-    /// <summary>
-    /// مقدم عن نفسه – مفوض
-    /// </summary>
+    
     public static async Task SeedAsync(REACDBContext context)
     {
         if (await context.SysLitigationRequestOwnerTypes.AnyAsync()) return;
@@ -52,7 +35,7 @@ public partial class LitigationRequestOwnerTypeSeedDataCreator
                     new SysLitigationRequestOwnerType
                     {
                         Id = LitigationRequestOwnerType.AgentForIndividual,
-                        LitigationRequestOwnerType = "وكيل عن فرد",
+                        LitigationRequestOwnerType = "وكيل فرد",
                         Translations=new List<SysLitigationRequestOwnerTypeTranslation>
                         {
                             new SysLitigationRequestOwnerTypeTranslation
@@ -62,25 +45,25 @@ public partial class LitigationRequestOwnerTypeSeedDataCreator
                             },
                             new SysLitigationRequestOwnerTypeTranslation
                             {
-                                LitigationRequestOwnerType = "وكيل عن فرد",
+                                LitigationRequestOwnerType = "وكيل فرد",
                                 LanguageCode = Constants.ArabicLanguage
                             }
                         }
                     },
                     new SysLitigationRequestOwnerType
                     {
-                        Id = LitigationRequestOwnerType.LawyerForIndividual,
-                        LitigationRequestOwnerType = "محامي عن فرد",
+                        Id = LitigationRequestOwnerType.IndividualRepresentative,
+                        LitigationRequestOwnerType = "ممثل فرد",
                         Translations=new List<SysLitigationRequestOwnerTypeTranslation>
                         {
                             new SysLitigationRequestOwnerTypeTranslation
                             {
-                                LitigationRequestOwnerType = "Lawyer For Individual",
+                                LitigationRequestOwnerType = "Individual Representative",
                                 LanguageCode = Constants.EnglishLanguage
                             },
                             new SysLitigationRequestOwnerTypeTranslation
                             {
-                                LitigationRequestOwnerType = "محامي عن فرد",
+                                LitigationRequestOwnerType = "ممثل فرد",
                                 LanguageCode = Constants.ArabicLanguage
                             }
                         }
@@ -88,7 +71,7 @@ public partial class LitigationRequestOwnerTypeSeedDataCreator
                     new SysLitigationRequestOwnerType
                     {
                         Id = LitigationRequestOwnerType.AgentForCompany,
-                        LitigationRequestOwnerType = "وكيل عن شركة",
+                        LitigationRequestOwnerType = "وكيل منشأة",
                         Translations=new List<SysLitigationRequestOwnerTypeTranslation>
                         {
                             new SysLitigationRequestOwnerTypeTranslation
@@ -98,25 +81,7 @@ public partial class LitigationRequestOwnerTypeSeedDataCreator
                             },
                             new SysLitigationRequestOwnerTypeTranslation
                             {
-                                LitigationRequestOwnerType = "وكيل عن شركة",
-                                LanguageCode = Constants.ArabicLanguage
-                            }
-                        }
-                    },
-                    new SysLitigationRequestOwnerType
-                    {
-                        Id = LitigationRequestOwnerType.LawyerForCompany,
-                        LitigationRequestOwnerType = "محامي عن شركة",
-                        Translations=new List<SysLitigationRequestOwnerTypeTranslation>
-                        {
-                            new SysLitigationRequestOwnerTypeTranslation
-                            {
-                                LitigationRequestOwnerType = "Lawyer For Company",
-                                LanguageCode = Constants.EnglishLanguage
-                            },
-                            new SysLitigationRequestOwnerTypeTranslation
-                            {
-                                LitigationRequestOwnerType = "محامي عن شركة",
+                                LitigationRequestOwnerType = "وكيل منشأة",
                                 LanguageCode = Constants.ArabicLanguage
                             }
                         }
@@ -124,21 +89,143 @@ public partial class LitigationRequestOwnerTypeSeedDataCreator
                        new SysLitigationRequestOwnerType
                     {
                         Id = LitigationRequestOwnerType.CompanyRepresentative,
-                        LitigationRequestOwnerType = "ممثل شركة",
+                        LitigationRequestOwnerType = "ممثل منشأة",
                         Translations=new List<SysLitigationRequestOwnerTypeTranslation>
                         {
                             new SysLitigationRequestOwnerTypeTranslation
                             {
-                                LitigationRequestOwnerType = "CompanyRepresentative",
+                                LitigationRequestOwnerType = "Company Representative",
                                 LanguageCode = Constants.EnglishLanguage
                             },
                             new SysLitigationRequestOwnerTypeTranslation
                             {
-                                LitigationRequestOwnerType = "ممثل شركة",
+                                LitigationRequestOwnerType = "ممثل منشأة",
                                 LanguageCode = Constants.ArabicLanguage
                             }
                         }
-                    }
+                    },
+
+                       // NEW
+                       new SysLitigationRequestOwnerType
+                    {
+                        Id = LitigationRequestOwnerType.CompanyManager,
+                        LitigationRequestOwnerType = "مدير شركة",
+                        Translations=new List<SysLitigationRequestOwnerTypeTranslation>
+                        {
+                            new SysLitigationRequestOwnerTypeTranslation
+                            {
+                                LitigationRequestOwnerType = "Company Manager",
+                                LanguageCode = Constants.EnglishLanguage
+                            },
+                            new SysLitigationRequestOwnerTypeTranslation
+                            {
+                                LitigationRequestOwnerType = "مدير شركة",
+                                LanguageCode = Constants.ArabicLanguage
+                            }
+                        }
+                    },new SysLitigationRequestOwnerType
+                    {
+                        Id = LitigationRequestOwnerType.CompanyCEO,
+                        LitigationRequestOwnerType = "رئيس مجلس الادارة",
+                        Translations=new List<SysLitigationRequestOwnerTypeTranslation>
+                        {
+                            new SysLitigationRequestOwnerTypeTranslation
+                            {
+                                LitigationRequestOwnerType = "Company CEO",
+                                LanguageCode = Constants.EnglishLanguage
+                            },
+                            new SysLitigationRequestOwnerTypeTranslation
+                            {
+                                LitigationRequestOwnerType = "رئيس مجلس الادارة",
+                                LanguageCode = Constants.ArabicLanguage
+                            }
+                        }
+                    },new SysLitigationRequestOwnerType
+                    {
+                        Id = LitigationRequestOwnerType.Filterer,
+                        LitigationRequestOwnerType = "مصفي",
+                        Translations=new List<SysLitigationRequestOwnerTypeTranslation>
+                        {
+                            new SysLitigationRequestOwnerTypeTranslation
+                            {
+                                LitigationRequestOwnerType = "Filterer",
+                                LanguageCode = Constants.EnglishLanguage
+                            },
+                            new SysLitigationRequestOwnerTypeTranslation
+                            {
+                                LitigationRequestOwnerType = "مصفي",
+                                LanguageCode = Constants.ArabicLanguage
+                            }
+                        }
+                    },new SysLitigationRequestOwnerType
+                    {
+                        Id = LitigationRequestOwnerType.JudicialGuard,
+                        LitigationRequestOwnerType = "حارس قضائي",
+                        Translations=new List<SysLitigationRequestOwnerTypeTranslation>
+                        {
+                            new SysLitigationRequestOwnerTypeTranslation
+                            {
+                                LitigationRequestOwnerType = "Judicial Guard",
+                                LanguageCode = Constants.EnglishLanguage
+                            },
+                            new SysLitigationRequestOwnerTypeTranslation
+                            {
+                                LitigationRequestOwnerType = "حارس قضائي",
+                                LanguageCode = Constants.ArabicLanguage
+                            }
+                        }
+                    },new SysLitigationRequestOwnerType
+                    {
+                        Id = LitigationRequestOwnerType.Custodian,
+                        LitigationRequestOwnerType = "ولي",
+                        Translations=new List<SysLitigationRequestOwnerTypeTranslation>
+                        {
+                            new SysLitigationRequestOwnerTypeTranslation
+                            {
+                                LitigationRequestOwnerType = "Custodian",
+                                LanguageCode = Constants.EnglishLanguage
+                            },
+                            new SysLitigationRequestOwnerTypeTranslation
+                            {
+                                LitigationRequestOwnerType = "ولي",
+                                LanguageCode = Constants.ArabicLanguage
+                            }
+                        }
+                    },new SysLitigationRequestOwnerType
+                    {
+                        Id = LitigationRequestOwnerType.ManagingDirector,
+                        LitigationRequestOwnerType = "العضو المنتدب",
+                        Translations=new List<SysLitigationRequestOwnerTypeTranslation>
+                        {
+                            new SysLitigationRequestOwnerTypeTranslation
+                            {
+                                LitigationRequestOwnerType = "Managing Director",
+                                LanguageCode = Constants.EnglishLanguage
+                            },
+                            new SysLitigationRequestOwnerTypeTranslation
+                            {
+                                LitigationRequestOwnerType = "العضو المنتدب",
+                                LanguageCode = Constants.ArabicLanguage
+                            }
+                        }
+                    },new SysLitigationRequestOwnerType
+                    {
+                        Id = LitigationRequestOwnerType.BankruptcyTrustee,
+                        LitigationRequestOwnerType = "أمين تفليسة",
+                        Translations=new List<SysLitigationRequestOwnerTypeTranslation>
+                        {
+                            new SysLitigationRequestOwnerTypeTranslation
+                            {
+                                LitigationRequestOwnerType = "Bankruptcy Trustee",
+                                LanguageCode = Constants.EnglishLanguage
+                            },
+                            new SysLitigationRequestOwnerTypeTranslation
+                            {
+                                LitigationRequestOwnerType = "أمين تفليسة",
+                                LanguageCode = Constants.ArabicLanguage
+                            }
+                        }
+                    },
             });
         context.SaveChanges();
     }

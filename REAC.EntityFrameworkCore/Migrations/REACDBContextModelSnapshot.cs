@@ -22,6 +22,68 @@ namespace REAC.EntityFrameworkCore.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("Core.Security.Entities.User", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("AccessFailedCount")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Email")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("EmailConfirmed")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("LockoutEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTimeOffset?>("LockoutEnd")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("NormalizedEmail")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NormalizedUserName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PasswordHash")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("PhoneNumberConfirmed")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid?>("ReferenceId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("RefreshToken")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("RefreshTokenExpiryTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("SecurityStamp")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("TwoFactorEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("UserName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("AspNetUsers");
+                });
+
             modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Actor.Citizen", b =>
                 {
                     b.Property<Guid>("Id")
@@ -248,7 +310,7 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Property<Guid>("CitizenId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("CitizenRequestTypeId")
+                    b.Property<int?>("CitizenRequestTypeId")
                         .HasColumnType("int");
 
                     b.Property<int?>("ExperienceYears")
@@ -263,28 +325,28 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Property<string>("ExperiencedInHousingstatuses")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("HaveArbitrationxperience")
+                    b.Property<bool?>("HaveArbitrationxperience")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("HaveExperiencedInFreelanceArbitration")
+                    b.Property<bool?>("HaveExperiencedInFreelanceArbitration")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("HaveHostingExperience")
+                    b.Property<bool?>("HaveHostingExperience")
                         .HasColumnType("bit");
 
                     b.Property<bool?>("IsFeesPaid")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("IsRegisteredReconciliationCenter")
+                    b.Property<bool?>("IsRegisteredReconciliationCenter")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("IsVolunteerApproval")
+                    b.Property<bool?>("IsVolunteerApproval")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("IspassedRealEstateProgram")
+                    b.Property<bool?>("IspassedRealEstateProgram")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("IsregisteredWithBachelorShareaaDegree")
+                    b.Property<bool?>("IsregisteredWithBachelorShareaaDegree")
                         .HasColumnType("bit");
 
                     b.Property<DateTime>("RequestOn")
@@ -726,6 +788,24 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Property<int?>("DefendantPriority")
                         .HasColumnType("int");
 
+                    b.Property<DateTime?>("EscalateDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool?>("IsDefendantSelected")
+                        .HasColumnType("bit");
+
+                    b.Property<bool?>("IsEscalated")
+                        .HasColumnType("bit");
+
+                    b.Property<bool?>("IsPlaintiffSelected")
+                        .HasColumnType("bit");
+
+                    b.Property<bool?>("IsResponse")
+                        .HasColumnType("bit");
+
+                    b.Property<bool?>("IsSelectedFromManager")
+                        .HasColumnType("bit");
+
                     b.Property<bool>("IsSent")
                         .HasColumnType("bit");
 
@@ -823,11 +903,23 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Property<Guid>("ArbitratorChairmanCitizenId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<DateTime?>("EscalateDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool?>("IsEscalated")
+                        .HasColumnType("bit");
+
+                    b.Property<bool?>("IsSelectedFromManager")
+                        .HasColumnType("bit");
+
                     b.Property<bool>("IsSent")
                         .HasColumnType("bit");
 
                     b.Property<Guid>("LitigationRequestId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Response")
+                        .HasColumnType("int");
 
                     b.Property<int?>("TotalPriority")
                         .HasColumnType("int");
@@ -893,7 +985,7 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasMaxLength(10)
                         .HasColumnType("nvarchar(10)");
 
-                    b.Property<Guid>("CitizenId")
+                    b.Property<Guid?>("CitizenId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("City")
@@ -1061,7 +1153,7 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Property<DateTime?>("AgreementRequestRequiredOn")
                         .HasColumnType("datetime2");
 
-                    b.Property<Guid>("ApplicantCitizenId")
+                    b.Property<Guid?>("ApplicantCitizenId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<decimal>("ArbitrationFees")
@@ -1122,6 +1214,9 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("int");
 
                     b.Property<Guid?>("DelegatorCitizenId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("DelegatorId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Description")
@@ -1380,6 +1475,8 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.HasIndex("ContractId");
 
                     b.HasIndex("DelegatorCitizenId");
+
+                    b.HasIndex("DelegatorId");
 
                     b.HasIndex("ExemptionReductionCategoryId");
 
@@ -3570,51 +3667,44 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Property<DateTime?>("ApprovedOn")
                         .HasColumnType("datetime");
 
-                    b.Property<DateTime?>("BirthDate")
-                        .HasColumnType("date");
-
-                    b.Property<Guid?>("CitizenId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("DelegationFileId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("DelegationNumber")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<string>("Email")
-                        .HasMaxLength(250)
-                        .HasColumnType("nvarchar(250)");
-
-                    b.Property<string>("IdentityNumber")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<int>("IdentityTypeId")
+                    b.Property<int>("DelegationParty")
                         .HasColumnType("int");
+
+                    b.Property<Guid?>("DelegatorId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool?>("IsActive")
+                        .HasColumnType("bit");
 
                     b.Property<bool?>("IsApproved")
                         .HasColumnType("bit");
 
-                    b.Property<string>("Mobile")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                    b.Property<Guid?>("LitigationRequestId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("LitigationRequestOwnerTypeId")
+                        .HasColumnType("int");
+
+                    b.Property<Guid?>("ModifiedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("ModifiedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Reason")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("RequestedOn")
-                        .HasColumnType("date");
-
-                    b.Property<Guid>("SourceCitizenId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("datetime2");
 
                     b.HasKey("Id")
                         .HasName("PK__Delegati__3214EC074548DE5A");
 
-                    b.HasIndex("DelegationFileId");
+                    b.HasIndex("DelegatorId");
 
-                    b.HasIndex("IdentityTypeId");
+                    b.HasIndex("LitigationRequestId");
+
+                    b.HasIndex("LitigationRequestOwnerTypeId");
 
                     b.ToTable("DelegationRequest", (string)null);
                 });
@@ -3628,6 +3718,15 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Property<Guid?>("CitizenId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("CommercialRegisterationFileId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("CustodyFileId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("DecisionFileId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("DelegateNumber")
                         .HasColumnType("nvarchar(max)");
 
@@ -3637,7 +3736,10 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Property<int>("DelegationRelationshipTypeId")
                         .HasColumnType("int");
 
-                    b.Property<Guid>("DelegatorCitizenId")
+                    b.Property<Guid?>("DelegatorCitizenId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("EstablishmentFileId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid?>("FacilityId")
@@ -3646,10 +3748,28 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
+                    b.Property<Guid?>("LawLicenseFileId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("LawyerLicenseExpirationDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LawyerLicenseNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("RepresentationFileId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.HasKey("Id")
                         .HasName("PK__Facility__340286D707D66911");
 
                     b.HasIndex("CitizenId");
+
+                    b.HasIndex("CommercialRegisterationFileId");
+
+                    b.HasIndex("CustodyFileId");
+
+                    b.HasIndex("DecisionFileId");
 
                     b.HasIndex("DelegationFileId");
 
@@ -3657,7 +3777,11 @@ namespace REAC.EntityFrameworkCore.Migrations
 
                     b.HasIndex("DelegatorCitizenId");
 
+                    b.HasIndex("EstablishmentFileId");
+
                     b.HasIndex("FacilityId");
+
+                    b.HasIndex("RepresentationFileId");
 
                     b.ToTable("Delegator", (string)null);
                 });
@@ -5323,7 +5447,6 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.HasOne("REAC.EntityFrameworkCore.Entities.System.SysCitizenRequestType", "SysCitizenRequestType")
                         .WithMany("CitizenRequests")
                         .HasForeignKey("CitizenRequestTypeId")
-                        .IsRequired()
                         .HasConstraintName("FKSysCitizenRequestTypeCitizenRequest676101");
 
                     b.HasOne("REAC.EntityFrameworkCore.Entities.System.SysCitizenRequestStatus", "Status")
@@ -5712,7 +5835,6 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.HasOne("REAC.EntityFrameworkCore.Entities.Actor.Citizen", "Citizen")
                         .WithMany("Facilities")
                         .HasForeignKey("CitizenId")
-                        .IsRequired()
                         .HasConstraintName("FKFacility36705");
 
                     b.Navigation("Citizen");
@@ -5814,7 +5936,6 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.HasOne("REAC.EntityFrameworkCore.Entities.Actor.Citizen", "ApplicantCitizen")
                         .WithMany("LitigationRequests")
                         .HasForeignKey("ApplicantCitizenId")
-                        .IsRequired()
                         .HasConstraintName("FKLitigation638578");
 
                     b.HasOne("REAC.EntityFrameworkCore.Entities.Actor.Citizen", "ArbitratorCitizen")
@@ -5840,6 +5961,12 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .WithMany("DelegatorLitigationRequests")
                         .HasForeignKey("DelegatorCitizenId")
                         .HasConstraintName("FKLitigation6DelegatorLitigationRequests38578");
+
+                    b.HasOne("REAC.EntityFrameworkCore.Entities.System.Delegator", "Delegator")
+                        .WithMany("DelegatorLitigationRequests")
+                        .HasForeignKey("DelegatorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasConstraintName("FKDelegator_LitigationRequests");
 
                     b.HasOne("REAC.EntityFrameworkCore.Entities.System.SysExemptionReductionCategory", "SysExemptionReductionCategory")
                         .WithMany("LitigationRequests")
@@ -5898,6 +6025,8 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Navigation("City");
 
                     b.Navigation("Contract");
+
+                    b.Navigation("Delegator");
 
                     b.Navigation("DelegatorCitizen");
 
@@ -6463,21 +6592,25 @@ namespace REAC.EntityFrameworkCore.Migrations
 
             modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.System.DelegationRequest", b =>
                 {
-                    b.HasOne("REAC.EntityFrameworkCore.Entities.System.SysFileManager", "DelegationFile")
+                    b.HasOne("REAC.EntityFrameworkCore.Entities.System.Delegator", "Delegator")
+                        .WithMany("DelegatorDelegationRequests")
+                        .HasForeignKey("DelegatorId");
+
+                    b.HasOne("REAC.EntityFrameworkCore.Entities.Litigation.LitigationRequest", "LitigationRequest")
+                        .WithMany("LitigationDelegationRequests")
+                        .HasForeignKey("LitigationRequestId");
+
+                    b.HasOne("REAC.EntityFrameworkCore.Entities.System.SysLitigationRequestOwnerType", "LitigationRequestOwnerType")
                         .WithMany("DelegationRequests")
-                        .HasForeignKey("DelegationFileId")
-                        .IsRequired()
-                        .HasConstraintName("FKDelegation266019");
+                        .HasForeignKey("LitigationRequestOwnerTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.HasOne("REAC.EntityFrameworkCore.Entities.System.SysIdentityType", "IdentityType")
-                        .WithMany("DelegationRequests")
-                        .HasForeignKey("IdentityTypeId")
-                        .IsRequired()
-                        .HasConstraintName("FKDelegation632464");
+                    b.Navigation("Delegator");
 
-                    b.Navigation("DelegationFile");
+                    b.Navigation("LitigationRequest");
 
-                    b.Navigation("IdentityType");
+                    b.Navigation("LitigationRequestOwnerType");
                 });
 
             modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.System.Delegator", b =>
@@ -6486,6 +6619,18 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .WithMany("FromDelegators")
                         .HasForeignKey("CitizenId")
                         .HasConstraintName("FKDelegatorFromDelegators8143");
+
+                    b.HasOne("REAC.EntityFrameworkCore.Entities.System.SysFileManager", "CommercialRegisterationFile")
+                        .WithMany("CommercialRegisterationFiles")
+                        .HasForeignKey("CommercialRegisterationFileId");
+
+                    b.HasOne("REAC.EntityFrameworkCore.Entities.System.SysFileManager", "CustodyFile")
+                        .WithMany("CustodyFiles")
+                        .HasForeignKey("CustodyFileId");
+
+                    b.HasOne("REAC.EntityFrameworkCore.Entities.System.SysFileManager", "DecisionFile")
+                        .WithMany("DecisionFiles")
+                        .HasForeignKey("DecisionFileId");
 
                     b.HasOne("REAC.EntityFrameworkCore.Entities.System.SysFileManager", "DelegationFile")
                         .WithMany("Delegators")
@@ -6501,21 +6646,38 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.HasOne("REAC.EntityFrameworkCore.Entities.Actor.Citizen", "DelegatorCitizen")
                         .WithMany("ToDelegators")
                         .HasForeignKey("DelegatorCitizenId")
-                        .IsRequired()
                         .HasConstraintName("FKDelegatorCitizenToDelegators18143");
+
+                    b.HasOne("REAC.EntityFrameworkCore.Entities.System.SysFileManager", "EstablishmentFile")
+                        .WithMany("EstablishmentFiles")
+                        .HasForeignKey("EstablishmentFileId");
 
                     b.HasOne("REAC.EntityFrameworkCore.Entities.Facility", "Facility")
                         .WithMany("Delegators")
                         .HasForeignKey("FacilityId")
                         .HasConstraintName("FKFacilityDelegators200220");
 
+                    b.HasOne("REAC.EntityFrameworkCore.Entities.System.SysFileManager", "RepresentationFile")
+                        .WithMany("RepresentationFiles")
+                        .HasForeignKey("RepresentationFileId");
+
                     b.Navigation("Citizen");
+
+                    b.Navigation("CommercialRegisterationFile");
+
+                    b.Navigation("CustodyFile");
+
+                    b.Navigation("DecisionFile");
 
                     b.Navigation("DelegationFile");
 
                     b.Navigation("DelegatorCitizen");
 
+                    b.Navigation("EstablishmentFile");
+
                     b.Navigation("Facility");
+
+                    b.Navigation("RepresentationFile");
 
                     b.Navigation("SysDelegationRelationshipType");
                 });
@@ -8004,6 +8166,8 @@ namespace REAC.EntityFrameworkCore.Migrations
 
             modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Litigation.LitigationRequest", b =>
                 {
+                    b.Navigation("LitigationDelegationRequests");
+
                     b.Navigation("LitigationRequestArbitrationReports");
 
                     b.Navigation("LitigationRequestArbitratorAssigningRequests");
@@ -8114,6 +8278,13 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Navigation("LitigationRequestMeetingReconciliationItems");
                 });
 
+            modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.System.Delegator", b =>
+                {
+                    b.Navigation("DelegatorDelegationRequests");
+
+                    b.Navigation("DelegatorLitigationRequests");
+                });
+
             modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.System.SysArbitratorAssigningRequestType", b =>
                 {
                     b.Navigation("LitigationRequestArbitratorAssigningRequests");
@@ -8222,9 +8393,15 @@ namespace REAC.EntityFrameworkCore.Migrations
 
                     b.Navigation("CitizenRequestReconciliationCenterDegreeFiles");
 
-                    b.Navigation("DelegationRequests");
+                    b.Navigation("CommercialRegisterationFiles");
+
+                    b.Navigation("CustodyFiles");
+
+                    b.Navigation("DecisionFiles");
 
                     b.Navigation("Delegators");
+
+                    b.Navigation("EstablishmentFiles");
 
                     b.Navigation("ExemptionReductionCategoryFiles");
 
@@ -8256,6 +8433,8 @@ namespace REAC.EntityFrameworkCore.Migrations
 
                     b.Navigation("LitigationRequestRequestFiles");
 
+                    b.Navigation("RepresentationFiles");
+
                     b.Navigation("WorkFlowProcessingLogFiles");
                 });
 
@@ -8267,8 +8446,6 @@ namespace REAC.EntityFrameworkCore.Migrations
             modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.System.SysIdentityType", b =>
                 {
                     b.Navigation("Citizens");
-
-                    b.Navigation("DelegationRequests");
                 });
 
             modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.System.SysLitigationRequestAmount", b =>
@@ -8309,6 +8486,8 @@ namespace REAC.EntityFrameworkCore.Migrations
 
             modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.System.SysLitigationRequestOwnerType", b =>
                 {
+                    b.Navigation("DelegationRequests");
+
                     b.Navigation("LitigationRequests");
                 });
 

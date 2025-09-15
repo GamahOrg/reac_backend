@@ -9,7 +9,7 @@ public partial class Facility : BaseEntity<Guid>
 {
     public string? Code { get; set; }
 
-    public Guid CitizenId { get; set; }
+    public Guid? CitizenId { get; set; }
 
     public string? CommercialRegisterNumber { get; set; }
 

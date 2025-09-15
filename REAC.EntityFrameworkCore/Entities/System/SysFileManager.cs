@@ -4,6 +4,7 @@ using REAC.EntityFrameworkCore.Entities.Arbitration;
 using REAC.EntityFrameworkCore.Entities.Litigation;
 using REAC.EntityFrameworkCore.Entities.Reconciliation;
 using REAC.EntityFrameworkCore.Entities.Wpf.Business;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace REAC.EntityFrameworkCore.Entities.System;
 
@@ -34,7 +35,21 @@ public partial class SysFileManager : CreationBaseEntity<Guid>
     public virtual ICollection<CitizenRequestAcademicDegreeFile> CitizenRequestAcademicDegreeFiles { get; set; } = new List<CitizenRequestAcademicDegreeFile>();
     public virtual ICollection<Delegator> Delegators { get; set; } = new List<Delegator>();
 
-    public virtual ICollection<DelegationRequest> DelegationRequests { get; set; } = new List<DelegationRequest>();
+    [InverseProperty(nameof(Delegator.CommercialRegisterationFile))]
+    public virtual ICollection<Delegator> CommercialRegisterationFiles { get; set; } = new List<Delegator>();
+    
+    [InverseProperty(nameof(Delegator.EstablishmentFile))]
+    public virtual ICollection<Delegator> EstablishmentFiles { get; set; } = new List<Delegator>();
+    
+    [InverseProperty(nameof(Delegator.RepresentationFile))]
+    public virtual ICollection<Delegator> RepresentationFiles { get; set; } = new List<Delegator>();
+    
+    [InverseProperty(nameof(Delegator.DecisionFile))]
+    public virtual ICollection<Delegator> DecisionFiles { get; set; } = new List<Delegator>();
+    
+    [InverseProperty(nameof(Delegator.CustodyFile))]
+    public virtual ICollection<Delegator> CustodyFiles { get; set; } = new List<Delegator>();
+
 
     public virtual ICollection<LitigationRequestContract> LitigationRequestContracts { get; set; } = new List<LitigationRequestContract>();
 

@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Core.Security.Entities;
+using Microsoft.EntityFrameworkCore;
 using REAC.EntityFrameworkCore.Entities.Actor;
 using REAC.EntityFrameworkCore.Entities.Arbitration;
 using REAC.EntityFrameworkCore.Entities.Invoice;
@@ -13,9 +14,6 @@ namespace REAC.EntityFrameworkCore.Entities.System;
 
 public partial class REACDBContext : DbContext
 {
-    public REACDBContext()
-    {
-    }
 
     public REACDBContext(DbContextOptions<REACDBContext> options)
         : base(options)
@@ -24,6 +22,7 @@ public partial class REACDBContext : DbContext
     }
 
 
+    public virtual DbSet<User> Users { get; set; }
     public virtual DbSet<LitigationRequestFees> LitigationRequestFees { get; set; }
     public virtual DbSet<SysInvoice> Invoices { get; set; }
     public virtual DbSet<SysInvoiceStatus> InvoiceStatuses { get; set; }
@@ -200,6 +199,7 @@ public partial class REACDBContext : DbContext
 
     public virtual DbSet<SysSetting> SysSettings { get; set; }
     public virtual DbSet<SysArea> SysAreas { get; set; }
+    public virtual DbSet<SysAreaDistances> SysAreaDistances { get; set; }
     public virtual DbSet<SysCity> SysCities { get; set; }
     public virtual DbSet<OtherCategory> OtherCategories { get; set; }
     public virtual DbSet<SysNationality> SysNationalities { get; set; }
@@ -1005,22 +1005,7 @@ public partial class REACDBContext : DbContext
 
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.ApprovedOn).HasColumnType("datetime");
-            entity.Property(e => e.BirthDate).HasColumnType("date");
-            entity.Property(e => e.DelegationNumber).HasMaxLength(20);
-            entity.Property(e => e.Email).HasMaxLength(250);
-            entity.Property(e => e.IdentityNumber).HasMaxLength(20);
-            entity.Property(e => e.Mobile).HasMaxLength(20);
-            entity.Property(e => e.RequestedOn).HasColumnType("date");
-
-            entity.HasOne(d => d.DelegationFile).WithMany(p => p.DelegationRequests)
-                .HasForeignKey(d => d.DelegationFileId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FKDelegation266019");
-
-            entity.HasOne(d => d.IdentityType).WithMany(p => p.DelegationRequests)
-                .HasForeignKey(d => d.IdentityTypeId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FKDelegation632464");
+            
         });
         modelBuilder.Entity<LitigationRequestReformerAssigningRequest>(entity =>
         {
@@ -1164,6 +1149,12 @@ public partial class REACDBContext : DbContext
                 .HasForeignKey(d => d.DelegatorCitizenId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FKLitigation6DelegatorLitigationRequests38578");
+            
+            entity.HasOne(lr => lr.Delegator)           
+            .WithMany(d => d.DelegatorLitigationRequests) 
+            .HasForeignKey(lr => lr.DelegatorId)   
+            .OnDelete(DeleteBehavior.Cascade)
+            .HasConstraintName("FKDelegator_LitigationRequests");
 
             entity.HasOne(d => d.ExemptionReductionFile).WithMany(p => p.ExemptionReductionCategoryFiles)
               .HasForeignKey(d => d.ExemptionReductionFileId)

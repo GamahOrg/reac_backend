@@ -28,10 +28,13 @@ using REAC.Application.Contracts.IAppServices.System;
 using REAC.Application.Contracts.IModuleServices;
 using REAC.Domain.Shared.Constants;
 using REAC.Domain.Shared.Enum;
+using REAC.EntityFrameworkCore.Entities;
 using REAC.EntityFrameworkCore.Entities.Actor;
+using REAC.EntityFrameworkCore.Entities.Arbitration;
 using REAC.EntityFrameworkCore.Entities.Litigation;
 using REAC.EntityFrameworkCore.Entities.System;
 using REAC.EntityFrameworkCore.Entities.Wpf.System;
+using System.Globalization;
 using System.Threading;
 using static Dapper.SqlMapper;
 using static REAC.Application.Contracts.IAppServices.Litigation.ILitigationRequestService;
@@ -80,6 +83,8 @@ namespace REAC.Application.AppServices.Litigation
             try
             {
                 var contract = (await _repository.GetQueryable<LitigationRequestContract, Guid>())
+                                        .Include(x => x.LitigationRequests)
+                                        .ThenInclude(x => x.Delegator)
                                        .FirstOrDefault(x => x.Id == model.ContractId);
                 if (contract == null)
                     return new BaseResponse() { IsDone = false, Message = "لا يمكن الوصول لبيانات العقد" };
@@ -104,7 +109,48 @@ namespace REAC.Application.AppServices.Litigation
                         contract.ContractFileId = model.ContractFileId;
                         break;
                 }
-                var response = _repository.SaveChangesAsync().Result;
+
+                if(contract.LitigationRequests != null)
+                {
+                    if(model.LitigationRequestDelegationDataDto is not null && model.LitigationRequestDelegationDataDto.DelegationRelationshipTypeId is not null && contract.LitigationRequests.First().Delegator is not null && contract.LitigationRequests.First().LitigationRequestOwnerTypeId != LitigationRequestOwnerType.Personal)
+                    {
+                       
+                        var updateDelegatorFiles = await _repository.ExecuteUpdateAsync<Delegator,Guid>(
+                            x => x.Id == contract.LitigationRequests.First().Delegator.Id
+                            , y => y
+                            .SetProperty(z => z.DelegateNumber,model.LitigationRequestDelegationDataDto.DelegationNumber)
+                            .SetProperty(z => z.DelegationFileId,model.LitigationRequestDelegationDataDto.DelegationFileId)
+                            .SetProperty(z => z.DecisionFileId,model.LitigationRequestDelegationDataDto.DecisionFileId)
+                            .SetProperty(z => z.EstablishmentFileId,model.LitigationRequestDelegationDataDto.EstablishmentFileId)
+                            .SetProperty(z => z.CustodyFileId,model.LitigationRequestDelegationDataDto.CustodyFileId)
+                            .SetProperty(z => z.CommercialRegisterationFileId,model.LitigationRequestDelegationDataDto.CommercialRegisterationFileId)
+                            .SetProperty(z => z.RepresentationFileId,model.LitigationRequestDelegationDataDto.RepresentationFileId)
+                            ,default);
+
+                        if(!updateDelegatorFiles.IsDone)
+                            return new BaseResponse() { IsDone = false , Message = "حدث خطأ اثناء تعديل ملفات التفويض" };
+
+
+                        if(model.LitigationRequestDelegationDataDto != null && model.LitigationRequestDelegationDataDto.DelegationRelationshipTypeId == DelegationRelationshipType.Individual && contract.LitigationRequests.First().Delegator.CitizenId is not null)
+                        {
+                            contract.FirstPartyCapacity = model.LitigationRequestDelegationDataDto.IndividualCapacity;
+                            var updatedCitizen = await UpdateDraftCitizen(model.LitigationRequestDelegationDataDto, contract.LitigationRequests.First().Delegator.CitizenId);
+
+                            if(!updatedCitizen.IsDone)
+                                return updatedCitizen;
+
+                        }else if((model.LitigationRequestDelegationDataDto != null && model.LitigationRequestDelegationDataDto.DelegationRelationshipTypeId == DelegationRelationshipType.Facility && contract.LitigationRequests.First().Delegator.FacilityId is not null)){
+
+                            var updatedFacility = await UpdateFacility(model.LitigationRequestDelegationDataDto, contract.LitigationRequests.First().Delegator.FacilityId);
+
+                            if(! updatedFacility.IsDone)
+                                return updatedFacility;
+                        }
+                    }
+                }
+
+
+                var response =  _repository.SaveChangesAsync().Result;
                 if (!response.IsDone)
                     return response;
 
@@ -152,6 +198,54 @@ namespace REAC.Application.AppServices.Litigation
                     IsDone = false
                 };
             }
+        }
+
+        private async Task<BaseResponse> UpdateDraftCitizen(LitigationRequestDelegationDataDto input, Guid? citizenId)
+        {
+            // Get Nationality
+            var nationalityId = (await _repository.GetQueryable<SysNationality, Guid>())
+               .AsNoTracking()
+               .FirstOrDefault(x => x.NationalityName == input.IndividualNationality)?
+               .Id;
+
+            // update Draft Citizen
+            var updateDraftCitizen = await _repository.ExecuteUpdateAsync<Citizen, Guid>(
+                             x => x.Id == citizenId
+                             , y => y
+                             .SetProperty(z => z.FullName, input.IndividualFullName)
+                             .SetProperty(z => z.BirthDate, DateTime.Parse(input.IndividualBirthdate, CultureInfo.InvariantCulture))
+                             .SetProperty(z => z.Mobile, input.IndividualMobile)
+                             .SetProperty(z => z.Email, input.IndividualEmail)
+                             .SetProperty(z => z.NationalAddress, input.IndividualNationalAddress)
+                             .SetProperty(z => z.NationalityId, nationalityId)
+                             .SetProperty(z => z.IdentityNumber, input.IndividualIdentityNumber)
+                             
+                             , default);
+
+            if (!updateDraftCitizen.IsDone)
+                return new DataResponse<Citizen>() { IsDone = false, Message = "خطأ في تعديل بيانات المدعي" };
+
+            return new DataResponse<Citizen>() { IsDone = true, Message = "تم تعديل بيانات المدعي بنجاح" };
+        }
+
+        private async Task<BaseResponse> UpdateFacility(LitigationRequestDelegationDataDto input,Guid? facilityId)
+        {
+            if (input == null)
+                return new DataResponse<Facility> { IsDone = false, Message = "خطأ في إضافة بيانات المنشأة" };
+
+            // update Facility
+            var updateFacility = await _repository.ExecuteUpdateAsync<Facility, Guid>(
+                             x => x.Id == facilityId
+                             , y => y
+                             .SetProperty(z => z.ArabicFacilityName, input.ArabicFacilityName)
+                             .SetProperty(z => z.Facility700Number,input.Facility700Number)
+                             .SetProperty(z => z.CommercialRegisterNumber, input.FacilityCommercialRegisterationNumber)
+                             
+                             , default);
+            if (!updateFacility.IsDone)
+                return new DataResponse<Facility> { IsDone = false, Message = "خطأ في تعديل بيانات المنشأة" };
+
+            return new DataResponse<Facility> { IsDone = true, Message = "تم تعديل بيانات المنشأة بنجاح",  };
         }
         #endregion
 
@@ -304,7 +398,7 @@ namespace REAC.Application.AppServices.Litigation
 
         public async Task<BaseResponse> RentIntegrationValidation(RentIntegrateDto rentIntegrateDto, LitigationRequestOwnerType ownerType, string contractNumber, string versionNumber)
         {
-            if (rentIntegrateDto.Key == contractNumber && rentIntegrateDto.SubKey == versionNumber && ownerType == LitigationRequestOwnerType.LawyerForIndividual)
+            if (rentIntegrateDto.Key == contractNumber && rentIntegrateDto.SubKey == versionNumber && ownerType == LitigationRequestOwnerType.IndividualRepresentative)
             {
                 var logdenUser = Guid.Parse("1c1b6018-69c8-43f5-b5b1-72cea64d0f9f");/*_jwtReader.GetUserId();*/
                 string logdenUserIdentityNumber = "12122nnnnnnnnn";
@@ -325,7 +419,7 @@ namespace REAC.Application.AppServices.Litigation
                         if (representativeCitizenList.Any(x => x.Facility700Number == rentIntegrateDto.SecondPartyDto.FacilityNumber && x.CommercialRegisterNumber == rentIntegrateDto.SecondPartyDto.CommercialRegistrationNo))
                             rentIntegrateDto.SecondPartyDto.IsPretender = true;
                         break;
-                    case LitigationRequestOwnerType.LawyerForIndividual:
+                    case LitigationRequestOwnerType.IndividualRepresentative:
                         //var lawyerCitizenList = await _citizenLawyerAgent.GetLawyerCitizens(logdenUser);
                         //if (lawyerCitizenList.Contains(rentIntegrateDto.FirstPartyDto.IdentityNumber))
                         //    rentIntegrateDto.FirstPartyDto.IsPretender = true;
@@ -347,21 +441,21 @@ namespace REAC.Application.AppServices.Litigation
                 }
                 if (rentIntegrateDto.FirstPartyDto.IsPretender == true)
                 {
-                    rentIntegrateDto.FirstPartyDto.AgencyNumber = ownerType == LitigationRequestOwnerType.AgentForIndividual || ownerType == LitigationRequestOwnerType.LawyerForIndividual ? "123456789" : null;
-                    rentIntegrateDto.FirstPartyDto.LawLicenseExpirationDate = ownerType == LitigationRequestOwnerType.LawyerForIndividual ? DateTime.Now.AddDays(5) : null;
-                    rentIntegrateDto.FirstPartyDto.LawLicenseNumber = ownerType == LitigationRequestOwnerType.LawyerForIndividual ? "789456123" : null;
+                    rentIntegrateDto.FirstPartyDto.AgencyNumber = ownerType == LitigationRequestOwnerType.AgentForIndividual || ownerType == LitigationRequestOwnerType.IndividualRepresentative ? "123456789" : null;
+                    rentIntegrateDto.FirstPartyDto.LawLicenseExpirationDate = ownerType == LitigationRequestOwnerType.IndividualRepresentative ? DateTime.Now.AddDays(5) : null;
+                    rentIntegrateDto.FirstPartyDto.LawLicenseNumber = ownerType == LitigationRequestOwnerType.IndividualRepresentative ? "789456123" : null;
                     rentIntegrateDto.FirstPartyDto.EstablishmentContract = ownerType == LitigationRequestOwnerType.CompanyRepresentative ? new SysFileManagerCreateUpdateDto { Id = Guid.Parse("e86953a3-c747-49f4-b817-21592334321f"), FileDescription = "FileDescription", FilePath = "reac/e86953a3-c747-49f4-b817-21592334321f.png", FileType = "Pdf" } : null;
-                    rentIntegrateDto.FirstPartyDto.AgancyAttachment = ownerType == LitigationRequestOwnerType.AgentForIndividual || ownerType == LitigationRequestOwnerType.LawyerForIndividual ? new SysFileManagerCreateUpdateDto { Id = Guid.Parse("e86953a3-c747-49f4-b817-21592334321f"), FileDescription = "FileDescription", FilePath = "reac/e86953a3-c747-49f4-b817-21592334321f.png", FileType = "Pdf" } : null;
-                    rentIntegrateDto.FirstPartyDto.LawLicenseAttachment = ownerType == LitigationRequestOwnerType.LawyerForIndividual ? new SysFileManagerCreateUpdateDto { Id = Guid.Parse("e86953a3-c747-49f4-b817-21592334321f"), FileDescription = "FileDescription", FilePath = "reac/e86953a3-c747-49f4-b817-21592334321f.png", FileType = "Pdf" } : null;
+                    rentIntegrateDto.FirstPartyDto.AgancyAttachment = ownerType == LitigationRequestOwnerType.AgentForIndividual || ownerType == LitigationRequestOwnerType.IndividualRepresentative ? new SysFileManagerCreateUpdateDto { Id = Guid.Parse("e86953a3-c747-49f4-b817-21592334321f"), FileDescription = "FileDescription", FilePath = "reac/e86953a3-c747-49f4-b817-21592334321f.png", FileType = "Pdf" } : null;
+                    rentIntegrateDto.FirstPartyDto.LawLicenseAttachment = ownerType == LitigationRequestOwnerType.IndividualRepresentative ? new SysFileManagerCreateUpdateDto { Id = Guid.Parse("e86953a3-c747-49f4-b817-21592334321f"), FileDescription = "FileDescription", FilePath = "reac/e86953a3-c747-49f4-b817-21592334321f.png", FileType = "Pdf" } : null;
                 }
                 if (rentIntegrateDto.SecondPartyDto.IsPretender == true)
                 {
-                    rentIntegrateDto.SecondPartyDto.AgencyNumber = ownerType == LitigationRequestOwnerType.AgentForIndividual || ownerType == LitigationRequestOwnerType.LawyerForIndividual ? "123456789" : null;
-                    rentIntegrateDto.SecondPartyDto.LawLicenseExpirationDate = ownerType == LitigationRequestOwnerType.LawyerForIndividual ? DateTime.Now.AddDays(5) : null;
-                    rentIntegrateDto.SecondPartyDto.LawLicenseNumber = ownerType == LitigationRequestOwnerType.LawyerForIndividual ? "789456123" : null;
+                    rentIntegrateDto.SecondPartyDto.AgencyNumber = ownerType == LitigationRequestOwnerType.AgentForIndividual || ownerType == LitigationRequestOwnerType.IndividualRepresentative ? "123456789" : null;
+                    rentIntegrateDto.SecondPartyDto.LawLicenseExpirationDate = ownerType == LitigationRequestOwnerType.IndividualRepresentative ? DateTime.Now.AddDays(5) : null;
+                    rentIntegrateDto.SecondPartyDto.LawLicenseNumber = ownerType == LitigationRequestOwnerType.IndividualRepresentative ? "789456123" : null;
                     rentIntegrateDto.SecondPartyDto.EstablishmentContract = ownerType == LitigationRequestOwnerType.CompanyRepresentative ? new SysFileManagerCreateUpdateDto { Id = Guid.Parse("e86953a3-c747-49f4-b817-21592334321f"), FileDescription = "FileDescription", FilePath = "reac/e86953a3-c747-49f4-b817-21592334321f.png", FileType = "Pdf" } : null;
-                    rentIntegrateDto.SecondPartyDto.AgancyAttachment = ownerType == LitigationRequestOwnerType.AgentForIndividual || ownerType == LitigationRequestOwnerType.LawyerForIndividual ? new SysFileManagerCreateUpdateDto { Id = Guid.Parse("e86953a3-c747-49f4-b817-21592334321f"), FileDescription = "FileDescription", FilePath = "reac/e86953a3-c747-49f4-b817-21592334321f.png", FileType = "Pdf" } : null;
-                    rentIntegrateDto.SecondPartyDto.LawLicenseAttachment = ownerType == LitigationRequestOwnerType.LawyerForIndividual ? new SysFileManagerCreateUpdateDto { Id = Guid.Parse("e86953a3-c747-49f4-b817-21592334321f"), FileDescription = "FileDescription", FilePath = "reac/e86953a3-c747-49f4-b817-21592334321f.png", FileType = "Pdf" } : null;
+                    rentIntegrateDto.SecondPartyDto.AgancyAttachment = ownerType == LitigationRequestOwnerType.AgentForIndividual || ownerType == LitigationRequestOwnerType.IndividualRepresentative ? new SysFileManagerCreateUpdateDto { Id = Guid.Parse("e86953a3-c747-49f4-b817-21592334321f"), FileDescription = "FileDescription", FilePath = "reac/e86953a3-c747-49f4-b817-21592334321f.png", FileType = "Pdf" } : null;
+                    rentIntegrateDto.SecondPartyDto.LawLicenseAttachment = ownerType == LitigationRequestOwnerType.IndividualRepresentative ? new SysFileManagerCreateUpdateDto { Id = Guid.Parse("e86953a3-c747-49f4-b817-21592334321f"), FileDescription = "FileDescription", FilePath = "reac/e86953a3-c747-49f4-b817-21592334321f.png", FileType = "Pdf" } : null;
                 }
 
 
@@ -527,7 +621,7 @@ namespace REAC.Application.AppServices.Litigation
 
         public async Task<BaseResponse> RealStatentegrationValidation(RealStateIntegrateDto realStateIntegrateDto, LitigationRequestOwnerType ownerType, string contractNumber)
         {
-            if (realStateIntegrateDto.ContractKey == contractNumber && ownerType == LitigationRequestOwnerType.LawyerForIndividual)
+            if (realStateIntegrateDto.ContractKey == contractNumber && ownerType == LitigationRequestOwnerType.IndividualRepresentative)
             {
                 var logdenUser = Guid.Parse("1c1b6018-69c8-43f5-b5b1-72cea64d0f9f");/*_jwtReader.GetUserId();*/
                 string logdenUserIdentityNumber = "12122nnnnnnnnn";
@@ -548,7 +642,7 @@ namespace REAC.Application.AppServices.Litigation
                         if (representativeCitizenList.Any(x => x.Facility700Number == realStateIntegrateDto.SecondPartyDto.FacilityNumber && x.CommercialRegisterNumber == realStateIntegrateDto.SecondPartyDto.CommercialRegistrationNo))
                             realStateIntegrateDto.SecondPartyDto.IsPretender = true;
                         break;
-                    case LitigationRequestOwnerType.LawyerForIndividual:
+                    case LitigationRequestOwnerType.IndividualRepresentative:
                         //var lawyerCitizenList = await _citizenLawyerAgent.GetLawyerCitizens(logdenUser);
                         //if (lawyerCitizenList.Contains(realStateIntegrateDto.FirstPartyDto.IdentityNumber))
                         //    realStateIntegrateDto.FirstPartyDto.IsPretender = true;
@@ -570,21 +664,21 @@ namespace REAC.Application.AppServices.Litigation
                 }
                 if (realStateIntegrateDto.FirstPartyDto.IsPretender == true)
                 {
-                    realStateIntegrateDto.FirstPartyDto.AgencyNumber = ownerType == LitigationRequestOwnerType.AgentForIndividual || ownerType == LitigationRequestOwnerType.LawyerForIndividual ? "123456789" : null;
-                    realStateIntegrateDto.FirstPartyDto.LawLicenseExpirationDate = ownerType == LitigationRequestOwnerType.LawyerForIndividual ? DateTime.Now.AddDays(5) : null;
-                    realStateIntegrateDto.FirstPartyDto.LawLicenseNumber = ownerType == LitigationRequestOwnerType.LawyerForIndividual ? "789456123" : null;
+                    realStateIntegrateDto.FirstPartyDto.AgencyNumber = ownerType == LitigationRequestOwnerType.AgentForIndividual || ownerType == LitigationRequestOwnerType.IndividualRepresentative ? "123456789" : null;
+                    realStateIntegrateDto.FirstPartyDto.LawLicenseExpirationDate = ownerType == LitigationRequestOwnerType.IndividualRepresentative ? DateTime.Now.AddDays(5) : null;
+                    realStateIntegrateDto.FirstPartyDto.LawLicenseNumber = ownerType == LitigationRequestOwnerType.IndividualRepresentative ? "789456123" : null;
                     realStateIntegrateDto.FirstPartyDto.EstablishmentContract = ownerType == LitigationRequestOwnerType.CompanyRepresentative ? new SysFileManagerCreateUpdateDto { Id = Guid.Parse("e86953a3-c747-49f4-b817-21592334321f"), FileDescription = "FileDescription", FilePath = "reac/e86953a3-c747-49f4-b817-21592334321f.png", FileType = "Pdf" } : null;
-                    realStateIntegrateDto.FirstPartyDto.AgancyAttachment = ownerType == LitigationRequestOwnerType.AgentForIndividual || ownerType == LitigationRequestOwnerType.LawyerForIndividual ? new SysFileManagerCreateUpdateDto { Id = Guid.Parse("e86953a3-c747-49f4-b817-21592334321f"), FileDescription = "FileDescription", FilePath = "reac/e86953a3-c747-49f4-b817-21592334321f.png", FileType = "Pdf" } : null;
-                    realStateIntegrateDto.FirstPartyDto.LawLicenseAttachment = ownerType == LitigationRequestOwnerType.LawyerForIndividual ? new SysFileManagerCreateUpdateDto { Id = Guid.Parse("e86953a3-c747-49f4-b817-21592334321f"), FileDescription = "FileDescription", FilePath = "reac/e86953a3-c747-49f4-b817-21592334321f.png", FileType = "Pdf" } : null;
+                    realStateIntegrateDto.FirstPartyDto.AgancyAttachment = ownerType == LitigationRequestOwnerType.AgentForIndividual || ownerType == LitigationRequestOwnerType.IndividualRepresentative ? new SysFileManagerCreateUpdateDto { Id = Guid.Parse("e86953a3-c747-49f4-b817-21592334321f"), FileDescription = "FileDescription", FilePath = "reac/e86953a3-c747-49f4-b817-21592334321f.png", FileType = "Pdf" } : null;
+                    realStateIntegrateDto.FirstPartyDto.LawLicenseAttachment = ownerType == LitigationRequestOwnerType.IndividualRepresentative ? new SysFileManagerCreateUpdateDto { Id = Guid.Parse("e86953a3-c747-49f4-b817-21592334321f"), FileDescription = "FileDescription", FilePath = "reac/e86953a3-c747-49f4-b817-21592334321f.png", FileType = "Pdf" } : null;
                 }
                 if (realStateIntegrateDto.SecondPartyDto.IsPretender == true)
                 {
-                    realStateIntegrateDto.SecondPartyDto.AgencyNumber = ownerType == LitigationRequestOwnerType.AgentForIndividual || ownerType == LitigationRequestOwnerType.LawyerForIndividual ? "123456789" : null;
-                    realStateIntegrateDto.SecondPartyDto.LawLicenseExpirationDate = ownerType == LitigationRequestOwnerType.LawyerForIndividual ? DateTime.Now.AddDays(5) : null;
-                    realStateIntegrateDto.SecondPartyDto.LawLicenseNumber = ownerType == LitigationRequestOwnerType.LawyerForIndividual ? "789456123" : null;
+                    realStateIntegrateDto.SecondPartyDto.AgencyNumber = ownerType == LitigationRequestOwnerType.AgentForIndividual || ownerType == LitigationRequestOwnerType.IndividualRepresentative ? "123456789" : null;
+                    realStateIntegrateDto.SecondPartyDto.LawLicenseExpirationDate = ownerType == LitigationRequestOwnerType.IndividualRepresentative ? DateTime.Now.AddDays(5) : null;
+                    realStateIntegrateDto.SecondPartyDto.LawLicenseNumber = ownerType == LitigationRequestOwnerType.IndividualRepresentative ? "789456123" : null;
                     realStateIntegrateDto.SecondPartyDto.EstablishmentContract = ownerType == LitigationRequestOwnerType.CompanyRepresentative ? new SysFileManagerCreateUpdateDto { Id = Guid.Parse("e86953a3-c747-49f4-b817-21592334321f"), FileDescription = "FileDescription", FilePath = "reac/e86953a3-c747-49f4-b817-21592334321f.png", FileType = "Pdf" } : null;
-                    realStateIntegrateDto.SecondPartyDto.AgancyAttachment = ownerType == LitigationRequestOwnerType.AgentForIndividual || ownerType == LitigationRequestOwnerType.LawyerForIndividual ? new SysFileManagerCreateUpdateDto { Id = Guid.Parse("e86953a3-c747-49f4-b817-21592334321f"), FileDescription = "FileDescription", FilePath = "reac/e86953a3-c747-49f4-b817-21592334321f.png", FileType = "Pdf" } : null;
-                    realStateIntegrateDto.SecondPartyDto.LawLicenseAttachment = ownerType == LitigationRequestOwnerType.LawyerForIndividual ? new SysFileManagerCreateUpdateDto { Id = Guid.Parse("e86953a3-c747-49f4-b817-21592334321f"), FileDescription = "FileDescription", FilePath = "reac/e86953a3-c747-49f4-b817-21592334321f.png", FileType = "Pdf" } : null;
+                    realStateIntegrateDto.SecondPartyDto.AgancyAttachment = ownerType == LitigationRequestOwnerType.AgentForIndividual || ownerType == LitigationRequestOwnerType.IndividualRepresentative ? new SysFileManagerCreateUpdateDto { Id = Guid.Parse("e86953a3-c747-49f4-b817-21592334321f"), FileDescription = "FileDescription", FilePath = "reac/e86953a3-c747-49f4-b817-21592334321f.png", FileType = "Pdf" } : null;
+                    realStateIntegrateDto.SecondPartyDto.LawLicenseAttachment = ownerType == LitigationRequestOwnerType.IndividualRepresentative ? new SysFileManagerCreateUpdateDto { Id = Guid.Parse("e86953a3-c747-49f4-b817-21592334321f"), FileDescription = "FileDescription", FilePath = "reac/e86953a3-c747-49f4-b817-21592334321f.png", FileType = "Pdf" } : null;
                 }
                 return new DataResponse<RealStateIntegrateDto> { IsDone = true, Message = Localizations.RetrievedSuccefully, Data = realStateIntegrateDto };
             }
@@ -670,7 +764,7 @@ namespace REAC.Application.AppServices.Litigation
                     if (representativeCitizenList.Any(x => x.Facility700Number == wafiIntegrateDto.SecondPartyDto.FacilityNumber && x.CommercialRegisterNumber == wafiIntegrateDto.SecondPartyDto.CommercialRegistrationNo))
                         wafiIntegrateDto.SecondPartyDto.IsPretender = true;
                     break;
-                case LitigationRequestOwnerType.LawyerForIndividual:
+                case LitigationRequestOwnerType.IndividualRepresentative:
                     //var lawyerCitizenList = await _citizenLawyerAgent.GetLawyerCitizens(logdenUser);
                     //if (lawyerCitizenList.Contains(wafiIntegrateDto.FirstPartyDto.IdentityNumber))
                     //    wafiIntegrateDto.FirstPartyDto.IsPretender = true;
@@ -699,21 +793,21 @@ namespace REAC.Application.AppServices.Litigation
 
             if (wafiIntegrateDto.FirstPartyDto.IsPretender == true)
             {
-                wafiIntegrateDto.FirstPartyDto.AgencyNumber = ownerType == LitigationRequestOwnerType.AgentForIndividual || ownerType == LitigationRequestOwnerType.LawyerForIndividual ? "123456789" : null;
-                wafiIntegrateDto.FirstPartyDto.LawLicenseExpirationDate = ownerType == LitigationRequestOwnerType.LawyerForIndividual ? DateTime.Now.AddDays(5) : null;
-                wafiIntegrateDto.FirstPartyDto.LawLicenseNumber = ownerType == LitigationRequestOwnerType.LawyerForIndividual ? "789456123" : null;
+                wafiIntegrateDto.FirstPartyDto.AgencyNumber = ownerType == LitigationRequestOwnerType.AgentForIndividual || ownerType == LitigationRequestOwnerType.IndividualRepresentative ? "123456789" : null;
+                wafiIntegrateDto.FirstPartyDto.LawLicenseExpirationDate = ownerType == LitigationRequestOwnerType.IndividualRepresentative ? DateTime.Now.AddDays(5) : null;
+                wafiIntegrateDto.FirstPartyDto.LawLicenseNumber = ownerType == LitigationRequestOwnerType.IndividualRepresentative ? "789456123" : null;
                 wafiIntegrateDto.FirstPartyDto.EstablishmentContract = ownerType == LitigationRequestOwnerType.CompanyRepresentative ? new SysFileManagerCreateUpdateDto { Id = Guid.Parse("e86953a3-c747-49f4-b817-21592334321f"), FileDescription = "FileDescription", FilePath = "reac/e86953a3-c747-49f4-b817-21592334321f.png", FileType = "Pdf" } : null;
-                wafiIntegrateDto.FirstPartyDto.AgancyAttachment = ownerType == LitigationRequestOwnerType.AgentForIndividual || ownerType == LitigationRequestOwnerType.LawyerForIndividual ? new SysFileManagerCreateUpdateDto { Id = Guid.Parse("e86953a3-c747-49f4-b817-21592334321f"), FileDescription = "FileDescription", FilePath = "reac/e86953a3-c747-49f4-b817-21592334321f.png", FileType = "Pdf" } : null;
-                wafiIntegrateDto.FirstPartyDto.LawLicenseAttachment = ownerType == LitigationRequestOwnerType.LawyerForIndividual ? new SysFileManagerCreateUpdateDto { Id = Guid.Parse("e86953a3-c747-49f4-b817-21592334321f"), FileDescription = "FileDescription", FilePath = "reac/e86953a3-c747-49f4-b817-21592334321f.png", FileType = "Pdf" } : null;
+                wafiIntegrateDto.FirstPartyDto.AgancyAttachment = ownerType == LitigationRequestOwnerType.AgentForIndividual || ownerType == LitigationRequestOwnerType.IndividualRepresentative ? new SysFileManagerCreateUpdateDto { Id = Guid.Parse("e86953a3-c747-49f4-b817-21592334321f"), FileDescription = "FileDescription", FilePath = "reac/e86953a3-c747-49f4-b817-21592334321f.png", FileType = "Pdf" } : null;
+                wafiIntegrateDto.FirstPartyDto.LawLicenseAttachment = ownerType == LitigationRequestOwnerType.IndividualRepresentative ? new SysFileManagerCreateUpdateDto { Id = Guid.Parse("e86953a3-c747-49f4-b817-21592334321f"), FileDescription = "FileDescription", FilePath = "reac/e86953a3-c747-49f4-b817-21592334321f.png", FileType = "Pdf" } : null;
             }
             if (wafiIntegrateDto.SecondPartyDto.IsPretender == true)
             {
-                wafiIntegrateDto.SecondPartyDto.AgencyNumber = ownerType == LitigationRequestOwnerType.AgentForIndividual || ownerType == LitigationRequestOwnerType.LawyerForIndividual ? "123456789" : null;
-                wafiIntegrateDto.SecondPartyDto.LawLicenseExpirationDate = ownerType == LitigationRequestOwnerType.LawyerForIndividual ? DateTime.Now.AddDays(5) : null;
-                wafiIntegrateDto.SecondPartyDto.LawLicenseNumber = ownerType == LitigationRequestOwnerType.LawyerForIndividual ? "789456123" : null;
+                wafiIntegrateDto.SecondPartyDto.AgencyNumber = ownerType == LitigationRequestOwnerType.AgentForIndividual || ownerType == LitigationRequestOwnerType.IndividualRepresentative ? "123456789" : null;
+                wafiIntegrateDto.SecondPartyDto.LawLicenseExpirationDate = ownerType == LitigationRequestOwnerType.IndividualRepresentative ? DateTime.Now.AddDays(5) : null;
+                wafiIntegrateDto.SecondPartyDto.LawLicenseNumber = ownerType == LitigationRequestOwnerType.IndividualRepresentative ? "789456123" : null;
                 wafiIntegrateDto.SecondPartyDto.EstablishmentContract = ownerType == LitigationRequestOwnerType.CompanyRepresentative ? new SysFileManagerCreateUpdateDto { Id = Guid.Parse("e86953a3-c747-49f4-b817-21592334321f"), FileDescription = "FileDescription", FilePath = "reac/e86953a3-c747-49f4-b817-21592334321f.png", FileType = "Pdf" } : null;
-                wafiIntegrateDto.SecondPartyDto.AgancyAttachment = ownerType == LitigationRequestOwnerType.AgentForIndividual || ownerType == LitigationRequestOwnerType.LawyerForIndividual ? new SysFileManagerCreateUpdateDto { Id = Guid.Parse("e86953a3-c747-49f4-b817-21592334321f"), FileDescription = "FileDescription", FilePath = "reac/e86953a3-c747-49f4-b817-21592334321f.png", FileType = "Pdf" } : null;
-                wafiIntegrateDto.SecondPartyDto.LawLicenseAttachment = ownerType == LitigationRequestOwnerType.LawyerForIndividual ? new SysFileManagerCreateUpdateDto { Id = Guid.Parse("e86953a3-c747-49f4-b817-21592334321f"), FileDescription = "FileDescription", FilePath = "reac/e86953a3-c747-49f4-b817-21592334321f.png", FileType = "Pdf" } : null;
+                wafiIntegrateDto.SecondPartyDto.AgancyAttachment = ownerType == LitigationRequestOwnerType.AgentForIndividual || ownerType == LitigationRequestOwnerType.IndividualRepresentative ? new SysFileManagerCreateUpdateDto { Id = Guid.Parse("e86953a3-c747-49f4-b817-21592334321f"), FileDescription = "FileDescription", FilePath = "reac/e86953a3-c747-49f4-b817-21592334321f.png", FileType = "Pdf" } : null;
+                wafiIntegrateDto.SecondPartyDto.LawLicenseAttachment = ownerType == LitigationRequestOwnerType.IndividualRepresentative ? new SysFileManagerCreateUpdateDto { Id = Guid.Parse("e86953a3-c747-49f4-b817-21592334321f"), FileDescription = "FileDescription", FilePath = "reac/e86953a3-c747-49f4-b817-21592334321f.png", FileType = "Pdf" } : null;
             }
 
             return new DataResponse<WafiIntegrateDto> { IsDone = true, Message = Localizations.RetrievedSuccefully, Data = wafiIntegrateDto };
@@ -882,7 +976,7 @@ namespace REAC.Application.AppServices.Litigation
 
         public async Task<BaseResponse> PropertiesIntegrationValidation(PropertiesIntegrateDto PropertiesIntegrateDto, LitigationRequestOwnerType ownerType, string associationCode, string associationName)
         {
-            if (PropertiesIntegrateDto.AssociationCode == associationCode && PropertiesIntegrateDto.AssociationName == associationName && ownerType == LitigationRequestOwnerType.LawyerForIndividual)
+            if (PropertiesIntegrateDto.AssociationCode == associationCode && PropertiesIntegrateDto.AssociationName == associationName && ownerType == LitigationRequestOwnerType.IndividualRepresentative)
             {
                 var logdenUser = Guid.Parse("1c1b6018-69c8-43f5-b5b1-72cea64d0f9f");/*_jwtReader.GetUserId();*/
                 string logdenUserIdentityNumber = "12122nnnnnnnnn";
@@ -903,7 +997,7 @@ namespace REAC.Application.AppServices.Litigation
                         if (representativeCitizenList.Any(x => x.Facility700Number == PropertiesIntegrateDto.SecondPartyDto.FacilityNumber && x.CommercialRegisterNumber == PropertiesIntegrateDto.SecondPartyDto.CommercialRegistrationNo))
                             PropertiesIntegrateDto.SecondPartyDto.IsPretender = true;
                         break;
-                    case LitigationRequestOwnerType.LawyerForIndividual:
+                    case LitigationRequestOwnerType.IndividualRepresentative:
                         //var lawyerCitizenList = await _citizenLawyerAgent.GetLawyerCitizens(logdenUser);
                         //if (lawyerCitizenList.Contains(PropertiesIntegrateDto.FirstPartyDto.IdentityNumber))
                         //    PropertiesIntegrateDto.FirstPartyDto.IsPretender = true;
@@ -925,21 +1019,21 @@ namespace REAC.Application.AppServices.Litigation
                 }
                 if (PropertiesIntegrateDto.FirstPartyDto.IsPretender == true)
                 {
-                    PropertiesIntegrateDto.SecondPartyDto.AgencyNumber = ownerType == LitigationRequestOwnerType.AgentForIndividual || ownerType == LitigationRequestOwnerType.LawyerForIndividual ? "123456789" : null;
-                    PropertiesIntegrateDto.FirstPartyDto.LawLicenseExpirationDate = ownerType == LitigationRequestOwnerType.LawyerForIndividual ? DateTime.Now.AddDays(5) : null;
-                    PropertiesIntegrateDto.FirstPartyDto.LawLicenseNumber = ownerType == LitigationRequestOwnerType.LawyerForIndividual ? "789456123" : null;
+                    PropertiesIntegrateDto.SecondPartyDto.AgencyNumber = ownerType == LitigationRequestOwnerType.AgentForIndividual || ownerType == LitigationRequestOwnerType.IndividualRepresentative ? "123456789" : null;
+                    PropertiesIntegrateDto.FirstPartyDto.LawLicenseExpirationDate = ownerType == LitigationRequestOwnerType.IndividualRepresentative ? DateTime.Now.AddDays(5) : null;
+                    PropertiesIntegrateDto.FirstPartyDto.LawLicenseNumber = ownerType == LitigationRequestOwnerType.IndividualRepresentative ? "789456123" : null;
                     PropertiesIntegrateDto.FirstPartyDto.EstablishmentContract = ownerType == LitigationRequestOwnerType.CompanyRepresentative ? new SysFileManagerCreateUpdateDto { Id = Guid.Parse("e86953a3-c747-49f4-b817-21592334321f"), FileDescription = "FileDescription", FilePath = "reac/e86953a3-c747-49f4-b817-21592334321f.png", FileType = "Pdf" } : null;
-                    PropertiesIntegrateDto.FirstPartyDto.AgancyAttachment = ownerType == LitigationRequestOwnerType.AgentForIndividual || ownerType == LitigationRequestOwnerType.LawyerForIndividual ? new SysFileManagerCreateUpdateDto { Id = Guid.Parse("e86953a3-c747-49f4-b817-21592334321f"), FileDescription = "FileDescription", FilePath = "reac/e86953a3-c747-49f4-b817-21592334321f.png", FileType = "Pdf" } : null;
-                    PropertiesIntegrateDto.FirstPartyDto.LawLicenseAttachment = ownerType == LitigationRequestOwnerType.LawyerForIndividual ? new SysFileManagerCreateUpdateDto { Id = Guid.Parse("e86953a3-c747-49f4-b817-21592334321f"), FileDescription = "FileDescription", FilePath = "reac/e86953a3-c747-49f4-b817-21592334321f.png", FileType = "Pdf" } : null;
+                    PropertiesIntegrateDto.FirstPartyDto.AgancyAttachment = ownerType == LitigationRequestOwnerType.AgentForIndividual || ownerType == LitigationRequestOwnerType.IndividualRepresentative ? new SysFileManagerCreateUpdateDto { Id = Guid.Parse("e86953a3-c747-49f4-b817-21592334321f"), FileDescription = "FileDescription", FilePath = "reac/e86953a3-c747-49f4-b817-21592334321f.png", FileType = "Pdf" } : null;
+                    PropertiesIntegrateDto.FirstPartyDto.LawLicenseAttachment = ownerType == LitigationRequestOwnerType.IndividualRepresentative ? new SysFileManagerCreateUpdateDto { Id = Guid.Parse("e86953a3-c747-49f4-b817-21592334321f"), FileDescription = "FileDescription", FilePath = "reac/e86953a3-c747-49f4-b817-21592334321f.png", FileType = "Pdf" } : null;
                 }
                 if (PropertiesIntegrateDto.SecondPartyDto.IsPretender == true)
                 {
-                    PropertiesIntegrateDto.SecondPartyDto.AgencyNumber = ownerType == LitigationRequestOwnerType.AgentForIndividual || ownerType == LitigationRequestOwnerType.LawyerForIndividual ? "123456789" : null;
-                    PropertiesIntegrateDto.SecondPartyDto.LawLicenseExpirationDate = ownerType == LitigationRequestOwnerType.LawyerForIndividual ? DateTime.Now.AddDays(5) : null;
-                    PropertiesIntegrateDto.SecondPartyDto.LawLicenseNumber = ownerType == LitigationRequestOwnerType.LawyerForIndividual ? "789456123" : null;
+                    PropertiesIntegrateDto.SecondPartyDto.AgencyNumber = ownerType == LitigationRequestOwnerType.AgentForIndividual || ownerType == LitigationRequestOwnerType.IndividualRepresentative ? "123456789" : null;
+                    PropertiesIntegrateDto.SecondPartyDto.LawLicenseExpirationDate = ownerType == LitigationRequestOwnerType.IndividualRepresentative ? DateTime.Now.AddDays(5) : null;
+                    PropertiesIntegrateDto.SecondPartyDto.LawLicenseNumber = ownerType == LitigationRequestOwnerType.IndividualRepresentative ? "789456123" : null;
                     PropertiesIntegrateDto.SecondPartyDto.EstablishmentContract = ownerType == LitigationRequestOwnerType.CompanyRepresentative ? new SysFileManagerCreateUpdateDto { Id = Guid.Parse("e86953a3-c747-49f4-b817-21592334321f"), FileDescription = "FileDescription", FilePath = "reac/e86953a3-c747-49f4-b817-21592334321f.png", FileType = "Pdf" } : null;
-                    PropertiesIntegrateDto.SecondPartyDto.AgancyAttachment = ownerType == LitigationRequestOwnerType.AgentForIndividual || ownerType == LitigationRequestOwnerType.LawyerForIndividual ? new SysFileManagerCreateUpdateDto { Id = Guid.Parse("e86953a3-c747-49f4-b817-21592334321f"), FileDescription = "FileDescription", FilePath = "reac/e86953a3-c747-49f4-b817-21592334321f.png", FileType = "Pdf" } : null;
-                    PropertiesIntegrateDto.SecondPartyDto.LawLicenseAttachment = ownerType == LitigationRequestOwnerType.LawyerForIndividual ? new SysFileManagerCreateUpdateDto { Id = Guid.Parse("e86953a3-c747-49f4-b817-21592334321f"), FileDescription = "FileDescription", FilePath = "reac/e86953a3-c747-49f4-b817-21592334321f.png", FileType = "Pdf" } : null;
+                    PropertiesIntegrateDto.SecondPartyDto.AgancyAttachment = ownerType == LitigationRequestOwnerType.AgentForIndividual || ownerType == LitigationRequestOwnerType.IndividualRepresentative ? new SysFileManagerCreateUpdateDto { Id = Guid.Parse("e86953a3-c747-49f4-b817-21592334321f"), FileDescription = "FileDescription", FilePath = "reac/e86953a3-c747-49f4-b817-21592334321f.png", FileType = "Pdf" } : null;
+                    PropertiesIntegrateDto.SecondPartyDto.LawLicenseAttachment = ownerType == LitigationRequestOwnerType.IndividualRepresentative ? new SysFileManagerCreateUpdateDto { Id = Guid.Parse("e86953a3-c747-49f4-b817-21592334321f"), FileDescription = "FileDescription", FilePath = "reac/e86953a3-c747-49f4-b817-21592334321f.png", FileType = "Pdf" } : null;
                 }
 
 
@@ -1348,40 +1442,40 @@ namespace REAC.Application.AppServices.Litigation
             }
 
             // Notify First Party Facility
-            if (notifyFirstPartyFacility && litigationRequest.Contract?.FirstPartyFacility != null && litigationRequest.Contract.FirstPartyFacility.Citizen.Id != litigationRequest.ApplicantCitizen.Id)
-            {
-                objEmail.To.Add(litigationRequest.Contract.FirstPartyFacility.Email);
-                objSms.recipients.Add(litigationRequest.Contract.FirstPartyFacility.Citizen.Mobile);
-                lstNotification.Add(new Contracts.Dtos.Notification.SysNotificationDto()
-                {
-                    ActorId = (Guid)litigationRequest.Contract.FirstPartyFacility.Citizen.Id,
-                    CreatedOn = DateTime.Now,
-                    ActorTypeId = notificationActorType,
-                    IsViewed = false,
-                    ViewedOn = null,
-                    RequestId = litigationRequest.Id,
-                    RequestTypeId = requestType,
-                    Message = msg,
-                });
-            }
+            //if (notifyFirstPartyFacility && litigationRequest.Contract?.FirstPartyFacility != null && litigationRequest.Contract.FirstPartyFacility.Citizen.Id != litigationRequest.ApplicantCitizen.Id)
+            //{
+            //    objEmail.To.Add(litigationRequest.Contract.FirstPartyFacility.Email);
+            //    objSms.recipients.Add(litigationRequest.Contract.FirstPartyFacility.Citizen.Mobile);
+            //    lstNotification.Add(new Contracts.Dtos.Notification.SysNotificationDto()
+            //    {
+            //        ActorId = (Guid)litigationRequest.Contract.FirstPartyFacility.Citizen.Id,
+            //        CreatedOn = DateTime.Now,
+            //        ActorTypeId = notificationActorType,
+            //        IsViewed = false,
+            //        ViewedOn = null,
+            //        RequestId = litigationRequest.Id,
+            //        RequestTypeId = requestType,
+            //        Message = msg,
+            //    });
+            //}
 
-            // Notify Second Party Facility
-            if (notifySecondPartyFacility && litigationRequest.Contract?.SecondPartyFacility != null)
-            {
-                objEmail.To.Add(litigationRequest.Contract.SecondPartyFacility.Email);
-                objSms.recipients.Add(litigationRequest.Contract.SecondPartyFacility.Citizen.Mobile);
-                lstNotification.Add(new Contracts.Dtos.Notification.SysNotificationDto()
-                {
-                    ActorId = (Guid)litigationRequest.Contract.SecondPartyFacility.Citizen.Id,
-                    CreatedOn = DateTime.Now,
-                    ActorTypeId = notificationActorType,
-                    IsViewed = false,
-                    ViewedOn = null,
-                    RequestId = litigationRequest.Id,
-                    RequestTypeId = requestType,
-                    Message = msg,
-                });
-            }
+            //// Notify Second Party Facility
+            //if (notifySecondPartyFacility && litigationRequest.Contract?.SecondPartyFacility != null)
+            //{
+            //    objEmail.To.Add(litigationRequest.Contract.SecondPartyFacility.Email);
+            //    objSms.recipients.Add(litigationRequest.Contract.SecondPartyFacility.Citizen.Mobile);
+            //    lstNotification.Add(new Contracts.Dtos.Notification.SysNotificationDto()
+            //    {
+            //        ActorId = (Guid)litigationRequest.Contract.SecondPartyFacility.Citizen.Id,
+            //        CreatedOn = DateTime.Now,
+            //        ActorTypeId = notificationActorType,
+            //        IsViewed = false,
+            //        ViewedOn = null,
+            //        RequestId = litigationRequest.Id,
+            //        RequestTypeId = requestType,
+            //        Message = msg,
+            //    });
+            //}
 
             await _notificationService.SendNotifications(objEmail, objSms, lstNotification);
         }

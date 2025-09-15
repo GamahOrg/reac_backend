@@ -501,12 +501,12 @@ namespace REAC.Application.ModuleServices
                                       & x.LitigationRequestArbitrationReports.Count > 0
                                       & x.LitigationRequestStage == LitigationRequestStage.Arbitration
                                       & x.LitigationRequestCategoryId != LitigationRequestCategory.Reconciliation
-                                      | x.RequestCode != null
-                                      & x.Contract.FirstPartyCitizenId == referenceId
-                                      & x.LitigationRequestStage == LitigationRequestStage.Arbitration
-                                      & x.LitigationRequestArbitrationReports.Count > 0
-                                      & x.LitigationRequestStage == LitigationRequestStage.Arbitration
-                                      & x.LitigationRequestCategoryId != LitigationRequestCategory.Reconciliation
+                                      //| x.RequestCode != null
+                                      //& x.Contract.FirstPartyCitizenId == referenceId
+                                      //& x.LitigationRequestStage == LitigationRequestStage.Arbitration
+                                      //& x.LitigationRequestArbitrationReports.Count > 0
+                                      //& x.LitigationRequestStage == LitigationRequestStage.Arbitration
+                                      //& x.LitigationRequestCategoryId != LitigationRequestCategory.Reconciliation
                                       | x.RequestCode != null
                                       & x.Contract.SecondPartyCitizenId == referenceId
                                       & x.LitigationRequestStage == LitigationRequestStage.Arbitration

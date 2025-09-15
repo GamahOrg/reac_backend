@@ -1,6 +1,7 @@
 ﻿using Core.Shared.Responses;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using REAC.Application.Contracts.Dtos.Delegator;
 using REAC.Application.Contracts.Dtos.Integration.Wafi;
 using REAC.Application.Contracts.Dtos.Litigation;
 using REAC.Application.Contracts.Dtos.Litigation.Create.Litigation;
@@ -12,7 +13,9 @@ using REAC.Application.Contracts.Dtos.Wpf.Business;
 using REAC.Application.Contracts.IAppServices.Litigation;
 using REAC.Application.Contracts.IMobileAppServices.Litigation;
 using REAC.Domain.Shared.Constants;
+using REAC.Domain.Shared.Enum;
 using REAC.EntityFrameworkCore.Entities.Litigation;
+using REAC.EntityFrameworkCore.Entities.System;
 
 namespace REAC.Api.Controllers.Litigation;
 
@@ -387,8 +390,160 @@ public class LitigationRequestController : BaseController<LitigationRequest,
         }
         return BadRequest();
     }
+
+
+
+
     #endregion
 
+    #region Delegation
+
+    [HttpGet(nameof(GetLitigationRequestDataForDelegation))]
+    public async Task<IActionResult> GetLitigationRequestDataForDelegation(string requestCode, string identityNumber, LitigationRequestParty party)
+    {
+        if (ModelState.IsValid)
+        {
+            var returnValue = await _litigationService.GetLitigationRequestDataForDelegation(requestCode,identityNumber,party);
+            return Ok(returnValue);
+        }
+        return BadRequest();
+    }
+    
+    [HttpPost(nameof(AddDelegationRequest))]
+    public async Task<IActionResult> AddDelegationRequest(AddDelegationRequest input)
+    {
+        if (ModelState.IsValid)
+        {
+            var returnValue = await _litigationService.AddDelegationRequest(input);
+            return Ok(returnValue);
+        }
+        return BadRequest();
+    }
+
+    [HttpGet(nameof(GetDelegationRequests))]
+    public async Task<IActionResult> GetDelegationRequests(int pageIndex, int pageSize)
+    {
+        if (ModelState.IsValid)
+        {
+            var returnValue = await _litigationService.GetDelegationRequests(pageIndex,pageSize);
+            return Ok(returnValue);
+        }
+        return BadRequest();
+    }
+    [HttpGet(nameof(GetActiveDelegatorsForAdmin))]
+    public async Task<IActionResult> GetActiveDelegatorsForAdmin(int pageIndex, int pageSize)
+    {
+        if (ModelState.IsValid)
+        {
+            var returnValue = await _litigationService.GetActiveDelegatorsForAdmin(pageIndex,pageSize);
+            return Ok(returnValue);
+        }
+        return BadRequest();
+    }
+    
+    [HttpGet(nameof(GetLitigationRequestsWithoutDelegatorsForAdmin))]
+    public async Task<IActionResult> GetLitigationRequestsWithoutDelegatorsForAdmin(int pageIndex, int pageSize)
+    {
+        if (ModelState.IsValid)
+        {
+            var returnValue = await _litigationService.GetLitigationRequestsWithoutDelegatorsForAdmin(pageIndex,pageSize);
+            return Ok(returnValue);
+        }
+        return BadRequest();
+    }
+    
+    [HttpGet(nameof(GetActiveDelegatorsForUser))]
+    public async Task<IActionResult> GetActiveDelegatorsForUser(int pageIndex, int pageSize)
+    {
+        if (ModelState.IsValid)
+        {
+            var returnValue = await _litigationService.GetActiveDelegatorsForUser(pageIndex,pageSize);
+            return Ok(returnValue);
+        }
+        return BadRequest();
+    }
+    
+    [HttpGet(nameof(GetLitigationRequestsWithoutDelegatorsForUser))]
+    public async Task<IActionResult> GetLitigationRequestsWithoutDelegatorsForUser(int pageIndex, int pageSize)
+    {
+        if (ModelState.IsValid)
+        {
+            var returnValue = await _litigationService.GetLitigationRequestsWithoutDelegatorsForUser(pageIndex,pageSize);
+            return Ok(returnValue);
+        }
+        return BadRequest();
+    }
+    
+    [HttpGet(nameof(GetInActiveDelegatorsForAdmin))]
+    public async Task<IActionResult> GetInActiveDelegatorsForAdmin(Guid litigationRequestId, LitigationRequestParty delegationParty)
+    {
+        if (ModelState.IsValid)
+        {
+            var returnValue = await _litigationService.GetInActiveDelegatorsForAdmin(litigationRequestId, delegationParty);
+            return Ok(returnValue);
+        }
+        return BadRequest();
+    }
+    
+    [HttpGet(nameof(GetInActiveDelegatorsForUser))]
+    public async Task<IActionResult> GetInActiveDelegatorsForUser(Guid litigationRequestId, LitigationRequestParty delegationParty)
+    {
+        if (ModelState.IsValid)
+        {
+            var returnValue = await _litigationService.GetInActiveDelegatorsForUser(litigationRequestId, delegationParty);
+            return Ok(returnValue);
+        }
+        return BadRequest();
+    }
+    
+    [HttpGet(nameof(GetDelegationRequestById))]
+    public async Task<IActionResult> GetDelegationRequestById(Guid delegationRequestId)
+    {
+        if (ModelState.IsValid)
+        {
+            var returnValue = await _litigationService.GetDelegationRequestById(delegationRequestId);
+            return Ok(returnValue);
+        }
+        return BadRequest();
+    }
+    
+    [HttpGet(nameof(StopDelegator))]
+    public async Task<IActionResult> StopDelegator(Guid delegationRequestId)
+    {
+        if (ModelState.IsValid)
+        {
+            var returnValue = await _litigationService.StopDelegator(delegationRequestId);
+            return Ok(returnValue);
+        }
+        return BadRequest();
+    }
+    
+    [HttpGet(nameof(ChangeDelegator))]
+    public async Task<IActionResult> ChangeDelegator(Guid delegationRequestId)
+    {
+        if (ModelState.IsValid)
+        {
+            var returnValue = await _litigationService.ChangeDelegator(delegationRequestId);
+            return Ok(returnValue);
+        }
+        return BadRequest();
+    }
+    
+    [HttpGet(nameof(ApproveRejectDelegationRequest))]
+    public async Task<IActionResult> ApproveRejectDelegationRequest(Guid delegationRequestId, bool isApproved, string? reason = null)
+    {
+        if (ModelState.IsValid)
+        {
+            var returnValue = await _litigationService.ApproveRejectDelegationRequest(delegationRequestId,isApproved,reason);
+            return Ok(returnValue);
+        }
+        return BadRequest();
+    }
+
+
+
+
+    #endregion
 
     #region Mobile
 

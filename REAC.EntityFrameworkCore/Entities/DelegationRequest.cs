@@ -1,35 +1,35 @@
 ﻿using Core.GenericRepository.Shared.BaseEntities;
 using REAC.Domain.Shared.Enum;
+using REAC.EntityFrameworkCore.Entities.Litigation;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace REAC.EntityFrameworkCore.Entities.System;
 
 public partial class DelegationRequest : BaseEntity<Guid>
 {
-    public IdentityType IdentityTypeId { get; set; }
+    public LitigationRequestParty DelegationParty { get; set; }
 
-    public string IdentityNumber { get; set; } = null!;
-
-    public DateTime? BirthDate { get; set; }
-
-    public string? Mobile { get; set; }
-
-    public string? Email { get; set; }
-
-    public Guid SourceCitizenId { get; set; }
-
-    public Guid? CitizenId { get; set; }
+    public Guid? DelegatorId { get; set; }
+    public Guid? LitigationRequestId { get; set; }
+    public LitigationRequestOwnerType LitigationRequestOwnerTypeId { get; set; }
 
     public DateTime RequestedOn { get; set; }
 
     public bool? IsApproved { get; set; }
+    public bool? IsActive { get; set; }
 
     public DateTime? ApprovedOn { get; set; }
+    public DateTime? ModifiedOn { get; set; }
+    public Guid? ModifiedBy { get; set; }
+    public string? Reason { get; set; }
 
-    public string DelegationNumber { get; set; } = null!;
+    [ForeignKey(nameof(DelegatorId))]
+    public virtual Delegator? Delegator { get; set; }
+    
+    [ForeignKey(nameof(LitigationRequestId))]
+    public virtual LitigationRequest? LitigationRequest { get; set; }
 
-    public Guid DelegationFileId { get; set; }
+    public virtual SysLitigationRequestOwnerType LitigationRequestOwnerType { get; set; } = null!;
 
-    public virtual SysFileManager DelegationFile { get; set; } = null!;
 
-    public virtual SysIdentityType IdentityType { get; set; } = null!;
 }

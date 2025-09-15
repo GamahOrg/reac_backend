@@ -10,7 +10,6 @@ public partial class SysIdentityType : BaseEntity<IdentityType>
 
     public virtual ICollection<Citizen> Citizens { get; set; } = new List<Citizen>();
 
-    public virtual ICollection<DelegationRequest> DelegationRequests { get; set; } = new List<DelegationRequest>();
 
     public virtual ICollection<SysIdentityTypeTranslation> Translations { get; set; } = new List<SysIdentityTypeTranslation>();
 

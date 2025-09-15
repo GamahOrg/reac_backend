@@ -480,7 +480,7 @@ namespace REAC.Application.ModuleServices
 
 
             }
-            if (litigationRequest?.Contract?.SecondPartyFacility != null)
+                if (litigationRequest?.Contract?.SecondPartyFacility != null)
             {
                 objEmail.To.Add(litigationRequest?.Contract?.SecondPartyFacility.Email);
                 lstNotification.Add(new Contracts.Dtos.Notification.SysNotificationDto()
@@ -758,11 +758,11 @@ namespace REAC.Application.ModuleServices
                 & x.ApplicantCitizenId == referenceId
                 & x.LitigationRequestCategoryId != LitigationRequestCategory.Arbitration & x.ReformerCitizenId.HasValue
 
-                |
-                x.RequestCode != null & x.InternalStatusId != RequestStatus.Rejected
-                & x.LitigationRequestSessions.Count(x => x.LitigationRequestSessionRequestTypeId == LitigationRequestSessionRequestType.Reconciliation) > 0 & x.RequestCode != null
-                & x.Contract.FirstPartyCitizenId == referenceId
-                & x.LitigationRequestCategoryId != LitigationRequestCategory.Arbitration & x.ReformerCitizenId.HasValue
+                //|
+                //x.RequestCode != null & x.InternalStatusId != RequestStatus.Rejected
+                //& x.LitigationRequestSessions.Count(x => x.LitigationRequestSessionRequestTypeId == LitigationRequestSessionRequestType.Reconciliation) > 0 & x.RequestCode != null
+                //& x.Contract.FirstPartyCitizenId == referenceId
+                //& x.LitigationRequestCategoryId != LitigationRequestCategory.Arbitration & x.ReformerCitizenId.HasValue
 
                 |
                 x.RequestCode != null & x.InternalStatusId != RequestStatus.Rejected

@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using REAC.Application.Contracts.Dtos.Litigation.CreateUpdate.Litigation;
 using REAC.Domain.Shared.Enum;
 
 namespace REAC.Application.Contracts.Dtos.Litigation.Create.Contract
@@ -10,6 +11,9 @@ namespace REAC.Application.Contracts.Dtos.Litigation.Create.Contract
         public Guid? AssociationRegistrationCertificateFileId { get; set; }
         public Guid? FoundingLetterFileId { get; set; }
         public Guid? InternalRegulationsFileId { get; set; }
+
+        public LitigationRequestDelegationDataDto? LitigationRequestDelegationDataDto { get; set; }
+
     }
     public class CreateUpdateContractDocuments
     {
