@@ -100,7 +100,7 @@ namespace REAC.EntityFrameworkCore.Seed
             }
             catch (Exception ex)
             {
-                logger.LogInformation(ex, "Error occured during migrations");
+                logger.LogError(ex, "Error occured during migrations");
             }
         }
     }

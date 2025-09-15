@@ -48,7 +48,7 @@ namespace REAC.Application.ModuleServices
                     };
                 }
                 
-                if (requestPayload.SessionDateTime <= DateTime.Now)
+                if (requestPayload.SessionDateTime.Date <= nowInKsa.Date)
                 {
                     return new BaseResponse()
                     {
@@ -682,11 +682,11 @@ namespace REAC.Application.ModuleServices
                 & x.ApplicantCitizenId == referenceId
                 & x.LitigationRequestCategoryId != LitigationRequestCategory.Reconciliation
 
-                |
-                x.RequestCode != null & x.InternalStatusId != RequestStatus.Rejected
-                & x.LitigationRequestSessions.Count(x => x.LitigationRequestSessionRequestTypeId == LitigationRequestSessionRequestType.Arbitration) > 0 & x.RequestCode != null
-                & x.Contract.FirstPartyCitizenId == referenceId
-                & x.LitigationRequestCategoryId != LitigationRequestCategory.Reconciliation
+                //|
+                //x.RequestCode != null & x.InternalStatusId != RequestStatus.Rejected
+                //& x.LitigationRequestSessions.Count(x => x.LitigationRequestSessionRequestTypeId == LitigationRequestSessionRequestType.Arbitration) > 0 & x.RequestCode != null
+                //& x.Contract.FirstPartyCitizenId == referenceId
+                //& x.LitigationRequestCategoryId != LitigationRequestCategory.Reconciliation
 
                 |
                 x.RequestCode != null & x.InternalStatusId != RequestStatus.Rejected

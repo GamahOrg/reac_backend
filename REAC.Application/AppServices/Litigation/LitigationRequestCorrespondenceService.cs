@@ -301,11 +301,12 @@ namespace REAC.Application.AppServices.Litigation
             _jwtReader.GetReferenceId(ref citizenId);
 
             litigationRequests = litigations.Where(x =>
-                                                x.Contract.FirstPartyCitizenId == citizenId & x.LitigationRequestStage == LitigationRequestStage.Reconciliation & x.LitigationRequestCorrespondences.Any(l => l.LitigationRequestCorrespondenceDestinationId == LitigationRequestCorrespondenceDestination.Plaintiff | l.LitigationRequestCorrespondenceDestinationId == LitigationRequestCorrespondenceDestination.BothOfThem)
-                                               | x.Contract.SecondPartyCitizenId == citizenId & x.LitigationRequestStage == LitigationRequestStage.Reconciliation & x.LitigationRequestCorrespondences.Any(l => l.LitigationRequestCorrespondenceDestinationId == LitigationRequestCorrespondenceDestination.Defendant | l.LitigationRequestCorrespondenceDestinationId == LitigationRequestCorrespondenceDestination.BothOfThem)
+                                               // x.Contract.FirstPartyCitizenId == citizenId & x.LitigationRequestStage == LitigationRequestStage.Reconciliation & x.LitigationRequestCorrespondences.Any(l => l.LitigationRequestCorrespondenceDestinationId == LitigationRequestCorrespondenceDestination.Plaintiff | l.LitigationRequestCorrespondenceDestinationId == LitigationRequestCorrespondenceDestination.BothOfThem)
+                                               //| 
+                                               x.Contract.SecondPartyCitizenId == citizenId & x.LitigationRequestStage == LitigationRequestStage.Reconciliation & x.LitigationRequestCorrespondences.Any(l => l.LitigationRequestCorrespondenceDestinationId == LitigationRequestCorrespondenceDestination.Defendant | l.LitigationRequestCorrespondenceDestinationId == LitigationRequestCorrespondenceDestination.BothOfThem)
                                                | x.ApplicantCitizenId == citizenId & x.LitigationRequestStage == LitigationRequestStage.Reconciliation & x.LitigationRequestCorrespondences.Any(l => l.LitigationRequestCorrespondenceDestinationId == LitigationRequestCorrespondenceDestination.Plaintiff | l.LitigationRequestCorrespondenceDestinationId == LitigationRequestCorrespondenceDestination.BothOfThem)
                                                
-                                               |x.Contract.FirstPartyCitizenId == citizenId & x.LitigationRequestStage == LitigationRequestStage.Arbitration
+                                               //|x.Contract.FirstPartyCitizenId == citizenId & x.LitigationRequestStage == LitigationRequestStage.Arbitration
                                                | x.Contract.SecondPartyCitizenId == citizenId & x.LitigationRequestStage == LitigationRequestStage.Arbitration
                                                | x.ApplicantCitizenId == citizenId & x.LitigationRequestStage == LitigationRequestStage.Arbitration
                                                 
@@ -954,22 +955,22 @@ namespace REAC.Application.AppServices.Litigation
                 });
             }
             // Notify First Party Facility
-            if (notifyFirstParty && litigationRequest.Contract?.FirstPartyFacility != null && litigationRequest.Contract.FirstPartyFacility.Citizen.Id != litigationRequest.ApplicantCitizen.Id)
-            {
-                objEmail.To.Add(litigationRequest.Contract.FirstPartyFacility.Email);
-                objSms.recipients.Add(litigationRequest.Contract.FirstPartyFacility.Citizen.Mobile);
-                lstNotification.Add(new Contracts.Dtos.Notification.SysNotificationDto()
-                {
-                    ActorId = (Guid)litigationRequest.Contract.FirstPartyFacility.Citizen.Id,
-                    CreatedOn = DateTime.Now,
-                    ActorTypeId = notificationActorType,
-                    IsViewed = false,
-                    ViewedOn = null,
-                    RequestId = litigationRequest.Id,
-                    RequestTypeId = requestType,
-                    Message = msg,
-                });
-            }
+            //if (notifyFirstParty && litigationRequest.Contract?.FirstPartyFacility != null && litigationRequest.Contract.FirstPartyFacility.Citizen.Id != litigationRequest.ApplicantCitizen.Id)
+            //{
+            //    objEmail.To.Add(litigationRequest.Contract.FirstPartyFacility.Email);
+            //    objSms.recipients.Add(litigationRequest.Contract.FirstPartyFacility.Citizen.Mobile);
+            //    lstNotification.Add(new Contracts.Dtos.Notification.SysNotificationDto()
+            //    {
+            //        ActorId = (Guid)litigationRequest.Contract.FirstPartyFacility.Citizen.Id,
+            //        CreatedOn = DateTime.Now,
+            //        ActorTypeId = notificationActorType,
+            //        IsViewed = false,
+            //        ViewedOn = null,
+            //        RequestId = litigationRequest.Id,
+            //        RequestTypeId = requestType,
+            //        Message = msg,
+            //    });
+            //}
 
 
 
@@ -991,22 +992,22 @@ namespace REAC.Application.AppServices.Litigation
                 });
             }
             // Notify Second Party Facility
-            if (notifySecondParty && litigationRequest.Contract?.SecondPartyFacility != null)
-            {
-                objEmail.To.Add(litigationRequest.Contract.SecondPartyFacility.Email);
-                objSms.recipients.Add(litigationRequest.Contract.SecondPartyFacility.Citizen.Mobile);
-                lstNotification.Add(new Contracts.Dtos.Notification.SysNotificationDto()
-                {
-                    ActorId = (Guid)litigationRequest.Contract.SecondPartyFacility.Citizen.Id,
-                    CreatedOn = DateTime.Now,
-                    ActorTypeId = notificationActorType,
-                    IsViewed = false,
-                    ViewedOn = null,
-                    RequestId = litigationRequest.Id,
-                    RequestTypeId = requestType,
-                    Message = msg,
-                });
-            }
+            //if (notifySecondParty && litigationRequest.Contract?.SecondPartyFacility != null)
+            //{
+            //    objEmail.To.Add(litigationRequest.Contract.SecondPartyFacility.Email);
+            //    objSms.recipients.Add(litigationRequest.Contract.SecondPartyFacility.Citizen.Mobile);
+            //    lstNotification.Add(new Contracts.Dtos.Notification.SysNotificationDto()
+            //    {
+            //        ActorId = (Guid)litigationRequest.Contract.SecondPartyFacility.Citizen.Id,
+            //        CreatedOn = DateTime.Now,
+            //        ActorTypeId = notificationActorType,
+            //        IsViewed = false,
+            //        ViewedOn = null,
+            //        RequestId = litigationRequest.Id,
+            //        RequestTypeId = requestType,
+            //        Message = msg,
+            //    });
+            //}
 
             await _notificationService.SendNotifications(objEmail, objSms, lstNotification);
         }

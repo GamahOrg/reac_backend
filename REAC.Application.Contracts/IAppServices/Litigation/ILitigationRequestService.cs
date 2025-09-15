@@ -1,4 +1,5 @@
 ﻿using Core.Shared.Responses;
+using REAC.Application.Contracts.Dtos.Delegator;
 using REAC.Application.Contracts.Dtos.Integration.Wafi;
 using REAC.Application.Contracts.Dtos.Litigation.Create.Litigation;
 using REAC.Application.Contracts.Dtos.Litigation.CreateUpdate.Litigation;
@@ -6,6 +7,7 @@ using REAC.Application.Contracts.Dtos.Litigation.List;
 using REAC.Application.Contracts.Dtos.Wpf.Business;
 using REAC.Domain.Shared.Enum;
 using REAC.EntityFrameworkCore.Entities.Litigation;
+using REAC.EntityFrameworkCore.Entities.System;
 
 namespace REAC.Application.Contracts.IAppServices.Litigation
 {
@@ -47,6 +49,19 @@ namespace REAC.Application.Contracts.IAppServices.Litigation
 
         Task<BaseResponse> AuditngListReconciliation(int pageIndex, int pageSize, string? searchKey, AuditingListDto model);
         Task<BaseResponse> GetLitigationArbitrators(Guid requestId);
+        Task<BaseResponse> GetLitigationRequestDataForDelegation(string requestCode, string identityNumber, LitigationRequestParty party);
+        Task<BaseResponse> AddDelegationRequest(AddDelegationRequest addDelegationRequest);
+        Task<BaseResponse> GetDelegationRequests(int pageIndex, int pageSize);
+        Task<BaseResponse> GetActiveDelegatorsForAdmin(int pageIndex, int pageSize);
+        Task<BaseResponse> GetInActiveDelegatorsForAdmin(Guid litigationRequestId, LitigationRequestParty delegationParty);
+        Task<BaseResponse> GetInActiveDelegatorsForUser(Guid litigationRequestId, LitigationRequestParty delegationParty);
+        Task<DataResponse<DelegationRequest>> GetDelegationRequestById(Guid delegationRequestId);
+        Task<BaseResponse> ApproveRejectDelegationRequest(Guid delegationRequestId, bool isApproved, string? reason = null);
+        Task<BaseResponse> StopDelegator(Guid DelegationRequestId);
+        Task<BaseResponse> ChangeDelegator(Guid delegationRequestId);
+        Task<BaseResponse> GetLitigationRequestsWithoutDelegatorsForAdmin(int pageIndex, int pageSize);
+        Task<BaseResponse> GetActiveDelegatorsForUser(int pageIndex, int pageSize);
+        Task<BaseResponse> GetLitigationRequestsWithoutDelegatorsForUser(int pageIndex, int pageSize);
         Task<DataResponse<WafiDataDto>> GetWafiData(string licenseNumber, string identityNumber);
 
         #region pagination

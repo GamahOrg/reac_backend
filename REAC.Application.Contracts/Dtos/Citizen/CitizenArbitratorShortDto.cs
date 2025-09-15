@@ -44,6 +44,7 @@ namespace REAC.Application.Contracts.Dtos.Citizen
         public int? DefendantPriority { get; set; }
 
         public string Status { get; set; } = null!;
+        public int? TotalPriority { get; set; }
     }
     public class CitizenArbitratorCharmanShortStatusDto : BaseEntity<Guid>
     {
@@ -69,6 +70,13 @@ namespace REAC.Application.Contracts.Dtos.Citizen
         public Guid CitizenId { get; set; }
         public string FullName { get; set; } = null!;
         public string? Brief { get; set; }
+        public string? Mobile { get; set; }
+        public string? Email { get; set; }
+        public string? ArbitratorClass { get; set; }
+        public int? ExperienceYears { get; set; }
+        public string? IdentityNumber { get; set; }
+        public bool? IsPlaintiffSelected { get; set; }
+        public bool? IsDefendantSelected { get; set; }
 
         public int? Value { get; set; }
     }

@@ -332,7 +332,7 @@ public class ArbitrationController : ControllerBase
     }
     [HttpGet(nameof(GetLitigationRequestForAddArbitratorsNominationListByRequestId))]
     public async Task<IActionResult> GetLitigationRequestForAddArbitratorsNominationListByRequestId(Guid litigationRequestId, CancellationToken cancellationToken)
-    {
+      {
         if (ModelState.IsValid)
         {
             var returnValue = await _arbitrationService.GetLitigationRequestForAddArbitratorsNominationList(litigationRequestId, cancellationToken);
@@ -429,6 +429,18 @@ public class ArbitrationController : ControllerBase
         if (ModelState.IsValid)
         {
             var returnValue = await _arbitrationService.AddLitigationRequestArbitratorsChairmandecision(addChairmainRequestPayload.RequestId, addChairmainRequestPayload.ArbitratorChairmanId);
+            return Ok(returnValue);
+        }
+
+        return BadRequest();
+    }
+
+    [HttpPost(nameof(AddLitigationRequestArbitratorsdecision))]
+    public async Task<IActionResult> AddLitigationRequestArbitratorsdecision([FromBody] AddMemberRequestPayload addChairmainRequestPayload)
+    {
+        if (ModelState.IsValid)
+        {
+            var returnValue = await _arbitrationService.AddLitigationRequestArbitratorsdecision(addChairmainRequestPayload.RequestId, addChairmainRequestPayload.ArbitratorMemberId);
             return Ok(returnValue);
         }
 

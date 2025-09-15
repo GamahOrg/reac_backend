@@ -54,6 +54,7 @@ namespace REAC.Application.Contracts.Dtos.Reconciliation.Process
     {
         public bool AllowAdd { get; set; }
         public int? ListCount { get; set; }
+        public bool AllowDecision { get; set; }     
 
         public List<CitizenArbitratorShortStatusDto> CitizenArbitratorShortStatusDtos { get; set; } = new List<CitizenArbitratorShortStatusDto>();
         public LitigationRequestShortDto? LitigationRequestShortDto { get; set; }
@@ -71,7 +72,11 @@ namespace REAC.Application.Contracts.Dtos.Reconciliation.Process
     {
         public bool AllowAdd { get; set; }
         public List<CitizenArbitratorShortStatusWithValueDto> CitizenArbitratorShortStatusDtos { get; set; } = new List<CitizenArbitratorShortStatusWithValueDto>();
+        public List<CitizenArbitratorShortStatusWithValueDto> CitizenSelectedArbitratorShortStatusDtos { get; set; } = new List<CitizenArbitratorShortStatusWithValueDto>();
+        public List<CitizenArbitratorShortStatusWithValueDto> CitizenSelectedUserArbitratorShortStatusDtos { get; set; } = new List<CitizenArbitratorShortStatusWithValueDto>();
+        public List<CitizenArbitratorShortStatusWithValueDto> CitizenRejectedArbitratorShortStatusDtos { get; set; } = new List<CitizenArbitratorShortStatusWithValueDto>();
         public LitigationRequestShortDto? LitigationRequestShortDto { get; set; }
+
     }
     public class LitigationRequestForArbitratorSelectionDurationDto
     {
