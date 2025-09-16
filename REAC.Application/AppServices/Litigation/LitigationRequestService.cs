@@ -3323,6 +3323,9 @@ namespace REAC.Application.AppServices.Litigation
                 .AsNoTracking()
                 .FirstOrDefault(x => x.Id == input.LitigationRequestId);
 
+            if(litigationData.Contract.FirstPartyCitizenId == referenceId || litigationData.Contract.SecondPartyCitizenId == referenceId || litigationData.ApplicantCitizenId == referenceId)
+                return new DataResponse<DelegationRequest> { IsDone = false, Message = "لتقديم طلب التفويض لابد ان لا تكون طرف من اطراف الدعوي" };
+
 
             if (input.LitigationRequestDelegationData.DelegationRelationshipTypeId == DelegationRelationshipType.Individual)
             {
