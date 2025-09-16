@@ -1,4 +1,6 @@
 ﻿
+
+
 delete from dbo.SysLitigationRequestOwnerType
 
 GO
