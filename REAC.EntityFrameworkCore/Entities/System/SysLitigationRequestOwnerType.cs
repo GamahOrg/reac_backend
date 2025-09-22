@@ -12,6 +12,7 @@ public partial class SysLitigationRequestOwnerType : BaseEntity<LitigationReques
     public string LitigationRequestOwnerType { get; set; } = null!;
 
     public virtual ICollection<LitigationRequest> LitigationRequests { get; set; } = new List<LitigationRequest>();
+    public virtual ICollection<DelegationRequest> DelegationRequests { get; set; } = new List<DelegationRequest>();
 
     public virtual ICollection<SysLitigationRequestOwnerTypeTranslation> Translations { get; set; } = new List<SysLitigationRequestOwnerTypeTranslation>();
 

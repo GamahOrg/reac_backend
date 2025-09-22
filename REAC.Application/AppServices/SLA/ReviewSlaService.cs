@@ -1446,40 +1446,40 @@ namespace REAC.Application.AppServices.SLA
             }
 
             // Notify First Party Facility
-            if (notifyFirstPartyFacility && litigationRequest.Contract?.FirstPartyFacility != null && litigationRequest.Contract.FirstPartyFacility.Citizen.Id != litigationRequest.ApplicantCitizen.Id)
-            {
-                objEmail.To.Add(litigationRequest.Contract.FirstPartyFacility.Email);
-                objSms.recipients.Add(litigationRequest.Contract.FirstPartyFacility.Citizen.Mobile);
-                lstNotification.Add(new Contracts.Dtos.Notification.SysNotificationDto()
-                {
-                    ActorId = (Guid)litigationRequest.Contract.FirstPartyFacility.Citizen.Id,
-                    CreatedOn = DateTime.Now,
-                    ActorTypeId = notificationActorType,
-                    IsViewed = false,
-                    ViewedOn = null,
-                    RequestId = litigationRequest.Id,
-                    RequestTypeId = requestType,
-                    Message = msg,
-                });
-            }
+            //if (notifyFirstPartyFacility && litigationRequest.Contract?.FirstPartyFacility != null && litigationRequest.Contract.FirstPartyFacility.Citizen.Id != litigationRequest.ApplicantCitizen.Id)
+            //{
+            //    objEmail.To.Add(litigationRequest.Contract.FirstPartyFacility.Email);
+            //    objSms.recipients.Add(litigationRequest.Contract.FirstPartyFacility.Citizen.Mobile);
+            //    lstNotification.Add(new Contracts.Dtos.Notification.SysNotificationDto()
+            //    {
+            //        ActorId = (Guid)litigationRequest.Contract.FirstPartyFacility.Citizen.Id,
+            //        CreatedOn = DateTime.Now,
+            //        ActorTypeId = notificationActorType,
+            //        IsViewed = false,
+            //        ViewedOn = null,
+            //        RequestId = litigationRequest.Id,
+            //        RequestTypeId = requestType,
+            //        Message = msg,
+            //    });
+            //}
 
             // Notify Second Party Facility
-            if (notifySecondPartyFacility && litigationRequest.Contract?.SecondPartyFacility != null)
-            {
-                objEmail.To.Add(litigationRequest.Contract.SecondPartyFacility.Email);
-                objSms.recipients.Add(litigationRequest.Contract.SecondPartyFacility.Citizen.Mobile);
-                lstNotification.Add(new Contracts.Dtos.Notification.SysNotificationDto()
-                {
-                    ActorId = (Guid)litigationRequest.Contract.SecondPartyFacility.Citizen.Id,
-                    CreatedOn = DateTime.Now,
-                    ActorTypeId = notificationActorType,
-                    IsViewed = false,
-                    ViewedOn = null,
-                    RequestId = litigationRequest.Id,
-                    RequestTypeId = requestType,
-                    Message = msg,
-                });
-            }
+            //if (notifySecondPartyFacility && litigationRequest.Contract?.SecondPartyFacility != null)
+            //{
+            //    objEmail.To.Add(litigationRequest.Contract.SecondPartyFacility.Email);
+            //    objSms.recipients.Add(litigationRequest.Contract.SecondPartyFacility.Citizen.Mobile);
+            //    lstNotification.Add(new Contracts.Dtos.Notification.SysNotificationDto()
+            //    {
+            //        ActorId = (Guid)litigationRequest.Contract.SecondPartyFacility.Citizen.Id,
+            //        CreatedOn = DateTime.Now,
+            //        ActorTypeId = notificationActorType,
+            //        IsViewed = false,
+            //        ViewedOn = null,
+            //        RequestId = litigationRequest.Id,
+            //        RequestTypeId = requestType,
+            //        Message = msg,
+            //    });
+            //}
 
             await _notificationService.SendNotifications(objEmail, objSms, lstNotification);
         }

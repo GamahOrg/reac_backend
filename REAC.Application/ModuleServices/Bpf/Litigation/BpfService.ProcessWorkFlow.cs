@@ -528,7 +528,15 @@ namespace Bpf.Application.ModuleServices
                                                         LogMessage = "تم إرسال طلب مهمة للمصلح " + reformers.FirstOrDefault()?.FullName
                                                     });
                                                 }
-                                                var approveSaveResponse = await _repository.SaveChangesAsync(new CancellationToken());
+                                                else
+                                                {
+                                                    return new BaseResponse()
+                                                    {
+                                                        IsDone = false,
+                                                        Message = "لا يوجد مصلحين لتولي المهمه برجاء الرجوع للمركز"
+                                                    };
+                                                }
+                                                    var approveSaveResponse = await _repository.SaveChangesAsync(new CancellationToken());
                                                 if (!approveSaveResponse.IsDone)
                                                     return approveSaveResponse;
 
@@ -835,24 +843,24 @@ namespace Bpf.Application.ModuleServices
 
 
             }
-            if (litigationRequest?.Contract?.FirstPartyFacility != null && litigationRequest?.Contract?.FirstPartyFacility?.Citizen.Id != litigationRequest.ApplicantCitizen.Id)
-            {
-                objEmail.To.Add(litigationRequest?.Contract?.FirstPartyFacility.Email);
-                lstNotification.Add(new SysNotificationDto()
-                {
-                    ActorId = (Guid)litigationRequest?.Contract?.FirstPartyFacility?.Citizen.Id,
-                    CreatedOn = DateTime.Now,
-                    ActorTypeId = NotificationActorType.Plaintiff,
-                    IsViewed = false,
-                    ViewedOn = null,
-                    RequestId = litigationRequest.Id,
-                    RequestTypeId = requestTypeId,
-                    Message = msg,
-                });
-                objSms.recipients.Add(litigationRequest?.Contract?.FirstPartyFacility?.Citizen?.Mobile);
+            //if (litigationRequest?.Contract?.FirstPartyFacility != null && litigationRequest?.Contract?.FirstPartyFacility?.Citizen?.Id != litigationRequest.ApplicantCitizen.Id)
+            //{
+            //    objEmail.To.Add(litigationRequest?.Contract?.FirstPartyFacility.Email);
+            //    lstNotification.Add(new SysNotificationDto()
+            //    {
+            //        ActorId = (Guid)litigationRequest?.Contract?.FirstPartyFacility?.Citizen.Id,
+            //        CreatedOn = DateTime.Now,
+            //        ActorTypeId = NotificationActorType.Plaintiff,
+            //        IsViewed = false,
+            //        ViewedOn = null,
+            //        RequestId = litigationRequest.Id,
+            //        RequestTypeId = requestTypeId,
+            //        Message = msg,
+            //    });
+            //    objSms.recipients.Add(litigationRequest?.Contract?.FirstPartyFacility?.Citizen?.Mobile);
 
 
-            }
+            //}
             await _notificationService.SendNotifications(objEmail, objSms, lstNotification);
 
         }
@@ -965,10 +973,10 @@ namespace Bpf.Application.ModuleServices
                 objSms.recipients.Add(litigationRequest?.Contract?.FirstPartyFacility?.Citizen?.Mobile);
 
 
-            }
+             }
 
-            //المدعى عليه
-            if (litigationRequest?.Contract?.SecondPartyCitizen != null)
+                //المدعى عليه
+                if (litigationRequest?.Contract?.SecondPartyCitizen != null)
             {
                 objEmail.To.Add(litigationRequest?.Contract?.SecondPartyCitizen.Email);
                 lstNotification.Add(new SysNotificationDto()

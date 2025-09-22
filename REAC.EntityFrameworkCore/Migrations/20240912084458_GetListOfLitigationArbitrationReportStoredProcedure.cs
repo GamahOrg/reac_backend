@@ -18,7 +18,7 @@ namespace REAC.EntityFrameworkCore.Migrations
                 
             --تقرير قائمة الدعاوى في مرحلة التحكيم
 
-Alter PROCEDURE [dbo].[GetListOfLitigationArbitrationReport]
+create PROCEDURE [dbo].[GetListOfLitigationArbitrationReport]
     @RequestCode NVARCHAR(20) = NULL,
     @FromDate DATETIME = NULL,
     @ToDate DATETIME = NULL,

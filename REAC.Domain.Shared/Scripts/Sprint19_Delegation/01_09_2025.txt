@@ -1,0 +1,248 @@
+﻿
+
+
+delete from dbo.SysLitigationRequestOwnerType
+
+GO
+INSERT [dbo].[SysLitigationRequestOwnerType] ([Id], [LitigationRequestOwnerType], [Translations]) VALUES (1, N'مقدم عن نفسه', N'[{"LanguageCode":"en-US","LitigationRequestOwnerType":"Personal"},{"LanguageCode":"ar","LitigationRequestOwnerType":"\u0645\u0642\u062F\u0645 \u0639\u0646 \u0646\u0641\u0633\u0647"}]')
+GO
+INSERT [dbo].[SysLitigationRequestOwnerType] ([Id], [LitigationRequestOwnerType], [Translations]) VALUES (2, N'ممثل منشأة', N'[{"LanguageCode":"en-US","LitigationRequestOwnerType":"Company Representative"},{"LanguageCode":"ar","LitigationRequestOwnerType":"\u0645\u0645\u062B\u0644 \u0645\u0646\u0634\u0623\u0629"}]')
+GO
+INSERT [dbo].[SysLitigationRequestOwnerType] ([Id], [LitigationRequestOwnerType], [Translations]) VALUES (3, N'وكيل منشأة', N'[{"LanguageCode":"en-US","LitigationRequestOwnerType":"Agent For Company"},{"LanguageCode":"ar","LitigationRequestOwnerType":"\u0648\u0643\u064A\u0644 \u0645\u0646\u0634\u0623\u0629"}]')
+GO
+INSERT [dbo].[SysLitigationRequestOwnerType] ([Id], [LitigationRequestOwnerType], [Translations]) VALUES (4, N'ممثل فرد', N'[{"LanguageCode":"en-US","LitigationRequestOwnerType":"Individual Representative"},{"LanguageCode":"ar","LitigationRequestOwnerType":"\u0645\u0645\u062B\u0644 \u0641\u0631\u062F"}]')
+GO
+INSERT [dbo].[SysLitigationRequestOwnerType] ([Id], [LitigationRequestOwnerType], [Translations]) VALUES (5, N'وكيل فرد', N'[{"LanguageCode":"en-US","LitigationRequestOwnerType":"Agent For Individual"},{"LanguageCode":"ar","LitigationRequestOwnerType":"\u0648\u0643\u064A\u0644 \u0641\u0631\u062F"}]')
+GO
+INSERT [dbo].[SysLitigationRequestOwnerType] ([Id], [LitigationRequestOwnerType], [Translations]) VALUES (6, N'مدير شركة', N'[{"LanguageCode":"en-US","LitigationRequestOwnerType":"Company Manager"},{"LanguageCode":"ar","LitigationRequestOwnerType":"\u0645\u062F\u064A\u0631 \u0634\u0631\u0643\u0629"}]')
+GO
+INSERT [dbo].[SysLitigationRequestOwnerType] ([Id], [LitigationRequestOwnerType], [Translations]) VALUES (7, N'رئيس مجلس الادارة', N'[{"LanguageCode":"en-US","LitigationRequestOwnerType":"Company CEO"},{"LanguageCode":"ar","LitigationRequestOwnerType":"\u0631\u0626\u064A\u0633 \u0645\u062C\u0644\u0633 \u0627\u0644\u0627\u062F\u0627\u0631\u0629"}]')
+GO
+INSERT [dbo].[SysLitigationRequestOwnerType] ([Id], [LitigationRequestOwnerType], [Translations]) VALUES (8, N'مصفي', N'[{"LanguageCode":"en-US","LitigationRequestOwnerType":"Filterer"},{"LanguageCode":"ar","LitigationRequestOwnerType":"\u0645\u0635\u0641\u064A"}]')
+GO
+INSERT [dbo].[SysLitigationRequestOwnerType] ([Id], [LitigationRequestOwnerType], [Translations]) VALUES (9, N'حارس قضائي', N'[{"LanguageCode":"en-US","LitigationRequestOwnerType":"Judicial Guard"},{"LanguageCode":"ar","LitigationRequestOwnerType":"\u062D\u0627\u0631\u0633 \u0642\u0636\u0627\u0626\u064A"}]')
+GO
+INSERT [dbo].[SysLitigationRequestOwnerType] ([Id], [LitigationRequestOwnerType], [Translations]) VALUES (10, N'ولي', N'[{"LanguageCode":"en-US","LitigationRequestOwnerType":"Custodian"},{"LanguageCode":"ar","LitigationRequestOwnerType":"\u0648\u0644\u064A"}]')
+GO
+INSERT [dbo].[SysLitigationRequestOwnerType] ([Id], [LitigationRequestOwnerType], [Translations]) VALUES (11, N'العضو المنتدب', N'[{"LanguageCode":"en-US","LitigationRequestOwnerType":"Managing Director"},{"LanguageCode":"ar","LitigationRequestOwnerType":"\u0627\u0644\u0639\u0636\u0648 \u0627\u0644\u0645\u0646\u062A\u062F\u0628"}]')
+GO
+INSERT [dbo].[SysLitigationRequestOwnerType] ([Id], [LitigationRequestOwnerType], [Translations]) VALUES (12, N'أمين تفليسة', N'[{"LanguageCode":"en-US","LitigationRequestOwnerType":"Bankruptcy Trustee"},{"LanguageCode":"ar","LitigationRequestOwnerType":"\u0623\u0645\u064A\u0646 \u062A\u0641\u0644\u064A\u0633\u0629"}]')
+GO
+
+--------------------------------------------------------------------
+
+-- Add DelegatorId column to LitigationRequest table
+ALTER TABLE LitigationRequest
+ADD DelegatorId UNIQUEIDENTIFIER NULL;
+
+-- Add LawLicenseFileId column to Delegator table
+ALTER TABLE Delegator
+ADD LawLicenseFileId UNIQUEIDENTIFIER NULL;
+
+-- Add LawyerLicenseExpirationDate column to Delegator table
+ALTER TABLE Delegator
+ADD LawyerLicenseExpirationDate DATETIME2 NULL;
+
+-- Add LawyerLicenseNumber column to Delegator table
+ALTER TABLE Delegator
+ADD LawyerLicenseNumber NVARCHAR(MAX) NULL;
+
+-- Create index on DelegatorId column in LitigationRequest table
+CREATE INDEX IX_LitigationRequest_DelegatorId
+ON LitigationRequest (DelegatorId);
+
+-- Add foreign key constraint between LitigationRequest and Delegator tables
+ALTER TABLE LitigationRequest
+ADD CONSTRAINT FKDelegator_LitigationRequests
+FOREIGN KEY (DelegatorId) REFERENCES Delegator(Id);
+
+----------------------------------------------------------------------
+
+-- Add columns to the Delegator table
+ALTER TABLE Delegator
+ADD CommercialRegisterationFileId UNIQUEIDENTIFIER NULL;
+
+ALTER TABLE Delegator
+ADD CustodyFileId UNIQUEIDENTIFIER NULL;
+
+ALTER TABLE Delegator
+ADD DecisionFileId UNIQUEIDENTIFIER NULL;
+
+ALTER TABLE Delegator
+ADD EstablishmentFileId UNIQUEIDENTIFIER NULL;
+
+ALTER TABLE Delegator
+ADD RepresentationFileId UNIQUEIDENTIFIER NULL;
+
+-- Create indexes on the new columns
+CREATE INDEX IX_Delegator_CommercialRegisterationFileId
+ON Delegator (CommercialRegisterationFileId);
+
+CREATE INDEX IX_Delegator_CustodyFileId
+ON Delegator (CustodyFileId);
+
+CREATE INDEX IX_Delegator_DecisionFileId
+ON Delegator (DecisionFileId);
+
+CREATE INDEX IX_Delegator_EstablishmentFileId
+ON Delegator (EstablishmentFileId);
+
+CREATE INDEX IX_Delegator_RepresentationFileId
+ON Delegator (RepresentationFileId);
+
+-- Add foreign key constraints
+ALTER TABLE Delegator
+ADD CONSTRAINT FK_Delegator_SysFileManager_CommercialRegisterationFileId
+FOREIGN KEY (CommercialRegisterationFileId) REFERENCES SysFileManager(Id);
+
+ALTER TABLE Delegator
+ADD CONSTRAINT FK_Delegator_SysFileManager_CustodyFileId
+FOREIGN KEY (CustodyFileId) REFERENCES SysFileManager(Id);
+
+ALTER TABLE Delegator
+ADD CONSTRAINT FK_Delegator_SysFileManager_DecisionFileId
+FOREIGN KEY (DecisionFileId) REFERENCES SysFileManager(Id);
+
+ALTER TABLE Delegator
+ADD CONSTRAINT FK_Delegator_SysFileManager_EstablishmentFileId
+FOREIGN KEY (EstablishmentFileId) REFERENCES SysFileManager(Id);
+
+ALTER TABLE Delegator
+ADD CONSTRAINT FK_Delegator_SysFileManager_RepresentationFileId
+FOREIGN KEY (RepresentationFileId) REFERENCES SysFileManager(Id);
+
+-------------------------------------------------------------------------------
+
+-- Drop foreign keys
+ALTER TABLE DelegationRequest
+DROP CONSTRAINT FKDelegation266019;
+
+ALTER TABLE DelegationRequest
+DROP CONSTRAINT FKDelegation632464;
+
+-- Drop indexes
+DROP INDEX IX_DelegationRequest_DelegationFileId ON DelegationRequest;
+DROP INDEX IX_DelegationRequest_IdentityTypeId ON DelegationRequest;
+
+-- Drop columns
+ALTER TABLE DelegationRequest
+DROP COLUMN BirthDate;
+
+ALTER TABLE DelegationRequest
+DROP COLUMN DelegationFileId;
+
+ALTER TABLE DelegationRequest
+DROP COLUMN DelegationNumber;
+
+ALTER TABLE DelegationRequest
+DROP COLUMN Email;
+
+ALTER TABLE DelegationRequest
+DROP COLUMN IdentityNumber;
+
+ALTER TABLE DelegationRequest
+DROP COLUMN Mobile;
+
+ALTER TABLE DelegationRequest
+DROP COLUMN SourceCitizenId;
+
+-- Rename column
+EXEC sp_rename 'DelegationRequest.IdentityTypeId', 'DelegationParty', 'COLUMN';
+
+-- Alter columns
+ALTER TABLE Facility
+ALTER COLUMN CitizenId UNIQUEIDENTIFIER NULL;
+
+ALTER TABLE Delegator
+ALTER COLUMN DelegatorCitizenId UNIQUEIDENTIFIER NULL;
+
+ALTER TABLE DelegationRequest
+ALTER COLUMN RequestedOn DATETIME2 NOT NULL;
+
+-- Add new columns
+ALTER TABLE DelegationRequest
+ADD DelegatorId UNIQUEIDENTIFIER NULL;
+
+ALTER TABLE DelegationRequest
+ADD IsActive BIT NULL;
+
+ALTER TABLE DelegationRequest
+ADD LitigationRequestId UNIQUEIDENTIFIER NULL;
+
+-- Create indexes
+CREATE INDEX IX_DelegationRequest_DelegatorId
+ON DelegationRequest (DelegatorId);
+
+CREATE INDEX IX_DelegationRequest_LitigationRequestId
+ON DelegationRequest (LitigationRequestId);
+
+-- Add foreign keys
+ALTER TABLE DelegationRequest
+ADD CONSTRAINT FK_DelegationRequest_Delegator_DelegatorId
+FOREIGN KEY (DelegatorId) REFERENCES Delegator(Id);
+
+ALTER TABLE DelegationRequest
+ADD CONSTRAINT FK_DelegationRequest_LitigationRequest_LitigationRequestId
+FOREIGN KEY (LitigationRequestId) REFERENCES LitigationRequest(Id);
+
+-- Drop column SysIdentityTypeId
+ALTER TABLE DelegationRequest
+DROP COLUMN SysIdentityTypeId;
+
+------------------------------------------------------------------------
+
+-- Drop the existing foreign key constraint
+ALTER TABLE LitigationRequest
+DROP CONSTRAINT FKDelegator_LitigationRequests;
+
+-- Add the new foreign key constraint with ON DELETE SET NULL
+ALTER TABLE LitigationRequest
+ADD CONSTRAINT FKDelegator_LitigationRequests
+FOREIGN KEY (DelegatorId) REFERENCES Delegator(Id)
+ON DELETE SET NULL;
+
+----------------------------------------------------------------------------
+
+-- Add the LitigationRequestOwnerTypeId column to the DelegationRequest table
+ALTER TABLE DelegationRequest
+ADD LitigationRequestOwnerTypeId INT NOT NULL DEFAULT 0;
+
+-- Create an index on the LitigationRequestOwnerTypeId column
+CREATE INDEX IX_DelegationRequest_LitigationRequestOwnerTypeId
+ON DelegationRequest (LitigationRequestOwnerTypeId);
+
+-- Add a foreign key constraint to link LitigationRequestOwnerTypeId to SysLitigationRequestOwnerType
+ALTER TABLE DelegationRequest
+ADD CONSTRAINT FK_DelegationRequest_SysLitigationRequestOwnerType_LitigationRequestOwnerTypeId
+FOREIGN KEY (LitigationRequestOwnerTypeId) REFERENCES SysLitigationRequestOwnerType(Id)
+ON DELETE CASCADE;
+
+-------------------------------------------------------------------------
+
+ALTER TABLE DelegationRequest
+DROP CONSTRAINT FK_DelegationRequest_SysIdentityType_SysIdentityTypeId;
+
+DROP INDEX IX_DelegationRequest_SysIdentityTypeId ON DelegationRequest;
+
+ALTER TABLE DelegationRequest
+DROP COLUMN SysIdentityTypeId;
+
+-------------------------------------------------------------------------
+
+  ALTER TABLE [dbo].[LitigationRequest] ALTER COLUMN [ApplicantCitizenId] uniqueidentifier NULL
+
+  alter table dbo.DelegationRequest 
+  add ModifiedBy uniqueidentifier null
+
+  alter table dbo.delegationrequest add ModifiedOn Datetime null
+
+  
+  alter table dbo.DelegationRequest 
+  add Reason nvarchar(MAX) null
+  ---------------------------------------------------------------------
+
+  INSERT [dbo].[SysSetting] ([Id], [Key], [Value]) VALUES (NEWID(), N'DelegationRequest.Added', N'تم تقديم طلب تفويض جديد لدعوى رقم {LitigationCode} و هو حاليا قيد المراجعة')
+  INSERT [dbo].[SysSetting] ([Id], [Key], [Value]) VALUES (NEWID(), N'DelegationRequest.Accepted', N'تم قبول طلب التفويض المقدم لدعوى رقم {LitigationCode}')
+  INSERT [dbo].[SysSetting] ([Id], [Key], [Value]) VALUES (NEWID(), N'DelegationRequest.Rejected', N'تم رفض طلب التفويض المقدم لدعوى رقم {LitigationCode} بسبب {RejectReason}')
+  INSERT [dbo].[SysSetting] ([Id], [Key], [Value]) VALUES (NEWID(), N'Delegator.Stopped', N'تم ايقاف المفوض {CitizenName} المقدم نيابة عن {Party} لدعوي رقم {LitigationCode}')
+  INSERT [dbo].[SysSetting] ([Id], [Key], [Value]) VALUES (NEWID(), N'Delegator.Modified', N'تم تعديل المفوض الي  {CitizenName} المقدم نيابة عن {Party} لدعوي رقم {LitigationCode}')

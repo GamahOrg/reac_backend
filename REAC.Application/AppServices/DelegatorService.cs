@@ -60,7 +60,7 @@ namespace REAC.Application.AppServices
                     .Include(x => x.Citizen).Include(x => x.Facility).Include(x => x.DelegatorCitizen)
                     .Include(x => x.DelegationFile)
                     .Include(x => x.SysDelegationRelationshipType)
-                .Where(x => x.CitizenId == referenceId & x.DelegationRelationshipTypeId == DelegationRelationshipType.Agent)
+                .Where(x => x.CitizenId == referenceId & x.DelegationRelationshipTypeId == DelegationRelationshipType.Individual)
                 .ToList();
 
                 var fullDelegators = _mapper.Map<List<DelegatorShortDataDto>>(delegators);
@@ -229,7 +229,7 @@ namespace REAC.Application.AppServices
 
                 var delegatorCitizen = ((DataResponse<Citizen>)result).Data;
 
-                delegatorCitizen.IsLawyer = delegatorDto.DelegationRelationshipTypeId == DelegationRelationshipType.Lawyer ? true : false;
+                delegatorCitizen.IsLawyer = delegatorDto.DelegationRelationshipTypeId == DelegationRelationshipType.Individual ? true : false;
 
 
                 var saveCurrentCitizen = _repository.Update<Citizen, Guid>(delegatorCitizen);
@@ -295,7 +295,7 @@ namespace REAC.Application.AppServices
                     };
 
 
-                    if (delegatorDto.DelegationRelationshipTypeId == DelegationRelationshipType.Lawyer)
+                    if (delegatorDto.DelegationRelationshipTypeId == DelegationRelationshipType.Individual)
                     {
                         citizenFromintegration.IsLawyer = true;
                         citizenFromintegration.LawyerLicenseNumber = delegatorDto.LawyerLicenseNumber;
@@ -425,7 +425,7 @@ namespace REAC.Application.AppServices
                     .Include(x => x.Citizen).Include(x => x.Facility).Include(x => x.DelegatorCitizen)
                     .Include(x => x.DelegationFile)
                     .Include(x => x.SysDelegationRelationshipType)
-                .Where(x => x.CitizenId == referenceId & x.DelegationRelationshipTypeId == DelegationRelationshipType.Lawyer & x.IsActive == true)
+                .Where(x => x.CitizenId == referenceId & x.DelegationRelationshipTypeId == DelegationRelationshipType.Individual & x.IsActive == true)
                 .ToList();
 
                 var fullDelegators = _mapper.Map<List<DelegatorShortDataDto>>(delegators);
@@ -573,7 +573,7 @@ namespace REAC.Application.AppServices
                     DelegatorCitizenId = lawyerCitizen.Id,
                     IsActive = true,
                     CitizenId = referenceId,
-                    DelegationRelationshipTypeId = DelegationRelationshipType.Lawyer,
+                    DelegationRelationshipTypeId = DelegationRelationshipType.Individual,
                     DelegationFileId = delegatorDto.DelegationFileId
                 };
 

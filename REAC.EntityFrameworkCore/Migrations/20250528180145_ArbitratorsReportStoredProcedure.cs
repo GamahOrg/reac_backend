@@ -10,7 +10,7 @@ namespace REAC.EntityFrameworkCore.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.Sql(@"ALTER PROCEDURE [dbo].[GetArbitratorsReport]
+            migrationBuilder.Sql(@"create PROCEDURE [dbo].[GetArbitratorsReport]
     @EmployeeIds NVARCHAR(MAX) = NULL,              -- Filter by specific arbitrator employee IDs
     @FromDate DATETIME = NULL,                      -- Start date for filtering
     @ToDate DATETIME = NULL,                        -- End date for filtering

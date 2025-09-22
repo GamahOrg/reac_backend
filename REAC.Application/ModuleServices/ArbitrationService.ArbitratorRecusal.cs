@@ -375,10 +375,10 @@ namespace REAC.Application.ModuleServices
                                         & x.ApplicantCitizenId == referenceId & x.LitigationRequestStage == LitigationRequestStage.Arbitration
                                         & x.LitigationRequestCategoryId != LitigationRequestCategory.Reconciliation
 
-                                      | x.RequestCode != null & x.ArbitratorSelectionDuration.HasValue
-                                        & x.Contract.FirstPartyCitizenId == referenceId
-                                        & x.LitigationRequestStage == LitigationRequestStage.Arbitration
-                                        & x.LitigationRequestCategoryId != LitigationRequestCategory.Reconciliation
+                                      //| x.RequestCode != null & x.ArbitratorSelectionDuration.HasValue
+                                      //  & x.Contract.FirstPartyCitizenId == referenceId
+                                      //  & x.LitigationRequestStage == LitigationRequestStage.Arbitration
+                                      //  & x.LitigationRequestCategoryId != LitigationRequestCategory.Reconciliation
                                       | x.RequestCode != null & x.ArbitratorSelectionDuration.HasValue
                                         & x.Contract.SecondPartyCitizenId == referenceId
                                         & x.LitigationRequestStage == LitigationRequestStage.Arbitration

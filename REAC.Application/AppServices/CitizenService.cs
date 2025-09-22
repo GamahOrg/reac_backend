@@ -57,7 +57,7 @@ namespace REAC.Application.AppServices
                             .Include(x => x.Citizen)
                             .Include(x => x.Facility)
                          .Where(x => x.DelegatorCitizenId == referenceId
-                         & x.DelegationRelationshipTypeId == DelegationRelationshipType.Lawyer
+                         & x.DelegationRelationshipTypeId == DelegationRelationshipType.Individual
                          & x.CitizenId.HasValue == true).ToList();
 
             List<DelegatorItem> persons = new List<DelegatorItem>();
@@ -115,7 +115,7 @@ namespace REAC.Application.AppServices
                             .Include(x => x.Citizen)
                             .Include(x => x.Facility)
                          .Where(x => x.DelegatorCitizenId == referenceId
-                         & x.DelegationRelationshipTypeId == DelegationRelationshipType.Agent
+                         & x.DelegationRelationshipTypeId == DelegationRelationshipType.Facility
                          & x.FacilityId.HasValue == true).ToList();
 
 
@@ -145,7 +145,7 @@ namespace REAC.Application.AppServices
                             .Include(x => x.Citizen)
                             .Include(x => x.Facility)
                          .Where(x => x.DelegatorCitizenId == referenceId
-                         & x.DelegationRelationshipTypeId == DelegationRelationshipType.Lawyer
+                         & x.DelegationRelationshipTypeId == DelegationRelationshipType.Facility
                         & x.FacilityId.HasValue == true).ToList();
 
 
@@ -1805,9 +1805,9 @@ namespace REAC.Application.AppServices
         {
             switch (relationShipId)
             {
-                case RelationShipType.LawyerForIndividual:
+                case RelationShipType.Lawyer:
                     return await GetDelegatedPersonsLawyer();
-                case RelationShipType.AgentForIndividual:
+                case RelationShipType.Agent:
                     return await GetDelegatedPersonsAgent();
                 default:
                     return new DataResponse<List<DelegatorItem>>()

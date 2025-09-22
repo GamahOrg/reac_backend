@@ -6,6 +6,7 @@ using REAC.EntityFrameworkCore.Entities.Invoice;
 using REAC.EntityFrameworkCore.Entities.Reconciliation;
 using REAC.EntityFrameworkCore.Entities.System;
 using REAC.EntityFrameworkCore.Entities.Wpf.Business;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace REAC.EntityFrameworkCore.Entities.Litigation;
 
@@ -22,9 +23,10 @@ public partial class LitigationRequest : BaseEntity<Guid>
     public Guid? CityId { get; set; }
     public Guid? AreaId { get; set; }
     public string? ContractAddress { get; set; } // العنوان الوطني
-    public Guid ApplicantCitizenId { get; set; }
+    public Guid? ApplicantCitizenId { get; set; }
 
     public Guid? DelegatorCitizenId { get; set; }
+    public Guid? DelegatorId { get; set; }
     public Guid? OtherCategories { get; set; }
     public bool? IsReminderForReviewerSent { get; set; }
 
@@ -175,6 +177,9 @@ public partial class LitigationRequest : BaseEntity<Guid>
 
     public virtual Citizen? DelegatorCitizen { get; set; }
 
+    [ForeignKey(nameof(DelegatorId))]
+    public virtual Delegator? Delegator { get; set; }
+
     public virtual Citizen ApplicantCitizen { get; set; } = null!;
     public virtual SysCity City { get; set; } = null!;
     public virtual SysArea Area { get; set; } = null!;
@@ -221,6 +226,9 @@ public partial class LitigationRequest : BaseEntity<Guid>
 
     public virtual ICollection<LitigationRequestRequest> LitigationRequestRequests { get; set; } = new List<LitigationRequestRequest>();
     public virtual ICollection<WorkFlowProcessingLog> WorkFlowProcessingLogs { get; set; } = new List<WorkFlowProcessingLog>();
+
+    [InverseProperty(nameof(DelegationRequest.LitigationRequest))]
+    public virtual ICollection<DelegationRequest> LitigationDelegationRequests { get; set; } = new List<DelegationRequest>();
 
 }
 

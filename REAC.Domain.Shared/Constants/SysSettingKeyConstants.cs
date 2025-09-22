@@ -122,6 +122,10 @@
 
 
         #region systemNotificationMessages
+        public const string Delegator_Stopped = "Delegator.Stopped";
+        public const string Delegator_Modified = "Delegator.Modified";
+        public const string Delegator_Assigned = "Delegator.Assigned";
+
 
         public const string Arbitrator_UpdateJoiningRequest_ToPayFees = "Arbitrator.UpdateJoiningRequest.ToPayFees";
         public const string Employee_Arbitrator_UpdateJoiningRequest_ToPayFees = "Employee.Arbitrator.UpdateJoiningRequest.ToPayFees";
@@ -207,6 +211,10 @@
         public const string ArbitrationSession_Added = "ArbitrationSession.Added";
         public const string ArbitrationService_JudgmentAdded = "ArbitrationService.JudgmentAdded";
         public const string ExcuteWorkflow = "ExcuteWorkflow";
+        public const string ExcuteWorkflow_DelegatorFirstParty = "ExcuteWorkflow.DelegatorFirstParty";
+        public const string DelegationRequest_Added = "DelegationRequest.Added";
+        public const string DelegationRequest_Accepted = "DelegationRequest.Accepted";
+        public const string DelegationRequest_Rejected = "DelegationRequest.Rejected";
         public const string LitigationRequest_ModificationRequest = "LitigationRequest.ModificationRequest";
         public const string ProcessWorkflow_Accepted = "ProcessWorkflow.Accepted";
         public const string ProcessWorkflow_Reject = "ProcessWorkflow.Reject";

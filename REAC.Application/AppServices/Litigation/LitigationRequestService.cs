@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Azure.Core;
 using Core.GenericRepository.BaseRepository;
 using Core.GenericRepository.Shared.Pagging;
 using Core.Log.Application.Contracts.Dto;
@@ -6,6 +7,7 @@ using Core.Log.Application.Contracts.IAppServices;
 using Core.Log.Domain.Shared.Enums;
 using Core.Security.Entities;
 using Core.Shared.Responses;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
@@ -13,6 +15,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using REAC.Application.Contracts.Dtos.Citizen;
+using REAC.Application.Contracts.Dtos.Delegator;
 using REAC.Application.Contracts.Dtos.Integration.GEE;
 using REAC.Application.Contracts.Dtos.Integration.Party;
 using REAC.Application.Contracts.Dtos.Integration.Rent;
@@ -651,8 +654,10 @@ namespace REAC.Application.AppServices.Litigation
             Guid citizenId = Guid.Empty;
             _jwtReader.GetReferenceId(ref citizenId);
 
-            litigationRequests = litigations.Where(x => x.Contract.FirstPartyCitizenId == citizenId
-                                               | x.Contract.SecondPartyCitizenId == citizenId
+            litigationRequests = litigations.Where(x =>
+                                               //x.Contract.FirstPartyCitizenId == citizenId
+                                               //| 
+                                               x.Contract.SecondPartyCitizenId == citizenId
                                                & x.InternalStatusId != RequestStatus.SaveAsDraft
                                                & x.InternalStatusId != RequestStatus.New
                                                & x.InternalStatusId != RequestStatus.SentBackForEdit
@@ -849,9 +854,13 @@ namespace REAC.Application.AppServices.Litigation
             List<LitigationRequestMircoForRequestReviewerDto> litigationRequestMircoDtos = new List<LitigationRequestMircoForRequestReviewerDto>();
             if (litigationRequests != null)
             {
+
                 foreach (var litigationRequest in litigationRequests.Results)
                 {
-
+                    if (litigationRequest.Contract.FirstPartyCitizenId == null && litigationRequest.Contract.FirstPartyFacilityId == null)
+                    {
+                        continue;
+                    }
                     LitigationRequestMircoForRequestReviewerDto litigationRequestMircoDto = new LitigationRequestMircoForRequestReviewerDto();
                     litigationRequestMircoDto.Id = litigationRequest.Id;
                     litigationRequestMircoDto.RequestDate = litigationRequest.CreatedOn;
@@ -932,7 +941,7 @@ namespace REAC.Application.AppServices.Litigation
             var deptAdminInfoReview = await _employeeService.GetAdminsByDepartmentType(DepartmentType.Review);
             var deptEmployeeInfoReview = (await _repository.GetQueryable<SysEmployee, Guid>())
                              .Include(e => e.Department)
-                             .Where(x => x.Department.DepartmentType == DepartmentType.Review & x.IsAdmin == false & x.Id != assignRequestPayload.EmployeeId & litigationRequest.Id == assignRequestPayload.RequestId)
+                             .Where(x => x.Department.DepartmentType == DepartmentType.Review & x.IsAdmin == false && x.Id == litigationRequest.WorkFlowProcessingLogs.First().EmployeeId)
                              .FirstOrDefault();
             var deptNewEmployeeInfoReview = (await _repository.GetQueryable<SysEmployee, Guid>())
                              .Include(e => e.Department)
@@ -1031,36 +1040,38 @@ namespace REAC.Application.AppServices.Litigation
 
                         // Send Notification
                         // تم إلغاء المهمة (دعوى تدقيق)
-                        try
+                        if (deptEmployeeInfoReview is not null)
                         {
-                            msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Review_Cancelled).Result.Data?.Value;
-                            msg = msg?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
-                            var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
-                            using (StreamReader streamReader = File.OpenText(pathToFile))
+                            try
                             {
-                                body = await streamReader.ReadToEndAsync();
-                                body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Review_Cancelled).Result.Data?.Value);
-                                body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
-                            }
-                            var currentReviewerEmail = deptEmployeeInfoReview.Email;
-                            var currentReviewerMobile = deptEmployeeInfoReview.Mobile;
+                                msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Review_Cancelled).Result.Data?.Value;
+                                msg = msg?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                                var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                using (StreamReader streamReader = File.OpenText(pathToFile))
+                                {
+                                    body = await streamReader.ReadToEndAsync();
+                                    body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Review_Cancelled).Result.Data?.Value);
+                                    body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                                }
+                                var currentReviewerEmail = deptEmployeeInfoReview.Email;
+                                var currentReviewerMobile = deptEmployeeInfoReview.Mobile;
 
 
-                            await _notificationService.SendNotifications(
-                            new SendEmailDto()
-                            {
-                                To = new List<string>() { currentReviewerEmail },
-                                Subject = "Review cancelled",
-                                Body = body
-                            },
-                            new SMSRequestDto()
-                            {
-                                message_text = msg,
-                                recipients = new List<string>() { currentReviewerMobile },
-                                notification_type = "SMS",
-                            },
-                            new List<SysNotificationDto>()
-                            {
+                                await _notificationService.SendNotifications(
+                                new SendEmailDto()
+                                {
+                                    To = new List<string>() { currentReviewerEmail },
+                                    Subject = "Review cancelled",
+                                    Body = body
+                                },
+                                new SMSRequestDto()
+                                {
+                                    message_text = msg,
+                                    recipients = new List<string>() { currentReviewerMobile },
+                                    notification_type = "SMS",
+                                },
+                                new List<SysNotificationDto>()
+                                {
                                new SysNotificationDto()
                                {
                                     ActorId = deptEmployeeInfoReview.Id,
@@ -1072,43 +1083,46 @@ namespace REAC.Application.AppServices.Litigation
                                     RequestTypeId = RequestType.LitigationRequestCorrespondence,
                                     Message = msg,
                                },
+                                }
+                                );
                             }
-                            );
-                        }
-                        catch (Exception ex)
-                        {
-
-                        }
-                        try
-                        {
-                            msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_AssignLitigation_NewReviewerEmployee).Result.Data?.Value;
-                            msg = msg?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
-                            var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
-                            using (StreamReader streamReader = File.OpenText(pathToFile))
+                            catch (Exception ex)
                             {
-                                body = await streamReader.ReadToEndAsync();
-                                body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_AssignLitigation_NewReviewerEmployee).Result.Data?.Value);
-                                body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+
                             }
-                            var newReviewerEmail = deptNewEmployeeInfoReview.Email;
-                            var newReviewerMobile = deptNewEmployeeInfoReview.Mobile;
+                        }
+                        if (deptNewEmployeeInfoReview is not null)
+                        {
+                            try
+                            {
+                                msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_AssignLitigation_NewReviewerEmployee).Result.Data?.Value;
+                                msg = msg?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                                var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                using (StreamReader streamReader = File.OpenText(pathToFile))
+                                {
+                                    body = await streamReader.ReadToEndAsync();
+                                    body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_AssignLitigation_NewReviewerEmployee).Result.Data?.Value);
+                                    body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                                }
+                                var newReviewerEmail = deptNewEmployeeInfoReview.Email;
+                                var newReviewerMobile = deptNewEmployeeInfoReview.Mobile;
 
 
-                            await _notificationService.SendNotifications(
-                            new SendEmailDto()
-                            {
-                                To = new List<string>() { newReviewerEmail },
-                                Subject = "Review cancelled",
-                                Body = body
-                            },
-                            new SMSRequestDto()
-                            {
-                                message_text = msg,
-                                recipients = new List<string>() { newReviewerMobile },
-                                notification_type = "SMS",
-                            },
-                            new List<SysNotificationDto>()
-                            {
+                                await _notificationService.SendNotifications(
+                                new SendEmailDto()
+                                {
+                                    To = new List<string>() { newReviewerEmail },
+                                    Subject = "Review cancelled",
+                                    Body = body
+                                },
+                                new SMSRequestDto()
+                                {
+                                    message_text = msg,
+                                    recipients = new List<string>() { newReviewerMobile },
+                                    notification_type = "SMS",
+                                },
+                                new List<SysNotificationDto>()
+                                {
                                new SysNotificationDto()
                                {
                                     ActorId = deptNewEmployeeInfoReview.Id,
@@ -1121,13 +1135,15 @@ namespace REAC.Application.AppServices.Litigation
                                     Message = msg,
                                },
 
+                                }
+                                );
                             }
-                            );
-                        }
-                        catch (Exception ex)
-                        {
+                            catch (Exception ex)
+                            {
 
+                            }
                         }
+
 
                     }
                 }
@@ -1422,6 +1438,24 @@ namespace REAC.Application.AppServices.Litigation
                 .ThenInclude(x => x.LitigationRequestGroundFiles)
                 .ThenInclude(x => x.FileManager)
                 .Include(x => x.LitigationRequestRequests)
+
+                 .Include(x => x.Delegator)
+                 .ThenInclude(x => x.Citizen)
+                 .ThenInclude(x => x.Nationality)
+                 .Include(x => x.Delegator)
+                 .ThenInclude(x => x.Facility)
+                 .Include(x => x.Delegator)
+                 .ThenInclude(x => x.DelegationFile)
+                 .Include(x => x.Delegator)
+                 .ThenInclude(x => x.DecisionFile)
+                 .Include(x => x.Delegator)
+                 .ThenInclude(x => x.CommercialRegisterationFile)
+                 .Include(x => x.Delegator)
+                 .ThenInclude(x => x.CustodyFile)
+                 .Include(x => x.Delegator)
+                 .ThenInclude(x => x.RepresentationFile)
+                 .Include(x => x.Delegator)
+                 .ThenInclude(x => x.EstablishmentFile)
                 .FirstOrDefault(x => x.Id == litigationId);
 
             return new DataResponse<LitigationRequest> { Data = result, IsDone = true };
@@ -1808,6 +1842,23 @@ namespace REAC.Application.AppServices.Litigation
                     .Include(x => x.SysExemptionReductionCategory)
                     .Include(x => x.LitigationRequestGrounds)
                     .ThenInclude(x => x.LitigationRequestGroundFiles)
+                    .Include(x => x.Delegator)
+                    .ThenInclude(x => x.Citizen)
+                    .ThenInclude(x => x.Nationality)
+                    .Include(x => x.Delegator)
+                    .ThenInclude(x => x.Facility)
+                    .Include(x => x.Delegator)
+                    .ThenInclude(x => x.DelegationFile)
+                    .Include(x => x.Delegator)
+                    .ThenInclude(x => x.DecisionFile)
+                    .Include(x => x.Delegator)
+                    .ThenInclude(x => x.CommercialRegisterationFile)
+                    .Include(x => x.Delegator)
+                    .ThenInclude(x => x.CustodyFile)
+                    .Include(x => x.Delegator)
+                    .ThenInclude(x => x.RepresentationFile)
+                    .Include(x => x.Delegator)
+                    .ThenInclude(x => x.EstablishmentFile)
                     .FirstOrDefault(x => x.Id == litigationId);
 
                 if (result == null)
@@ -1816,7 +1867,7 @@ namespace REAC.Application.AppServices.Litigation
                 LitigationPartiesDetailsDto litigationPartiesDetailsDto = new LitigationPartiesDetailsDto();
                 litigationPartiesDetailsDto.FirstPartyDto = new PartyDTO();
                 litigationPartiesDetailsDto.SecondPartyDto = new PartyDTO();
-
+                litigationPartiesDetailsDto.LitigationRequestStatus = result.ExternalStatusId;
                 if (result.Contract.FirstPartyCitizenId.HasValue)
                 {
 
@@ -1835,8 +1886,8 @@ namespace REAC.Application.AppServices.Litigation
                     litigationPartiesDetailsDto.FirstPartyDto.Capacity = result.Contract.FirstPartyCapacity;
                     litigationPartiesDetailsDto.FirstPartyDto.NationalAddress = result.Contract.FirstPartyCitizen.NationalAddress;
 
-                    litigationPartiesDetailsDto.FirstPartyDto.AgancyAttachment = result.LitigationRequestOwnerTypeId == LitigationRequestOwnerType.LawyerForIndividual ? new SysFileManagerCreateUpdateDto { Id = Guid.Parse("e86953a3-c747-49f4-b817-21592334321f"), FileDescription = "FileDescription", FilePath = "reac/e86953a3-c747-49f4-b817-21592334321f.png", FileType = "Pdf" } : null;
-                    litigationPartiesDetailsDto.FirstPartyDto.LawLicenseAttachment = result.LitigationRequestOwnerTypeId == LitigationRequestOwnerType.LawyerForIndividual ? ((result.ApplicantCitizen.LawLicenseFile != null) ? new SysFileManagerCreateUpdateDto { Id = result.ApplicantCitizen.LawLicenseFile.Id, FileDescription = result.ApplicantCitizen.LawLicenseFile.FileDescription, FilePath = result.ApplicantCitizen.LawLicenseFile.FilePath, FileType = result.ApplicantCitizen.LawLicenseFile.FileType } : null) : null;
+                    litigationPartiesDetailsDto.FirstPartyDto.AgancyAttachment = result.LitigationRequestOwnerTypeId == LitigationRequestOwnerType.IndividualRepresentative ? new SysFileManagerCreateUpdateDto { Id = Guid.Parse("e86953a3-c747-49f4-b817-21592334321f"), FileDescription = "FileDescription", FilePath = "reac/e86953a3-c747-49f4-b817-21592334321f.png", FileType = "Pdf" } : null;
+                    litigationPartiesDetailsDto.FirstPartyDto.LawLicenseAttachment = result.LitigationRequestOwnerTypeId == LitigationRequestOwnerType.IndividualRepresentative ? ((result.ApplicantCitizen.LawLicenseFile != null) ? new SysFileManagerCreateUpdateDto { Id = result.ApplicantCitizen.LawLicenseFile.Id, FileDescription = result.ApplicantCitizen.LawLicenseFile.FileDescription, FilePath = result.ApplicantCitizen.LawLicenseFile.FilePath, FileType = result.ApplicantCitizen.LawLicenseFile.FileType } : null) : null;
                     litigationPartiesDetailsDto.FirstPartyDto.EstablishmentContract = result.LitigationRequestOwnerTypeId == LitigationRequestOwnerType.CompanyRepresentative ? new SysFileManagerCreateUpdateDto { Id = Guid.Parse("e86953a3-c747-49f4-b817-21592334321f"), FileDescription = "FileDescription", FilePath = "reac/e86953a3-c747-49f4-b817-21592334321f.png", FileType = "Pdf" } : null;
                 }
                 if (result.Contract.FirstPartyFacilityId.HasValue)
@@ -1869,8 +1920,8 @@ namespace REAC.Application.AppServices.Litigation
                     litigationPartiesDetailsDto.SecondPartyDto.Capacity = result.Contract.SecondPartyCapacity;
                     litigationPartiesDetailsDto.SecondPartyDto.NationalAddress = result.Contract.SecondPartyCitizen.NationalAddress;
 
-                    litigationPartiesDetailsDto.SecondPartyDto.AgancyAttachment = result.LitigationRequestOwnerTypeId == LitigationRequestOwnerType.LawyerForIndividual ? new SysFileManagerCreateUpdateDto { Id = Guid.Parse("e86953a3-c747-49f4-b817-21592334321f"), FileDescription = "FileDescription", FilePath = "reac/e86953a3-c747-49f4-b817-21592334321f.png", FileType = "Pdf" } : null;
-                    litigationPartiesDetailsDto.SecondPartyDto.LawLicenseAttachment = result.LitigationRequestOwnerTypeId == LitigationRequestOwnerType.LawyerForIndividual ? ((result.ApplicantCitizen.LawLicenseFile != null) ? new SysFileManagerCreateUpdateDto { Id = result.ApplicantCitizen.LawLicenseFile.Id, FileDescription = result.ApplicantCitizen.LawLicenseFile.FileDescription, FilePath = result.ApplicantCitizen.LawLicenseFile.FilePath, FileType = result.ApplicantCitizen.LawLicenseFile.FileType } : null) : null;
+                    litigationPartiesDetailsDto.SecondPartyDto.AgancyAttachment = result.LitigationRequestOwnerTypeId == LitigationRequestOwnerType.IndividualRepresentative ? new SysFileManagerCreateUpdateDto { Id = Guid.Parse("e86953a3-c747-49f4-b817-21592334321f"), FileDescription = "FileDescription", FilePath = "reac/e86953a3-c747-49f4-b817-21592334321f.png", FileType = "Pdf" } : null;
+                    litigationPartiesDetailsDto.SecondPartyDto.LawLicenseAttachment = result.LitigationRequestOwnerTypeId == LitigationRequestOwnerType.IndividualRepresentative ? ((result.ApplicantCitizen.LawLicenseFile != null) ? new SysFileManagerCreateUpdateDto { Id = result.ApplicantCitizen.LawLicenseFile.Id, FileDescription = result.ApplicantCitizen.LawLicenseFile.FileDescription, FilePath = result.ApplicantCitizen.LawLicenseFile.FilePath, FileType = result.ApplicantCitizen.LawLicenseFile.FileType } : null) : null;
                     litigationPartiesDetailsDto.SecondPartyDto.EstablishmentContract = result.LitigationRequestOwnerTypeId == LitigationRequestOwnerType.CompanyRepresentative ? new SysFileManagerCreateUpdateDto { Id = Guid.Parse("e86953a3-c747-49f4-b817-21592334321f"), FileDescription = "FileDescription", FilePath = "reac/e86953a3-c747-49f4-b817-21592334321f.png", FileType = "Pdf" } : null;
 
                 }
@@ -1945,6 +1996,46 @@ namespace REAC.Application.AppServices.Litigation
                 {
                     litigationPartiesDetailsDto.References.Add(item);
                 }
+
+                // Delegation Data
+                if (result.LitigationRequestOwnerTypeId != LitigationRequestOwnerType.Personal && result.Delegator is not null)
+                {
+                    litigationPartiesDetailsDto.LitigationRequestDelegationDataDto = new LitigationRequestDelegationDataDto();
+                    CultureInfo provider = new CultureInfo("en-US");
+                    CultureInfo.CurrentCulture = provider;
+
+                    litigationPartiesDetailsDto.LitigationRequestDelegationDataDto.DelegationNumber = result.Delegator.DelegateNumber;
+                    litigationPartiesDetailsDto.LitigationRequestDelegationDataDto.DelegationFile = _mapper.Map<SysFileManagerCreateUpdateDto>(result.Delegator.DelegationFile);
+                    litigationPartiesDetailsDto.LitigationRequestDelegationDataDto.DecisionFile = _mapper.Map<SysFileManagerCreateUpdateDto>(result.Delegator.DecisionFile);
+                    litigationPartiesDetailsDto.LitigationRequestDelegationDataDto.RepresentationFile = _mapper.Map<SysFileManagerCreateUpdateDto>(result.Delegator.RepresentationFile);
+                    litigationPartiesDetailsDto.LitigationRequestDelegationDataDto.CustodyFile = _mapper.Map<SysFileManagerCreateUpdateDto>(result.Delegator.CustodyFile);
+                    litigationPartiesDetailsDto.LitigationRequestDelegationDataDto.CommercialRegisterationFile = _mapper.Map<SysFileManagerCreateUpdateDto>(result.Delegator.CommercialRegisterationFile);
+                    litigationPartiesDetailsDto.LitigationRequestDelegationDataDto.EstablishmentFile = _mapper.Map<SysFileManagerCreateUpdateDto>(result.Delegator.EstablishmentFile);
+
+
+                    if (result.Delegator.DelegationRelationshipTypeId == DelegationRelationshipType.Individual && result.Delegator.Citizen is not null)
+                    {
+
+                        litigationPartiesDetailsDto.LitigationRequestDelegationDataDto.DelegationRelationshipTypeId = DelegationRelationshipType.Individual;
+                        litigationPartiesDetailsDto.LitigationRequestDelegationDataDto.IndividualBirthdate = DateTime.ParseExact(result.Delegator?.Citizen?.BirthDate.ToString(), "M/d/yyyy h:mm:ss tt", new CultureInfo("en-US")).ToString();
+                        litigationPartiesDetailsDto.LitigationRequestDelegationDataDto.IndividualEmail = result.Delegator.Citizen?.Email;
+                        litigationPartiesDetailsDto.LitigationRequestDelegationDataDto.IndividualCapacity = result.Contract.FirstPartyCapacity;
+                        litigationPartiesDetailsDto.LitigationRequestDelegationDataDto.IndividualFullName = result.Delegator.Citizen.FullName;
+                        litigationPartiesDetailsDto.LitigationRequestDelegationDataDto.IndividualIdentityNumber = result.Delegator.Citizen.IdentityNumber;
+                        litigationPartiesDetailsDto.LitigationRequestDelegationDataDto.IndividualMobile = result.Delegator.Citizen.Mobile;
+                        litigationPartiesDetailsDto.LitigationRequestDelegationDataDto.IndividualNationalAddress = result.Delegator.Citizen.NationalAddress;
+                        litigationPartiesDetailsDto.LitigationRequestDelegationDataDto.IndividualNationality = result.Delegator.Citizen.Nationality.NationalityName;
+                    }
+                    else if (result.Delegator.DelegationRelationshipTypeId == DelegationRelationshipType.Facility && result.Delegator.Facility is not null)
+                    {
+                        litigationPartiesDetailsDto.LitigationRequestDelegationDataDto.DelegationRelationshipTypeId = DelegationRelationshipType.Facility;
+
+                        litigationPartiesDetailsDto.LitigationRequestDelegationDataDto.Facility700Number = result.Delegator.Facility.Facility700Number;
+                        litigationPartiesDetailsDto.LitigationRequestDelegationDataDto.ArabicFacilityName = result.Delegator.Facility.ArabicFacilityName;
+                        litigationPartiesDetailsDto.LitigationRequestDelegationDataDto.FacilityCommercialRegisterationNumber = result.Delegator.Facility.CommercialRegisterNumber;
+                    }
+                }
+
                 return new DataResponse<LitigationPartiesDetailsDto>() { Data = litigationPartiesDetailsDto, IsDone = true };
             }
             catch (Exception ex)
@@ -2144,7 +2235,7 @@ namespace REAC.Application.AppServices.Litigation
                     NationalAddress = (litigationRequest.Contract.FirstPartyCitizen == null) ? null : litigationRequest.Contract.FirstPartyCitizen.NationalAddress,
                     CommercialRegistrationNo = (litigationRequest.Contract.FirstPartyFacility != null) ? litigationRequest.Contract.FirstPartyFacility.CommercialRegisterNumber : null,
                     FacilityName = (litigationRequest.Contract.FirstPartyFacility == null) ? null : litigationRequest.Contract.FirstPartyFacility.ArabicFacilityName,
-                    Nationality = (litigationRequest.Contract.FirstPartyCitizen == null) ? null : litigationRequest.Contract.FirstPartyCitizen.Nationality.NationalityName,
+                    Nationality = (litigationRequest.Contract.FirstPartyCitizen == null) ? null : litigationRequest.Contract.FirstPartyCitizen.Nationality?.NationalityName,
                     FullName = (litigationRequest.Contract.FirstPartyCitizen == null) ? null : litigationRequest.Contract.FirstPartyCitizen.FullName,
                     Mobile = (litigationRequest.Contract.FirstPartyCitizen == null) ? null : litigationRequest.Contract.FirstPartyCitizen.Mobile,
                     Email = (litigationRequest.Contract.FirstPartyCitizen == null) ? null : litigationRequest.Contract.FirstPartyCitizen.Email,
@@ -2156,9 +2247,9 @@ namespace REAC.Application.AppServices.Litigation
                     IsPretender = true,
                     LawLicenseNumber = litigationRequest.ApplicantCitizen.LawyerLicenseNumber,
                     LawLicenseExpirationDate = litigationRequest.ApplicantCitizen.LawyerLicenseExpirationDate,
-                    AgencyNumber = "1234567890", // (litigationRequest.LitigationRequestOwnerTypeId == LitigationRequestOwnerType.Lawyer) || (litigationRequest.LitigationRequestOwnerTypeId == LitigationRequestOwnerType.Agent ) ? litigationRequest.Contract. : null,
-                    AgancyAttachment = litigationRequest.LitigationRequestOwnerTypeId == LitigationRequestOwnerType.LawyerForIndividual ? new SysFileManagerCreateUpdateDto { Id = Guid.Parse("e86953a3-c747-49f4-b817-21592334321f"), FileDescription = "FileDescription", FilePath = "reac/e86953a3-c747-49f4-b817-21592334321f.png", FileType = "Pdf" } : null,
-                    LawLicenseAttachment = litigationRequest.LitigationRequestOwnerTypeId == LitigationRequestOwnerType.LawyerForIndividual ? ((litigationRequest.ApplicantCitizen.LawLicenseFile != null) ? new SysFileManagerCreateUpdateDto { Id = litigationRequest.ApplicantCitizen.LawLicenseFile.Id, FileDescription = litigationRequest.ApplicantCitizen.LawLicenseFile.FileDescription, FilePath = litigationRequest.ApplicantCitizen.LawLicenseFile.FilePath, FileType = litigationRequest.ApplicantCitizen.LawLicenseFile.FileType } : null) : null,
+                    AgencyNumber = "1234567890", // (litigationRequest.LitigationRequestOwnerTypeId == LitigationRequestOwnerType.IndividualRepresentative) || (litigationRequest.LitigationRequestOwnerTypeId == LitigationRequestOwnerType.AgentForIndividual ) ? litigationRequest.Contract. : null,
+                    AgancyAttachment = litigationRequest.LitigationRequestOwnerTypeId == LitigationRequestOwnerType.IndividualRepresentative ? new SysFileManagerCreateUpdateDto { Id = Guid.Parse("e86953a3-c747-49f4-b817-21592334321f"), FileDescription = "FileDescription", FilePath = "reac/e86953a3-c747-49f4-b817-21592334321f.png", FileType = "Pdf" } : null,
+                    LawLicenseAttachment = litigationRequest.LitigationRequestOwnerTypeId == LitigationRequestOwnerType.IndividualRepresentative ? ((litigationRequest.ApplicantCitizen.LawLicenseFile != null) ? new SysFileManagerCreateUpdateDto { Id = litigationRequest.ApplicantCitizen.LawLicenseFile.Id, FileDescription = litigationRequest.ApplicantCitizen.LawLicenseFile.FileDescription, FilePath = litigationRequest.ApplicantCitizen.LawLicenseFile.FilePath, FileType = litigationRequest.ApplicantCitizen.LawLicenseFile.FileType } : null) : null,
                     EstablishmentContract = litigationRequest.LitigationRequestOwnerTypeId == LitigationRequestOwnerType.CompanyRepresentative ? new SysFileManagerCreateUpdateDto { Id = Guid.Parse("e86953a3-c747-49f4-b817-21592334321f"), FileDescription = "FileDescription", FilePath = "reac/e86953a3-c747-49f4-b817-21592334321f.png", FileType = "Pdf" } : null,
                 },
                 SecondPartyDto = new PartyDTO()
@@ -2179,9 +2270,9 @@ namespace REAC.Application.AppServices.Litigation
                     IsPretender = false,
                     LawLicenseNumber = litigationRequest.ApplicantCitizen.LawyerLicenseNumber,
                     LawLicenseExpirationDate = litigationRequest.ApplicantCitizen.LawyerLicenseExpirationDate,
-                    AgencyNumber = "1234567890", // (litigationRequest.LitigationRequestOwnerTypeId == LitigationRequestOwnerType.Lawyer) || (litigationRequest.LitigationRequestOwnerTypeId == LitigationRequestOwnerType.Agent ) ? litigationRequest.Contract. : null,
-                    AgancyAttachment = litigationRequest.LitigationRequestOwnerTypeId == LitigationRequestOwnerType.LawyerForIndividual ? new SysFileManagerCreateUpdateDto { Id = Guid.Parse("e86953a3-c747-49f4-b817-21592334321f"), FileDescription = "FileDescription", FilePath = "reac/e86953a3-c747-49f4-b817-21592334321f.png", FileType = "Pdf" } : null,
-                    LawLicenseAttachment = litigationRequest.LitigationRequestOwnerTypeId == LitigationRequestOwnerType.LawyerForIndividual ? ((litigationRequest.ApplicantCitizen.LawLicenseFile != null) ? new SysFileManagerCreateUpdateDto { Id = litigationRequest.ApplicantCitizen.LawLicenseFile.Id, FileDescription = litigationRequest.ApplicantCitizen.LawLicenseFile.FileDescription, FilePath = litigationRequest.ApplicantCitizen.LawLicenseFile.FilePath, FileType = litigationRequest.ApplicantCitizen.LawLicenseFile.FileType } : null) : null,
+                    AgencyNumber = "1234567890", // (litigationRequest.LitigationRequestOwnerTypeId == LitigationRequestOwnerType.IndividualRepresentative) || (litigationRequest.LitigationRequestOwnerTypeId == LitigationRequestOwnerType.AgentForIndividual ) ? litigationRequest.Contract. : null,
+                    AgancyAttachment = litigationRequest.LitigationRequestOwnerTypeId == LitigationRequestOwnerType.IndividualRepresentative ? new SysFileManagerCreateUpdateDto { Id = Guid.Parse("e86953a3-c747-49f4-b817-21592334321f"), FileDescription = "FileDescription", FilePath = "reac/e86953a3-c747-49f4-b817-21592334321f.png", FileType = "Pdf" } : null,
+                    LawLicenseAttachment = litigationRequest.LitigationRequestOwnerTypeId == LitigationRequestOwnerType.IndividualRepresentative ? ((litigationRequest.ApplicantCitizen.LawLicenseFile != null) ? new SysFileManagerCreateUpdateDto { Id = litigationRequest.ApplicantCitizen.LawLicenseFile.Id, FileDescription = litigationRequest.ApplicantCitizen.LawLicenseFile.FileDescription, FilePath = litigationRequest.ApplicantCitizen.LawLicenseFile.FilePath, FileType = litigationRequest.ApplicantCitizen.LawLicenseFile.FileType } : null) : null,
                     EstablishmentContract = litigationRequest.LitigationRequestOwnerTypeId == LitigationRequestOwnerType.CompanyRepresentative ? new SysFileManagerCreateUpdateDto { Id = Guid.Parse("e86953a3-c747-49f4-b817-21592334321f"), FileDescription = "FileDescription", FilePath = "reac/e86953a3-c747-49f4-b817-21592334321f.png", FileType = "Pdf" } : null,
                 },
                 Key = litigationRequest.Contract.ContractKey,
@@ -2256,9 +2347,9 @@ namespace REAC.Application.AppServices.Litigation
                     IsPretender = true,
                     LawLicenseNumber = litigationRequest.ApplicantCitizen.LawyerLicenseNumber,
                     LawLicenseExpirationDate = litigationRequest.ApplicantCitizen.LawyerLicenseExpirationDate,
-                    AgencyNumber = "1234567890", // (litigationRequest.LitigationRequestOwnerTypeId == LitigationRequestOwnerType.Lawyer) || (litigationRequest.LitigationRequestOwnerTypeId == LitigationRequestOwnerType.Agent ) ? litigationRequest.Contract. : null,
-                    AgancyAttachment = litigationRequest.LitigationRequestOwnerTypeId == LitigationRequestOwnerType.LawyerForIndividual ? new SysFileManagerCreateUpdateDto { Id = Guid.Parse("e86953a3-c747-49f4-b817-21592334321f"), FileDescription = "FileDescription", FilePath = "reac/e86953a3-c747-49f4-b817-21592334321f.png", FileType = "Pdf" } : null,
-                    LawLicenseAttachment = litigationRequest.LitigationRequestOwnerTypeId == LitigationRequestOwnerType.LawyerForIndividual ? ((litigationRequest.ApplicantCitizen.LawLicenseFile != null) ? new SysFileManagerCreateUpdateDto { Id = litigationRequest.ApplicantCitizen.LawLicenseFile.Id, FileDescription = litigationRequest.ApplicantCitizen.LawLicenseFile.FileDescription, FilePath = litigationRequest.ApplicantCitizen.LawLicenseFile.FilePath, FileType = litigationRequest.ApplicantCitizen.LawLicenseFile.FileType } : null) : null,
+                    AgencyNumber = "1234567890", // (litigationRequest.LitigationRequestOwnerTypeId == LitigationRequestOwnerType.IndividualRepresentative) || (litigationRequest.LitigationRequestOwnerTypeId == LitigationRequestOwnerType.AgentForIndividual ) ? litigationRequest.Contract. : null,
+                    AgancyAttachment = litigationRequest.LitigationRequestOwnerTypeId == LitigationRequestOwnerType.IndividualRepresentative ? new SysFileManagerCreateUpdateDto { Id = Guid.Parse("e86953a3-c747-49f4-b817-21592334321f"), FileDescription = "FileDescription", FilePath = "reac/e86953a3-c747-49f4-b817-21592334321f.png", FileType = "Pdf" } : null,
+                    LawLicenseAttachment = litigationRequest.LitigationRequestOwnerTypeId == LitigationRequestOwnerType.IndividualRepresentative ? ((litigationRequest.ApplicantCitizen.LawLicenseFile != null) ? new SysFileManagerCreateUpdateDto { Id = litigationRequest.ApplicantCitizen.LawLicenseFile.Id, FileDescription = litigationRequest.ApplicantCitizen.LawLicenseFile.FileDescription, FilePath = litigationRequest.ApplicantCitizen.LawLicenseFile.FilePath, FileType = litigationRequest.ApplicantCitizen.LawLicenseFile.FileType } : null) : null,
                     EstablishmentContract = litigationRequest.LitigationRequestOwnerTypeId == LitigationRequestOwnerType.CompanyRepresentative ? new SysFileManagerCreateUpdateDto { Id = Guid.Parse("e86953a3-c747-49f4-b817-21592334321f"), FileDescription = "FileDescription", FilePath = "reac/e86953a3-c747-49f4-b817-21592334321f.png", FileType = "Pdf" } : null,
                 },
                 SecondPartyDto = new PartyDTO()
@@ -2279,9 +2370,9 @@ namespace REAC.Application.AppServices.Litigation
                     IsPretender = false,
                     LawLicenseNumber = litigationRequest.ApplicantCitizen.LawyerLicenseNumber,
                     LawLicenseExpirationDate = litigationRequest.ApplicantCitizen.LawyerLicenseExpirationDate,
-                    AgencyNumber = "1234567890", // (litigationRequest.LitigationRequestOwnerTypeId == LitigationRequestOwnerType.Lawyer) || (litigationRequest.LitigationRequestOwnerTypeId == LitigationRequestOwnerType.Agent ) ? litigationRequest.Contract. : null,
-                    AgancyAttachment = litigationRequest.LitigationRequestOwnerTypeId == LitigationRequestOwnerType.LawyerForIndividual ? new SysFileManagerCreateUpdateDto { Id = Guid.Parse("e86953a3-c747-49f4-b817-21592334321f"), FileDescription = "FileDescription", FilePath = "reac/e86953a3-c747-49f4-b817-21592334321f.png", FileType = "Pdf" } : null,
-                    LawLicenseAttachment = litigationRequest.LitigationRequestOwnerTypeId == LitigationRequestOwnerType.LawyerForIndividual ? ((litigationRequest.ApplicantCitizen.LawLicenseFile != null) ? new SysFileManagerCreateUpdateDto { Id = litigationRequest.ApplicantCitizen.LawLicenseFile.Id, FileDescription = litigationRequest.ApplicantCitizen.LawLicenseFile.FileDescription, FilePath = litigationRequest.ApplicantCitizen.LawLicenseFile.FilePath, FileType = litigationRequest.ApplicantCitizen.LawLicenseFile.FileType } : null) : null,
+                    AgencyNumber = "1234567890", // (litigationRequest.LitigationRequestOwnerTypeId == LitigationRequestOwnerType.IndividualRepresentative) || (litigationRequest.LitigationRequestOwnerTypeId == LitigationRequestOwnerType.AgentForIndividual ) ? litigationRequest.Contract. : null,
+                    AgancyAttachment = litigationRequest.LitigationRequestOwnerTypeId == LitigationRequestOwnerType.IndividualRepresentative ? new SysFileManagerCreateUpdateDto { Id = Guid.Parse("e86953a3-c747-49f4-b817-21592334321f"), FileDescription = "FileDescription", FilePath = "reac/e86953a3-c747-49f4-b817-21592334321f.png", FileType = "Pdf" } : null,
+                    LawLicenseAttachment = litigationRequest.LitigationRequestOwnerTypeId == LitigationRequestOwnerType.IndividualRepresentative ? ((litigationRequest.ApplicantCitizen.LawLicenseFile != null) ? new SysFileManagerCreateUpdateDto { Id = litigationRequest.ApplicantCitizen.LawLicenseFile.Id, FileDescription = litigationRequest.ApplicantCitizen.LawLicenseFile.FileDescription, FilePath = litigationRequest.ApplicantCitizen.LawLicenseFile.FilePath, FileType = litigationRequest.ApplicantCitizen.LawLicenseFile.FileType } : null) : null,
                     EstablishmentContract = litigationRequest.LitigationRequestOwnerTypeId == LitigationRequestOwnerType.CompanyRepresentative ? new SysFileManagerCreateUpdateDto { Id = Guid.Parse("e86953a3-c747-49f4-b817-21592334321f"), FileDescription = "FileDescription", FilePath = "reac/e86953a3-c747-49f4-b817-21592334321f.png", FileType = "Pdf" } : null,
                 },
                 Property = plaintiffDefendantSharedEjarData.EjarProperty,
@@ -2583,7 +2674,7 @@ namespace REAC.Application.AppServices.Litigation
                             .Where(x => x.Id == contracts.FirstOrDefault().FirstPartyCitizenId).ToList();
                         foreach (var delegator in firstCitizen.FirstOrDefault().FromDelegators)
                         {
-                            if (delegator.DelegatorCitizenId == userId && delegator.DelegationRelationshipTypeId == DelegationRelationshipType.Agent)
+                            if (delegator.DelegatorCitizenId == userId && delegator.DelegationRelationshipTypeId == DelegationRelationshipType.Individual)
                             {
                                 litigationRequestContract.FirstPartyCitizenId = contracts.FirstOrDefault()?.FirstPartyCitizenId;
                                 litigationRequestContract.FirstPartyCapacity = contracts.FirstOrDefault()?.FirstPartyCapacity;
@@ -2610,7 +2701,7 @@ namespace REAC.Application.AppServices.Litigation
 
                             foreach (var delegator in secondCitizen.FirstOrDefault().FromDelegators)
                             {
-                                if (delegator.DelegatorCitizenId == userId && delegator.DelegationRelationshipTypeId == DelegationRelationshipType.Agent)
+                                if (delegator.DelegatorCitizenId == userId && delegator.DelegationRelationshipTypeId == DelegationRelationshipType.Individual)
                                 {
                                     litigationRequestContract.FirstPartyCitizenId = contracts.FirstOrDefault()?.SecondPartyCitizenId;
                                     litigationRequestContract.FirstPartyCapacity = contracts.FirstOrDefault()?.SecondPartyCapacity;
@@ -2635,7 +2726,7 @@ namespace REAC.Application.AppServices.Litigation
 
                             foreach (var delegator in firstFacility.FirstOrDefault().Delegators)
                             {
-                                if (delegator.DelegatorCitizenId == userId && delegator.DelegationRelationshipTypeId == DelegationRelationshipType.Agent)
+                                if (delegator.DelegatorCitizenId == userId && delegator.DelegationRelationshipTypeId == DelegationRelationshipType.Individual)
                                 {
                                     litigationRequestContract.FirstPartyFacilityId = contracts.FirstOrDefault()?.FirstPartyFacilityId;
                                     litigationRequestContract.FirstPartyCapacity = contracts.FirstOrDefault()?.FirstPartyCapacity;
@@ -2663,7 +2754,7 @@ namespace REAC.Application.AppServices.Litigation
 
                             foreach (var delegator in secondFacility.FirstOrDefault().Delegators)
                             {
-                                if (delegator.DelegatorCitizenId == userId && delegator.DelegationRelationshipTypeId == DelegationRelationshipType.Agent)
+                                if (delegator.DelegatorCitizenId == userId && delegator.DelegationRelationshipTypeId == DelegationRelationshipType.Individual)
                                 {
                                     litigationRequestContract.FirstPartyFacilityId = contracts.FirstOrDefault()?.SecondPartyFacilityId;
                                     litigationRequestContract.FirstPartyCapacity = contracts.FirstOrDefault()?.SecondPartyCapacity;
@@ -2682,7 +2773,7 @@ namespace REAC.Application.AppServices.Litigation
                     if (goOn1)
                         return new BaseResponse() { IsDone = false, Message = "بيانات العقد غير صحيحة" };
                     break;
-                case LitigationRequestOwnerType.LawyerForIndividual:
+                case LitigationRequestOwnerType.IndividualRepresentative:
                     bool goOn2 = true;
                     if (contracts.FirstOrDefault().FirstPartyCitizenId.HasValue)
                     {
@@ -2692,7 +2783,7 @@ namespace REAC.Application.AppServices.Litigation
                             .Where(x => x.Id == contracts.FirstOrDefault().FirstPartyCitizenId).ToList();
                         foreach (var delegator in firstCitizen.FirstOrDefault().FromDelegators)
                         {
-                            if (delegator.DelegatorCitizenId == userId && delegator.DelegationRelationshipTypeId == DelegationRelationshipType.Lawyer)
+                            if (delegator.DelegatorCitizenId == userId && delegator.DelegationRelationshipTypeId == DelegationRelationshipType.Individual)
                             {
                                 litigationRequestContract.FirstPartyCitizenId = contracts.FirstOrDefault()?.FirstPartyCitizenId;
                                 litigationRequestContract.FirstPartyCapacity = contracts.FirstOrDefault()?.FirstPartyCapacity;
@@ -2719,7 +2810,7 @@ namespace REAC.Application.AppServices.Litigation
 
                             foreach (var delegator in secondCitizen.FirstOrDefault().FromDelegators)
                             {
-                                if (delegator.DelegatorCitizenId == userId && delegator.DelegationRelationshipTypeId == DelegationRelationshipType.Lawyer)
+                                if (delegator.DelegatorCitizenId == userId && delegator.DelegationRelationshipTypeId == DelegationRelationshipType.Individual)
                                 {
                                     litigationRequestContract.FirstPartyCitizenId = contracts.FirstOrDefault()?.SecondPartyCitizenId;
                                     litigationRequestContract.FirstPartyCapacity = contracts.FirstOrDefault()?.SecondPartyCapacity;
@@ -2746,7 +2837,7 @@ namespace REAC.Application.AppServices.Litigation
 
                             foreach (var delegator in firstFacility.FirstOrDefault().Delegators)
                             {
-                                if (delegator.DelegatorCitizenId == userId && delegator.DelegationRelationshipTypeId == DelegationRelationshipType.Lawyer)
+                                if (delegator.DelegatorCitizenId == userId && delegator.DelegationRelationshipTypeId == DelegationRelationshipType.Individual)
                                 {
                                     litigationRequestContract.FirstPartyFacilityId = contracts.FirstOrDefault()?.FirstPartyFacilityId;
                                     litigationRequestContract.FirstPartyCapacity = contracts.FirstOrDefault()?.FirstPartyCapacity;
@@ -2774,7 +2865,7 @@ namespace REAC.Application.AppServices.Litigation
 
                             foreach (var delegator in secondFacility.FirstOrDefault().Delegators)
                             {
-                                if (delegator.DelegatorCitizenId == userId && delegator.DelegationRelationshipTypeId == DelegationRelationshipType.Lawyer)
+                                if (delegator.DelegatorCitizenId == userId && delegator.DelegationRelationshipTypeId == DelegationRelationshipType.Individual)
                                 {
                                     litigationRequestContract.FirstPartyFacilityId = contracts.FirstOrDefault()?.SecondPartyFacilityId;
                                     litigationRequestContract.FirstPartyCapacity = contracts.FirstOrDefault()?.SecondPartyCapacity;
@@ -3062,6 +3153,395 @@ namespace REAC.Application.AppServices.Litigation
             throw new NotImplementedException();
         }
 
+        private async Task<BaseResponse> ValidateDelegatorData(CreateLitigationRequestNoIntegrationDto litigationRequestDto)
+        {
+            var existLitigationRequestDelegationData = (await _repository.GetQueryable<LitigationRequest, Guid>()).
+                    Include(x => x.Contract.SecondPartyCitizen)
+                    .Include(x => x.Contract.SecondPartyFacility)
+                    .Include(x => x.Delegator.Citizen)
+                    .Include(x => x.Delegator.Facility)
+                    .Any(x => x.IsFinished != true && (x.ExternalStatusId != RequestStatus.Cancelled && x.InternalStatusId != RequestStatus.Cancelled || x.ExternalStatusId != RequestStatus.Rejected && x.InternalStatusId != RequestStatus.Rejected)
+                    && x.Contract.ContractKey == litigationRequestDto.key
+                    && (x.Contract.SecondPartyCitizen.IdentityNumber == litigationRequestDto.SecondPartyNationalId || x.Contract.SecondPartyFacility.CommercialRegisterNumber == litigationRequestDto.SecondPartyFacilityCommercialRegistrationNo)
+                    && (x.Delegator.Citizen != null && x.Delegator.Citizen.IdentityNumber == litigationRequestDto.litigationRequestDelegationDataDto.IndividualIdentityNumber)
+                    || (x.Delegator.Facility != null && x.Delegator.Facility.Facility700Number == litigationRequestDto.litigationRequestDelegationDataDto.Facility700Number)
+                    );
+
+            if (existLitigationRequestDelegationData)
+            {
+                return new BaseResponse()
+                {
+                    IsDone = false,
+                    Message = "يوجد دعوى قائمة بالفعل بنفس رقم الجمعيه وهوية المدعي و هوية المدعي عليه"
+                };
+            }
+
+            return new BaseResponse()
+            {
+                IsDone = true,
+                Message = "تم التحقق من بيانات التفويض بنجاح"
+            };
+        }
+
+        private async Task<DataResponse<Delegator>> AddDelegationData(LitigationRequestDelegationDataDto input, LitigationRequest litigationRequest)
+        {
+
+            if (input == null)
+                return new DataResponse<Delegator> { IsDone = false, Message = "خطأ في إضافة بيانات التفويض" };
+
+            Guid referenceId = Guid.Empty;
+            _jwtReader.GetReferenceId(ref referenceId);
+
+            if (input.DelegationRelationshipTypeId == DelegationRelationshipType.Individual)
+            {
+                var addDraftCitizen = await AddDraftCitizen(input);
+
+                if (!addDraftCitizen.IsDone)
+                    return new DataResponse<Delegator> { IsDone = false, Message = "خطأ في إضافة بيانات المدعي" };
+
+                var delegator = new Delegator()
+                {
+                    Id = Guid.NewGuid(),
+                    DelegatorCitizenId = referenceId,
+                    CitizenId = addDraftCitizen.Data?.Id,
+                    DelegateNumber = input.DelegationNumber,
+                    DelegationFileId = input.DelegationFileId,
+                    DelegationRelationshipTypeId = DelegationRelationshipType.Individual,
+                    CommercialRegisterationFileId = input.CommercialRegisterationFileId,
+                    CustodyFileId = input.CustodyFileId,
+                    RepresentationFileId = input.RepresentationFileId,
+                    DecisionFileId = input.DecisionFileId,
+                    EstablishmentFileId = input.EstablishmentFileId,
+                    IsActive = true
+                };
+
+                var addDelegator = await _repository.AddAsync<Delegator, Guid>(delegator);
+
+
+                if (!addDelegator.IsDone)
+                    return new DataResponse<Delegator> { IsDone = false, Message = "خطأ في إضافة بيانات التفويض للفرد" };
+
+                var delegationRequest = new DelegationRequest()
+                {
+                    Id = Guid.NewGuid(),
+                    DelegationParty = LitigationRequestParty.Plaintiff,
+                    DelegatorId = delegator.Id,
+                    RequestedOn = DateTime.Now,
+                    LitigationRequestId = litigationRequest.Id,
+                    LitigationRequestOwnerTypeId = litigationRequest.LitigationRequestOwnerTypeId,
+                    IsActive = true,
+                    IsApproved = true,
+                    ApprovedOn = DateTime.Now
+                };
+
+                var addDelegationRequest = await _repository.AddAsync<DelegationRequest, Guid>(delegationRequest);
+
+                if (!addDelegationRequest.IsDone)
+                    return new DataResponse<Delegator> { IsDone = false, Message = "خطأ في إضافة طلب التفويض للفرد" };
+
+                return new DataResponse<Delegator> { IsDone = true, Message = "تم إضافة بيانات التفويض بنجاح", Data = delegator };
+
+            }
+            else if (input.DelegationRelationshipTypeId == DelegationRelationshipType.Facility)
+            {
+                var addFacility = await AddFacility(input);
+
+                if (!addFacility.IsDone)
+                    return new DataResponse<Delegator> { IsDone = false, Message = "خطأ في إضافة بيانات الشركة" };
+
+                var delegator = new Delegator()
+                {
+                    Id = Guid.NewGuid(),
+                    FacilityId = addFacility.Data?.Id,
+                    DelegationRelationshipTypeId = DelegationRelationshipType.Facility,
+                    DelegatorCitizenId = referenceId,
+                    DelegateNumber = input.DelegationNumber,
+                    DelegationFileId = input.DelegationFileId,
+                    CommercialRegisterationFileId = input.CommercialRegisterationFileId,
+                    CustodyFileId = input.CustodyFileId,
+                    RepresentationFileId = input.RepresentationFileId,
+                    DecisionFileId = input.DecisionFileId,
+                    EstablishmentFileId = input.EstablishmentFileId,
+                    IsActive = true
+                };
+
+                var addDelegator = await _repository.AddAsync<Delegator, Guid>(delegator);
+
+                if (!addDelegator.IsDone)
+                    return new DataResponse<Delegator> { IsDone = false, Message = "خطأ في إضافة بيانات التفويض للمنشأة" };
+
+
+                var delegationRequest = new DelegationRequest()
+                {
+                    Id = Guid.NewGuid(),
+                    DelegationParty = LitigationRequestParty.Plaintiff,
+                    DelegatorId = delegator.Id,
+                    RequestedOn = DateTime.Now,
+                    LitigationRequestId = litigationRequest.Id,
+                    LitigationRequestOwnerTypeId = litigationRequest.LitigationRequestOwnerTypeId,
+                    IsActive = true,
+                    IsApproved = true,
+                    ApprovedOn = DateTime.Now
+                };
+
+                var addDelegationRequest = await _repository.AddAsync<DelegationRequest, Guid>(delegationRequest);
+
+
+                if (!addDelegationRequest.IsDone)
+                    return new DataResponse<Delegator> { IsDone = false, Message = "خطأ في إضافة طلب التفويض للمنشأة" };
+
+                return new DataResponse<Delegator> { IsDone = true, Message = "تم إضافة بيانات التفويض بنجاح", Data = delegator };
+            }
+
+            return new DataResponse<Delegator> { IsDone = false, Message = "خطأ داخلي" };
+
+
+        }
+
+        private async Task<DataResponse<DelegationRequest>> AddDelegationRequestData(AddDelegationRequest input)
+        {
+
+            if (input == null)
+                return new DataResponse<DelegationRequest> { IsDone = false, Message = "خطأ في إضافة بيانات التفويض" };
+
+            Guid referenceId = Guid.Empty;
+            _jwtReader.GetReferenceId(ref referenceId);
+
+            var existDelegationRequest = (await _repository.GetQueryable<DelegationRequest, Guid>())
+                .AsNoTracking()
+                .Any(x => x.LitigationRequestId == input.LitigationRequestId && x.Delegator.DelegatorCitizenId == referenceId && x.DelegationParty == input.LitigationRequestParty && (x.IsApproved == true || x.IsApproved == null));
+
+
+
+            if (existDelegationRequest)
+                return new DataResponse<DelegationRequest> { IsDone = false, Message = "يوجد طلب تفويض حاليا بنفس رقم الهوية" };
+
+            var litigationData = (await _repository.GetQueryable<LitigationRequest, Guid>())
+                .Include(x => x.Delegator)
+                .Include(x => x.Contract.FirstPartyCitizen)
+                .Include(x => x.Contract.SecondPartyCitizen)
+                .AsNoTracking()
+                .FirstOrDefault(x => x.Id == input.LitigationRequestId);
+
+            if(litigationData.Contract.FirstPartyCitizenId == referenceId || litigationData.Contract.SecondPartyCitizenId == referenceId || litigationData.ApplicantCitizenId == referenceId)
+                return new DataResponse<DelegationRequest> { IsDone = false, Message = "لتقديم طلب التفويض لابد ان لا تكون طرف من اطراف الدعوي" };
+
+
+            if (input.LitigationRequestDelegationData.DelegationRelationshipTypeId == DelegationRelationshipType.Individual)
+            {
+
+
+                var delegator = new Delegator()
+                {
+                    Id = Guid.NewGuid(),
+                    DelegatorCitizenId = referenceId,
+                    CitizenId = input.LitigationRequestParty == LitigationRequestParty.Plaintiff ? litigationData.Contract?.FirstPartyCitizenId : litigationData.Contract?.SecondPartyCitizenId,
+                    DelegateNumber = input.LitigationRequestDelegationData.DelegationNumber,
+                    DelegationFileId = input.LitigationRequestDelegationData.DelegationFileId,
+                    DelegationRelationshipTypeId = DelegationRelationshipType.Individual,
+                    CommercialRegisterationFileId = input.LitigationRequestDelegationData.CommercialRegisterationFileId,
+                    CustodyFileId = input.LitigationRequestDelegationData.CustodyFileId,
+                    RepresentationFileId = input.LitigationRequestDelegationData.RepresentationFileId,
+                    DecisionFileId = input.LitigationRequestDelegationData.DecisionFileId,
+                    EstablishmentFileId = input.LitigationRequestDelegationData.EstablishmentFileId,
+                    IsActive = false
+                };
+
+
+
+                var addDelegator = await _repository.AddAsync<Delegator, Guid>(delegator);
+
+                var delegationRequest = new DelegationRequest()
+                {
+                    Id = Guid.NewGuid(),
+                    DelegationParty = input.LitigationRequestParty,
+                    DelegatorId = delegator.Id,
+                    RequestedOn = DateTime.Now,
+                    LitigationRequestId = input.LitigationRequestId,
+                    LitigationRequestOwnerTypeId = input.LitigationRequestOwnerType
+                };
+
+                var addDelegationRequest = await _repository.AddAsync<DelegationRequest, Guid>(delegationRequest);
+
+                var saveAll = await _repository.SaveChangesAsync();
+
+                if (!saveAll.IsDone)
+                    return new DataResponse<DelegationRequest> { IsDone = false, Message = "خطأ في إضافة طلب التفويض للفرد" };
+
+
+                // Notification
+                if (litigationData.Contract.FirstPartyCitizen is not null)
+                {
+                    try
+                    {
+
+
+                        var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.DelegationRequest_Added).Result.Data?.Value;
+                        var body = string.Empty;
+                        msg = msg?.Replace("{LitigationCode}", litigationData?.RequestCode);
+                        var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                        using (StreamReader streamReader = File.OpenText(pathToFile))
+                        {
+                            body = await streamReader.ReadToEndAsync();
+                            body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.DelegationRequest_Added).Result.Data?.Value);
+                            body = body?.Replace("{LitigationCode}", litigationData?.RequestCode);
+                        }
+
+                        await _notificationService.SendNotifications(
+                        new SendEmailDto()
+                        {
+                            To = new List<string>() { litigationData.Contract.FirstPartyCitizen.Email },
+                            Subject = "طلب تفويض جديد",
+                            Body = body
+                        },
+                        new SMSRequestDto()
+                        {
+                            message_text = msg,
+                            recipients = new List<string>() { litigationData.Contract.FirstPartyCitizen.Mobile },
+                            notification_type = "SMS",
+                        },
+                        new List<SysNotificationDto>()
+                        {
+                    new SysNotificationDto()
+                    {
+                         ActorId = (Guid)litigationData.Contract.FirstPartyCitizenId,
+                         CreatedOn = DateTime.Now,
+                         ActorTypeId = NotificationActorType.Reviewer,
+                         IsViewed = false,
+                        ViewedOn = null,
+                         RequestId = litigationData.Id,
+                         RequestTypeId = RequestType.LitigationRequest,
+                         Message = msg,
+                    },
+                        }
+                        );
+                    }
+                    catch (Exception ex)
+                    {
+
+                    }
+                }
+
+
+                return new DataResponse<DelegationRequest> { IsDone = true, Message = "تم إضافة طلب التفويض بنجاح", Data = delegationRequest };
+
+            }
+            else if (input.LitigationRequestDelegationData.DelegationRelationshipTypeId == DelegationRelationshipType.Facility)
+            {
+
+                var delegator = new Delegator()
+                {
+                    Id = Guid.NewGuid(),
+                    FacilityId = input.LitigationRequestParty == LitigationRequestParty.Plaintiff ? litigationData.Contract?.FirstPartyFacilityId : litigationData.Contract?.SecondPartyFacilityId,
+                    DelegationRelationshipTypeId = DelegationRelationshipType.Facility,
+                    DelegatorCitizenId = referenceId,
+                    DelegateNumber = input.LitigationRequestDelegationData.DelegationNumber,
+                    DelegationFileId = input.LitigationRequestDelegationData.DelegationFileId,
+                    CommercialRegisterationFileId = input.LitigationRequestDelegationData.CommercialRegisterationFileId,
+                    CustodyFileId = input.LitigationRequestDelegationData.CustodyFileId,
+                    RepresentationFileId = input.LitigationRequestDelegationData.RepresentationFileId,
+                    DecisionFileId = input.LitigationRequestDelegationData.DecisionFileId,
+                    EstablishmentFileId = input.LitigationRequestDelegationData.EstablishmentFileId,
+                    IsActive = false
+                };
+
+                var addDelegator = await _repository.AddAsync<Delegator, Guid>(delegator);
+
+                var delegationRequest = new DelegationRequest()
+                {
+                    Id = Guid.NewGuid(),
+                    DelegationParty = input.LitigationRequestParty,
+                    DelegatorId = delegator.Id,
+                    RequestedOn = DateTime.Now,
+                    LitigationRequestId = input.LitigationRequestId,
+                    LitigationRequestOwnerTypeId = input.LitigationRequestOwnerType
+
+                };
+
+                var addDelegationRequest = await _repository.AddAsync<DelegationRequest, Guid>(delegationRequest);
+
+                var saveAll = await _repository.SaveChangesAsync();
+
+                if (!saveAll.IsDone)
+                    return new DataResponse<DelegationRequest> { IsDone = false, Message = "خطأ في إضافة طلب التفويض للمنشأة" };
+
+                return new DataResponse<DelegationRequest> { IsDone = true, Message = "تم إضافة طلب التفويض بنجاح", Data = delegationRequest };
+            }
+
+
+
+            return new DataResponse<DelegationRequest> { IsDone = false, Message = "خطأ داخلي" };
+
+
+        }
+
+        private async Task<DataResponse<Citizen>> AddDraftCitizen(LitigationRequestDelegationDataDto input)
+        {
+            // Check if citizen exists
+            var existCitizen = (await _repository.GetQueryable<Citizen, Guid>())
+                .AsNoTracking()
+                .FirstOrDefault(x => x.IdentityNumber == input.IndividualIdentityNumber);
+
+            if (existCitizen != null)
+                return new DataResponse<Citizen>() { IsDone = true, Message = "المواطن موجود مسبقاً", Data = existCitizen };
+
+            // Get Nationality
+            var nationality = (await _repository.GetQueryable<SysNationality, Guid>())
+               .AsNoTracking();
+
+            // Add Draft Citizen
+            var citizen = new Citizen()
+            {
+                Id = Guid.NewGuid(),
+                FullName = input.IndividualFullName,
+                Mobile = input.IndividualMobile,
+                IdentityNumber = input.IndividualIdentityNumber,
+                BirthDate = DateTime.ParseExact(input.IndividualBirthdate, "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                NationalAddress = input.IndividualNationalAddress,
+                Email = input.IndividualEmail,
+                NationalityId = nationality.FirstOrDefault(x => x.NationalityName == input.IndividualNationality)?.Id ?? nationality.FirstOrDefault(x => x.NationalityCode == 113)?.Id,
+                IsDraftAccount = true
+            };
+
+            var addCitizen = await _repository.AddAsync<Citizen, Guid>(citizen);
+
+            User user = new User { UserName = input.IndividualIdentityNumber.Trim(), ReferenceId = citizen.Id, Email = null, EmailConfirmed = true };
+            var passwordHasher = new PasswordHasher<Core.Security.Entities.User>();
+            user.PasswordHash = passwordHasher.HashPassword(user, "123456");
+
+            var identityUser = await _context.Users.AddAsync(user);
+
+            if (!identityUser.IsKeySet)
+                return new DataResponse<Citizen>() { IsDone = false, Message = "خطأ في إضافة المواطن" };
+
+
+
+            if (!addCitizen.IsDone)
+                return new DataResponse<Citizen>() { IsDone = false, Message = "خطأ في إضافة المواطن" };
+
+            return new DataResponse<Citizen>() { IsDone = true, Message = "تم إضافة المواطن بنجاح", Data = citizen };
+        }
+
+        private async Task<DataResponse<Facility>> AddFacility(LitigationRequestDelegationDataDto input)
+        {
+            if (input == null)
+                return new DataResponse<Facility> { IsDone = false, Message = "خطأ في إضافة بيانات المنشأة" };
+
+            // Add Facility
+            var facility = new Facility()
+            {
+                Id = Guid.NewGuid(),
+                CommercialRegisterNumber = input.FacilityCommercialRegisterationNumber,
+                ArabicFacilityName = input.ArabicFacilityName,
+                EnglishFacilityName = input.ArabicFacilityName,
+                Facility700Number = input.Facility700Number,
+            };
+            var addFacility = await _repository.AddAsync<Facility, Guid>(facility);
+            //var addFacilityResponse = await _repository.SaveChangesAsync();
+            if (!addFacility.IsDone)
+                return new DataResponse<Facility> { IsDone = false, Message = "خطأ في إضافة بيانات المنشأة" };
+            return new DataResponse<Facility> { IsDone = true, Message = "تم إضافة بيانات المنشأة بنجاح", Data = facility };
+        }
         public async Task<BaseResponse> CreateLitigationRequestManual(CreateLitigationRequestNoIntegrationDto litigationRequestDto)
         {
             try
@@ -3186,6 +3666,8 @@ namespace REAC.Application.AppServices.Litigation
                     }
                 }
 
+
+
                 LitigationRequestContract litigationRequestContract = new LitigationRequestContract()
                 {
                     Id = Guid.NewGuid(),
@@ -3223,6 +3705,19 @@ namespace REAC.Application.AppServices.Litigation
                     ContractAddress = litigationRequestDto.ContractAddress,
                     OtherCategories = litigationRequestDto.OtherCategories
                 };
+
+                if (litigationRequestDto.LitigationRequestOwnerType != LitigationRequestOwnerType.Personal && litigationRequestDto.litigationRequestDelegationDataDto is not null)
+                {
+                    var addDelegationDataResponse = await AddDelegationData(litigationRequestDto.litigationRequestDelegationDataDto, litigationRequest);
+
+                    if (!addDelegationDataResponse.IsDone)
+                        return addDelegationDataResponse;
+
+                    litigationRequest.DelegatorId = addDelegationDataResponse?.Data?.Id;
+                    litigationRequestContract.FirstPartyCitizenId = addDelegationDataResponse?.Data?.CitizenId != null ? addDelegationDataResponse?.Data?.CitizenId : litigationRequestContract.FirstPartyCitizenId;
+                    litigationRequestContract.FirstPartyFacilityId = addDelegationDataResponse?.Data?.FacilityId != null ? addDelegationDataResponse?.Data?.FacilityId : litigationRequestContract.FirstPartyFacilityId;
+                }
+
                 await _repository.AddAsync<LitigationRequestContract, Guid>(litigationRequestContract);
 
                 await _repository.AddAsync<LitigationRequest, Guid>(litigationRequest);
@@ -3230,6 +3725,8 @@ namespace REAC.Application.AppServices.Litigation
                 var saveResponse = await _repository.SaveChangesAsync();
                 if (saveResponse.IsDone)
                 {
+                    await _context.SaveChangesAsync();
+
                     var newlitigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>())
                               .Include(x => x.ApplicantCitizen)
                               .Include(x => x.ApplicantCitizen.LawLicenseFile)
@@ -3290,17 +3787,22 @@ namespace REAC.Application.AppServices.Litigation
                     };
                 }
 
-                var _FirstPartyCitizenId = (litigationRequestDto.FirstPartyIndividualId == Guid.Empty) ? referenceId : litigationRequestDto.FirstPartyIndividualId;
+                if (litigationRequestDto.LitigationRequestOwnerType != LitigationRequestOwnerType.Personal && litigationRequestDto.litigationRequestDelegationDataDto is not null)
+                {
+
+                    var validation = await ValidateDelegatorData(litigationRequestDto);
+
+                    if (!validation.IsDone)
+                        return validation;
+                }
 
                 // Properties Validation
-                var existLitigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>())
-                    .Include(x => x.Contract.FirstPartyCitizen)
-                    .Include(x => x.Contract.SecondPartyCitizen)
+                var existLitigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>()).
+                    Include(x => x.Contract.SecondPartyCitizen)
                     .Include(x => x.Contract.SecondPartyFacility)
                     .FirstOrDefault(x => x.IsFinished != true && (x.ExternalStatusId != RequestStatus.Cancelled && x.InternalStatusId != RequestStatus.Cancelled || x.ExternalStatusId != RequestStatus.Rejected && x.InternalStatusId != RequestStatus.Rejected)
                     && x.Contract.ContractKey == litigationRequestDto.key
-                    && (x.Contract.SecondPartyCitizen.IdentityNumber == litigationRequestDto.SecondPartyNationalId || x.Contract.SecondPartyFacility.CommercialRegisterNumber == litigationRequestDto.SecondPartyFacilityCommercialRegistrationNo)
-                    && (x.Contract.FirstPartyCitizen.Id == _FirstPartyCitizenId));
+                    && (x.Contract.SecondPartyCitizen.IdentityNumber == litigationRequestDto.SecondPartyNationalId || x.Contract.SecondPartyFacility.CommercialRegisterNumber == litigationRequestDto.SecondPartyFacilityCommercialRegistrationNo));
 
                 if (existLitigationRequest != null)
                 {
@@ -3437,6 +3939,22 @@ namespace REAC.Application.AppServices.Litigation
                     ContractAddress = litigationRequestDto.ContractAddress,
                     OtherCategories = litigationRequestDto.OtherCategories
                 };
+
+                if (litigationRequestDto.LitigationRequestOwnerType != LitigationRequestOwnerType.Personal && litigationRequestDto.litigationRequestDelegationDataDto is not null)
+                {
+
+
+                    var addDelegationDataResponse = await AddDelegationData(litigationRequestDto.litigationRequestDelegationDataDto, litigationRequest);
+
+                    if (!addDelegationDataResponse.IsDone)
+                        return addDelegationDataResponse;
+
+                    litigationRequest.DelegatorId = addDelegationDataResponse?.Data?.Id;
+                    litigationRequestContract.FirstPartyCitizenId = addDelegationDataResponse?.Data?.CitizenId != null ? addDelegationDataResponse?.Data?.CitizenId : litigationRequestContract.FirstPartyCitizenId;
+                    litigationRequestContract.FirstPartyFacilityId = addDelegationDataResponse?.Data?.FacilityId != null ? addDelegationDataResponse?.Data?.FacilityId : litigationRequestContract.FirstPartyFacilityId;
+
+                }
+
                 await _repository.AddAsync<LitigationRequestContract, Guid>(litigationRequestContract);
 
                 await _repository.AddAsync<LitigationRequest, Guid>(litigationRequest);
@@ -3444,6 +3962,8 @@ namespace REAC.Application.AppServices.Litigation
                 var saveResponse = await _repository.SaveChangesAsync();
                 if (saveResponse.IsDone)
                 {
+                    await _context.SaveChangesAsync();
+
                     var newlitigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>())
                               .Include(x => x.ApplicantCitizen)
                               .Include(x => x.ApplicantCitizen.LawLicenseFile)
@@ -3671,6 +4191,20 @@ namespace REAC.Application.AppServices.Litigation
                     ContractAddress = $"{plaintiffDefendantSharedData.EjarProperty.BuildingNumber},حي {plaintiffDefendantSharedData.EjarProperty.Province},شارع {plaintiffDefendantSharedData.EjarProperty.StreetName}, مدينة {plaintiffDefendantSharedData.EjarProperty.City}",
                     OtherCategories = litigationRequestDto.OtherCategories
                 };
+
+                if (litigationRequestDto.LitigationRequestOwnerType != LitigationRequestOwnerType.Personal && litigationRequestDto.litigationRequestDelegationDataDto is not null)
+                {
+                    var addDelegationDataResponse = await AddDelegationData(litigationRequestDto.litigationRequestDelegationDataDto, litigationRequest);
+
+                    if (!addDelegationDataResponse.IsDone)
+                        return addDelegationDataResponse;
+
+                    litigationRequest.DelegatorId = addDelegationDataResponse?.Data?.Id;
+                    litigationRequestContract.FirstPartyCitizenId = addDelegationDataResponse?.Data?.CitizenId != null ? addDelegationDataResponse?.Data?.CitizenId : litigationRequestContract.FirstPartyCitizenId;
+                    litigationRequestContract.FirstPartyFacilityId = addDelegationDataResponse?.Data?.FacilityId != null ? addDelegationDataResponse?.Data?.FacilityId : litigationRequestContract.FirstPartyFacilityId;
+
+                }
+
                 await _repository.AddAsync<LitigationRequestContract, Guid>(litigationRequestContract);
 
                 await _repository.AddAsync<LitigationRequest, Guid>(litigationRequest);
@@ -3678,6 +4212,8 @@ namespace REAC.Application.AppServices.Litigation
                 var saveResponse = await _repository.SaveChangesAsync();
                 if (saveResponse.IsDone)
                 {
+                    await _context.SaveChangesAsync();
+
                     var newlitigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>())
                               .Include(x => x.ApplicantCitizen)
                               .Include(x => x.ApplicantCitizen.LawLicenseFile)
@@ -4820,6 +5356,984 @@ namespace REAC.Application.AppServices.Litigation
 
         #endregion
 
+
+
+        #region Delegation
+        public async Task<BaseResponse> GetLitigationRequestDataForDelegation(string requestCode, string identityNumber, LitigationRequestParty party)
+        {
+            var existLitigationRequest = party == LitigationRequestParty.Plaintiff ? (await _repository.GetQueryable<LitigationRequest, Guid>())
+                    .Include(x => x.Contract.FirstPartyCitizen)
+                    .Include(x => x.Contract.FirstPartyFacility)
+                    .Include(x => x.Delegator)
+                    .FirstOrDefault(x => x.InternalStatusId != RequestStatus.Cancelled && x.IsFinished != true && x.RequestCode == requestCode && (x.Contract.FirstPartyCitizen.IdentityNumber == identityNumber || x.Contract.FirstPartyFacility.Facility700Number == identityNumber))
+                    : (await _repository.GetQueryable<LitigationRequest, Guid>())
+                    .Include(x => x.Contract.SecondPartyCitizen)
+                    .Include(x => x.Contract.SecondPartyFacility)
+                    .Include(x => x.Delegator)
+                    .FirstOrDefault(x => x.InternalStatusId != RequestStatus.Cancelled && x.IsFinished != true && x.RequestCode == requestCode && (x.Contract.SecondPartyCitizen.IdentityNumber == identityNumber || x.Contract.SecondPartyFacility.Facility700Number == identityNumber));
+
+            if (existLitigationRequest == null)
+                return new BaseResponse() { IsDone = false, Message = "دعوي غير موجودة أو منتهية" };
+
+            LitigationShortDetailsDto litigationShortDetailsDto = new LitigationShortDetailsDto()
+            {
+                Id = existLitigationRequest.Id,
+                RequestCode = existLitigationRequest.RequestCode,
+                PartyName = party == LitigationRequestParty.Plaintiff ? (existLitigationRequest.Contract.FirstPartyFacility != null ? existLitigationRequest.Contract.FirstPartyFacility.ArabicFacilityName : existLitigationRequest.Contract.FirstPartyCitizen.FullName) : (existLitigationRequest.Contract.SecondPartyCitizen != null ? existLitigationRequest.Contract.SecondPartyCitizen.FullName : existLitigationRequest.Contract.SecondPartyFacility.ArabicFacilityName),
+                PartyIdentity = identityNumber,
+                PartyCapacity = party == LitigationRequestParty.Plaintiff ? existLitigationRequest.Contract.FirstPartyCapacity : existLitigationRequest.Contract.SecondPartyCapacity,
+            };
+
+            if (party == LitigationRequestParty.Plaintiff)
+            {
+                litigationShortDetailsDto.DelegationRelationshipTypeId = existLitigationRequest.Delegator != null ? existLitigationRequest.Delegator.DelegationRelationshipTypeId : existLitigationRequest.LitigationRequestOwnerTypeId == LitigationRequestOwnerType.Personal ? DelegationRelationshipType.Individual : DelegationRelationshipType.Facility;
+
+            }
+            else if (party == LitigationRequestParty.Defendant)
+            {
+                // Check type of defendant
+                if (existLitigationRequest.Contract.SecondPartyFacilityId.HasValue)
+                {
+                    // Facility
+                    litigationShortDetailsDto.DelegationRelationshipTypeId = DelegationRelationshipType.Facility;
+                }
+                else if (existLitigationRequest.Contract.SecondPartyCitizenId.HasValue)
+                {
+                    // Citizen
+                    litigationShortDetailsDto.DelegationRelationshipTypeId = DelegationRelationshipType.Individual;
+                }
+
+            }
+
+            return new DataResponse<LitigationShortDetailsDto>()
+            {
+                IsDone = true,
+                Data = litigationShortDetailsDto
+            };
+
+
+        }
+
+        public async Task<BaseResponse> AddDelegationRequest(AddDelegationRequest addDelegationRequest)
+        {
+            var addDelegation = await AddDelegationRequestData(addDelegationRequest);
+
+            return addDelegation;
+
+        }
+
+        public async Task<BaseResponse> GetDelegationRequests(int pageIndex, int pageSize)
+        {
+
+            var delegationRequests = (await _repository.GetQueryable<DelegationRequest, Guid>())
+                .Include(x => x.LitigationRequest)
+                .Where(x => x.IsActive == null && x.IsApproved == null && x.ModifiedBy == null)
+                .OrderByDescending(x => x.RequestedOn)
+                .AsSplitQuery()
+                .AsNoTracking()
+                .GetPaged(pageIndex, pageSize);
+
+            var mappedRequests = _mapper.Map<List<GetDelegationRequest>>(delegationRequests.Results);
+
+            return new DataResponse<PagedResult<GetDelegationRequest>>
+            {
+                Data =
+                   new PagedResult<GetDelegationRequest>
+                   {
+                       Results = mappedRequests,
+                       CurrentPage = delegationRequests.CurrentPage,
+                       PageCount = delegationRequests.PageCount,
+                       PageSize = delegationRequests.PageSize,
+                       TotalCount = delegationRequests.TotalCount
+                   },
+                IsDone = true
+            };
+
+        }
+
+
+        public async Task<DataResponse<DelegationRequest>> GetDelegationRequestById(Guid delegationRequestId)
+        {
+            var delegationRequest = (await _repository.GetQueryable<DelegationRequest, Guid>())
+                .Include(x => x.Delegator)
+                 .ThenInclude(x => x.Citizen)
+                 .ThenInclude(x => x.Nationality)
+                 .Include(x => x.Delegator)
+                 .ThenInclude(x => x.Facility)
+                 .Include(x => x.Delegator)
+                 .ThenInclude(x => x.DelegationFile)
+                 .Include(x => x.Delegator)
+                 .ThenInclude(x => x.DecisionFile)
+                 .Include(x => x.Delegator)
+                 .ThenInclude(x => x.CommercialRegisterationFile)
+                 .Include(x => x.Delegator)
+                 .ThenInclude(x => x.CustodyFile)
+                 .Include(x => x.Delegator)
+                 .ThenInclude(x => x.RepresentationFile)
+                 .Include(x => x.Delegator)
+                 .ThenInclude(x => x.EstablishmentFile)
+                .AsNoTracking()
+                .FirstOrDefault(x => x.Id == delegationRequestId);
+
+            if (delegationRequest == null)
+                return new DataResponse<DelegationRequest> { IsDone = false, Message = "طلب التفويض غير موجود" };
+
+            return new DataResponse<DelegationRequest>
+            {
+                IsDone = true,
+                Data = delegationRequest
+            };
+
+        }
+
+
+        public async Task<BaseResponse> ApproveRejectDelegationRequest(Guid delegationRequestId, bool isApproved, string? reason = null)
+        {
+
+
+            var delegationRequest = (await _repository.GetQueryable<DelegationRequest, Guid>())
+                .Include(x => x.Delegator)
+                .ThenInclude(x => x.DelegatorCitizen)
+                .Include(x => x.LitigationRequest)
+                .ThenInclude(x => x.Contract.FirstPartyCitizen)
+                .FirstOrDefault(x => x.Id == delegationRequestId);
+
+            if (delegationRequest == null)
+                return new BaseResponse { IsDone = false, Message = "طلب التفويض غير موجود" };
+
+            if (delegationRequest.IsApproved != null || delegationRequest.ModifiedBy != null)
+                return new BaseResponse { IsDone = false, Message = "تم اتخاذ اجراء علي طلب التفويض من قبل" };
+
+            Guid referenceId = Guid.Empty;
+            _jwtReader.GetReferenceId(ref referenceId);
+
+            delegationRequest.IsApproved = isApproved;
+            delegationRequest.ModifiedBy = referenceId;
+            delegationRequest.ModifiedOn = DateTime.Now;
+
+            if (isApproved)
+            {
+                var existActiveDelegationRequests = (await _repository.GetQueryable<DelegationRequest, Guid>())
+                    .AsNoTracking()
+                    .Any(x => x.LitigationRequestId == delegationRequest.LitigationRequestId && x.DelegationParty == delegationRequest.DelegationParty && x.IsActive == true && x.IsApproved == true);
+
+                var existNonActiveDelegationRequests = (await _repository.GetQueryable<DelegationRequest, Guid>())
+                    .AsNoTracking()
+                    .Any(x => x.LitigationRequestId == delegationRequest.LitigationRequestId && x.DelegationParty == delegationRequest.DelegationParty && x.IsActive == false && x.IsApproved == null);
+
+                if (existActiveDelegationRequests || existNonActiveDelegationRequests)
+                {
+                    delegationRequest.IsActive = false;
+                }
+                else
+                {
+                    delegationRequest.IsActive = true;
+                    delegationRequest.ApprovedOn = DateTime.Now;
+
+                    delegationRequest.LitigationRequest.DelegatorId = delegationRequest.DelegatorId;
+                    delegationRequest.LitigationRequest.LitigationRequestOwnerTypeId = delegationRequest.LitigationRequestOwnerTypeId;
+
+                    if (delegationRequest.DelegationParty == LitigationRequestParty.Plaintiff)
+                    {
+                        delegationRequest.LitigationRequest.ApplicantCitizenId = delegationRequest.Delegator.DelegatorCitizenId != null ? (Guid)delegationRequest.Delegator.DelegatorCitizenId : delegationRequest.LitigationRequest.ApplicantCitizenId;
+
+                        if (delegationRequest.Delegator.DelegationRelationshipTypeId == DelegationRelationshipType.Individual)
+                        {
+                            delegationRequest.LitigationRequest.Contract.FirstPartyCitizenId = delegationRequest.Delegator.CitizenId;
+                            delegationRequest.LitigationRequest.Contract.FirstPartyFacilityId = null;
+                        }
+                        else if (delegationRequest.Delegator.DelegationRelationshipTypeId == DelegationRelationshipType.Facility)
+                        {
+                            delegationRequest.LitigationRequest.Contract.FirstPartyFacilityId = delegationRequest.Delegator.FacilityId;
+                            delegationRequest.LitigationRequest.Contract.FirstPartyCitizenId = delegationRequest.Delegator.CitizenId;
+                        }
+                    }
+                    else if (delegationRequest.DelegationParty == LitigationRequestParty.Defendant)
+                    {
+                        if (delegationRequest.Delegator.DelegationRelationshipTypeId == DelegationRelationshipType.Individual)
+                        {
+                            delegationRequest.LitigationRequest.Contract.SecondPartyCitizenId = delegationRequest.Delegator.DelegatorCitizenId;
+                            delegationRequest.LitigationRequest.Contract.SecondPartyFacilityId = null;
+                        }
+                        else if (delegationRequest.Delegator.DelegationRelationshipTypeId == DelegationRelationshipType.Facility)
+                        {
+                            delegationRequest.LitigationRequest.Contract.SecondPartyFacilityId = delegationRequest.Delegator.FacilityId;
+                            delegationRequest.LitigationRequest.Contract.SecondPartyCitizenId = delegationRequest.Delegator.DelegatorCitizenId;
+                        }
+                    }
+
+                }
+
+                // Notification
+                if (delegationRequest.LitigationRequest.Contract.FirstPartyCitizen is not null)
+                {
+                    try
+                    {
+
+
+                        var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.DelegationRequest_Accepted).Result.Data?.Value;
+                        var body = string.Empty;
+                        msg = msg?.Replace("{LitigationCode}", delegationRequest.LitigationRequest?.RequestCode);
+                        var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                        using (StreamReader streamReader = File.OpenText(pathToFile))
+                        {
+                            body = await streamReader.ReadToEndAsync();
+                            body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.DelegationRequest_Added).Result.Data?.Value);
+                            body = body?.Replace("{LitigationCode}", delegationRequest.LitigationRequest?.RequestCode);
+                        }
+
+                        await _notificationService.SendNotifications(
+                        new SendEmailDto()
+                        {
+                            To = new List<string>() { delegationRequest.LitigationRequest.Contract.FirstPartyCitizen.Email },
+                            Subject = "قبول طلب تفويض جديد",
+                            Body = body
+                        },
+                        new SMSRequestDto()
+                        {
+                            message_text = msg,
+                            recipients = new List<string>() { delegationRequest.LitigationRequest.Contract.FirstPartyCitizen.Mobile },
+                            notification_type = "SMS",
+                        },
+                        new List<SysNotificationDto>()
+                        {
+                    new SysNotificationDto()
+                    {
+                         ActorId = (Guid)delegationRequest.LitigationRequest.Contract.FirstPartyCitizenId,
+                         CreatedOn = DateTime.Now,
+                         ActorTypeId = NotificationActorType.Reviewer,
+                         IsViewed = false,
+                        ViewedOn = null,
+                         RequestId = delegationRequest.LitigationRequest.Id,
+                         RequestTypeId = RequestType.LitigationRequest,
+                         Message = msg,
+                    },
+                        }
+                        );
+                    }
+                    catch (Exception ex)
+                    {
+
+                    }
+                }
+
+            }
+            else
+            {
+                delegationRequest.Reason = reason;
+                delegationRequest.IsActive = false;
+
+                // Notification
+                if (delegationRequest.LitigationRequest.Contract.FirstPartyCitizen is not null)
+                {
+                    try
+                    {
+
+
+                        var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.DelegationRequest_Rejected).Result.Data?.Value;
+                        var body = string.Empty;
+                        msg = msg?.Replace("{LitigationCode}", delegationRequest.LitigationRequest?.RequestCode);
+                        msg = msg?.Replace("{RejectReason}", reason);
+                        var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                        using (StreamReader streamReader = File.OpenText(pathToFile))
+                        {
+                            body = await streamReader.ReadToEndAsync();
+                            body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.DelegationRequest_Added).Result.Data?.Value);
+                            body = body?.Replace("{LitigationCode}", delegationRequest.LitigationRequest?.RequestCode);
+                            body = body?.Replace("{RejectReason}", reason);
+                        }
+
+                        await _notificationService.SendNotifications(
+                        new SendEmailDto()
+                        {
+                            To = new List<string>() { delegationRequest.LitigationRequest.Contract.FirstPartyCitizen.Email, delegationRequest.Delegator.DelegatorCitizen.Email },
+                            Subject = "رفض طلب تفويض جديد",
+                            Body = body
+                        },
+                        new SMSRequestDto()
+                        {
+                            message_text = msg,
+                            recipients = new List<string>() { delegationRequest.LitigationRequest.Contract.FirstPartyCitizen.Mobile, delegationRequest.Delegator.DelegatorCitizen.Mobile },
+                            notification_type = "SMS",
+                        },
+                        new List<SysNotificationDto>()
+                        {
+                        new SysNotificationDto()
+                        {
+                             ActorId = (Guid)delegationRequest.LitigationRequest.Contract.FirstPartyCitizenId,
+                             CreatedOn = DateTime.Now,
+                             ActorTypeId = NotificationActorType.Plaintiff,
+                             IsViewed = false,
+                             ViewedOn = null,
+                             RequestId = delegationRequest.LitigationRequest.Id,
+                             RequestTypeId = RequestType.LitigationRequest,
+                             Message = msg,
+                        },
+                        new SysNotificationDto()
+                        {
+                             ActorId = (Guid)delegationRequest.Delegator.DelegatorCitizenId,
+                             CreatedOn = DateTime.Now,
+                             ActorTypeId = NotificationActorType.Applicant,
+                             IsViewed = false,
+                             ViewedOn = null,
+                             RequestId = delegationRequest.LitigationRequest.Id,
+                             RequestTypeId = RequestType.LitigationRequest,
+                             Message = msg,
+                        }
+                        }
+                        );
+                    }
+                    catch (Exception ex)
+                    {
+
+                    }
+                }
+
+            }
+
+            var saveResult = await _repository.SaveChangesAsync(new CancellationToken());
+            if (!saveResult.IsDone)
+                return saveResult;
+            return new BaseResponse { IsDone = true, Message = isApproved ? "تم قبول طلب التفويض" : "تم رفض طلب التفويض" };
+        }
+
+        public async Task<BaseResponse> GetActiveDelegatorsForAdmin(int pageIndex, int pageSize)
+        {
+            var delegationRequests = (await _repository.GetQueryable<DelegationRequest, Guid>())
+                .Include(x => x.Delegator.DelegatorCitizen)
+                .Include(x => x.LitigationRequest)
+                .Where(x => x.IsActive == true && x.LitigationRequest.RequestCode != null)
+                .AsNoTracking()
+                .GetPaged(pageIndex, pageSize);
+
+            var mappedDelegators = _mapper.Map<List<GetDelegationRequestForChangeOrStop>>(delegationRequests.Results);
+
+            return new DataResponse<PagedResult<GetDelegationRequestForChangeOrStop>>
+            {
+                Data =
+                   new PagedResult<GetDelegationRequestForChangeOrStop>
+                   {
+                       Results = mappedDelegators,
+                       CurrentPage = delegationRequests.CurrentPage,
+                       PageCount = delegationRequests.PageCount,
+                       PageSize = delegationRequests.PageSize,
+                       TotalCount = delegationRequests.TotalCount
+                   },
+                IsDone = true
+            };
+        }
+
+
+        public async Task<BaseResponse> GetInActiveDelegatorsForAdmin(Guid litigationRequestId, LitigationRequestParty delegationParty)
+        {
+            var delegationRequests = delegationParty != LitigationRequestParty.None ? (await _repository.GetQueryable<DelegationRequest, Guid>())
+                .Include(x => x.Delegator.DelegatorCitizen)
+                .Include(x => x.LitigationRequest)
+                .Where(x => x.LitigationRequestId == litigationRequestId && x.IsActive != true && x.DelegationParty == delegationParty)
+                .AsNoTracking()
+                : (await _repository.GetQueryable<DelegationRequest, Guid>())
+                .Include(x => x.Delegator.DelegatorCitizen)
+                .Include(x => x.LitigationRequest)
+                .Where(x => x.LitigationRequestId == litigationRequestId && x.IsActive != true)
+                .AsNoTracking();
+
+
+            if (!delegationRequests.Any())
+                return new BaseResponse { IsDone = false, Message = "لا يوجد مفوضين غير مفعلين علي هذه الدعوي" };
+
+            var mappedDelegators = _mapper.Map<List<GetDelegationRequestForChangeOrStop>>(delegationRequests);
+
+            return new DataResponse<List<GetDelegationRequestForChangeOrStop>>
+            {
+                Data = mappedDelegators
+                  ,
+                IsDone = true
+            };
+        }
+        
+        public async Task<BaseResponse> GetInActiveDelegatorsForUser(Guid litigationRequestId, LitigationRequestParty delegationParty)
+        {
+            var referenceId = Guid.Empty;
+            _jwtReader.GetReferenceId(ref referenceId);
+
+            // Check the party of user
+            var litigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>())
+                .Include(x => x.Contract)
+                .AsNoTracking()
+                .FirstOrDefault(x => x.Id == litigationRequestId);
+
+            delegationParty = litigationRequest.ApplicantCitizenId == referenceId || litigationRequest.Contract.FirstPartyCitizenId == referenceId ? LitigationRequestParty.Plaintiff : litigationRequest.Contract.SecondPartyCitizenId == referenceId ? LitigationRequestParty.Defendant : LitigationRequestParty.None;
+
+
+            var delegationRequests = delegationParty != LitigationRequestParty.None ? (await _repository.GetQueryable<DelegationRequest, Guid>())
+                .Include(x => x.Delegator.DelegatorCitizen)
+                .Include(x => x.LitigationRequest)
+                .Where(x => x.LitigationRequestId == litigationRequestId && x.IsActive != true && x.DelegationParty == delegationParty && x.IsApproved == true)
+                .AsNoTracking()
+                : (await _repository.GetQueryable<DelegationRequest, Guid>())
+                .Include(x => x.Delegator.DelegatorCitizen)
+                .Include(x => x.LitigationRequest)
+                .Where(x => x.LitigationRequestId == litigationRequestId && x.IsActive != true && x.IsApproved == true)
+                .AsNoTracking();
+
+
+            if (!delegationRequests.Any())
+                return new BaseResponse { IsDone = false, Message = "لا يوجد مفوضين غير مفعلين علي هذه الدعوي" };
+
+            var mappedDelegators = _mapper.Map<List<GetDelegationRequestForChangeOrStop>>(delegationRequests);
+
+            return new DataResponse<List<GetDelegationRequestForChangeOrStop>>
+            {
+                Data = mappedDelegators
+                  ,
+                IsDone = true
+            };
+        }
+
+        public async Task<BaseResponse> StopDelegator(Guid delegationRequestId)
+        {
+            var delegationRequest = (await _repository.GetQueryable<DelegationRequest, Guid>())
+                .Include(x => x.Delegator.Citizen)
+                .Include(x => x.Delegator.Facility)
+                .Include(x => x.Delegator.DelegatorCitizen)
+                .Include(x => x.LitigationRequest.Contract.FirstPartyCitizen)
+                .Include(x => x.LitigationRequest.Contract.SecondPartyCitizen)
+                .FirstOrDefault(x => x.Id == delegationRequestId);
+
+            if (delegationRequest == null)
+                return new BaseResponse { IsDone = false, Message = "طلب التفويض غير موجود" };
+
+            if (delegationRequest.IsActive != true || delegationRequest.IsApproved != true)
+                return new BaseResponse { IsDone = false, Message = "لا يمكن ايقاف هذا التفويض" };
+
+            Guid referenceId = Guid.Empty;
+            _jwtReader.GetReferenceId(ref referenceId);
+
+            delegationRequest.IsActive = false;
+            delegationRequest.ModifiedBy = referenceId;
+            delegationRequest.ModifiedOn = DateTime.Now;
+
+            if (delegationRequest.Delegator is not null && delegationRequest.LitigationRequest is not null)
+            {
+
+                // if the party is citizen and not draft account 
+                if (delegationRequest.Delegator.Citizen is not null && delegationRequest.Delegator.Citizen.IsDraftAccount != true)
+                {
+                    if (delegationRequest.DelegationParty == LitigationRequestParty.Plaintiff && delegationRequest.LitigationRequest.Contract.FirstPartyCitizen is not null)
+                    {
+                        delegationRequest.LitigationRequest.ApplicantCitizenId = delegationRequest.Delegator.Citizen.Id;
+                        delegationRequest.LitigationRequest.Contract.FirstPartyCitizenId = delegationRequest.Delegator.Citizen.Id;
+                        delegationRequest.LitigationRequest.DelegatorId = delegationRequest.DelegatorId;
+                    }
+                    else if (delegationRequest.DelegationParty == LitigationRequestParty.Defendant && delegationRequest.LitigationRequest.Contract.SecondPartyCitizen is not null)
+                    {
+                        delegationRequest.LitigationRequest.Contract.SecondPartyCitizenId = delegationRequest.Delegator.Citizen.Id;
+                    }
+
+                }
+
+                // if the party is citizen and draft account or facility
+                if ((delegationRequest.Delegator.Citizen is not null && delegationRequest.Delegator.Citizen.IsDraftAccount == true) || (delegationRequest.Delegator.Facility is not null))
+                {
+                    if (delegationRequest.DelegationParty == LitigationRequestParty.Plaintiff)
+                    {
+                        delegationRequest.LitigationRequest.ApplicantCitizenId = null;
+                        delegationRequest.LitigationRequest.Contract.FirstPartyCitizenId = null;
+                        delegationRequest.LitigationRequest.Contract.FirstPartyFacilityId = null;
+                        delegationRequest.LitigationRequest.DelegatorId = null;
+
+                    }
+                    else if (delegationRequest.DelegationParty == LitigationRequestParty.Defendant)
+                    {
+                        delegationRequest.LitigationRequest.Contract.SecondPartyCitizenId = null;
+                        delegationRequest.LitigationRequest.Contract.SecondPartyFacilityId = null;
+                    }
+
+
+                }
+
+                var saveChanges = await _repository.SaveChangesAsync();
+
+                if (!saveChanges.IsDone)
+                    return saveChanges;
+
+                // Notification
+                if(delegationRequest.DelegationParty == LitigationRequestParty.Plaintiff && delegationRequest.LitigationRequest.Contract.FirstPartyCitizen != null && delegationRequest.Delegator.DelegatorCitizen != null)
+                {
+                    try
+                    {
+
+
+                        var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Delegator_Stopped).Result.Data?.Value;
+                        var body = string.Empty;
+                        msg = msg?.Replace("{CitizenName}", delegationRequest.Delegator?.DelegatorCitizen.FullName);
+                        msg = msg?.Replace("{Party}", "المدعي");
+                        msg = msg?.Replace("{LitigationCode}", delegationRequest.LitigationRequest?.RequestCode);
+                        var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                        using (StreamReader streamReader = File.OpenText(pathToFile))
+                        {
+                            body = await streamReader.ReadToEndAsync();
+                            body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Delegator_Stopped).Result.Data?.Value);
+                            body = body?.Replace("{Party}", "المدعي");
+                            body = body?.Replace("{LitigationCode}", delegationRequest.LitigationRequest?.RequestCode);
+                            body = body?.Replace("{CitizenName}", delegationRequest.Delegator?.DelegatorCitizen.FullName);
+                        }
+
+                        await _notificationService.SendNotifications(
+                        new SendEmailDto()
+                        {
+                            To = new List<string>() { delegationRequest.LitigationRequest.Contract.FirstPartyCitizen.Email , delegationRequest.Delegator.DelegatorCitizen.Email },
+                            Subject = "ايقاف المفوض",
+                            Body = body
+                        },
+                        new SMSRequestDto()
+                        {
+                            message_text = msg,
+                            recipients = new List<string>() { delegationRequest.LitigationRequest.Contract.FirstPartyCitizen.Mobile, delegationRequest.Delegator.DelegatorCitizen.Mobile },
+                            notification_type = "SMS",
+                        },
+                        new List<SysNotificationDto>()
+                        {
+                    new SysNotificationDto()
+                    {
+                         ActorId = (Guid)delegationRequest.LitigationRequest.Contract.FirstPartyCitizenId,
+                         CreatedOn = DateTime.Now,
+                         ActorTypeId = NotificationActorType.Applicant,
+                         IsViewed = false,
+                        ViewedOn = null,
+                         RequestId = delegationRequest.LitigationRequest.Id,
+                         RequestTypeId = RequestType.LitigationRequest,
+                         Message = msg,
+                    },new SysNotificationDto()
+                    {
+                         ActorId = (Guid)delegationRequest.Delegator.DelegatorCitizenId,
+                         CreatedOn = DateTime.Now,
+                         ActorTypeId = NotificationActorType.Applicant,
+                         IsViewed = false,
+                        ViewedOn = null,
+                         RequestId = delegationRequest.LitigationRequest.Id,
+                         RequestTypeId = RequestType.LitigationRequest,
+                         Message = msg,
+                    },
+                        }
+                        );
+                    }
+                    catch (Exception ex)
+                    {
+
+                    }
+                }
+                else if(delegationRequest.DelegationParty == LitigationRequestParty.Defendant && delegationRequest.LitigationRequest.Contract.SecondPartyCitizen != null && delegationRequest.Delegator.DelegatorCitizen != null)
+                {
+                    try
+                    {
+
+
+                        var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Delegator_Stopped).Result.Data?.Value;
+                        var body = string.Empty;
+                        msg = msg?.Replace("{CitizenName}", delegationRequest.Delegator?.DelegatorCitizen.FullName);
+                        msg = msg?.Replace("{Party}", "المدعي عليه");
+                        msg = msg?.Replace("{LitigationCode}", delegationRequest.LitigationRequest?.RequestCode);
+                        var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                        using (StreamReader streamReader = File.OpenText(pathToFile))
+                        {
+                            body = await streamReader.ReadToEndAsync();
+                            body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Delegator_Stopped).Result.Data?.Value);
+                            body = body?.Replace("{party}", "المدعي عليه");
+                            body = body?.Replace("{LitigationCode}", delegationRequest.LitigationRequest?.RequestCode);
+                            body = body?.Replace("{CitizenName}", delegationRequest.Delegator?.DelegatorCitizen.FullName);
+                        }
+
+                        await _notificationService.SendNotifications(
+                        new SendEmailDto()
+                        {
+                            To = new List<string>() { delegationRequest.LitigationRequest.Contract.SecondPartyCitizen.Email,  delegationRequest.Delegator.DelegatorCitizen.Email},
+                            Subject = "ايقاف المفوض",
+                            Body = body
+                        },
+                        new SMSRequestDto()
+                        {
+                            message_text = msg,
+                            recipients = new List<string>() { delegationRequest.LitigationRequest.Contract.SecondPartyCitizen.Mobile , delegationRequest.Delegator.DelegatorCitizen.Mobile },
+                            notification_type = "SMS",
+                        },
+                        new List<SysNotificationDto>()
+                        {
+                    new SysNotificationDto()
+                    {
+                         ActorId = (Guid)delegationRequest.LitigationRequest.Contract.SecondPartyCitizenId,
+                         CreatedOn = DateTime.Now,
+                         ActorTypeId = NotificationActorType.Reviewer,
+                         IsViewed = false,
+                        ViewedOn = null,
+                         RequestId = delegationRequest.LitigationRequest.Id,
+                         RequestTypeId = RequestType.LitigationRequest,
+                         Message = msg,
+                    },new SysNotificationDto()
+                    {
+                         ActorId = (Guid)delegationRequest.Delegator.DelegatorCitizenId,
+                         CreatedOn = DateTime.Now,
+                         ActorTypeId = NotificationActorType.Reviewer,
+                         IsViewed = false,
+                        ViewedOn = null,
+                         RequestId = delegationRequest.LitigationRequest.Id,
+                         RequestTypeId = RequestType.LitigationRequest,
+                         Message = msg,
+                    },
+                        }
+                        );
+                    }
+                    catch (Exception ex)
+                    {
+
+                    }
+                }
+
+
+                    return new BaseResponse { IsDone = true, Message = "تم ايقاف التفويض" };
+
+            }
+
+            return new BaseResponse { IsDone = false, Message = "حدث خطأ اثناء ايقاف التفويض" };
+        }
+
+        public async Task<BaseResponse> ChangeDelegator(Guid delegationRequestId)
+        {
+
+            var delegationRequest = (await _repository.GetQueryable<DelegationRequest, Guid>())
+                .Include(x => x.Delegator.Citizen)
+                .Include(x => x.Delegator.Facility)
+                .Include(x => x.Delegator.DelegatorCitizen)
+                .Include(x => x.LitigationRequest.Contract.FirstPartyCitizen)
+                .Include(x => x.LitigationRequest.Contract.SecondPartyCitizen)
+                .FirstOrDefault(x => x.Id == delegationRequestId);
+
+            if (delegationRequest is not null)
+            {
+                if (delegationRequest.DelegationParty == LitigationRequestParty.Plaintiff)
+                {
+                    delegationRequest.LitigationRequest.ApplicantCitizenId = delegationRequest.Delegator.DelegatorCitizenId != null ? (Guid)delegationRequest.Delegator.DelegatorCitizenId : delegationRequest.LitigationRequest.ApplicantCitizenId;
+
+                    if (delegationRequest.Delegator.DelegationRelationshipTypeId == DelegationRelationshipType.Individual)
+                    {
+                        delegationRequest.LitigationRequest.Contract.FirstPartyCitizenId = delegationRequest.Delegator.CitizenId;
+                        delegationRequest.LitigationRequest.Contract.FirstPartyFacilityId = null;
+                    }
+                    else if (delegationRequest.Delegator.DelegationRelationshipTypeId == DelegationRelationshipType.Facility)
+                    {
+                        delegationRequest.LitigationRequest.Contract.FirstPartyFacilityId = delegationRequest.Delegator.FacilityId;
+                        delegationRequest.LitigationRequest.Contract.FirstPartyCitizenId = delegationRequest.Delegator.CitizenId;
+                    }
+                }
+                else if (delegationRequest.DelegationParty == LitigationRequestParty.Defendant)
+                {
+                    if (delegationRequest.Delegator.DelegationRelationshipTypeId == DelegationRelationshipType.Individual)
+                    {
+                        delegationRequest.LitigationRequest.Contract.SecondPartyCitizenId = delegationRequest.Delegator.CitizenId;
+                        delegationRequest.LitigationRequest.Contract.SecondPartyFacilityId = null;
+                    }
+                    else if (delegationRequest.Delegator.DelegationRelationshipTypeId == DelegationRelationshipType.Facility)
+                    {
+                        delegationRequest.LitigationRequest.Contract.SecondPartyFacilityId = delegationRequest.Delegator.FacilityId;
+                        delegationRequest.LitigationRequest.Contract.SecondPartyCitizenId = delegationRequest.Delegator.CitizenId;
+                    }
+                }
+
+
+                Guid referenceId = Guid.Empty;
+                _jwtReader.GetReferenceId(ref referenceId);
+
+                delegationRequest.IsActive = true;
+                delegationRequest.IsApproved = true;
+                delegationRequest.ModifiedBy = referenceId;
+                delegationRequest.ModifiedOn = DateTime.Now;
+                delegationRequest.ApprovedOn = DateTime.Now;
+                delegationRequest.LitigationRequest.DelegatorId = delegationRequest.DelegatorId;
+                delegationRequest.LitigationRequest.LitigationRequestOwnerTypeId = delegationRequest.LitigationRequestOwnerTypeId;
+
+                // set other delegation requests as inActive
+                var otherDelegationRequests = (await _repository.GetQueryable<DelegationRequest, Guid>())
+                    .Include(x => x.Delegator.DelegatorCitizen)
+                    .Where(x => x.LitigationRequestId == delegationRequest.LitigationRequestId && x.DelegationParty == delegationRequest.DelegationParty && x.IsActive == true)
+                    .ToList();
+
+                if (otherDelegationRequests.Any())
+                {
+                    foreach (var item in otherDelegationRequests)
+                    {
+                        item.IsActive = false;
+                        item.IsApproved = false;
+
+                        item.ModifiedBy = referenceId;
+                        item.ModifiedOn = DateTime.Now;
+                    }
+                }
+
+                var saveChanges = await _repository.SaveChangesAsync();
+
+                if (!saveChanges.IsDone)
+                    return saveChanges;
+
+                // Notification
+                if (delegationRequest.DelegationParty == LitigationRequestParty.Plaintiff && delegationRequest.LitigationRequest.Contract.FirstPartyCitizen != null)
+                {
+                    try
+                    {
+
+
+                        var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Delegator_Modified).Result.Data?.Value;
+                        var body = string.Empty;
+                        msg = msg?.Replace("{CitizenName}", delegationRequest.Delegator?.DelegatorCitizen.FullName);
+                        msg = msg?.Replace("{Party}", "المدعي");
+                        msg = msg?.Replace("{LitigationCode}", delegationRequest.LitigationRequest?.RequestCode);
+                        var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                        using (StreamReader streamReader = File.OpenText(pathToFile))
+                        {
+                            body = await streamReader.ReadToEndAsync();
+                            body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Delegator_Modified).Result.Data?.Value);
+                            body = body?.Replace("{Party}", "المدعي");
+                            body = body?.Replace("{LitigationCode}", delegationRequest.LitigationRequest?.RequestCode);
+                            body = body?.Replace("{CitizenName}", delegationRequest.Delegator?.DelegatorCitizen.FullName);
+                        }
+
+                        var emails = new SendEmailDto()
+                        {
+                            To = new List<string>() { delegationRequest.LitigationRequest.Contract.FirstPartyCitizen.Email },
+                            Subject = "ايقاف المفوض",
+                            Body = body
+                        };
+                        var sms = new SMSRequestDto()
+                        {
+                            message_text = msg,
+                            recipients = new List<string>() { delegationRequest.LitigationRequest.Contract.FirstPartyCitizen.Mobile },
+                            notification_type = "SMS",
+                        };
+
+                        var notifications = new List<SysNotificationDto>()
+                        {
+                            new SysNotificationDto()
+                            {
+                                 ActorId = (Guid)delegationRequest.LitigationRequest.Contract.FirstPartyCitizenId,
+                                 CreatedOn = DateTime.Now,
+                                 ActorTypeId = NotificationActorType.Applicant,
+                                 IsViewed = false,
+                                ViewedOn = null,
+                                 RequestId = delegationRequest.LitigationRequest.Id,
+                                 RequestTypeId = RequestType.LitigationRequest,
+                                 Message = msg,
+                            }
+                        };
+
+                        if (otherDelegationRequests.FirstOrDefault() != null)
+                        {
+                            emails.To.Add(otherDelegationRequests.FirstOrDefault().Delegator.DelegatorCitizen.Email);
+                            sms.recipients.Add(otherDelegationRequests.FirstOrDefault().Delegator.DelegatorCitizen.Mobile);
+
+                            notifications.Add(new SysNotificationDto()
+                            {
+                                ActorId = (Guid)otherDelegationRequests.FirstOrDefault().Delegator.DelegatorCitizenId,
+                                CreatedOn = DateTime.Now,
+                                ActorTypeId = NotificationActorType.Applicant,
+                                IsViewed = false,
+                                ViewedOn = null,
+                                RequestId = delegationRequest.LitigationRequest.Id,
+                                RequestTypeId = RequestType.LitigationRequest,
+                                Message = msg,
+                            });
+                        }
+
+                        await _notificationService.SendNotifications(
+                        emails,
+                        sms,
+                        notifications
+                        );
+                    }
+                    catch (Exception ex)
+                    {
+
+                    }
+                }
+                else if (delegationRequest.DelegationParty == LitigationRequestParty.Defendant && delegationRequest.LitigationRequest.Contract.SecondPartyCitizen != null && otherDelegationRequests.FirstOrDefault() != null)
+                {
+                    try
+                    {
+
+
+                        var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Delegator_Stopped).Result.Data?.Value;
+                        var body = string.Empty;
+                        msg = msg?.Replace("{CitizenName}", delegationRequest.Delegator?.DelegatorCitizen.FullName);
+                        msg = msg?.Replace("{party}", "المدعي عليه");
+                        msg = msg?.Replace("{LitigationCode}", delegationRequest.LitigationRequest?.RequestCode);
+                        var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                        using (StreamReader streamReader = File.OpenText(pathToFile))
+                        {
+                            body = await streamReader.ReadToEndAsync();
+                            body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Delegator_Stopped).Result.Data?.Value);
+                            body = body?.Replace("{party}", "المدعي عليه");
+                            body = body?.Replace("{LitigationCode}", delegationRequest.LitigationRequest?.RequestCode);
+                            body = body?.Replace("{CitizenName}", delegationRequest.Delegator?.DelegatorCitizen.FullName);
+                        }
+
+                        var emails = new SendEmailDto()
+                        {
+                            To = new List<string>() { delegationRequest.LitigationRequest.Contract.SecondPartyCitizen.Email },
+                            Subject = "ايقاف المفوض",
+                            Body = body
+                        };
+                        var sms = new SMSRequestDto()
+                        {
+                            message_text = msg,
+                            recipients = new List<string>() { delegationRequest.LitigationRequest.Contract.SecondPartyCitizen.Mobile },
+                            notification_type = "SMS",
+                        };
+
+                        var notifications = new List<SysNotificationDto>()
+                        {
+                            new SysNotificationDto()
+                            {
+                                 ActorId = (Guid)delegationRequest.LitigationRequest.Contract.SecondPartyCitizenId,
+                                 CreatedOn = DateTime.Now,
+                                 ActorTypeId = NotificationActorType.Applicant,
+                                 IsViewed = false,
+                                ViewedOn = null,
+                                 RequestId = delegationRequest.LitigationRequest.Id,
+                                 RequestTypeId = RequestType.LitigationRequest,
+                                 Message = msg,
+                            }
+                        };
+
+                        if (otherDelegationRequests.FirstOrDefault() != null)
+                        {
+                            emails.To.Add(otherDelegationRequests.FirstOrDefault().Delegator.DelegatorCitizen.Email);
+                            sms.recipients.Add(otherDelegationRequests.FirstOrDefault().Delegator.DelegatorCitizen.Mobile);
+
+                            notifications.Add(new SysNotificationDto()
+                            {
+                                ActorId = (Guid)otherDelegationRequests.FirstOrDefault().Delegator.DelegatorCitizenId,
+                                CreatedOn = DateTime.Now,
+                                ActorTypeId = NotificationActorType.Applicant,
+                                IsViewed = false,
+                                ViewedOn = null,
+                                RequestId = delegationRequest.LitigationRequest.Id,
+                                RequestTypeId = RequestType.LitigationRequest,
+                                Message = msg,
+                            });
+                        }
+
+                        await _notificationService.SendNotifications(
+                        emails,
+                        sms,
+                        notifications
+                        );
+                    }
+                    catch (Exception ex)
+                    {
+
+                    }
+                }
+
+
+
+                return new BaseResponse { IsDone = true, Message = "تم تغيير المفوض" };
+            }
+
+            return new BaseResponse { IsDone = false, Message = "حدث خطأ اثناء تغيير المفوض" };
+        }
+
+        public async Task<BaseResponse> GetLitigationRequestsWithoutDelegatorsForAdmin(int pageIndex, int pageSize)
+        {
+            var litigationRequests = (await _repository.GetQueryable<LitigationRequest, Guid>())
+                .Include(x => x.LitigationDelegationRequests)
+                .Include(x => x.Contract.FirstPartyCitizen)
+                .Include(x => x.Contract.SecondPartyCitizen)
+                .Where(x => x.InternalStatusId != RequestStatus.Cancelled && x.IsFinished != true && x.LitigationDelegationRequests.Any(x => x.IsActive != true && x.IsApproved == true) && x.RequestCode != null)
+                .AsNoTracking()
+                .GetPaged(pageIndex, pageSize);
+            var mappedRequests = _mapper.Map<List<GetLitigationRequestWithoutDelegator>>(litigationRequests.Results);
+            return new DataResponse<PagedResult<GetLitigationRequestWithoutDelegator>>
+            {
+                Data =
+                   new PagedResult<GetLitigationRequestWithoutDelegator>
+                   {
+                       Results = mappedRequests,
+                       CurrentPage = litigationRequests.CurrentPage,
+                       PageCount = litigationRequests.PageCount,
+                       PageSize = litigationRequests.PageSize,
+                       TotalCount = litigationRequests.TotalCount
+                   },
+                IsDone = true
+            };
+        }
+
+        public async Task<BaseResponse> GetActiveDelegatorsForUser(int pageIndex, int pageSize)
+        {
+            var referenceId = Guid.Empty;
+            _jwtReader.GetReferenceId(ref referenceId);
+
+            var delegationRequests = (await _repository.GetQueryable<DelegationRequest, Guid>())
+                .Include(x => x.Delegator.DelegatorCitizen)
+                .Include(x => x.LitigationRequest)
+                .Where(x => x.IsActive == true && x.LitigationRequest.RequestCode != null && x.Delegator.CitizenId == referenceId)
+                .AsNoTracking()
+                .GetPaged(pageIndex, pageSize);
+
+            var mappedDelegators = _mapper.Map<List<GetDelegationRequestForChangeOrStop>>(delegationRequests.Results);
+
+            return new DataResponse<PagedResult<GetDelegationRequestForChangeOrStop>>
+            {
+                Data =
+                   new PagedResult<GetDelegationRequestForChangeOrStop>
+                   {
+                       Results = mappedDelegators,
+                       CurrentPage = delegationRequests.CurrentPage,
+                       PageCount = delegationRequests.PageCount,
+                       PageSize = delegationRequests.PageSize,
+                       TotalCount = delegationRequests.TotalCount
+                   },
+                IsDone = true
+            };
+        }
+
+
+        public async Task<BaseResponse> GetLitigationRequestsWithoutDelegatorsForUser(int pageIndex, int pageSize)
+        {
+            var referenceId = Guid.Empty;
+            _jwtReader.GetReferenceId(ref referenceId);
+
+            var litigationRequests = (await _repository.GetQueryable<LitigationRequest, Guid>())
+                .Include(x => x.LitigationDelegationRequests)
+                .ThenInclude(x => x.Delegator)
+                .Include(x => x.Contract.FirstPartyCitizen)
+                .Include(x => x.Contract.SecondPartyCitizen)
+                .Where(x => x.InternalStatusId != RequestStatus.Cancelled && x.IsFinished != true && x.LitigationDelegationRequests.Any(x => x.IsActive != true && x.IsApproved == true)
+                && x.LitigationDelegationRequests.Any(x => x.Delegator.CitizenId == referenceId)
+                && x.RequestCode != null
+                && (x.ApplicantCitizenId == referenceId || x.Contract.SecondPartyCitizenId == referenceId))
+                .AsNoTracking()
+                .GetPaged(pageIndex, pageSize);
+
+            var mappedRequests = _mapper.Map<List<GetLitigationRequestWithoutDelegator>>(litigationRequests.Results);
+            
+            foreach (var item in mappedRequests)
+            {
+                
+            }
+
+            return new DataResponse<PagedResult<GetLitigationRequestWithoutDelegator>>
+            {
+                Data =
+                   new PagedResult<GetLitigationRequestWithoutDelegator>
+                   {
+                       Results = mappedRequests,
+                       CurrentPage = litigationRequests.CurrentPage,
+                       PageCount = litigationRequests.PageCount,
+                       PageSize = litigationRequests.PageSize,
+                       TotalCount = litigationRequests.TotalCount
+                   },
+                IsDone = true
+            };
+        }
+        #endregion
 
     }
 
