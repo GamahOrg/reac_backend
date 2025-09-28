@@ -6,6 +6,7 @@ using Core.Shared.Responses;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using REAC.Application.Contracts.Dtos.Integration.GEE;
+using REAC.Application.Contracts.Dtos.Litigation.CreateUpdate.Litigation;
 using REAC.Application.Contracts.Dtos.Notification;
 using REAC.Application.Contracts.IAppServices.Notification;
 using REAC.Application.Contracts.IAppServices.SLA;
@@ -126,7 +127,7 @@ namespace REAC.Application.AppServices.SLA
                         }
                         else
                         {
-                            if(secondReminderForApplicantToPayLitigationRequestFeesPeriod > 0)
+                            if (secondReminderForApplicantToPayLitigationRequestFeesPeriod > 0)
                             {
                                 var workFlowProcessingLog = litigationRequest.WorkFlowProcessingLogs.Where(x => x.EmployeeId.HasValue == false & x.IsFinished == false).OrderBy(x => x.CreatedOn).LastOrDefault();
 
@@ -1547,6 +1548,7 @@ namespace REAC.Application.AppServices.SLA
             await _notificationService.SendNotifications(objEmail, objSms, lstNotification);
 
         }
+
 
     }
 }

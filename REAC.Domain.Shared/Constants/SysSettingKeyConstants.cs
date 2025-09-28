@@ -297,6 +297,12 @@
         public const string SLA_LitigationRequestArbitratorAssigningRequestDecisionPeriod = "SLA.LitigationRequestArbitratorAssigningRequestDecisionPeriod";
         public const string SLA_LitigationRequestArbitrationReportExplanationRequestResponsePeriod = "SLA.LitigationRequestArbitrationReportExplanationRequestResponsePeriod";
 
+        #region complaints
+        public const string ReminderForAdmin_ComplaintAdded = "SLA.ReminderForAdmin.ComplaintAdded";
+        public const string ReminderForAdmin_ComplaintPeriod = "SLA.ReminderForAdmin.ComplaintPeriod";
+        public const string ReminderForAdmin_ComplaintReminder = "SLA.ReminderForAdmin.ComplaintReminder";
+        #endregion
+
         #region Arbitrator Registeration
         public const string SLA_ArbitratorRegisterationFees = "Configurable.ArbitratorRegisterationFees";
         public const string SLA_ArbitratorRegisterationFeesPeriod = "SLA.ArbitratorRegisterationFeesPeriod";
