@@ -1,11 +1,13 @@
 ﻿using Core.GenericRepository.Shared.BaseEntities;
 using REAC.Domain.Shared.Enum;
 using REAC.EntityFrameworkCore.Entities.Litigation;
+using Microsoft.EntityFrameworkCore;
 
 namespace REAC.EntityFrameworkCore.Entities.System;
 
 public partial class SysLitigationRequestStatus : FullAuditedBaseEntity<RequestStatus>
 {
+    [Comment("Description for Request Status")]
     public string RequestStatus { get; set; } = null!;
 
     public virtual ICollection<LitigationRequest> LitigationRequestExternalStatuses { get; set; } = new List<LitigationRequest>();
@@ -14,3 +16,4 @@ public partial class SysLitigationRequestStatus : FullAuditedBaseEntity<RequestS
     public virtual ICollection<SysLitigationRequestStatusTranslation> Translations { get; set; } = new List<SysLitigationRequestStatusTranslation>();
 
 }
+

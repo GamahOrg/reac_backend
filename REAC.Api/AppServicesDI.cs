@@ -123,7 +123,6 @@ namespace REAC.Api
             services.AddScoped<ISysArbitratorClassService, SysArbitratorClassService>();
             services.AddScoped<ISysInvoiceService, SysInvoiceService>();
 
-
             services.AddScoped<ILoggerManager, LoggerManager>();
             services.AddScoped<IMailService, REAC.Application.AppServices.Email.MailService>();
             services.AddScoped<IMOJService, MOJService>();

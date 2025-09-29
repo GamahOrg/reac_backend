@@ -14,6 +14,7 @@ using REAC.Domain.Shared.Constants;
 using REAC.Domain.Shared.Enum;
 using REAC.EntityFrameworkCore.Entities.Actor;
 using System.IdentityModel.Tokens.Jwt;
+using System.Globalization;
 
 
 namespace REAC.Application.AppServices.System
@@ -62,6 +63,34 @@ namespace REAC.Application.AppServices.System
                 Data = entityDtos,
 
             };
+        }
+
+        public async Task<BaseResponse> GetRegisterationFees(decimal amount)
+        {
+            try
+            {
+                
+                var response = (await _repository.GetQueryable<SysLitigationRequestAmount, Guid>())
+                    .Include(x => x.LitigationRequestFees)
+                    .FirstOrDefault(x => x.FromAmount <= amount && x.ToAmount >= amount);
+
+                if (response == null)
+                    return new BaseResponse()
+                    {
+                        IsDone = false,
+                        Message = "لا توجد رسوم ادارية لهذه القيمة"
+                    };
+
+                return new DataResponse<decimal>()
+                {
+                    IsDone = true,
+                    Data = response.Fees,
+                };
+            }
+            catch (Exception ex)
+            {
+                return new BaseResponse() { IsDone = false, Message = "خطأ داخلي" };
+            }
         }
 
         public async Task<BaseResponse> Create(SysLitigationRequestAmountCreateUpdateDto sysLitigationRequestAmountCreateUpdateDto, CancellationToken cancellationToken)

@@ -1,7 +1,20 @@
 ﻿
 
 
-delete from dbo.SysLitigationRequestOwnerType
+
+
+update dbo.SysLitigationRequestOwnerType set LitigationRequestOwnerType = N'ممثل منشأة'
+where id = 2
+update dbo.SysLitigationRequestOwnerType set LitigationRequestOwnerType = N'وكيل منشأة'
+where id = 3
+update dbo.SysLitigationRequestOwnerType set LitigationRequestOwnerType = N'ممثل فرد'
+where id = 4
+update dbo.SysLitigationRequestOwnerType set LitigationRequestOwnerType = N'وكيل فرد'
+where id = 5
+update dbo.SysLitigationRequestOwnerType set LitigationRequestOwnerType = N'مدير شركة'
+where id = 6
+
+
 
 GO
 INSERT [dbo].[SysLitigationRequestOwnerType] ([Id], [LitigationRequestOwnerType], [Translations]) VALUES (1, N'مقدم عن نفسه', N'[{"LanguageCode":"en-US","LitigationRequestOwnerType":"Personal"},{"LanguageCode":"ar","LitigationRequestOwnerType":"\u0645\u0642\u062F\u0645 \u0639\u0646 \u0646\u0641\u0633\u0647"}]')

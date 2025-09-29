@@ -11,6 +11,6 @@ namespace REAC.Application.Contracts.IAppServices.System
         Task<BaseResponse> Create(SysLitigationRequestAmountCreateUpdateDto sysLitigationRequestAmountCreateUpdateDto, CancellationToken cancellationToken);
         Task<BaseResponse> UpdateAsync(Guid id, SysLitigationRequestAmountCreateUpdateDto sysLitigationRequestAmountCreateUpdateDto, CancellationToken cancellationToken);
         Task<BaseResponse> Delete(Guid id, CancellationToken cancellationToken);
-
+        Task<BaseResponse> GetRegisterationFees(decimal amount);
     }
 }
