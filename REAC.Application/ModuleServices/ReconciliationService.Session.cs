@@ -254,7 +254,7 @@ namespace REAC.Application.ModuleServices
                             {
                                 msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.ReconciliationSession_set).Result.Data?.Value;
                                 msg = msg?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
-                                msg = msg?.Replace("{SessionLink}", sessionUrl);
+                                //msg = msg?.Replace("{SessionLink}", sessionUrl);
                                 msg = msg?.Replace("{SessionDatetime}", sessionDateGreg.ToString("M/d/yyyy h:mm:ss tt", provider));
                                 var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
                                 string body;
@@ -263,7 +263,7 @@ namespace REAC.Application.ModuleServices
                                     body = await streamReader.ReadToEndAsync();
                                     body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.ReconciliationSession_set).Result.Data?.Value);
                                     body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
-                                    body = body?.Replace("{SessionLink}", sessionUrl);
+                                    //body = body?.Replace("{SessionLink}", sessionUrl);
                                     body = body?.Replace("{SessionDatetime}", sessionDateGreg.ToString("M/d/yyyy h:mm:ss tt", provider));
                                 }
                                 await SendNotificationMS(body, msg, litigationRequest);
@@ -293,7 +293,7 @@ namespace REAC.Application.ModuleServices
                             {
                                 msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.ReconciliationSession_Reset).Result.Data?.Value;
                                 msg = msg?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
-                                msg = msg?.Replace("{SessionLink}", sessionUrl);
+                                //msg = msg?.Replace("{SessionLink}", sessionUrl);
                                 msg = msg?.Replace("{SessionDatetime}", sessionDateGreg.ToString("M/d/yyyy h:mm:ss tt", provider));
                                 var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
                                 string body;
@@ -302,7 +302,7 @@ namespace REAC.Application.ModuleServices
                                     body = await streamReader.ReadToEndAsync();
                                     body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.ReconciliationSession_Reset).Result.Data?.Value);
                                     body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
-                                    body = body?.Replace("{SessionLink}", sessionUrl);
+                                    //body = body?.Replace("{SessionLink}", sessionUrl);
                                     body = body?.Replace("{SessionDatetime}", sessionDateGreg.ToString("M/d/yyyy h:mm:ss tt", provider));
                                 }
 

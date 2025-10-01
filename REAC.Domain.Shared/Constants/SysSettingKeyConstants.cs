@@ -5,6 +5,19 @@
         public const string SecurityApiUrl = "SecurityApiUrl"; // http://localhost:7144/
         public const string REACPortalUrl = "REACPortalUrl"; // http://localhost:7144/
 
+        #region Complaint Integration
+        public const string GetRegionList = "GetRegionList";
+        public const string GetContact = "GetContact";
+        public const string GetCasesByContact = "GetCasesByContact";
+        public const string CreateNewNote = "CreateNewNote";
+        public const string UploadFileToNote = "UploadFileToNote";
+        public const string CreateContact = "CreateContact";
+        public const string CreateNewCase = "CreateNewCase";
+        public const string LinkNoteToCase = "LinkNoteToCase";
+        public const string LinkContactToCase = "LinkContactToCase";
+
+        #endregion
+
         #region Integration Keys
 
         public const string MC_Key = "MC";
@@ -210,6 +223,7 @@
         public const string ArbitrationReport_Added_SecondParty = "ArbitrationReport.Added.SecondParty";
         public const string ArbitrationSession_Added = "ArbitrationSession.Added";
         public const string ArbitrationService_JudgmentAdded = "ArbitrationService.JudgmentAdded";
+        public const string ArbitrationService_JudgmentAddedForAgreement = "ArbitrationService.JudgmentAddedForAgreement";
         public const string ExcuteWorkflow = "ExcuteWorkflow";
         public const string ExcuteWorkflow_DelegatorFirstParty = "ExcuteWorkflow.DelegatorFirstParty";
         public const string DelegationRequest_Added = "DelegationRequest.Added";

@@ -113,6 +113,7 @@ namespace REAC.Mobile
             services.AddScoped<IMailService, REAC.Application.AppServices.Email.MailService>();
             services.AddScoped<IMOJService, MOJService>();
             services.AddScoped<IGEELoginService, GEELoginService>();
+            services.AddScoped<IComplaintsService, ComplaintsService>();
             services.AddScoped<INafathService, NafathService>();
             services.AddScoped<IUserRegisterService, UserRegisterService>();
             services.AddScoped<IAccountService, AccountService>();

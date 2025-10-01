@@ -24,10 +24,14 @@ namespace REAC.EntityFrameworkCore.Entities.Arbitration
         public DateTime? ResponseOn { get; set; }
         [Comment("Description for Reject Reason")]
         public string? RejectReason { get; set; }
+        public Boolean? ResponseArbitrationMinutes { get; set; }
+        public DateTime? ArbitrationMinutesOn { get; set; }
+
         public virtual LitigationRequest LitigationRequest { get; set; } = null!;
         public virtual Citizen ArbitratorCitizen { get; set; } = null!;
         public virtual SysArbitratorAssigningRequestType ArbitratorAssigningRequestType { get; set; } = null!;
         public virtual LitigationRequestArbitratorNominationList LitigationRequestArbitratorNominationList { get; set; } = null!;
+
 
 
     }

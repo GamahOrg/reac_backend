@@ -18,7 +18,8 @@ namespace REAC.Application.Contracts.Dtos.Arbitration
         public Guid MeetingLocationId { get; set; }
         public string? MeetingLocationName { get; set; }
         public string? ArbitratorCitizenName { get; set; }
-        
+        public Boolean? IsPublished { get; set; }
+
 
     }
     public partial class LitigationRequestArbitrationReportExplanationRequestGetDto : BaseEntity<Guid>
@@ -91,5 +92,11 @@ namespace REAC.Application.Contracts.Dtos.Arbitration
         public string Reason { get; set; } = null!;
         public List<Guid> LitigationRequestArbitrationArbitratorRecusalRequestFiles { get; set; } = new List<Guid>();
 
+    }
+
+    public partial class LitigationRequestArbitrationMinutesReply
+    {
+        public Guid LitigationRequestId { get; set; }
+        public Boolean?  Response { get; set; }
     }
 }

@@ -9,6 +9,7 @@ using REAC.Application.Contracts.Dtos.Wpf.Business;
 using REAC.Application.Contracts.IMobileAppServices.Arbitration;
 using REAC.Application.ModuleServices;
 using REAC.Domain.Shared.Constants;
+using REAC.Domain.Shared.Enum;
 using REAC.EntityFrameworkCore.Entities.Reconciliation;
 
 namespace REAC.Api.Controllers.Arbitration.Process;
@@ -209,6 +210,19 @@ public class ArbitrationController : ControllerBase
     #endregion
 
     #region ArbitrationReport
+
+    [HttpGet(nameof(AddArbitrationMinutesReply))]
+    public async Task<IActionResult> AddArbitrationMinutesReply(Guid requestId, ApproveRejectStatus minutesOfMeetingApprovalStatus, CancellationToken cancellationToken)
+    {
+        if (ModelState.IsValid)
+        {
+            var returnValue = await _arbitrationService.CallNafathForArbitrationReport(requestId, minutesOfMeetingApprovalStatus);
+            return Ok(returnValue);
+        }
+
+        return BadRequest();
+    }
+
     [HttpPost(nameof(AddArbitrationReport))]
     public async Task<IActionResult> AddArbitrationReport([FromBody] WritingArbitrationReportRequestPayload writingArbitrationReportRequestPayload, CancellationToken cancellationToken)
     {
