@@ -1355,7 +1355,7 @@ namespace REAC.Application.AppServices.Litigation
                 .Include(x => x.LitigationRequestReformerAssigningRequests)
                 .Include(x => x.LitigationRequestArbitratorAssigningRequests)
                 .Include(x => x.Contract)
-
+                .Include(x=>x.LitigationRequestArbitrationReports)
                 .Include(x => x.LitigationRequestCategory)
                 .Include(x => x.Area)
                 .Include(x => x.City)

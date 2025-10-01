@@ -90,6 +90,7 @@ namespace REAC.Api
             services.AddScoped<ILitigationRequestService, LitigationRequestService>();
             services.AddScoped<ILitigationRequestAgreementRequestService, LitigationRequestAgreementRequestService>();
             services.AddScoped<ILitigationRequestReconciliationReportService, Application.AppServices.Litigation.LitigationRequestReconciliationReportService>();
+            services.AddScoped<ILitigationRequestArbitrationReportService, Application.AppServices.Litigation.LitigationRequestArbitrationReportService>();
             services.AddScoped<IUserProviderService, LitigationRequestContractService>();
             services.AddScoped<ILitigationRequestCorrespondenceService, LitigationRequestCorrespondenceService>();
             services.AddScoped<ILitigationRequestCorrespondenceFileService, LitigationRequestCorrespondenceFileService>();
@@ -127,6 +128,7 @@ namespace REAC.Api
             services.AddScoped<IMailService, REAC.Application.AppServices.Email.MailService>();
             services.AddScoped<IMOJService, MOJService>();
             services.AddScoped<IGEELoginService, GEELoginService>();
+            services.AddScoped<IComplaintsService, ComplaintsService>();
             services.AddScoped<IRENTService, RENTService>();
             services.AddScoped<INafathService, NafathService>();
             services.AddScoped<IUserRegisterService, UserRegisterService>();

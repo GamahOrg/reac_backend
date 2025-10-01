@@ -243,7 +243,7 @@ namespace REAC.Application.ModuleServices
                         {
                             var msg = _settingService.GetBySettingKey(SysSettingKeyConstants.ArbitrationSession_Added).Result.Data?.Value;
                             msg = msg?.Replace("{LitigationCode}", litigationRequest.RequestCode);
-                            msg = msg?.Replace("{SessionLink}", sessionUrl);
+                            //msg = msg?.Replace("{SessionLink}", sessionUrl);
                             msg = string.Concat(msg, "بالموعد", requestPayload.SessionDateTime.ToString());
                             var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
                             string body;
@@ -252,7 +252,7 @@ namespace REAC.Application.ModuleServices
                                 body = await streamReader.ReadToEndAsync();
                                 body = body?.Replace("{content}", _settingService.GetBySettingKey(SysSettingKeyConstants.ArbitrationSession_Added).Result.Data?.Value);
                                 body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
-                                body = body?.Replace("{SessionLink}", sessionUrl);
+                                //body = body?.Replace("{SessionLink}", sessionUrl);
                             }
 
 

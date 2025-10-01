@@ -701,6 +701,9 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("nvarchar(max)")
                         .HasComment("Facts and findings presented in the arbitration report");
 
+                    b.Property<bool?>("IsPublished")
+                        .HasColumnType("bit");
+
                     b.Property<DateTime>("JudgmentDate")
                         .HasColumnType("datetime")
                         .HasComment("Date when the judgment was issued");
@@ -733,6 +736,9 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)")
                         .HasComment("Details of any modification requests to the arbitration report");
+
+                    b.Property<DateTime?>("PublishedDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Reasons")
                         .IsRequired()
@@ -822,6 +828,9 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<DateTime?>("ArbitrationMinutesOn")
+                        .HasColumnType("datetime2");
+
                     b.Property<int>("ArbitratorAssigningRequestTypeId")
                         .HasColumnType("int")
                         .HasComment("Unique identifier of the litigation request");
@@ -848,6 +857,9 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Property<int>("Response")
                         .HasColumnType("int")
                         .HasComment("Description for Response");
+
+                    b.Property<bool?>("ResponseArbitrationMinutes")
+                        .HasColumnType("bit");
 
                     b.Property<DateTime?>("ResponseOn")
                         .HasColumnType("datetime2")
@@ -1119,180 +1131,6 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .IsUnique();
 
                     b.ToTable("LitigationRequestArbitratorsChairmanNominationListValue", (string)null);
-                });
-
-            modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Complain.ComplainFile", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<long>("ComplainId")
-                        .HasColumnType("bigint");
-
-                    b.Property<Guid?>("CreatedBy")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedOn")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid>("FileManagerId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid?>("UpdatedBy")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime?>("UpdatedOn")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ComplainId");
-
-                    b.HasIndex("FileManagerId");
-
-                    b.ToTable("ComplainFiles");
-                });
-
-            modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Complain.ComplainType", b =>
-                {
-                    b.Property<int>("Id")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("ComplainType", (string)null);
-                });
-
-            modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Complain.Complains", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
-
-                    b.Property<Guid>("ApplicantCitizenId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("AssignedTo")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<DateTime?>("ClosedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("ComplainsStatusId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ComplainsTypeId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<DateTime>("CreatedDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("date")
-                        .HasDefaultValueSql("GETDATE()");
-
-                    b.Property<DateTime>("CreatedDateTime")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETDATE()");
-
-                    b.Property<DateTime>("CreatedOn")
-                        .HasColumnType("datetime2");
-
-                    b.Property<TimeSpan>("CreatedTime")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("time")
-                        .HasDefaultValueSql("CONVERT(TIME, GETDATE())");
-
-                    b.Property<string>("CustomerNID")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<string>("CustomerName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<bool>("IsActive")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(true);
-
-                    b.Property<string>("MobileNo")
-                        .IsRequired()
-                        .HasMaxLength(15)
-                        .HasColumnType("nvarchar(15)");
-
-                    b.Property<DateTime?>("ResponseDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("ResponseText")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid?>("SysFileManagerId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("TicketDescription")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("TicketNumber")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<DateTime>("UpdatedDateTime")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETDATE()");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ComplainsStatusId");
-
-                    b.HasIndex("ComplainsTypeId");
-
-                    b.HasIndex("SysFileManagerId");
-
-                    b.HasIndex("TicketNumber")
-                        .IsUnique();
-
-                    b.ToTable("Complains");
-                });
-
-            modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Complain.ComplainsStatuses", b =>
-                {
-                    b.Property<int>("Id")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("ComplainsStatuses", (string)null);
                 });
 
             modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Facility", b =>
@@ -6982,112 +6820,6 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Navigation("LitigationRequestArbitratorsChairmanNominationList");
                 });
 
-            modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Complain.ComplainFile", b =>
-                {
-                    b.HasOne("REAC.EntityFrameworkCore.Entities.Complain.Complains", "Complains")
-                        .WithMany("ComplainFiles")
-                        .HasForeignKey("ComplainId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("REAC.EntityFrameworkCore.Entities.System.SysFileManager", "FileManager")
-                        .WithMany()
-                        .HasForeignKey("FileManagerId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Complains");
-
-                    b.Navigation("FileManager");
-                });
-
-            modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Complain.ComplainType", b =>
-                {
-                    b.OwnsMany("REAC.EntityFrameworkCore.Entities.Complain.ComplainsTypeTranslation", "Translations", b1 =>
-                        {
-                            b1.Property<int>("ComplainTypeId")
-                                .HasColumnType("int");
-
-                            b1.Property<int>("Id")
-                                .ValueGeneratedOnAdd()
-                                .HasColumnType("int");
-
-                            b1.Property<string>("LanguageCode")
-                                .IsRequired()
-                                .HasColumnType("nvarchar(max)");
-
-                            b1.Property<string>("Name")
-                                .IsRequired()
-                                .HasColumnType("nvarchar(max)");
-
-                            b1.HasKey("ComplainTypeId", "Id");
-
-                            b1.ToTable("ComplainType");
-
-                            b1.ToJson("Translations");
-
-                            b1.WithOwner()
-                                .HasForeignKey("ComplainTypeId");
-                        });
-
-                    b.Navigation("Translations");
-                });
-
-            modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Complain.Complains", b =>
-                {
-                    b.HasOne("REAC.EntityFrameworkCore.Entities.Complain.ComplainsStatuses", "ComplainsStatus")
-                        .WithMany("Complains")
-                        .HasForeignKey("ComplainsStatusId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("REAC.EntityFrameworkCore.Entities.Complain.ComplainType", "ComplainsType")
-                        .WithMany("Complains")
-                        .HasForeignKey("ComplainsTypeId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("REAC.EntityFrameworkCore.Entities.System.SysFileManager", null)
-                        .WithMany("ComplainsFiles")
-                        .HasForeignKey("SysFileManagerId");
-
-                    b.Navigation("ComplainsStatus");
-
-                    b.Navigation("ComplainsType");
-                });
-
-            modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Complain.ComplainsStatuses", b =>
-                {
-                    b.OwnsMany("REAC.EntityFrameworkCore.Entities.Complain.ComplainsStatusTranslation", "Translations", b1 =>
-                        {
-                            b1.Property<int>("ComplainsStatusesId")
-                                .HasColumnType("int");
-
-                            b1.Property<int>("Id")
-                                .ValueGeneratedOnAdd()
-                                .HasColumnType("int");
-
-                            b1.Property<string>("LanguageCode")
-                                .IsRequired()
-                                .HasColumnType("nvarchar(max)");
-
-                            b1.Property<string>("Name")
-                                .IsRequired()
-                                .HasColumnType("nvarchar(max)");
-
-                            b1.HasKey("ComplainsStatusesId", "Id");
-
-                            b1.ToTable("ComplainsStatuses");
-
-                            b1.ToJson("Translations");
-
-                            b1.WithOwner()
-                                .HasForeignKey("ComplainsStatusesId");
-                        });
-
-                    b.Navigation("Translations");
-                });
-
             modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Facility", b =>
                 {
                     b.HasOne("REAC.EntityFrameworkCore.Entities.Actor.Citizen", "Citizen")
@@ -9474,21 +9206,6 @@ namespace REAC.EntityFrameworkCore.Migrations
             modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Arbitration.LitigationRequestArbitratorsChairmanNominationList", b =>
                 {
                     b.Navigation("LitigationRequestArbitratorsChairmanNominationListValues");
-                });
-
-            modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Complain.ComplainType", b =>
-                {
-                    b.Navigation("Complains");
-                });
-
-            modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Complain.Complains", b =>
-                {
-                    b.Navigation("ComplainFiles");
-                });
-
-            modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Complain.ComplainsStatuses", b =>
-                {
-                    b.Navigation("Complains");
                 });
 
             modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Facility", b =>

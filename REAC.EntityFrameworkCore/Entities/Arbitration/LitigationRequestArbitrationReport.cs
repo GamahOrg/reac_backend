@@ -26,7 +26,9 @@ namespace REAC.EntityFrameworkCore.Entities.Arbitration
         public string JudgmentDecisionPlace { get; set; } = null!;
         [Comment("Unique identifier of the litigation request")]
         public Guid MeetingLocationId { get; set; }
-
+        public Boolean? IsPublished { get; set; }
+        public DateTime? PublishedDate { get; set; }
+        
         public virtual SysMeetingLocation MeetingLocation { get; set; } = null!;
         public virtual LitigationRequest LitigationRequest { get; set; } = null!;
         public virtual ICollection<LitigationRequestArbitrationReportExplanationRequest> LitigationRequestArbitrationReportExplanationRequests { get; set; } = new List<LitigationRequestArbitrationReportExplanationRequest>();
