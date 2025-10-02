@@ -5,15 +5,19 @@ using REAC.EntityFrameworkCore.Entities.Litigation;
 using REAC.EntityFrameworkCore.Entities.Reconciliation;
 using REAC.EntityFrameworkCore.Entities.Wpf.Business;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 
 namespace REAC.EntityFrameworkCore.Entities.System;
 
 public partial class SysFileManager : CreationBaseEntity<Guid>
 {
+    [Comment("Description")]
     public string? FileDescription { get; set; }
 
+    [Comment("Path")]
     public string FilePath { get; set; } = null!;
 
+    [Comment("Description for File Type")]
     public string FileType { get; set; } = null!;
 
     public virtual ICollection<LitigationRequestArbitratorRecusalRequestFile> LitigationRequestArbitratorRecusalRequestFiles { get; set; } = new List<LitigationRequestArbitratorRecusalRequestFile>();
@@ -66,4 +70,6 @@ public partial class SysFileManager : CreationBaseEntity<Guid>
     public virtual ICollection<CitizenRequestCVFile> CitizenRequestCVFiles { get; set; } = new List<CitizenRequestCVFile>();
     public virtual ICollection<CitizenRequestReconciliationCenterDegreeFile> CitizenRequestReconciliationCenterDegreeFiles { get; set; } = new List<CitizenRequestReconciliationCenterDegreeFile>();
     public virtual ICollection<CitizenRequestProgramRealEstateInstituteFile> CitizenRequestProgramRealEstateInstituteFiles { get; set; } = new List<CitizenRequestProgramRealEstateInstituteFile>();
+
 }
+

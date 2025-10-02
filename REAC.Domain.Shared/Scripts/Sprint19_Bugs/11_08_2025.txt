@@ -8,7 +8,7 @@ GO
 --    DROP PROCEDURE sp_DeleteLitigationRequest
 --GO
 
-ALTER PROCEDURE [dbo].[sp_DeleteLitigationRequest]
+alter PROCEDURE [dbo].[sp_DeleteLitigationRequest]
     @Id uniqueidentifier
 AS
 BEGIN
@@ -44,6 +44,14 @@ BEGIN
         );
         DELETE FROM LitigationRequestGround WHERE LitigationRequestId = @Id;
         
+		-- Delete Delegation
+		DELETE FROM DelegationRequest WHERE LitigationRequestId = @Id;
+
+		DELETE FROM Delegator WHERE id in (
+		select [DelegatorId] from LitigationRequest  WHERE Id = @Id
+		);
+		UPDATE LitigationRequest set DelegatorId = NULL WHERE Id = @Id;
+		
         -- Delete from other dependent tables
         DELETE FROM LitigationRequestArbitratorRecusalRequest WHERE LitigationRequestId = @Id;
         DELETE FROM LitigationRequestExtendPeriodRequest WHERE LitigationRequestId = @Id;

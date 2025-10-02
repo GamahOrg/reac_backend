@@ -1,5 +1,6 @@
 ﻿using Core.Security.Entities;
 using Microsoft.EntityFrameworkCore;
+using REAC.Domain.Shared.Enum;
 using REAC.EntityFrameworkCore.Entities.Actor;
 using REAC.EntityFrameworkCore.Entities.Arbitration;
 using REAC.EntityFrameworkCore.Entities.Invoice;
@@ -203,7 +204,7 @@ public partial class REACDBContext : DbContext
     public virtual DbSet<SysCity> SysCities { get; set; }
     public virtual DbSet<OtherCategory> OtherCategories { get; set; }
     public virtual DbSet<SysNationality> SysNationalities { get; set; }
-
+   
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<LitigationRequestArbitratorRecusalRequest>(entity =>
@@ -2224,7 +2225,7 @@ public partial class REACDBContext : DbContext
                .OnDelete(DeleteBehavior.Cascade)
                .HasConstraintName("FKCitizenRequestCVFileCitizenRequest676101");
         });
-        
+
         // By abdulrahman
         //modelBuilder.Entity<SysLitigationRequestContractType>()
         //  .HasKey(lr => new { lr.Id, lr.CodingPrefixSymbol });

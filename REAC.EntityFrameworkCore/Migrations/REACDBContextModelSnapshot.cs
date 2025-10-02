@@ -91,140 +91,179 @@ namespace REAC.EntityFrameworkCore.Migrations
 
                     b.Property<string>("AdditionalNumber")
                         .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasColumnType("nvarchar(20)")
+                        .HasComment("Additional number");
 
                     b.Property<int?>("ArbitratorStatusId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Status identifier");
 
                     b.Property<Guid?>("AreaId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the area");
 
                     b.Property<DateTime?>("BirthDate")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasComment("Date of birth");
 
                     b.Property<string>("BuildingNumber")
                         .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
+                        .HasColumnType("nvarchar(10)")
+                        .HasComment("Building number");
 
                     b.Property<Guid?>("CityId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the city");
 
                     b.Property<string>("Code")
                         .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasColumnType("nvarchar(20)")
+                        .HasComment("Citizen code");
 
                     b.Property<string>("District")
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(50)")
+                        .HasComment("District");
 
                     b.Property<string>("Email")
                         .HasMaxLength(250)
-                        .HasColumnType("nvarchar(250)");
+                        .HasColumnType("nvarchar(250)")
+                        .HasComment("Email address");
 
                     b.Property<string>("Employer")
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(100)")
+                        .HasComment("Employer information");
 
                     b.Property<string>("Fax")
                         .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasColumnType("nvarchar(20)")
+                        .HasComment("Fax number");
 
                     b.Property<string>("FullName")
                         .IsRequired()
                         .HasMaxLength(250)
-                        .HasColumnType("nvarchar(250)");
+                        .HasColumnType("nvarchar(250)")
+                        .HasComment("Full name of the citizen");
 
                     b.Property<int?>("GenderId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Gender identifier");
 
                     b.Property<string>("HomeTelephone")
                         .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasColumnType("nvarchar(20)")
+                        .HasComment("Telephone number");
 
                     b.Property<DateTime?>("IdentityExpiryDate")
-                        .HasColumnType("date");
+                        .HasColumnType("date")
+                        .HasComment("Expiry date of the identity document");
 
                     b.Property<Guid?>("IdentityFileId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the identity file");
 
                     b.Property<string>("IdentityNumber")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(100)")
+                        .HasComment("Identity number of the citizen");
 
                     b.Property<int?>("IdentityTypeId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Type of identity document");
 
                     b.Property<bool?>("IsArbitrator")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Indicates whether the person is an arbitrator");
 
                     b.Property<bool?>("IsDraftAccount")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Indicates whether this is a draft account");
 
                     b.Property<bool?>("IsLawyer")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Indicates whether the person is a lawyer");
 
                     b.Property<bool?>("IsReformer")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Indicates whether the person is a reformer");
 
                     b.Property<Guid?>("LawLicenseFileId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the law license file");
 
                     b.Property<DateTime?>("LawyerLicenseExpirationDate")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasComment("Expiration date of the lawyer license");
 
                     b.Property<string>("LawyerLicenseNumber")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Lawyer license number");
 
                     b.Property<Guid?>("LitigationCompanyRepresentativeId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the litigation company representative");
 
                     b.Property<string>("Mobile")
                         .IsRequired()
                         .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasColumnType("nvarchar(20)")
+                        .HasComment("Mobile phone number");
 
                     b.Property<string>("NationalAddress")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Address");
 
                     b.Property<Guid?>("NationalityId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the nationality");
 
                     b.Property<Guid?>("PassCitizenId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the pass citizen");
 
                     b.Property<string>("PostalCode")
                         .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasColumnType("nvarchar(20)")
+                        .HasComment("Postal code");
 
                     b.Property<int?>("ReformerStatusId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Status identifier");
 
                     b.Property<string>("ShortName")
                         .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasColumnType("nvarchar(20)")
+                        .HasComment("Short name of the citizen");
 
                     b.Property<Guid?>("SigntureFileId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the signature file");
 
                     b.Property<string>("Street")
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(50)")
+                        .HasComment("Street address");
 
                     b.Property<string>("SubNumber")
                         .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasColumnType("nvarchar(20)")
+                        .HasComment("Sub number");
 
                     b.Property<string>("UnitNumber")
                         .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
+                        .HasColumnType("nvarchar(10)")
+                        .HasComment("Unit number");
 
                     b.Property<Guid?>("UserId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the user");
 
                     b.Property<string>("WorkTelephone")
                         .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasColumnType("nvarchar(20)")
+                        .HasComment("Telephone number");
 
                     b.HasKey("Id")
                         .HasName("PK__Citizen__3214EC0756CF4E03");
@@ -262,17 +301,21 @@ namespace REAC.EntityFrameworkCore.Migrations
 
                     b.Property<string>("AccountOwnerName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Name of the account owner");
 
                     b.Property<Guid>("BankId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the bank");
 
                     b.Property<Guid>("CitizenId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the citizen");
 
                     b.Property<string>("IBan")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("International Bank Account Number");
 
                     b.HasKey("Id")
                         .HasName("PK_CitizenBankAccount_3214EC0743341C99");
@@ -291,69 +334,90 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("About")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Additional information about the applicant");
 
                     b.Property<string>("AcademicDegreeName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Name of the academic degree");
 
                     b.Property<Guid?>("ArbitratorClassId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the arbitrator class");
 
                     b.Property<Guid?>("AreaId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the area");
 
                     b.Property<string>("Brief")
                         .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
+                        .HasColumnType("nvarchar(1000)")
+                        .HasComment("Brief description or summary");
 
                     b.Property<Guid>("CitizenId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the citizen");
 
                     b.Property<int?>("CitizenRequestTypeId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Unique identifier of the citizen request type");
 
                     b.Property<int?>("ExperienceYears")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Number of years of experience");
 
                     b.Property<string>("ExperiencedInArbitrationFields")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Fields of experience in arbitration");
 
                     b.Property<int?>("ExperiencedInFreelanceArbitration")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Years of experience in freelance arbitration");
 
                     b.Property<string>("ExperiencedInHousingstatuses")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Housing experience statuses");
 
                     b.Property<bool?>("HaveArbitrationxperience")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Indicates whether has arbitration experience");
 
                     b.Property<bool?>("HaveExperiencedInFreelanceArbitration")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Indicates whether has experience in freelance arbitration");
 
                     b.Property<bool?>("HaveHostingExperience")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Indicates whether has hosting experience");
 
                     b.Property<bool?>("IsFeesPaid")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Indicates whether the citizen request fees have been paid");
 
                     b.Property<bool?>("IsRegisteredReconciliationCenter")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Indicates whether registered with reconciliation center");
 
                     b.Property<bool?>("IsVolunteerApproval")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Indicates whether volunteer approval is granted");
 
                     b.Property<bool?>("IspassedRealEstateProgram")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Indicates whether passed real estate program");
 
                     b.Property<bool?>("IsregisteredWithBachelorShareaaDegree")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Indicates whether registered with bachelor Sharia degree");
 
                     b.Property<DateTime>("RequestOn")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasComment("Date when the request was submitted");
 
                     b.Property<int>("StatusId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Status identifier");
 
                     b.HasKey("Id")
                         .HasName("PK_CitizenRequest_3214EC0743341C99");
@@ -378,10 +442,12 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("AcademicDegreeFileId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the academic degree file");
 
                     b.Property<Guid>("CitizenRequestId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the citizen request");
 
                     b.HasKey("Id")
                         .HasName("PK_CitizenRequestAcademicDegreeFile3214EC0743341C99");
@@ -400,13 +466,15 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("CVFileId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the CV file");
 
                     b.Property<Guid?>("CitizenRequestCVFilesId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("CitizenRequestId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the citizen request");
 
                     b.HasKey("Id")
                         .HasName("PK_CitizenRequestCVFile3214EC0743341C99");
@@ -425,18 +493,22 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("AcquisitionDate")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasComment("Date when the certificate was acquired");
 
                     b.Property<string>("CertificateName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Name of the experience certificate");
 
                     b.Property<Guid>("CitizenRequestId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the citizen request");
 
                     b.Property<string>("IssuingEntityName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Name of the issuing entity");
 
                     b.HasKey("Id")
                         .HasName("PK_CitizenRequestExperienceCertificate3214EC0743341C99");
@@ -453,10 +525,12 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("CitizenRequestExperienceCertificateId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the citizen request experience certificate");
 
                     b.Property<Guid>("ExperienceCertificateFileId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the experience certificate file");
 
                     b.HasKey("Id")
                         .HasName("PK_CitizenRequestExperienceCertificateFileEC0743341C99");
@@ -475,10 +549,12 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("CitizenRequestId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the citizen request");
 
                     b.Property<Guid>("FreelanceWorkDocumentFileId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the freelance work document file");
 
                     b.HasKey("Id")
                         .HasName("PK_CitizenRequestFreelanceWorkDocumentFile3214EC0743341C99");
@@ -496,15 +572,18 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("CitizenRequestId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the citizen request");
 
                     b.Property<DateTime>("NoteDateTime")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasComment("Date and time of the note");
 
                     b.Property<string>("Notes")
                         .IsRequired()
                         .HasMaxLength(2147483647)
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Notes or comments about the citizen request");
 
                     b.HasKey("Id")
                         .HasName("PK__CitizenRequestNote_3214EC07F533D1CD");
@@ -524,10 +603,12 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("CitizenRequestId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the citizen request");
 
                     b.Property<Guid>("RealEstateInstituteFileId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the real estate institute program file");
 
                     b.HasKey("Id")
                         .HasName("PK_CitizenRequestProgramRealEstateInstituteFile3214EC0743341C99");
@@ -546,10 +627,12 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("CitizenRequestId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the citizen request");
 
                     b.Property<Guid>("ReconciliationCenterDegreeFileId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the reconciliation center degree file");
 
                     b.HasKey("Id")
                         .HasName("PK_CitizenRequestReconciliationCenterDegreeFile3214EC0743341C99");
@@ -570,25 +653,32 @@ namespace REAC.EntityFrameworkCore.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("ArbitratorStatusId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Status identifier");
 
                     b.Property<Guid>("CitizenId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the citizen");
 
                     b.Property<DateTime>("DecisionDate")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasComment("Date when the arbitrator stop/free up decision was made");
 
                     b.Property<DateTime?>("DecisionFrom")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasComment("Start date of the arbitrator stop/free up decision period");
 
                     b.Property<DateTime?>("DecisionTo")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasComment("End date of the arbitrator stop/free up decision period");
 
                     b.Property<string>("LateLitigationRequestNumber")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Number of the late litigation request");
 
                     b.Property<int?>("StoppingReason")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Reason for stopping or freeing up the arbitrator");
 
                     b.HasKey("Id")
                         .HasName("PK_ArbitratorStopFreeUpDecision_3214EC0743341C99");
@@ -608,38 +698,53 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Property<string>("Facts")
                         .IsRequired()
                         .HasMaxLength(5000)
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Facts and findings presented in the arbitration report");
+
+                    b.Property<bool?>("IsPublished")
+                        .HasColumnType("bit");
 
                     b.Property<DateTime>("JudgmentDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime")
+                        .HasComment("Date when the judgment was issued");
 
                     b.Property<DateTime>("JudgmentDecisionDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime")
+                        .HasComment("Date when the judgment decision was made");
 
                     b.Property<string>("JudgmentDecisionPlace")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Location where the arbitration judgment decision was issued");
 
                     b.Property<string>("JudgmentDecisionText")
                         .IsRequired()
                         .HasMaxLength(5000)
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Full text of the judgment decision");
 
                     b.Property<Guid>("LitigationRequestId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the litigation request");
 
                     b.Property<Guid>("MeetingLocationId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the litigation request");
 
                     b.Property<string>("ModificationRequest")
                         .IsRequired()
                         .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
+                        .HasColumnType("nvarchar(1000)")
+                        .HasComment("Details of any modification requests to the arbitration report");
+
+                    b.Property<DateTime?>("PublishedDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Reasons")
                         .IsRequired()
                         .HasMaxLength(5000)
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Reasoning and justification for the arbitration decision");
 
                     b.HasKey("Id")
                         .HasName("PK__LitigationRequestArbitrationReport_3214EC07F3A8E5CA");
@@ -657,23 +762,29 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("ExplanationRequestDate")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasComment("Date when the explanation request was submitted");
 
                     b.Property<string>("ExplanationRequests")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Description for Explanation Requests");
 
                     b.Property<Guid>("LitigationRequestArbitrationReportId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the litigation request arbitration report");
 
                     b.Property<int>("RequestArbitrationReportExplanationRequestParty")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Description for Request Arbitration Report Explanation Request Party");
 
                     b.Property<string>("Response")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Description for Response");
 
                     b.Property<DateTime?>("ResponseOn")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasComment("Date when the explanation request response was provided");
 
                     b.HasKey("Id")
                         .HasName("PK__LitigationRequestArbitrationReportExplanationRequest");
@@ -692,10 +803,12 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("ArbitrationReportExplanationRequestId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the arbitration report explanation request");
 
                     b.Property<Guid>("ExplanationRequestFileId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the arbitration report explanation request");
 
                     b.HasKey("Id")
                         .HasName("PK__LitigationRequestArbitrationReportExplanationRequestFile");
@@ -715,29 +828,42 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<DateTime?>("ArbitrationMinutesOn")
+                        .HasColumnType("datetime2");
+
                     b.Property<int>("ArbitratorAssigningRequestTypeId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Unique identifier of the litigation request");
 
                     b.Property<Guid>("CitizenId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the litigation request");
 
                     b.Property<Guid?>("LitigationRequestArbitratorNominationListId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("LitigationRequestId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the litigation request");
 
                     b.Property<string>("RejectReason")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Description for Reject Reason");
 
                     b.Property<DateTime>("RequestOn")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasComment("Date when the arbitrator assignment request was submitted");
 
                     b.Property<int>("Response")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Description for Response");
+
+                    b.Property<bool?>("ResponseArbitrationMinutes")
+                        .HasColumnType("bit");
 
                     b.Property<DateTime?>("ResponseOn")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasComment("Date when the arbitrator assignment request was responded to");
 
                     b.HasKey("Id")
                         .HasName("PK__LitigationRequestArbitratorAssigningRequest4EC07AE06877A");
@@ -759,10 +885,12 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("ArbitratorCitizenId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the litigation request");
 
                     b.Property<Guid>("LitigationRequestId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the litigation request");
 
                     b.HasKey("Id")
                         .HasName("PK__LitigationRequestArbitrator07F533D1CD");
@@ -783,40 +911,52 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("ArbitratorCitizenId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the litigation request");
 
                     b.Property<int?>("DefendantPriority")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Priority ranking assigned by the defendant for this arbitrator");
 
                     b.Property<DateTime?>("EscalateDate")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasComment("Date when the nomination was escalated");
 
                     b.Property<bool?>("IsDefendantSelected")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Indicates whether this arbitrator was selected by the defendant");
 
                     b.Property<bool?>("IsEscalated")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Indicates whether the nomination has been escalated to management");
 
                     b.Property<bool?>("IsPlaintiffSelected")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Indicates whether this arbitrator was selected by the plaintiff");
 
                     b.Property<bool?>("IsResponse")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Indicates whether a response has been received for this nomination");
 
                     b.Property<bool?>("IsSelectedFromManager")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Indicates whether this arbitrator was selected by the manager");
 
                     b.Property<bool>("IsSent")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Indicates whether the nomination list has been sent");
 
                     b.Property<Guid>("LitigationRequestId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the litigation request");
 
                     b.Property<int?>("PlaintiffPriority")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Priority ranking assigned by the plaintiff for this arbitrator");
 
                     b.Property<int?>("TotalPriority")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Total combined priority score for this arbitrator");
 
                     b.HasKey("Id")
                         .HasName("PK__LitigationRequestArbitratorNominationList07F533D1CD");
@@ -837,26 +977,33 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<int?>("ApproveRejectStatus")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Description for Approve Reject Status");
 
                     b.Property<Guid>("ArbitratorCitizenId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the litigation request");
 
                     b.Property<Guid>("LitigationRequestId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the litigation request");
 
                     b.Property<string>("Reason")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Description for Reason");
 
                     b.Property<DateTime>("RequestOn")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasComment("Date when the arbitrator recusal request was submitted");
 
                     b.Property<int>("RequestParty")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Description for Request Party");
 
                     b.Property<DateTime?>("ResponseOn")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasComment("Date when the arbitrator recusal request was responded to");
 
                     b.HasKey("Id")
                         .HasName("PK__LitigationRequestArbitratorRecusalRequest");
@@ -877,10 +1024,12 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("LitigationRequestArbitratorRecusalRequestId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the litigation request arbitrator recusal request");
 
                     b.Property<Guid>("RecusalRequestFileId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the litigation request arbitrator recusal request");
 
                     b.HasKey("Id")
                         .HasName("PK__LitigationRequestArbitratorRecusalRequestFile");
@@ -901,28 +1050,36 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("ArbitratorChairmanCitizenId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the litigation request");
 
                     b.Property<DateTime?>("EscalateDate")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasComment("Date when the chairman nomination was escalated");
 
                     b.Property<bool?>("IsEscalated")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Description for Is Escalated");
 
                     b.Property<bool?>("IsSelectedFromManager")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Description for Is Selected From Manager");
 
                     b.Property<bool>("IsSent")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Description for Is Sent");
 
                     b.Property<Guid>("LitigationRequestId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the litigation request");
 
-                    b.Property<int>("Response")
-                        .HasColumnType("int");
+                    b.Property<int?>("Response")
+                        .HasColumnType("int")
+                        .HasComment("Description for Response");
 
                     b.Property<int?>("TotalPriority")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Total");
 
                     b.HasKey("Id")
                         .HasName("PK__LitigationRequestArbitratorsChairmanNominationList07F533D1CD");
@@ -943,19 +1100,23 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("ArbitratorChairmanCitizenId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the arbitrator chairman citizen");
 
                     b.Property<Guid>("ArbitratorCitizenId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the arbitrator citizen");
 
                     b.Property<bool>("IsSent")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Description for Is Sent");
 
                     b.Property<Guid>("LitigationRequestArbitratorsChairmanNominationListId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("Priority")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Description for Priority");
 
                     b.HasKey("Id")
                         .HasName("PK__LitigationRequestArbitratorsChairmanNominationListValue07F533D1CD");
@@ -979,61 +1140,76 @@ namespace REAC.EntityFrameworkCore.Migrations
 
                     b.Property<string>("ArabicFacilityName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Name of the arabic facility");
 
                     b.Property<string>("BuildingNumber")
                         .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
+                        .HasColumnType("nvarchar(10)")
+                        .HasComment("Building number of the facility address");
 
                     b.Property<Guid?>("CitizenId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the citizen");
 
                     b.Property<string>("City")
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(50)")
+                        .HasComment("City where the facility is located");
 
                     b.Property<string>("Code")
                         .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasColumnType("nvarchar(20)")
+                        .HasComment("Facility code identifier");
 
                     b.Property<string>("CommercialRegisterNumber")
                         .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasColumnType("nvarchar(20)")
+                        .HasComment("Number of the commercial register");
 
                     b.Property<string>("District")
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(50)")
+                        .HasComment("District");
 
                     b.Property<string>("Email")
                         .HasMaxLength(250)
-                        .HasColumnType("nvarchar(250)");
+                        .HasColumnType("nvarchar(250)")
+                        .HasComment("Email address");
 
                     b.Property<string>("EnglishFacilityName")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("English name of the facility");
 
                     b.Property<string>("Facility700Number")
                         .IsRequired()
                         .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasColumnType("nvarchar(20)")
+                        .HasComment("700 number identifier of the facility");
 
                     b.Property<string>("Fax")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Fax number");
 
                     b.Property<string>("PostalCode")
                         .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasColumnType("nvarchar(20)")
+                        .HasComment("Postal code");
 
                     b.Property<string>("Street")
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(50)")
+                        .HasComment("Street address");
 
                     b.Property<string>("SubNumber")
                         .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasColumnType("nvarchar(20)")
+                        .HasComment("Sub number of the facility address");
 
                     b.Property<string>("UnitNumber")
                         .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
+                        .HasColumnType("nvarchar(10)")
+                        .HasComment("Unit number");
 
                     b.HasKey("Id")
                         .HasName("PK__Facility__3214EC07AE06877A");
@@ -1053,13 +1229,16 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<decimal>("Amount")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Base amount of the invoice before tax");
 
                     b.Property<Guid>("ApplicantCitizenId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the applicant citizen");
 
                     b.Property<DateTime?>("CancelledDate")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasComment("Date when the invoice was cancelled");
 
                     b.Property<Guid?>("CreatedBy")
                         .HasColumnType("uniqueidentifier");
@@ -1068,29 +1247,37 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime>("ExpirationDate")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasComment("Expiration date of the invoice");
 
                     b.Property<string>("InvoiceCode")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Invoice code");
 
                     b.Property<int>("InvoiceStatusId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Status identifier");
 
                     b.Property<decimal>("InvoiceTax")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Invoice tax amount");
 
                     b.Property<int>("InvoiceTypeId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Unique identifier of the invoice type");
 
                     b.Property<DateTime?>("PaymentDate")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasComment("Date when the invoice was paid");
 
                     b.Property<Guid>("RequestId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the request");
 
                     b.Property<decimal>("TotalAmount")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Total amount of the invoice including tax");
 
                     b.HasKey("Id");
 
@@ -1112,7 +1299,8 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(100)")
+                        .HasComment("Description for Name");
 
                     b.HasKey("Id");
 
@@ -1127,7 +1315,8 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(100)")
+                        .HasComment("Name of the invoice type");
 
                     b.HasKey("Id");
 
@@ -1151,22 +1340,28 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime?>("AgreementRequestRequiredOn")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasComment("Date when the agreement request was required");
 
                     b.Property<Guid?>("ApplicantCitizenId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the applicant citizen");
 
                     b.Property<decimal>("ArbitrationFees")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Fees for the arbitration stage");
 
                     b.Property<int?>("ArbitrationPeriod")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Duration of the arbitration period in days");
 
                     b.Property<Guid?>("ArbitratorCitizenId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the arbitrator citizen");
 
                     b.Property<int?>("ArbitratorSelectionDuration")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Duration");
 
                     b.Property<DateTime?>("ArbitratorsChairmanNominationListCreationDateTime")
                         .HasColumnType("datetime2");
@@ -1175,10 +1370,12 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<int?>("ArbitratorsCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Total number of arbitrators");
 
                     b.Property<DateTime?>("ArbitratorsCountDateTime")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasComment("Date and time when arbitrators count was determined");
 
                     b.Property<DateTime?>("ArbitratorsNominationListCreationDateTime")
                         .HasColumnType("datetime2");
@@ -1187,88 +1384,115 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime?>("ArbitratorsSelectionDurationDateTime")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasComment("Duration");
 
                     b.Property<Guid?>("AreaId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the area");
 
                     b.Property<Guid?>("CityId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the city");
 
                     b.Property<string>("ContractAddress")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Address");
 
                     b.Property<Guid>("ContractId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the litigation request contract");
 
                     b.Property<DateTime>("CreatedOn")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime")
+                        .HasComment("Date and time when the record was created");
 
                     b.Property<int?>("DefendantAgreementRequestResponse")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Response status of the defendant to the agreement request");
 
                     b.Property<DateTime?>("DefendantAgreementRequestResponseOn")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasComment("Date when the defendant responded to the agreement request");
 
                     b.Property<int?>("DefendantRating")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Rating given by the defendant for the litigation process");
 
                     b.Property<Guid?>("DelegatorCitizenId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the delegator citizen");
 
                     b.Property<Guid?>("DelegatorId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the delegator");
 
                     b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Description");
 
                     b.Property<DateTime?>("EndArbitrationDate")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasComment("Date when arbitration period ends");
 
                     b.Property<DateTime?>("EndReconciliationDate")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasComment("Date when reconciliation period ends");
 
                     b.Property<Guid?>("ExemptionReductionCategoryId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the exemption reduction category");
 
                     b.Property<Guid?>("ExemptionReductionFileId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the exemption reduction file");
 
                     b.Property<int>("ExternalStatusId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Status identifier");
 
                     b.Property<decimal>("Fees")
-                        .HasColumnType("money");
+                        .HasColumnType("money")
+                        .HasComment("Total fees for this litigation request");
 
                     b.Property<decimal>("FeesDifference")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Difference between calculated and actual fees");
 
                     b.Property<int?>("FirstPartyArbitratorsCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Number of first party arbitrators");
 
                     b.Property<int>("InternalStatusId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Status identifier");
 
                     b.Property<bool?>("IsActive")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Indicates whether the record is active");
 
                     b.Property<bool?>("IsAgreementRequestRequired")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Indicates whether agreement request is required for this litigation");
 
                     b.Property<bool>("IsAllowEdit")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Indicates whether editing is allowed for this litigation request");
 
                     b.Property<bool>("IsArbitrationFeesHaveBeenCollected")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Indicates whether arbitration fees have been collected");
 
                     b.Property<bool?>("IsArbitratorAdminNominationListAddedPeriodSent")
                         .HasColumnType("bit");
 
                     b.Property<bool?>("IsArbitratorAssigningRequestResponseFirstPeriodSent")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Indicates whether arbitrator assigning request response first period notification was sent");
 
                     b.Property<bool?>("IsArbitratorAssigningRequestResponseSecondPeriodSent")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Indicates whether arbitrator assigning request response second period notification was sent");
 
                     b.Property<bool?>("IsArbitratorChairmanNominationListDecisionPeriodSent")
                         .HasColumnType("bit");
@@ -1277,10 +1501,12 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("bit");
 
                     b.Property<bool?>("IsArbitratorCountSelectionDecisionPeriodSent")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Indicates whether arbitrator count selection decision period notification was sent");
 
                     b.Property<bool?>("IsArbitratorCountSelectionResponsePeriodSent")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Indicates whether arbitrator count selection response period notification was sent");
 
                     b.Property<bool?>("IsArbitratorNominationListDecisionPeriodSent")
                         .HasColumnType("bit");
@@ -1289,177 +1515,232 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("bit");
 
                     b.Property<bool>("IsArbitratorReminderForCancelArbitrationSent")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Indicates whether reminder for cancel arbitration was sent to arbitrator");
 
                     b.Property<bool?>("IsArbitratorSessionTimeAddedPeriodSent")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Indicates whether arbitrator session time added period notification was sent");
 
                     b.Property<bool?>("IsArbitratorsChairmanDecisionRequired")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Indicates whether arbitrators chairman decision is required for this litigation");
 
                     b.Property<bool>("IsAssignNewReformerForCancelReconciliationSent")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Indicates whether notification to assign new reformer for cancelled reconciliation was sent");
 
                     b.Property<bool>("IsCollectionOfArbitrationFeesRequestIsBeingSent")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Indicates whether arbitration fees collection request is being sent");
 
                     b.Property<bool>("IsCollectionOfLitigationFeesRequestIsBeingSent")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Indicates whether litigation fees collection request is being sent");
 
                     b.Property<bool>("IsCollectionOfReconciliationFeesRequestIsBeingSent")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Indicates whether reconciliation fees collection request is being sent");
 
                     b.Property<bool?>("IsDefendantArbitratorNominationListDone")
                         .HasColumnType("bit");
 
                     b.Property<bool?>("IsExemptionReduction")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Indicates whether exemption reduction applies to this litigation");
 
                     b.Property<bool?>("IsFinancialLitigation")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Indicates whether this litigation involves financial matters");
 
                     b.Property<bool?>("IsFinished")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Indicates whether the litigation request has been completed");
 
                     b.Property<bool>("IsLitigationFeesHaveBeenCollected")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Indicates whether litigation fees have been collected");
 
                     b.Property<bool?>("IsLitigationRequestArbitrationFeesNotPaidFirstReminderSent")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Indicates whether first reminder for unpaid arbitration fees was sent");
 
                     b.Property<bool?>("IsLitigationRequestFeesNotPaidFirstReminderSent")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Indicates whether first reminder for unpaid litigation fees was sent");
 
                     b.Property<bool?>("IsLitigationRequestReconciliationFeesNotPaidFirstReminderSent")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Indicates whether first reminder for unpaid reconciliation fees was sent");
 
                     b.Property<bool?>("IsLitigationRequestReconciliationReportDecisionPeriodSent")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Indicates whether litigation request reconciliation report decision period notification was sent");
 
                     b.Property<bool?>("IsLitigationRequestReconciliationReportResponsePeriodSent")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Indicates whether litigation request reconciliation report response period notification was sent");
 
                     b.Property<bool?>("IsLitigationRequestReformerAssigningRequestResponsePeriodSent")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Indicates whether litigation request reformer assigning request response period notification was sent");
 
                     b.Property<bool?>("IsMinutesOfMeetingApprovalRequired")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Indicates whether minutes of meeting approval is required for this litigation");
 
                     b.Property<bool>("IsPaid")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Indicates whether payment has been made");
 
                     b.Property<bool?>("IsPlaintiffArbitratorNominationListDone")
                         .HasColumnType("bit");
 
                     b.Property<bool>("IsReconciliationFeesHaveBeenCollected")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Indicates whether reconciliation fees have been collected");
 
                     b.Property<bool>("IsReformerFinalReminderForReconciliationSent")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Indicates whether final reminder for reconciliation was sent to reformer");
 
                     b.Property<bool>("IsReformerReminderForCancelReconciliationSent")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Indicates whether reminder for cancel reconciliation was sent to reformer");
 
                     b.Property<bool?>("IsReformerReminderForReconciliationFirstPeriodSent")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Indicates whether reformer reminder for reconciliation first period was sent");
 
                     b.Property<bool>("IsReformerReminderForReconciliationSecondPeriodSent")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Indicates whether second reminder for reconciliation period was sent to reformer");
 
                     b.Property<bool?>("IsReminderForAgreementRequestForRequestSent")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Indicates whether reminder for agreement request was sent");
 
                     b.Property<bool?>("IsReminderForApplicantSent")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Indicates whether reminder for applicant was sent");
 
                     b.Property<bool>("IsReminderForCancelLitigationForAgreementSent")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Indicates whether reminder for cancel litigation due to agreement was sent");
 
                     b.Property<bool>("IsReminderForCancelLitigationForNotesSent")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Indicates whether reminder for cancel litigation due to notes was sent");
 
                     b.Property<bool?>("IsReminderForReviewerManagerSent")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Indicates whether reminder for reviewer manager was sent");
 
                     b.Property<bool?>("IsReminderForReviewerSent")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Indicates whether reminder for reviewer was sent");
 
                     b.Property<bool>("IsSent")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Indicates whether the litigation request has been sent");
 
                     b.Property<DateTime?>("JudgmentDecisionIssuingDateTime")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasComment("Date and time of the note");
 
                     b.Property<Guid?>("LitigationRequestAmountId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the litigation request amount");
 
                     b.Property<int?>("LitigationRequestCategoryId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Unique identifier of the litigation request category");
 
                     b.Property<int>("LitigationRequestOwnerTypeId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Unique identifier of the litigation request owner type");
 
                     b.Property<int?>("LitigationRequestStage")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Current stage of the litigation request");
 
                     b.Property<int?>("LitigationRequestSubStage")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Current sub-stage of the litigation request");
 
                     b.Property<int?>("MintuesOfMeetingApprovalDefendantStatus")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Approval status of the defendant for the minutes of meeting");
 
                     b.Property<DateTime?>("MintuesOfMeetingApprovalDefendantStatusOn")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasComment("Date when the defendant approved/rejected the meeting minutes");
 
                     b.Property<int?>("MintuesOfMeetingApprovalPlaintiffStatus")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Approval status of the plaintiff for the minutes of meeting");
 
                     b.Property<DateTime?>("MintuesOfMeetingApprovalPlaintiffStatusOn")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasComment("Date when the plaintiff approved/rejected the meeting minutes");
 
                     b.Property<Guid?>("OtherCategories")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the other category");
 
                     b.Property<DateTime?>("PaidOn")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime")
+                        .HasComment("Date when the payment was made");
 
                     b.Property<int?>("PlaintiffAgreementRequestResponse")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Response status of the plaintiff to the agreement request");
 
                     b.Property<DateTime?>("PlaintiffAgreementRequestResponseOn")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasComment("Date when the plaintiff responded to the agreement request");
 
                     b.Property<int?>("PretenderRating")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Rating given by the plaintiff for the litigation process");
 
                     b.Property<decimal>("ReconciliationFees")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Fees for the reconciliation stage");
 
                     b.Property<int?>("ReconciliationPeriod")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Duration of the reconciliation period in days");
 
                     b.Property<Guid?>("ReformerCitizenId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the reformer citizen");
 
                     b.Property<string>("RequestCode")
                         .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasColumnType("nvarchar(20)")
+                        .HasComment("Request code for the litigation");
 
                     b.Property<int?>("SecondPartyArbitratorsCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Number of second party arbitrators");
 
                     b.Property<DateTime?>("SentOn")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime")
+                        .HasComment("Date when the litigation request was sent");
 
                     b.Property<DateTime?>("StartArbitrationDate")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasComment("Date when arbitration period starts");
 
                     b.Property<DateTime?>("StartReconciliationDate")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasComment("Date when reconciliation period starts");
 
                     b.Property<string>("Title")
                         .HasMaxLength(250)
-                        .HasColumnType("nvarchar(250)");
+                        .HasColumnType("nvarchar(250)")
+                        .HasComment("Title");
 
                     b.HasKey("Id")
                         .HasName("PK__Litigati__3214EC077962DFCA");
@@ -1509,13 +1790,16 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("AmountId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the litigation request amount");
 
                     b.Property<DateTime>("CreatedOn")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasComment("Date and time when the record was created");
 
                     b.Property<Guid>("LitigationRequestId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the litigation request");
 
                     b.HasKey("Id")
                         .HasName("PK__LitigAmount__3214EC0729841352");
@@ -1533,73 +1817,93 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("AssociationName")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Name of the association");
 
                     b.Property<Guid?>("AssociationRegistrationCertificateFileId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the association registration certificate file");
 
                     b.Property<Guid?>("ContractFileId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the contract file");
 
                     b.Property<string>("ContractKey")
                         .IsRequired()
                         .HasMaxLength(250)
-                        .HasColumnType("nvarchar(250)");
+                        .HasColumnType("nvarchar(250)")
+                        .HasComment("Contract key identifier or number");
 
                     b.Property<string>("FirstPartyCapacity")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(100)")
+                        .HasComment("Role or capacity of the first party in the contract");
 
                     b.Property<Guid?>("FirstPartyCitizenId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the first party citizen");
 
                     b.Property<Guid?>("FirstPartyFacilityId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the first party facility");
 
                     b.Property<Guid?>("FoundingLetterFileId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the founding letter file");
 
                     b.Property<Guid?>("IncorporationContractFileId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the incorporation contract file");
 
                     b.Property<Guid?>("InternalRegulationsFileId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the internal regulations file");
 
                     b.Property<int>("LitigationRequestContractTypeId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Unique identifier of the litigation request contract type");
 
                     b.Property<string>("SecondPartyCapacity")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(100)")
+                        .HasComment("Role or capacity of the second party in the contract");
 
                     b.Property<Guid?>("SecondPartyCitizenId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the second party citizen");
 
                     b.Property<string>("SecondPartyEmail")
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(100)")
+                        .HasComment("Email address");
 
                     b.Property<Guid?>("SecondPartyFacilityId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the second party facility");
 
                     b.Property<string>("SecondPartyIdentityNumber")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Number of the version");
 
                     b.Property<string>("SecondPartyMobile")
                         .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasColumnType("nvarchar(20)")
+                        .HasComment("Mobile phone number");
 
                     b.Property<string>("SecondPartyName")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Name of the association");
 
                     b.Property<Guid?>("SecondPartyRegistrationRequestId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the second party registration request");
 
                     b.Property<string>("VersionNumber")
                         .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasColumnType("nvarchar(20)")
+                        .HasComment("Number of the version");
 
                     b.HasKey("Id")
                         .HasName("PK__Litigati__3214EC079F19E3F8");
@@ -1635,33 +1939,42 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid?>("CreatedBy")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Description for Created By");
 
                     b.Property<DateTime>("CreatedOn")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime")
+                        .HasComment("Date and time when the record was created");
 
                     b.Property<int>("LitigationRequestCategoryId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Unique identifier of the litigation request category");
 
                     b.Property<int>("LitigationRequestCorrespondenceDestinationId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Unique identifier of the litigation request correspondence destination");
 
                     b.Property<int>("LitigationRequestCorrespondenceStatusId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Status identifier");
 
                     b.Property<Guid>("LitigationRequestId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the litigation request");
 
                     b.Property<string>("Message")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Description for Message");
 
                     b.Property<string>("SerialCode")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Description for Serial Code");
 
                     b.Property<string>("Subject")
                         .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasColumnType("nvarchar(500)")
+                        .HasComment("Subject");
 
                     b.HasKey("Id")
                         .HasName("PK__Litigati__3214EC07868BEDDE");
@@ -1691,10 +2004,12 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<Guid>("FileManagerId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the litigation request correspondence");
 
                     b.Property<Guid>("LitigationRequestCorrespondenceId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the litigation request correspondence");
 
                     b.Property<Guid?>("UpdatedBy")
                         .HasColumnType("uniqueidentifier");
@@ -1719,17 +2034,21 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("CreatedBy")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Description for Created By");
 
                     b.Property<DateTime>("CreatedOn")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasComment("Date and time when the record was created");
 
                     b.Property<Guid>("LitigationRequestCorrespondenceId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the litigation request correspondence");
 
                     b.Property<string>("ReplyMessage")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Description for Reply Message");
 
                     b.HasKey("Id");
 
@@ -1747,16 +2066,20 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid?>("CreatedBy")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Description for Created By");
 
                     b.Property<DateTime>("CreatedOn")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasComment("Date and time when the record was created");
 
                     b.Property<Guid>("FileManagerId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the file manager");
 
                     b.Property<Guid>("LitigationRequestCorrespondenceReplyId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the litigation request correspondence reply");
 
                     b.HasKey("Id");
 
@@ -1774,19 +2097,24 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("AmountId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the litigation request amount");
 
                     b.Property<decimal>("ArbitrationFees")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Total arbitration fees for this case");
 
                     b.Property<int>("ArbitratorsCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Number of arbitrators");
 
                     b.Property<decimal?>("ExtraAmount")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Additional amount charged for extra arbitrators");
 
                     b.Property<decimal?>("PercentageExtraAmount")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Percentage");
 
                     b.HasKey("Id");
 
@@ -1801,11 +2129,13 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("LitigationRequestId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the litigation request");
 
                     b.Property<string>("Title")
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(100)")
+                        .HasComment("Title");
 
                     b.HasKey("Id")
                         .HasName("PK__Litigati__3214EC07B596385A");
@@ -1821,10 +2151,12 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("FileManagerId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the litigation request ground");
 
                     b.Property<Guid>("LitigationRequestGroundId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the litigation request ground");
 
                     b.HasKey("Id")
                         .HasName("PK__Litigati__3214EC07E98400B7");
@@ -1842,30 +2174,38 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid?>("CreatedBy")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the user who created this note");
 
                     b.Property<DateTime>("CreatedOn")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasComment("Date and time when the record was created");
 
                     b.Property<int>("LitigationRequestCategoryId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Unique identifier of the litigation request");
 
                     b.Property<Guid>("LitigationRequestId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the litigation request");
 
                     b.Property<string>("Notes")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Detailed notes or comments about the litigation request");
 
                     b.Property<string>("Title")
                         .HasMaxLength(250)
-                        .HasColumnType("nvarchar(250)");
+                        .HasColumnType("nvarchar(250)")
+                        .HasComment("Title of the litigation request note");
 
                     b.Property<Guid?>("UpdatedBy")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the user who last updated this note");
 
                     b.Property<DateTime?>("UpdatedOn")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasComment("Date and time when the record was last updated");
 
                     b.HasKey("Id")
                         .HasName("PK__Litigati__3214EC07C1F98E04");
@@ -1891,10 +2231,12 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<Guid>("FileManagerId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the note");
 
                     b.Property<Guid>("NoteId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the note");
 
                     b.Property<Guid?>("UpdatedBy")
                         .HasColumnType("uniqueidentifier");
@@ -1918,25 +2260,32 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("CitizenId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the litigation request");
 
                     b.Property<Guid>("LitigationRequestId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the litigation request");
 
                     b.Property<string>("Reason")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Description for Reason");
 
                     b.Property<string>("RejectReason")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Description for Reject Reason");
 
                     b.Property<DateTime?>("RequestOn")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasComment("Date when the reformer assignment request was submitted");
 
                     b.Property<int>("Response")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Description for Response");
 
                     b.Property<DateTime?>("ResponseOn")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasComment("Date when the reformer assignment request was responded to");
 
                     b.HasKey("Id")
                         .HasName("PK__LitigationRequestReformerAssigningRequest4EC07AE06877A");
@@ -1954,12 +2303,14 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("LitigationRequestId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the litigation request");
 
                     b.Property<string>("RequestContent")
                         .IsRequired()
                         .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasColumnType("nvarchar(200)")
+                        .HasComment("Content");
 
                     b.HasKey("Id")
                         .HasName("PK__Litigati__3214EC0751C3A7B1");
@@ -1975,10 +2326,12 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("FileManagerId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the litigation request request");
 
                     b.Property<Guid>("LitigationRequestRequestId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the litigation request request");
 
                     b.HasKey("Id")
                         .HasName("PK__Litigati__3214EC076FBEF9E2");
@@ -1996,23 +2349,29 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedOn")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasComment("Date and time when the record was created");
 
                     b.Property<Guid>("LitigationRequestId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the litigation request");
 
                     b.Property<int>("LitigationRequestSessionRequestTypeId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Unique identifier of the litigation request session request type");
 
                     b.Property<long?>("MeetingId")
-                        .HasColumnType("bigint");
+                        .HasColumnType("bigint")
+                        .HasComment("Unique identifier of the meeting");
 
                     b.Property<DateTime>("SessionDatetime")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasComment("Date and time of the note");
 
                     b.Property<string>("SessionUrl")
                         .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
+                        .HasColumnType("nvarchar(1000)")
+                        .HasComment("URL");
 
                     b.HasKey("Id")
                         .HasName("PK__LitigationRequestSessionC1F98E04");
@@ -2029,26 +2388,33 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<int?>("ActorType")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Description for Actor Type");
 
                     b.Property<Guid>("CreatedBy")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Description for Created By");
 
                     b.Property<DateTime>("CreatedOn")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasComment("Date and time when the record was created");
 
                     b.Property<bool?>("IsApproved")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Description for Is Approved");
 
                     b.Property<Guid>("LitigationRequestId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the litigation request");
 
                     b.Property<Guid?>("LitigationRequestSessionId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the litigation request session");
 
                     b.Property<string>("ModificationRequest")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Description for Modification Request");
 
                     b.HasKey("Id");
 
@@ -2069,7 +2435,8 @@ namespace REAC.EntityFrameworkCore.Migrations
 
                     b.Property<string>("CategoryName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Name of the other category");
 
                     b.HasKey("Id");
 
@@ -2082,30 +2449,38 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("ActorId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the actor");
 
                     b.Property<DateTime>("CreatedOn")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasComment("Date and time when the record was created");
 
                     b.Property<bool>("IsViewed")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Description for Is Viewed");
 
                     b.Property<string>("Message")
                         .IsRequired()
                         .HasMaxLength(2147483647)
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Description for Message");
 
                     b.Property<int>("NotificationActorTypeId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Unique identifier of the notification actor type");
 
                     b.Property<Guid>("RequestId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the request");
 
                     b.Property<int>("RequestTypeId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Unique identifier of the request type");
 
                     b.Property<DateTime?>("ViewedOn")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasComment("Date and time when the notification was viewed");
 
                     b.HasKey("Id")
                         .HasName("PK__SysNotification214EC07F533D1CD");
@@ -2127,7 +2502,8 @@ namespace REAC.EntityFrameworkCore.Migrations
 
                     b.Property<string>("ActorType")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Description for Actor Type");
 
                     b.HasKey("Id")
                         .HasName("PK_SysNotificationActorType3214EC07F533D1CD");
@@ -2146,23 +2522,29 @@ namespace REAC.EntityFrameworkCore.Migrations
 
                     b.Property<string>("Body")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Description for Body");
 
                     b.Property<DateTime>("CreatedOn")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasComment("Date and time when the record was created");
 
                     b.Property<string>("Error")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Description for Error");
 
                     b.Property<bool>("IsSent")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Description for Is Sent");
 
                     b.Property<int>("RetryAttempt")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Description for Retry Attempt");
 
                     b.Property<string>("Subject")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Subject");
 
                     b.Property<string>("ToAddressList")
                         .IsRequired()
@@ -2183,7 +2565,8 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Property<string>("NotificationPlanName")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(100)")
+                        .HasComment("Name of the notification plan");
 
                     b.HasKey("Id")
                         .HasName("PK__SysNotificationPlan__C0743341C99");
@@ -2198,22 +2581,27 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("ApplicationNotificationTemplate")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Description for Application Notification Template");
 
                     b.Property<string>("EmailSubject")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Email address");
 
                     b.Property<string>("MailTemplate")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Description for Mail Template");
 
                     b.Property<string>("SmsTemplate")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Description for Sms Template");
 
                     b.Property<Guid?>("SysDepartmentId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("SysNotificationPlanId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the sys notification plan");
 
                     b.HasKey("Id")
                         .HasName("PK__SysNotificationPlanItem__0743341C99");
@@ -2232,22 +2620,27 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid?>("DepartmentId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the department");
 
                     b.Property<int>("NotificationActorTypeId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Unique identifier of the notification actor type");
 
                     b.Property<int>("NotificationDestinationType")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Description for Notification Destination Type");
 
                     b.Property<int>("NotificationType")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Notification Type");
 
                     b.Property<Guid?>("SysDepartmentId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("SysNotificationPlanItemId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the sys notification plan item");
 
                     b.HasKey("Id")
                         .HasName("PK__SysNotificationPlanItemDestination__0743341C99");
@@ -2268,24 +2661,30 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedOn")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasComment("Date and time when the record was created");
 
                     b.Property<string>("Error")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Description for Error");
 
                     b.Property<bool>("IsSent")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Description for Is Sent");
 
                     b.Property<string>("Message")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Description for Message");
 
                     b.Property<string>("MobileNumber")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Number of the mobile");
 
                     b.Property<int>("RetryAttempt")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Description for Retry Attempt");
 
                     b.HasKey("Id");
 
@@ -2314,7 +2713,8 @@ namespace REAC.EntityFrameworkCore.Migrations
 
                     b.Property<string>("RequestTypeName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Type of the name");
 
                     b.Property<Guid?>("UpdatedBy")
                         .HasColumnType("uniqueidentifier");
@@ -2337,33 +2737,42 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid?>("CreatedBy")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the user who created this request");
 
                     b.Property<DateTime?>("CreatedOn")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasComment("Date and time when the record was created");
 
                     b.Property<string>("FinishStatusReason")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Status of the reason");
 
                     b.Property<int?>("LitigationRequestExtendPeriodRequestStatusId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Status identifier");
 
                     b.Property<int>("LitigationRequestExtendPeriodRequestTypeId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Type of the period extension request");
 
                     b.Property<Guid>("LitigationRequestId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the litigation request");
 
                     b.Property<string>("Notes")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Additional notes about the period extension request");
 
                     b.Property<string>("RequestReason")
                         .IsRequired()
                         .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
+                        .HasColumnType("nvarchar(300)")
+                        .HasComment("Reason for requesting the period extension");
 
                     b.Property<int>("RequiredDays")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Number of additional days requested for the extension");
 
                     b.Property<Guid?>("SysEmployeeId")
                         .HasColumnType("uniqueidentifier");
@@ -2386,10 +2795,12 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("FileManagerId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the file manager");
 
                     b.Property<Guid>("LitigationRequestExtendPeriodRequestId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the litigation request extend period request");
 
                     b.HasKey("Id")
                         .HasName("PK__Litigati__3214EC076F56C6AF");
@@ -2407,19 +2818,23 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("LitigationRequestId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the litigation request");
 
                     b.Property<string>("ModificationRequest")
                         .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
+                        .HasColumnType("nvarchar(1000)")
+                        .HasComment("Description for Modification Request");
 
                     b.Property<string>("ReconciliationSessionDetails")
                         .IsRequired()
                         .HasMaxLength(2000)
-                        .HasColumnType("nvarchar(2000)");
+                        .HasColumnType("nvarchar(2000)")
+                        .HasComment("Description for Reconciliation Session Details");
 
                     b.Property<DateTime>("ReportDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime")
+                        .HasComment("Date when the reconciliation report was created");
 
                     b.HasKey("Id")
                         .HasName("PK__Litigati__3214EC07F3A8E5CA");
@@ -2436,11 +2851,13 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("LitigationRequestReconciliationReportId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the litigation request reconciliation report");
 
                     b.Property<string>("ReconciliationItem")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Description for Reconciliation Item");
 
                     b.HasKey("Id")
                         .HasName("PK__Litigati__3214EC07A8D6A249");
@@ -2459,31 +2876,40 @@ namespace REAC.EntityFrameworkCore.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<Guid>("CitizenId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the citizen");
 
                     b.Property<Guid?>("CreatedBy")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the user who created this record");
 
                     b.Property<int?>("CreatedByRole")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Role of the user who created this record");
 
                     b.Property<DateTime>("DecisionDate")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasComment("Date of the reformer decision");
 
                     b.Property<DateTime?>("DecisionFrom")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasComment("Start date of the decision period");
 
                     b.Property<DateTime?>("DecisionTo")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasComment("End date of the decision period");
 
                     b.Property<string>("LateLitigationRequestNumber")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Number of the late litigation request");
 
                     b.Property<int>("ReformerStatusId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Status identifier");
 
                     b.Property<int?>("StoppingReason")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Reason for stopping the reformer");
 
                     b.HasKey("Id")
                         .HasName("PK_ReformerInactiveDecision_3214EC0743341C99");
@@ -2498,157 +2924,208 @@ namespace REAC.EntityFrameworkCore.Migrations
             modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Reports.GetArbitratorDashbourdResult", b =>
                 {
                     b.Property<int?>("DueDateArbitrationCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("DueDateArbitrationRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Due Date Arbitration Ratio");
 
                     b.Property<int?>("DueDateReconciliationCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("DueDateReconciliationRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Due Date Reconciliation Ratio");
 
                     b.Property<int?>("FinishedCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("FinishedRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Finished Ratio");
 
                     b.Property<int?>("NotFinishedCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("NotFinishedRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Not Finished Ratio");
 
                     b.Property<int?>("OtherServicesCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int?>("OtherServicesDueDateCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("OtherServicesDueDateRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Other Services Due Date Ratio");
 
                     b.Property<int?>("OtherServicesFinishedCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("OtherServicesFinishedRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Other Services Finished Ratio");
 
                     b.Property<int?>("OtherServicesNotFinishedCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("OtherServicesNotFinishedRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Other Services Not Finished Ratio");
 
                     b.Property<decimal?>("OtherServicesRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Other Services Ratio");
 
                     b.Property<int?>("PropertiesCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int?>("PropertiesDueDateCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("PropertiesDueDateRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Properties Due Date Ratio");
 
                     b.Property<int?>("PropertiesFinishedCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("PropertiesFinishedRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Properties Finished Ratio");
 
                     b.Property<int?>("PropertiesNotFinishedCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("PropertiesNotFinishedRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Properties Not Finished Ratio");
 
                     b.Property<decimal?>("PropertiesRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Properties Ratio");
 
                     b.Property<int?>("RealEstateBrokerageCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int?>("RealEstateBrokerageDueDateCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("RealEstateBrokerageDueDateRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Real Estate Brokerage Due Date Ratio");
 
                     b.Property<int?>("RealEstateBrokerageFinishedCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("RealEstateBrokerageFinishedRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Real Estate Brokerage Finished Ratio");
 
                     b.Property<int?>("RealEstateBrokerageNotFinishedCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("RealEstateBrokerageNotFinishedRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Real Estate Brokerage Not Finished Ratio");
 
                     b.Property<decimal?>("RealEstateBrokerageRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Real Estate Brokerage Ratio");
 
                     b.Property<int?>("RentCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int?>("RentDueDateCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("RentDueDateRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Rent Due Date Ratio");
 
                     b.Property<int?>("RentFinishedCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("RentFinishedRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Rent Finished Ratio");
 
                     b.Property<int?>("RentNotFinishedCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("RentNotFinishedRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Rent Not Finished Ratio");
 
                     b.Property<decimal?>("RentRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Rent Ratio");
 
                     b.Property<int?>("TotalLitigationCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int?>("TotalReviewDueDateCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("TotalReviewDueDateRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Total");
 
                     b.Property<int?>("WafiCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int?>("WafiDueDateCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("WafiDueDateRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Wafi Due Date Ratio");
 
                     b.Property<int?>("WafiFinishedCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("WafiFinishedRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Wafi Finished Ratio");
 
                     b.Property<int?>("WafiNotFinishedCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("WafiNotFinishedRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Wafi Not Finished Ratio");
 
                     b.Property<decimal?>("WafiRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Wafi Ratio");
 
                     b.ToTable((string)null);
 
@@ -2658,40 +3135,52 @@ namespace REAC.EntityFrameworkCore.Migrations
             modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Reports.GetListOfLitigationArbitrationReportResult", b =>
                 {
                     b.Property<string>("ArbitratorChairmanName")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Name of the arbitrator chairman");
 
                     b.Property<string>("ArbitratorsFullNames")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Full name");
 
                     b.Property<string>("AreaName")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Name of the arbitrator chairman");
 
                     b.Property<string>("CategoryName")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Category of the name");
 
                     b.Property<string>("CityName")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Name of the arbitrator chairman");
 
                     b.Property<string>("ContractAddress")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Address");
 
                     b.Property<DateTime?>("CreatedOn")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasComment("Date and time when the record was created");
 
                     b.Property<string>("FirstParty")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Description for First Party");
 
                     b.Property<string>("LitigationAmount")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Amount");
 
                     b.Property<string>("RequestCode")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Description for Request Code");
 
                     b.Property<string>("RequestStatus")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Description for Request Status");
 
                     b.Property<string>("SecondParty")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Description for Second Party");
 
                     b.ToTable((string)null);
 
@@ -2701,37 +3190,48 @@ namespace REAC.EntityFrameworkCore.Migrations
             modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Reports.GetListOfLitigationGeneralReportResult", b =>
                 {
                     b.Property<string>("AreaName")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Name of the area");
 
                     b.Property<string>("CategoryName")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Category of the name");
 
                     b.Property<string>("CityName")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Name of the area");
 
                     b.Property<string>("ContractAddress")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Address");
 
                     b.Property<DateTime?>("CreatedOn")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasComment("Date and time when the record was created");
 
                     b.Property<string>("FirstParty")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Description for First Party");
 
                     b.Property<string>("LitigationRequestCategoryIds")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Category of the ids");
 
                     b.Property<Guid>("LitigationRequestId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the litigation request");
 
                     b.Property<string>("RequestCode")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Description for Request Code");
 
                     b.Property<string>("RequestStatus")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Description for Request Status");
 
                     b.Property<string>("SecondParty")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Description for Second Party");
 
                     b.ToTable((string)null);
 
@@ -2741,37 +3241,48 @@ namespace REAC.EntityFrameworkCore.Migrations
             modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Reports.GetListOfLitigationReformerReportResult", b =>
                 {
                     b.Property<string>("AreaName")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Name of the reformer");
 
                     b.Property<string>("CategoryName")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Category of the name");
 
                     b.Property<string>("CityName")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Name of the reformer");
 
                     b.Property<string>("ContractAddress")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Address");
 
                     b.Property<DateTime?>("CreatedOn")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasComment("Date and time when the record was created");
 
                     b.Property<string>("FirstParty")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Description for First Party");
 
                     b.Property<string>("LitigationAmount")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Amount");
 
                     b.Property<string>("ReformerName")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Name of the reformer");
 
                     b.Property<string>("RequestCode")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Description for Request Code");
 
                     b.Property<string>("RequestStatus")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Description for Request Status");
 
                     b.Property<string>("SecondParty")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Description for Second Party");
 
                     b.ToTable((string)null);
 
@@ -2781,40 +3292,52 @@ namespace REAC.EntityFrameworkCore.Migrations
             modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Reports.GetListOfLitigationReviewReportResult", b =>
                 {
                     b.Property<string>("AreaName")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Name of the employee");
 
                     b.Property<string>("CategoryName")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Category of the name");
 
                     b.Property<string>("CityName")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Name of the employee");
 
                     b.Property<string>("ContractAddress")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Address");
 
                     b.Property<DateTime?>("CreatedOn")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasComment("Date and time when the record was created");
 
                     b.Property<string>("EmployeeName")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Name of the employee");
 
                     b.Property<string>("FirstParty")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Description for First Party");
 
                     b.Property<string>("LitigationAmount")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Amount");
 
                     b.Property<string>("RequestCode")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Description for Request Code");
 
                     b.Property<string>("RequestStatus")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Description for Request Status");
 
                     b.Property<string>("SecondParty")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Description for Second Party");
 
                     b.Property<string>("TotalCount")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Count of items");
 
                     b.ToTable((string)null);
 
@@ -2824,139 +3347,184 @@ namespace REAC.EntityFrameworkCore.Migrations
             modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Reports.GetLitigationStatisticsDetailsForAllStagesReportResult", b =>
                 {
                     b.Property<int?>("TotalArbitrationDueDateOtherServicesCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int?>("TotalArbitrationDueDatePropertiesCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int?>("TotalArbitrationDueDateRealEstateBrokerageCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int?>("TotalArbitrationDueDateRentCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int?>("TotalArbitrationDueDateWafiCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int?>("TotalArbitrationFinishedOtherServicesCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int?>("TotalArbitrationFinishedPropertiesCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int?>("TotalArbitrationFinishedRealEstateBrokerageCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int?>("TotalArbitrationFinishedRentCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int?>("TotalArbitrationFinishedWafiCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int?>("TotalArbitrationNotFinishedOtherServicesCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int?>("TotalArbitrationNotFinishedPropertiesCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int?>("TotalArbitrationNotFinishedRealEstateBrokerageCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int?>("TotalArbitrationNotFinishedRentCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int?>("TotalArbitrationNotFinishedWafiCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int?>("TotalReconciliationDueDateOtherServicesCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int?>("TotalReconciliationDueDatePropertiesCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int?>("TotalReconciliationDueDateRealEstateBrokerageCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int?>("TotalReconciliationDueDateRentCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int?>("TotalReconciliationDueDateWafiCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int?>("TotalReconciliationFinishedOtherServicesCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int?>("TotalReconciliationFinishedPropertiesCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int?>("TotalReconciliationFinishedRealEstateBrokerageCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int?>("TotalReconciliationFinishedRentCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int?>("TotalReconciliationFinishedWafiCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int?>("TotalReconciliationNotFinishedOtherServicesCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int?>("TotalReconciliationNotFinishedPropertiesCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int?>("TotalReconciliationNotFinishedRealEstateBrokerageCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int?>("TotalReconciliationNotFinishedRentCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int?>("TotalReconciliationNotFinishedWafiCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int?>("TotalReviewDueDateOtherServicesCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int?>("TotalReviewDueDatePropertiesCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int?>("TotalReviewDueDateRealEstateBrokerageCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int?>("TotalReviewDueDateRentCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int?>("TotalReviewDueDateWafiCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int?>("TotalReviewFinishedOtherServicesCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int?>("TotalReviewFinishedPropertiesCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int?>("TotalReviewFinishedRealEstateBrokerageCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int?>("TotalReviewFinishedRentCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int?>("TotalReviewFinishedWafiCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int?>("TotalReviewNotFinishedOtherServicesCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int?>("TotalReviewNotFinishedPropertiesCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int?>("TotalReviewNotFinishedRealEstateBrokerageCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int?>("TotalReviewNotFinishedRentCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int?>("TotalReviewNotFinishedWafiCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.ToTable((string)null);
 
@@ -2966,71 +3534,93 @@ namespace REAC.EntityFrameworkCore.Migrations
             modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Reports.GetLitigationStatisticsForAdminReportResult", b =>
                 {
                     b.Property<int?>("DueDateArbitrationCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("DueDateArbitrationRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Due Date Arbitration Ratio");
 
                     b.Property<int?>("DueDateReconciliationCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("DueDateReconciliationRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Due Date Reconciliation Ratio");
 
                     b.Property<int?>("FinishedCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("FinishedRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Finished Ratio");
 
                     b.Property<string>("LitigationRequestStage")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Description for Litigation Request Stage");
 
                     b.Property<int?>("NotFinishedCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("NotFinishedRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Not Finished Ratio");
 
                     b.Property<int?>("OtherServicesCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("OtherServicesRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Other Services Ratio");
 
                     b.Property<int?>("PropertiesCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("PropertiesRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Properties Ratio");
 
                     b.Property<int?>("RealEstateBrokerageCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("RealEstateBrokerageRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Real Estate Brokerage Ratio");
 
                     b.Property<int?>("RentCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("RentRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Rent Ratio");
 
                     b.Property<int>("TotalLitigationCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int?>("TotalReviewDueDateCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("TotalReviewDueDateRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Total");
 
                     b.Property<int?>("WafiCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("WafiRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Wafi Ratio");
 
                     b.ToTable((string)null);
 
@@ -3040,100 +3630,132 @@ namespace REAC.EntityFrameworkCore.Migrations
             modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Reports.GetLitigationStatisticsForAllStagesReportResult", b =>
                 {
                     b.Property<int>("LackOfReconciliationCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int>("ReconciliationWasMadeCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int>("TheReconciliationOnTradyPatformCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int>("TotalArbitrationAllCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int>("TotalArbitrationDueDateCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int>("TotalArbitrationFinishedCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int>("TotalArbitrationNotFinishedCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int>("TotalArbitrationOtherServicesCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int>("TotalArbitrationPropertiesCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int>("TotalArbitrationRealEstateBrokerageCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int>("TotalArbitrationRentCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int>("TotalArbitrationWafiCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int>("TotalReconciliationAllCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int>("TotalReconciliationDueDateCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int>("TotalReconciliationFinishedCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int>("TotalReconciliationNotFinishedCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int>("TotalReconciliationOtherServicesCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int>("TotalReconciliationPropertiesCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int>("TotalReconciliationRealEstateBrokerageCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int>("TotalReconciliationRentCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int>("TotalReconciliationWafiCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int>("TotalReviewAllCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int>("TotalReviewDueDateCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int>("TotalReviewFinishedCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int>("TotalReviewNotFinishedCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int>("TotalReviewOtherServicesCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int>("TotalReviewPropertiesCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int>("TotalReviewRealEstateBrokerageCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int>("TotalReviewRentCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int>("TotalReviewWafiCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int>("WaiverOfRightCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int>("WaiverOfTheLawSuitCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.ToTable((string)null);
 
@@ -3143,49 +3765,64 @@ namespace REAC.EntityFrameworkCore.Migrations
             modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Reports.GetLitigationStatisticsMainReportResult", b =>
                 {
                     b.Property<int>("FinishedCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal>("FinishedRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Finished Ratio");
 
                     b.Property<int>("NotFinishedCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal>("NotFinishedRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Not Finished Ratio");
 
                     b.Property<int>("OtherServicesCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal>("OtherServicesRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Other Services Ratio");
 
                     b.Property<int>("PropertiesCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal>("PropertiesRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Properties Ratio");
 
                     b.Property<int>("RealEstateBrokerageCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal>("RealEstateBrokerageRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Real Estate Brokerage Ratio");
 
                     b.Property<int>("RentCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal>("RentRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Rent Ratio");
 
                     b.Property<int>("TotalLitigationCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int>("WafiCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal>("WafiRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Wafi Ratio");
 
                     b.ToTable((string)null);
 
@@ -3195,67 +3832,88 @@ namespace REAC.EntityFrameworkCore.Migrations
             modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Reports.GetLitigationStatisticsReportResult", b =>
                 {
                     b.Property<int?>("DueDateArbitrationCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("DueDateArbitrationRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Due Date Arbitration Ratio");
 
                     b.Property<int?>("DueDateReconciliationCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("DueDateReconciliationRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Due Date Reconciliation Ratio");
 
                     b.Property<int?>("FinishedCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("FinishedRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Finished Ratio");
 
                     b.Property<int?>("NotFinishedCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("NotFinishedRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Not Finished Ratio");
 
                     b.Property<int?>("OtherServicesCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("OtherServicesRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Other Services Ratio");
 
                     b.Property<int?>("PropertiesCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("PropertiesRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Properties Ratio");
 
                     b.Property<int?>("RealEstateBrokerageCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("RealEstateBrokerageRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Real Estate Brokerage Ratio");
 
                     b.Property<int?>("RentCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("RentRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Rent Ratio");
 
                     b.Property<int>("TotalLitigationCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int?>("TotalReviewDueDateCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("TotalReviewDueDateRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Total");
 
                     b.Property<int?>("WafiCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("WafiRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Wafi Ratio");
 
                     b.ToTable((string)null);
 
@@ -3265,172 +3923,228 @@ namespace REAC.EntityFrameworkCore.Migrations
             modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Reports.GetReformerDashbourdResult", b =>
                 {
                     b.Property<int?>("DueDateArbitrationCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("DueDateArbitrationRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Due Date Arbitration Ratio");
 
                     b.Property<int?>("DueDateReconciliationCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("DueDateReconciliationRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Due Date Reconciliation Ratio");
 
                     b.Property<int?>("FinishedCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("FinishedRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Finished Ratio");
 
                     b.Property<int?>("LackOfReconciliationCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int?>("NotFinishedCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("NotFinishedRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Not Finished Ratio");
 
                     b.Property<int?>("OtherServicesCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int?>("OtherServicesDueDateCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("OtherServicesDueDateRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Other Services Due Date Ratio");
 
                     b.Property<int?>("OtherServicesFinishedCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("OtherServicesFinishedRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Other Services Finished Ratio");
 
                     b.Property<int?>("OtherServicesNotFinishedCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("OtherServicesNotFinishedRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Other Services Not Finished Ratio");
 
                     b.Property<decimal?>("OtherServicesRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Other Services Ratio");
 
                     b.Property<int?>("PropertiesCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int?>("PropertiesDueDateCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("PropertiesDueDateRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Properties Due Date Ratio");
 
                     b.Property<int?>("PropertiesFinishedCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("PropertiesFinishedRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Properties Finished Ratio");
 
                     b.Property<int?>("PropertiesNotFinishedCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("PropertiesNotFinishedRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Properties Not Finished Ratio");
 
                     b.Property<decimal?>("PropertiesRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Properties Ratio");
 
                     b.Property<int?>("RealEstateBrokerageCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int?>("RealEstateBrokerageDueDateCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("RealEstateBrokerageDueDateRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Real Estate Brokerage Due Date Ratio");
 
                     b.Property<int?>("RealEstateBrokerageFinishedCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("RealEstateBrokerageFinishedRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Real Estate Brokerage Finished Ratio");
 
                     b.Property<int?>("RealEstateBrokerageNotFinishedCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("RealEstateBrokerageNotFinishedRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Real Estate Brokerage Not Finished Ratio");
 
                     b.Property<decimal?>("RealEstateBrokerageRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Real Estate Brokerage Ratio");
 
                     b.Property<int?>("ReconciliationWasMadeCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int?>("RentCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int?>("RentDueDateCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("RentDueDateRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Rent Due Date Ratio");
 
                     b.Property<int?>("RentFinishedCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("RentFinishedRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Rent Finished Ratio");
 
                     b.Property<int?>("RentNotFinishedCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("RentNotFinishedRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Rent Not Finished Ratio");
 
                     b.Property<decimal?>("RentRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Rent Ratio");
 
                     b.Property<int?>("TheReconciliationOnTradyPatformCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int?>("TotalLitigationCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int?>("TotalReviewDueDateCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("TotalReviewDueDateRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Total");
 
                     b.Property<int?>("WafiCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int?>("WafiDueDateCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("WafiDueDateRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Wafi Due Date Ratio");
 
                     b.Property<int?>("WafiFinishedCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("WafiFinishedRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Wafi Finished Ratio");
 
                     b.Property<int?>("WafiNotFinishedCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("WafiNotFinishedRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Wafi Not Finished Ratio");
 
                     b.Property<decimal?>("WafiRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Wafi Ratio");
 
                     b.Property<int?>("WaiverOfRightCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int?>("WaiverOfTheLawsuitCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.ToTable((string)null);
 
@@ -3440,22 +4154,28 @@ namespace REAC.EntityFrameworkCore.Migrations
             modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Reports.GetReviewersReformersArbitratorsStatisticsReportResult", b =>
                 {
                     b.Property<int>("CertifiedArbitrators")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Description for Certified Arbitrators");
 
                     b.Property<int>("CertifiedReformers")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Description for Certified Reformers");
 
                     b.Property<int>("CertifiedReviewers")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Description for Certified Reviewers");
 
                     b.Property<int>("StoppedArbitrators")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Description for Stopped Arbitrators");
 
                     b.Property<int>("StoppedReformers")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Description for Stopped Reformers");
 
                     b.Property<int>("StoppedReviewers")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Description for Stopped Reviewers");
 
                     b.ToTable((string)null);
 
@@ -3465,157 +4185,208 @@ namespace REAC.EntityFrameworkCore.Migrations
             modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Reports.GetReviwersDashbourdResult", b =>
                 {
                     b.Property<int?>("DueDateArbitrationCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("DueDateArbitrationRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Due Date Arbitration Ratio");
 
                     b.Property<int?>("DueDateReconciliationCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("DueDateReconciliationRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Due Date Reconciliation Ratio");
 
                     b.Property<int?>("FinishedCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("FinishedRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Finished Ratio");
 
                     b.Property<int?>("NotFinishedCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("NotFinishedRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Not Finished Ratio");
 
                     b.Property<int?>("OtherServicesCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int?>("OtherServicesDueDateCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("OtherServicesDueDateRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Other Services Due Date Ratio");
 
                     b.Property<int?>("OtherServicesFinishedCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("OtherServicesFinishedRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Other Services Finished Ratio");
 
                     b.Property<int?>("OtherServicesNotFinishedCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("OtherServicesNotFinishedRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Other Services Not Finished Ratio");
 
                     b.Property<decimal?>("OtherServicesRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Other Services Ratio");
 
                     b.Property<int?>("PropertiesCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int?>("PropertiesDueDateCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("PropertiesDueDateRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Properties Due Date Ratio");
 
                     b.Property<int?>("PropertiesFinishedCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("PropertiesFinishedRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Properties Finished Ratio");
 
                     b.Property<int?>("PropertiesNotFinishedCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("PropertiesNotFinishedRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Properties Not Finished Ratio");
 
                     b.Property<decimal?>("PropertiesRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Properties Ratio");
 
                     b.Property<int?>("RealEstateBrokerageCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int?>("RealEstateBrokerageDueDateCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("RealEstateBrokerageDueDateRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Real Estate Brokerage Due Date Ratio");
 
                     b.Property<int?>("RealEstateBrokerageFinishedCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("RealEstateBrokerageFinishedRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Real Estate Brokerage Finished Ratio");
 
                     b.Property<int?>("RealEstateBrokerageNotFinishedCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("RealEstateBrokerageNotFinishedRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Real Estate Brokerage Not Finished Ratio");
 
                     b.Property<decimal?>("RealEstateBrokerageRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Real Estate Brokerage Ratio");
 
                     b.Property<int?>("RentCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int?>("RentDueDateCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("RentDueDateRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Rent Due Date Ratio");
 
                     b.Property<int?>("RentFinishedCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("RentFinishedRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Rent Finished Ratio");
 
                     b.Property<int?>("RentNotFinishedCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("RentNotFinishedRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Rent Not Finished Ratio");
 
                     b.Property<decimal?>("RentRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Rent Ratio");
 
                     b.Property<int?>("TotalLitigationCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int?>("TotalReviewDueDateCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("TotalReviewDueDateRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Total");
 
                     b.Property<int?>("WafiCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<int?>("WafiDueDateCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("WafiDueDateRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Wafi Due Date Ratio");
 
                     b.Property<int?>("WafiFinishedCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("WafiFinishedRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Wafi Finished Ratio");
 
                     b.Property<int?>("WafiNotFinishedCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Count of items");
 
                     b.Property<decimal?>("WafiNotFinishedRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Wafi Not Finished Ratio");
 
                     b.Property<decimal?>("WafiRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Description for Wafi Ratio");
 
                     b.ToTable((string)null);
 
@@ -3625,34 +4396,44 @@ namespace REAC.EntityFrameworkCore.Migrations
             modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Reports.GetReviwersReportResult", b =>
                 {
                     b.Property<int?>("FinishedCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Number of finished litigation reviews");
 
                     b.Property<decimal?>("FinishedRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Ratio of finished litigation reviews");
 
                     b.Property<int?>("NotFinishedCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Number of unfinished litigation reviews");
 
                     b.Property<decimal?>("NotFinishedRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Ratio of unfinished litigation reviews");
 
                     b.Property<string>("ReviewerName")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Name of the reviewer");
 
                     b.Property<string>("ReviewerStatus")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Status of the reviewer");
 
                     b.Property<int>("TotalCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Total count of all items");
 
                     b.Property<int?>("TotalLitigationCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Total number of litigations assigned to reviewer");
 
                     b.Property<int?>("TotalReviewDueDateCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Number of litigations with review due dates");
 
                     b.Property<decimal?>("TotalReviewDueDateRatio")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Ratio of total review due dates");
 
                     b.ToTable((string)null);
 
@@ -3665,37 +4446,48 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime?>("ApprovedOn")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime")
+                        .HasComment("Date when the delegation request was approved");
 
                     b.Property<int>("DelegationParty")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Party involved in the delegation (plaintiff or defendant)");
 
                     b.Property<Guid?>("DelegatorId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the delegator");
 
                     b.Property<bool?>("IsActive")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Indicates whether the record is active");
 
                     b.Property<bool?>("IsApproved")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Indicates whether the delegation request has been approved");
 
                     b.Property<Guid?>("LitigationRequestId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the litigation request");
 
                     b.Property<int>("LitigationRequestOwnerTypeId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Unique identifier of the litigation request owner type");
 
                     b.Property<Guid?>("ModifiedBy")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the user who last modified this record");
 
                     b.Property<DateTime?>("ModifiedOn")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasComment("Date and time when the record was last modified");
 
                     b.Property<string>("Reason")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Reason for the delegation request or modification");
 
                     b.Property<DateTime>("RequestedOn")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasComment("Date when the delegation request was submitted");
 
                     b.HasKey("Id")
                         .HasName("PK__Delegati__3214EC074548DE5A");
@@ -3716,49 +4508,64 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid?>("CitizenId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the delegating citizen");
 
                     b.Property<Guid?>("CommercialRegisterationFileId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the commercial registration file");
 
                     b.Property<Guid?>("CustodyFileId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the custody proof file");
 
                     b.Property<Guid?>("DecisionFileId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the decision file");
 
                     b.Property<string>("DelegateNumber")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Number of the delegate");
 
                     b.Property<Guid?>("DelegationFileId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the delegation file");
 
                     b.Property<int>("DelegationRelationshipTypeId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Type of delegation relationship");
 
                     b.Property<Guid?>("DelegatorCitizenId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the delegator citizen");
 
                     b.Property<Guid?>("EstablishmentFileId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the establishment contract file");
 
                     b.Property<Guid?>("FacilityId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the facility being delegated");
 
                     b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Indicates whether the record is active");
 
                     b.Property<Guid?>("LawLicenseFileId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the law license file");
 
                     b.Property<DateTime?>("LawyerLicenseExpirationDate")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasComment("Expiration date of the lawyer license");
 
                     b.Property<string>("LawyerLicenseNumber")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Lawyer license number");
 
                     b.Property<Guid?>("RepresentationFileId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the representation document file");
 
                     b.HasKey("Id")
                         .HasName("PK__Facility__340286D707D66911");
@@ -3793,7 +4600,8 @@ namespace REAC.EntityFrameworkCore.Migrations
 
                     b.Property<string>("ArbitratorAssigningRequestName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Name of the arbitrator assigning request");
 
                     b.HasKey("Id")
                         .HasName("PK__SysArbitratorAssigningRequest3214EC0743341C99");
@@ -3810,13 +4618,16 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Property<string>("ArbitratorClassName")
                         .IsRequired()
                         .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasColumnType("nvarchar(20)")
+                        .HasComment("Name of the arbitrator class");
 
                     b.Property<int>("YearsFrom")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Description for Years From");
 
                     b.Property<int>("YearsTo")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Description for Years To");
 
                     b.HasKey("Id")
                         .HasName("PK__SysArbitratorClass_3214EC0743341C99");
@@ -3830,7 +4641,8 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("ArbitratorCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Number of arbitrators");
 
                     b.HasKey("Id")
                         .HasName("PK_SysArbitratorCount");
@@ -3847,13 +4659,16 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("ArbitratorChairmanNominationListCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Number of arbitrator chairman nomination lists");
 
                     b.Property<int>("ArbitratorCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Number of arbitrators");
 
                     b.Property<int>("ArbitratorNominationListCount")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Number of arbitrator nomination lists");
 
                     b.HasKey("Id")
                         .HasName("PK_SysArbitratorNominationListCount");
@@ -3871,7 +4686,8 @@ namespace REAC.EntityFrameworkCore.Migrations
 
                     b.Property<string>("StatusName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Status of the name");
 
                     b.HasKey("Id")
                         .HasName("PK__SysArbitratorStatus4AA46");
@@ -3891,12 +4707,36 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Property<string>("AreaName")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(100)")
+                        .HasComment("Name of the area");
 
                     b.HasKey("Id")
                         .HasName("PK__SysArea_3214EC0743341C99");
 
                     b.ToTable("SysArea", (string)null);
+                });
+
+            modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.System.SysAreaDistances", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("DestinationAreaId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the destination area");
+
+                    b.Property<decimal>("Distance")
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Distance between source and destination areas");
+
+                    b.Property<Guid>("SourceAreaId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the source area");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("SysAreaDistances");
                 });
 
             modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.System.SysBank", b =>
@@ -3907,7 +4747,8 @@ namespace REAC.EntityFrameworkCore.Migrations
 
                     b.Property<string>("BankName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Name of the bank");
 
                     b.HasKey("Id")
                         .HasName("PK__SysBank_3214EC0743341C99");
@@ -3923,7 +4764,8 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Property<string>("RequestStatus")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(50)")
+                        .HasComment("Description for Request Status");
 
                     b.HasKey("Id")
                         .HasName("PK__SysCitizenRequestStatus__3214EC0715A02324");
@@ -3937,12 +4779,14 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("int");
 
                     b.Property<Guid>("BpfId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the bpf");
 
                     b.Property<string>("CitizenRequestTypeName")
                         .IsRequired()
                         .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
+                        .HasColumnType("nvarchar(10)")
+                        .HasComment("Type of the name");
 
                     b.HasKey("Id")
                         .HasName("PK__SysCitizenRequestType__3214EC0743341C99");
@@ -3957,12 +4801,14 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("AreaId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the area");
 
                     b.Property<string>("CityName")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(100)")
+                        .HasComment("Name of the city");
 
                     b.HasKey("Id")
                         .HasName("PK__SysCity_3214EC0743341C99");
@@ -3980,7 +4826,8 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Property<string>("DelegationRelationshipTypeName")
                         .IsRequired()
                         .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasColumnType("nvarchar(20)")
+                        .HasComment("Type of the name");
 
                     b.HasKey("Id")
                         .HasName("PK_SysDelegationRelationshipType3214EC0743341C99");
@@ -4008,13 +4855,16 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Property<string>("DepartmentName")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(50)")
+                        .HasComment("Name of the department");
 
                     b.Property<int>("DepartmentType")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Description for Department Type");
 
                     b.Property<int>("DistributionMode")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Description for Distribution Mode");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
@@ -4037,10 +4887,12 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<bool>("AllowAssign")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Indicates whether the employee can assign tasks");
 
                     b.Property<bool>("AllowReAssign")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Indicates whether the employee can reassign tasks");
 
                     b.Property<Guid?>("CreatedBy")
                         .HasColumnType("uniqueidentifier");
@@ -4055,26 +4907,31 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<Guid>("DepartmentId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the department");
 
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(100)")
+                        .HasComment("Email address");
 
                     b.Property<string>("EmployeeName")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(100)")
+                        .HasComment("Name of the employee");
 
                     b.Property<bool?>("IsActive")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
-                        .HasDefaultValueSql("('true')");
+                        .HasDefaultValueSql("('true')")
+                        .HasComment("Indicates whether the record is active");
 
                     b.Property<bool>("IsAdmin")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Indicates whether the employee is an administrator");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
@@ -4083,12 +4940,14 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
-                        .HasDefaultValueSql("('false')");
+                        .HasDefaultValueSql("('false')")
+                        .HasComment("Indicates whether the employee account is locked");
 
                     b.Property<string>("Mobile")
                         .IsRequired()
                         .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasColumnType("nvarchar(20)")
+                        .HasComment("Mobile phone number");
 
                     b.Property<Guid?>("UpdatedBy")
                         .HasColumnType("uniqueidentifier");
@@ -4097,10 +4956,12 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<Guid?>("UserId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the user");
 
                     b.Property<bool>("WorkAsEmployee")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Indicates whether the person works as an employee");
 
                     b.HasKey("Id")
                         .HasName("PK__SysEmplo__3214EC0760D0BD3B");
@@ -4118,7 +4979,8 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Property<string>("ExemptionReductionCategoryName")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(50)")
+                        .HasComment("Category of the name");
 
                     b.HasKey("Id")
                         .HasName("PK_SysExemptionReductionCategory_E19C938");
@@ -4141,17 +5003,20 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("FileDescription")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Description");
 
                     b.Property<string>("FilePath")
                         .IsRequired()
                         .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
+                        .HasColumnType("nvarchar(1000)")
+                        .HasComment("Path");
 
                     b.Property<string>("FileType")
                         .IsRequired()
                         .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
+                        .HasColumnType("nvarchar(10)")
+                        .HasComment("Description for File Type");
 
                     b.HasKey("Id")
                         .HasName("PK__SysFileM__3214EC07904841A6");
@@ -4167,7 +5032,8 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Property<string>("Gender")
                         .IsRequired()
                         .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
+                        .HasColumnType("nvarchar(10)")
+                        .HasComment("Description for Gender");
 
                     b.HasKey("Id")
                         .HasName("PK__SysGende__3214EC0743341C99");
@@ -4183,7 +5049,8 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Property<string>("IdentityType")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(50)")
+                        .HasComment("Description for Identity Type");
 
                     b.HasKey("Id")
                         .HasName("PK__SysIdent__3214EC0765CD90E5");
@@ -4197,18 +5064,22 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<decimal>("Fees")
-                        .HasColumnType("money");
+                        .HasColumnType("money")
+                        .HasComment("Base fees for this litigation amount range");
 
                     b.Property<decimal?>("FromAmount")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Minimum amount for this litigation range");
 
                     b.Property<string>("LitigationAmount")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(50)")
+                        .HasComment("Display name for the litigation amount range");
 
                     b.Property<decimal?>("ToAmount")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Maximum amount for this litigation range");
 
                     b.HasKey("Id")
                         .HasName("PK__SysLitig__3214EC07298413D2");
@@ -4225,10 +5096,12 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("AcknowledgmentContent")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Content");
 
                     b.Property<Guid>("BpfId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the bpf");
 
                     b.Property<string>("CategoryName")
                         .IsRequired()
@@ -4237,7 +5110,8 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasComment("صلح – تحكيم-صلح وتحكيم");
 
                     b.Property<string>("TermsAndConditions")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Description for Terms And Conditions");
 
                     b.HasKey("Id")
                         .HasName("PK__SysLitig__3214EC072E49D791");
@@ -4251,22 +5125,27 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("AcknowledgmentContent")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Content of the acknowledgment for this contract type");
 
                     b.Property<string>("CodingPrefixSymbol")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Prefix symbol used for coding litigation requests of this contract type");
 
                     b.Property<int>("ReconciliationPeriod")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Duration of the reconciliation period in days for this contract type");
 
                     b.Property<string>("TermsAndConditions")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Terms and conditions applicable to this contract type");
 
                     b.Property<string>("TypeName")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(50)")
+                        .HasComment("Name of the litigation request contract type");
 
                     b.HasKey("Id")
                         .HasName("PK__SysLitig__3214EC074D10EA1A");
@@ -4285,7 +5164,8 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Property<string>("Destination")
                         .IsRequired()
                         .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasColumnType("nvarchar(20)")
+                        .HasComment("Description for Destination");
 
                     b.HasKey("Id")
                         .HasName("PK__SysLitig__3214EC071298CB03");
@@ -4303,11 +5183,13 @@ namespace REAC.EntityFrameworkCore.Migrations
 
                     b.Property<string>("ArName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Name of the en");
 
                     b.Property<string>("EnName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Name of the en");
 
                     b.HasKey("Id");
 
@@ -4322,7 +5204,8 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Property<string>("StatusName")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(50)")
+                        .HasComment("Status of the name");
 
                     b.HasKey("Id")
                         .HasName("PK__SysLitig__3214EC07708342EA");
@@ -4373,7 +5256,8 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Property<string>("RequestStatus")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(50)")
+                        .HasComment("Description for Request Status");
 
                     b.Property<Guid?>("UpdatedBy")
                         .HasColumnType("uniqueidentifier");
@@ -4395,7 +5279,8 @@ namespace REAC.EntityFrameworkCore.Migrations
 
                     b.Property<string>("MeetingLocationName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Name of the meeting location");
 
                     b.HasKey("Id")
                         .HasName("PK__SysMeetingLocation_3214EC0743341C99");
@@ -4412,14 +5297,17 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Property<string>("Code")
                         .IsRequired()
                         .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
+                        .HasColumnType("nvarchar(10)")
+                        .HasComment("Description for Code");
 
                     b.Property<DateTime>("ExpiryDateTime")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasComment("Expiry date and time of the OTP");
 
                     b.Property<string>("Mobile")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Mobile phone number");
 
                     b.HasKey("Id");
 
@@ -4448,11 +5336,13 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("bit");
 
                     b.Property<int>("NationalityCode")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Description for Nationality Code");
 
                     b.Property<string>("NationalityName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Name of the nationality");
 
                     b.Property<Guid?>("UpdatedBy")
                         .HasColumnType("uniqueidentifier");
@@ -4472,7 +5362,8 @@ namespace REAC.EntityFrameworkCore.Migrations
 
                     b.Property<string>("StatusName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Status of the name");
 
                     b.HasKey("Id")
                         .HasName("PK__SysReformerStatus4AA46");
@@ -4489,12 +5380,14 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid?>("CitizenId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the source citizen");
 
                     b.Property<string>("Cranumber")
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)")
-                        .HasColumnName("CRANumber");
+                        .HasColumnName("CRANumber")
+                        .HasComment("Number of the identity");
 
                     b.Property<Guid?>("CreatedBy")
                         .HasColumnType("uniqueidentifier");
@@ -4511,36 +5404,44 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(250)
-                        .HasColumnType("nvarchar(250)");
+                        .HasColumnType("nvarchar(250)")
+                        .HasComment("Email address");
 
                     b.Property<string>("Facility700Number")
                         .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasColumnType("nvarchar(20)")
+                        .HasComment("Number of the identity");
 
                     b.Property<string>("IdentityNumber")
                         .IsRequired()
                         .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasColumnType("nvarchar(20)")
+                        .HasComment("Number of the identity");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
                     b.Property<bool>("IsRegistrationDone")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Description for Is Registration Done");
 
                     b.Property<string>("Mobile")
                         .IsRequired()
                         .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasColumnType("nvarchar(20)")
+                        .HasComment("Mobile phone number");
 
                     b.Property<DateTime?>("RegistrationDoneOn")
-                        .HasColumnType("date");
+                        .HasColumnType("date")
+                        .HasComment("Date when the registration was completed");
 
                     b.Property<DateTime>("RequestedOn")
-                        .HasColumnType("date");
+                        .HasColumnType("date")
+                        .HasComment("Date when the registration request was submitted");
 
                     b.Property<Guid>("SourceCitizenId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the source citizen");
 
                     b.Property<Guid?>("UpdatedBy")
                         .HasColumnType("uniqueidentifier");
@@ -4566,12 +5467,14 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Property<string>("Key")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(100)")
+                        .HasComment("Configuration setting key identifier");
 
                     b.Property<string>("Value")
                         .IsRequired()
                         .HasMaxLength(225)
-                        .HasColumnType("nvarchar(225)");
+                        .HasColumnType("nvarchar(225)")
+                        .HasComment("Configuration setting value");
 
                     b.HasKey("Id")
                         .HasName("PK__SysSetti__3214EC07BA9C86EA");
@@ -4588,25 +5491,32 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid?>("ApprovedBy")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the employee who approved the request");
 
                     b.Property<DateTime?>("ApprovedOn")
-                        .HasColumnType("date");
+                        .HasColumnType("date")
+                        .HasComment("Date and time when the request was approved");
 
                     b.Property<Guid>("EmployeeId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the employee");
 
                     b.Property<DateTime>("EndDate")
-                        .HasColumnType("date");
+                        .HasColumnType("date")
+                        .HasComment("End date of the vacation");
 
                     b.Property<bool?>("IsApproved")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Indicates whether the vacation request is approved");
 
                     b.Property<string>("Reason")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Reason for the vacation request");
 
                     b.Property<DateTime>("StartDate")
-                        .HasColumnType("date");
+                        .HasColumnType("date")
+                        .HasComment("Start date of the vacation");
 
                     b.HasKey("Id")
                         .HasName("PK_SysVacationRequestEC07276A4089");
@@ -4627,17 +5537,21 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedOn")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasComment("Date and time when the record was created");
 
                     b.Property<string>("LogMessage")
                         .HasMaxLength(250)
-                        .HasColumnType("nvarchar(250)");
+                        .HasColumnType("nvarchar(250)")
+                        .HasComment("Description for Log Message");
 
                     b.Property<Guid>("RequestId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the request");
 
                     b.Property<bool>("ShowForApplicant")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Description for Show For Applicant");
 
                     b.HasKey("Id")
                         .HasName("PK__WorkFlow__3214EC070B2A996F");
@@ -4655,37 +5569,48 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedOn")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasComment("Date and time when the record was created");
 
                     b.Property<Guid?>("EmployeeId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the employee");
 
                     b.Property<DateTime?>("FinishedOn")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime")
+                        .HasComment("Date and time when the workflow processing was finished");
 
                     b.Property<bool>("IsFinished")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Description for Is Finished");
 
                     b.Property<bool>("IsWithNotes")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Notes");
 
                     b.Property<string>("Notes")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Notes");
 
                     b.Property<Guid>("RequestId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the request");
 
                     b.Property<bool?>("ShowForApplicant")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Description for Show For Applicant");
 
                     b.Property<Guid?>("SourceWorkFlowProcessingLogId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the source work flow processing log");
 
                     b.Property<Guid?>("WorkFlowStepEventId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the work flow step event");
 
                     b.Property<Guid>("WorkFlowStepId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the work flow step");
 
                     b.HasKey("Id")
                         .HasName("PK__WorkFlow__3214EC079C2E52E3");
@@ -4712,10 +5637,12 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("FileId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the work flow processing log");
 
                     b.Property<Guid>("WorkFlowProcessingLogId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the work flow processing log");
 
                     b.HasKey("Id")
                         .HasName("PK__WorkFlow__3214EC076A5BB1A2");
@@ -4748,7 +5675,8 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<Guid?>("DepartmentId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the department");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
@@ -4762,7 +5690,8 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Property<string>("WorkFlowName")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(50)")
+                        .HasComment("Name of the work flow");
 
                     b.HasKey("Id")
                         .HasName("PK__WorkFlow__3214EC07F533D1CD");
@@ -4790,14 +5719,17 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<Guid?>("DepartmentId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the department");
 
                     b.Property<Guid?>("EmployeeId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the employee");
 
                     b.Property<string>("NotificationMessage")
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(50)")
+                        .HasComment("Content of the notification message");
 
                     b.Property<Guid?>("UpdatedBy")
                         .HasColumnType("uniqueidentifier");
@@ -4806,13 +5738,16 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<Guid>("WorkFlowNotificationDestinationTypeId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the work flow notification destination type");
 
                     b.Property<Guid>("WorkFlowNotificationPlanId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the work flow notification plan");
 
                     b.Property<Guid>("WorkFlowNotificationTypeId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the work flow notification type");
 
                     b.HasKey("Id")
                         .HasName("PK__WorkFlow__3214EC07D57D00A2");
@@ -4841,7 +5776,8 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Property<string>("DestinationType")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(50)")
+                        .HasComment("Description for Destination Type");
 
                     b.HasKey("Id")
                         .HasName("PK__WorkFlow__3214EC070F04AA46");
@@ -4868,7 +5804,8 @@ namespace REAC.EntityFrameworkCore.Migrations
 
                     b.Property<string>("NotificationPlan")
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(50)")
+                        .HasComment("Description for Notification Plan");
 
                     b.Property<Guid?>("UpdatedBy")
                         .HasColumnType("uniqueidentifier");
@@ -4893,7 +5830,8 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Property<string>("NotificationType")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(50)")
+                        .HasComment("Description for Notification Type");
 
                     b.HasKey("Id")
                         .HasName("PK__WorkFlow__3214EC07BAAB3A96");
@@ -4913,7 +5851,8 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("ActorTypeId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Unique identifier of the step actor type");
 
                     b.Property<Guid?>("CreatedBy")
                         .HasColumnType("uniqueidentifier");
@@ -4924,10 +5863,12 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Property<string>("CreationLogMessage")
                         .IsRequired()
                         .HasMaxLength(250)
-                        .HasColumnType("nvarchar(250)");
+                        .HasColumnType("nvarchar(250)")
+                        .HasComment("Message logged when this step is created");
 
                     b.Property<Guid?>("CreationNotificationPlanId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the creation notification plan");
 
                     b.Property<Guid?>("DeletedBy")
                         .HasColumnType("uniqueidentifier");
@@ -4936,36 +5877,45 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<Guid?>("DepartmentId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the department");
 
                     b.Property<Guid?>("EmployeeId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the employee");
 
                     b.Property<int?>("ExternalStatusId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("External status of the request at this step");
 
                     b.Property<int?>("InternalStatusId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Internal status of the request at this step");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
                     b.Property<int>("Order")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Order of this step in the workflow sequence");
 
                     b.Property<int>("ProcessActorType")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Type of actor responsible for processing this step");
 
                     b.Property<bool>("ShowForApplicant")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Indicates whether this step is visible to the applicant");
 
                     b.Property<Guid?>("StageId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the stage");
 
                     b.Property<string>("StepName")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(50)")
+                        .HasComment("Name of the step");
 
                     b.Property<Guid?>("UpdatedBy")
                         .HasColumnType("uniqueidentifier");
@@ -4974,10 +5924,12 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<Guid>("WorkFlowId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the workflow");
 
                     b.Property<int>("WorkModeId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Unique identifier of the step work mode");
 
                     b.HasKey("Id")
                         .HasName("PK__WorkFlow__3214EC072AD866D7");
@@ -5008,34 +5960,44 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<int?>("ActionModeId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Unique identifier of the event action mode");
 
                     b.Property<bool>("AllowChangeExternalStatus")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Description for Allow Change External Status");
 
                     b.Property<bool>("AllowChangeInternalStatus")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Description for Allow Change Internal Status");
 
                     b.Property<bool>("AllowChangeIsActive")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Indicates whether the record is active");
 
                     b.Property<bool>("AllowChangeIsAllowEdit")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Description for Allow Change Is Allow Edit");
 
                     b.Property<bool>("AllowChangeIsFinished")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Description for Allow Change Is Finished");
 
                     b.Property<bool>("AllowCompletionNotificationPlan")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Description for Allow Completion Notification Plan");
 
                     b.Property<bool>("AllowFileUpload")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("File");
 
                     b.Property<bool>("AllowNotes")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Indicates whether notes are allowed for this workflow step event");
 
                     b.Property<Guid?>("CompletionNotificationPlanId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the completion notification plan");
 
                     b.Property<Guid?>("CreatedBy")
                         .HasColumnType("uniqueidentifier");
@@ -5044,7 +6006,8 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<int?>("CustomActionType")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Description for Custom Action Type");
 
                     b.Property<Guid?>("DeletedBy")
                         .HasColumnType("uniqueidentifier");
@@ -5055,53 +6018,68 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Property<string>("EventName")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(50)")
+                        .HasComment("Name of the event");
 
                     b.Property<int>("EventSecurityLevelId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Unique identifier of the event security level");
 
                     b.Property<int?>("ExternalStatusId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Status identifier");
 
                     b.Property<int?>("InternalStatusId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Status identifier");
 
                     b.Property<bool?>("IsActiveValue")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Value");
 
                     b.Property<bool>("IsAdminApprovalRequired")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Description for Is Admin Approval Required");
 
                     b.Property<bool?>("IsAllowEditValue")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Value");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
                     b.Property<bool?>("IsFinishedValue")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Value");
 
                     b.Property<int?>("LitigationRequestStage")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Description for Litigation Request Stage");
 
                     b.Property<int?>("LitigationRequestSubStage")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Description for Litigation Request Sub Stage");
 
                     b.Property<string>("LogMessage")
                         .HasMaxLength(250)
-                        .HasColumnType("nvarchar(250)");
+                        .HasColumnType("nvarchar(250)")
+                        .HasComment("Description for Log Message");
 
                     b.Property<Guid?>("NextWorkFlowStepDestinationId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the next work flow step destination");
 
                     b.Property<bool>("SameEmployee")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Description for Same Employee");
 
                     b.Property<bool>("ShowLogForApplicant")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Description for Show Log For Applicant");
 
                     b.Property<bool>("ShowProcessingLogForApplicant")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasComment("Description for Show Processing Log For Applicant");
 
                     b.Property<Guid?>("UpdatedBy")
                         .HasColumnType("uniqueidentifier");
@@ -5113,7 +6091,8 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("WorkFlowStepsId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the work flow steps");
 
                     b.HasKey("Id")
                         .HasName("PK__WorkFlow__3214EC07C98BCC1F");
@@ -5144,7 +6123,8 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Property<string>("ActionMode")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(50)")
+                        .HasComment("Description for Action Mode");
 
                     b.HasKey("Id")
                         .HasName("PK__WorkFlowStepEventActionMode__32143A96");
@@ -5166,7 +6146,8 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Property<string>("SecurityLevel")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(50)")
+                        .HasComment("Description for Security Level");
 
                     b.HasKey("Id")
                         .HasName("PK__WorkFlowStepEventSecurityLevel__32143A96");
@@ -5186,16 +6167,20 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid?>("DepartmentId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the department");
 
                     b.Property<Guid?>("EmployeeId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the employee");
 
                     b.Property<int>("SecurityLevelActorId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Unique identifier of the security level actor");
 
                     b.Property<Guid>("WorkFlowStepEventId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the work flow step event");
 
                     b.HasKey("Id")
                         .HasName("PK__WorkFlowStepEventSecurityLevelActor__3214EC072AD866D7");
@@ -5222,7 +6207,8 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Property<string>("SecurityLevelActorType")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(50)")
+                        .HasComment("Description for Security Level Actor Type");
 
                     b.HasKey("Id")
                         .HasName("PK__WorkFlowStepEventSecurityLevelActorType__3214EC07C94B22C3");
@@ -5258,12 +6244,14 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("bit");
 
                     b.Property<int?>("Order")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasComment("Display order of the workflow step stage");
 
                     b.Property<string>("StageName")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(50)")
+                        .HasComment("Name of the stage");
 
                     b.Property<Guid?>("UpdatedBy")
                         .HasColumnType("uniqueidentifier");
@@ -5291,7 +6279,8 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Property<string>("WorkMode")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(50)")
+                        .HasComment("Description for Work Mode");
 
                     b.HasKey("Id")
                         .HasName("PK__WorkFlow__3214EC079D121DED");
@@ -5313,7 +6302,8 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Property<string>("ActorType")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(50)")
+                        .HasComment("Description for Actor Type");
 
                     b.HasKey("Id")
                         .HasName("PK__WorkFlowStepsActorType__3214EC07C94B22C3");
@@ -5880,11 +6870,13 @@ namespace REAC.EntityFrameworkCore.Migrations
 
                             b1.Property<string>("LanguageCode")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Description for Language Code");
 
                             b1.Property<string>("Name")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Description for Name");
 
                             b1.HasKey("SysInvoiceStatusId", "Id");
 
@@ -5912,11 +6904,13 @@ namespace REAC.EntityFrameworkCore.Migrations
 
                             b1.Property<string>("LanguageCode")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Description for Language Code");
 
                             b1.Property<string>("Name")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Description for Name");
 
                             b1.HasKey("SysInvoiceTypeId", "Id");
 
@@ -6428,11 +7422,13 @@ namespace REAC.EntityFrameworkCore.Migrations
 
                             b1.Property<string>("CategoryName")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Category of the name");
 
                             b1.Property<string>("LanguageCode")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Description for Language Code");
 
                             b1.HasKey("OtherCategoryId", "Id");
 
@@ -6695,11 +7691,13 @@ namespace REAC.EntityFrameworkCore.Migrations
 
                             b1.Property<string>("ArbitratorClassName")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Name of the arbitrator class");
 
                             b1.Property<string>("LanguageCode")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Description for Language Code");
 
                             b1.HasKey("SysArbitratorClassId", "Id");
 
@@ -6727,11 +7725,13 @@ namespace REAC.EntityFrameworkCore.Migrations
 
                             b1.Property<string>("LanguageCode")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Description for Language Code");
 
                             b1.Property<string>("StatusName")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Status of the name");
 
                             b1.HasKey("SysArbitratorStatusId", "Id");
 
@@ -6759,11 +7759,13 @@ namespace REAC.EntityFrameworkCore.Migrations
 
                             b1.Property<string>("AreaName")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Name of the area");
 
                             b1.Property<string>("LanguageCode")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Description for Language Code");
 
                             b1.HasKey("SysAreaId", "Id");
 
@@ -6791,11 +7793,13 @@ namespace REAC.EntityFrameworkCore.Migrations
 
                             b1.Property<string>("LanguageCode")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Description for Language Code");
 
                             b1.Property<string>("RequestStatus")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Description for Request Status");
 
                             b1.HasKey("SysCitizenRequestStatusId", "Id");
 
@@ -6823,11 +7827,13 @@ namespace REAC.EntityFrameworkCore.Migrations
 
                             b1.Property<string>("CitizenRequestTypeName")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Type of the name");
 
                             b1.Property<string>("LanguageCode")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Description for Language Code");
 
                             b1.HasKey("SysCitizenRequestTypeId", "Id");
 
@@ -6861,11 +7867,13 @@ namespace REAC.EntityFrameworkCore.Migrations
 
                             b1.Property<string>("CityName")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Name of the city");
 
                             b1.Property<string>("LanguageCode")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Description for Language Code");
 
                             b1.HasKey("SysCityId", "Id");
 
@@ -6895,11 +7903,13 @@ namespace REAC.EntityFrameworkCore.Migrations
 
                             b1.Property<string>("DelegationRelationshipTypeName")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Type of the name");
 
                             b1.Property<string>("LanguageCode")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Description for Language Code");
 
                             b1.HasKey("SysDelegationRelationshipTypeId", "Id");
 
@@ -6927,11 +7937,13 @@ namespace REAC.EntityFrameworkCore.Migrations
 
                             b1.Property<string>("DepartmentName")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Name of the department");
 
                             b1.Property<string>("LanguageCode")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Description for Language Code");
 
                             b1.HasKey("SysDepartmentId", "Id");
 
@@ -6965,11 +7977,13 @@ namespace REAC.EntityFrameworkCore.Migrations
 
                             b1.Property<string>("EmployeeName")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Name of the employee");
 
                             b1.Property<string>("LanguageCode")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Description for Language Code");
 
                             b1.HasKey("SysEmployeeId", "Id");
 
@@ -6999,11 +8013,13 @@ namespace REAC.EntityFrameworkCore.Migrations
 
                             b1.Property<string>("ExemptionReductionCategoryName")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Category of the name");
 
                             b1.Property<string>("LanguageCode")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Description for Language Code");
 
                             b1.HasKey("SysExemptionReductionCategoryId", "Id");
 
@@ -7031,11 +8047,13 @@ namespace REAC.EntityFrameworkCore.Migrations
 
                             b1.Property<string>("Gender")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Description for Gender");
 
                             b1.Property<string>("LanguageCode")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Description for Language Code");
 
                             b1.HasKey("SysGenderId", "Id");
 
@@ -7063,11 +8081,13 @@ namespace REAC.EntityFrameworkCore.Migrations
 
                             b1.Property<string>("IdentityType")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Description for Identity Type");
 
                             b1.Property<string>("LanguageCode")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Description for Language Code");
 
                             b1.HasKey("SysIdentityTypeId", "Id");
 
@@ -7094,18 +8114,22 @@ namespace REAC.EntityFrameworkCore.Migrations
                                 .HasColumnType("int");
 
                             b1.Property<string>("AcknowledgmentContent")
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Content");
 
                             b1.Property<string>("CategoryName")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Category of the name");
 
                             b1.Property<string>("LanguageCode")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Description for Language Code");
 
                             b1.Property<string>("TermsAndConditions")
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Description for Terms And Conditions");
 
                             b1.HasKey("SysLitigationRequestCategoryId", "Id");
 
@@ -7132,18 +8156,22 @@ namespace REAC.EntityFrameworkCore.Migrations
                                 .HasColumnType("int");
 
                             b1.Property<string>("AcknowledgmentContent")
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Content");
 
                             b1.Property<string>("LanguageCode")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Description for Language Code");
 
                             b1.Property<string>("TermsAndConditions")
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Description for Terms And Conditions");
 
                             b1.Property<string>("TypeName")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Type of the name");
 
                             b1.HasKey("SysLitigationRequestContractTypeId", "Id");
 
@@ -7171,11 +8199,13 @@ namespace REAC.EntityFrameworkCore.Migrations
 
                             b1.Property<string>("Destination")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Description for Destination");
 
                             b1.Property<string>("LanguageCode")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Description for Language Code");
 
                             b1.HasKey("SysLitigationRequestCorrespondenceDestinationId", "Id");
 
@@ -7203,11 +8233,13 @@ namespace REAC.EntityFrameworkCore.Migrations
 
                             b1.Property<string>("LanguageCode")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Description for Language Code");
 
                             b1.Property<string>("StatusName")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Status of the name");
 
                             b1.HasKey("SysLitigationRequestExtendPeriodRequestStatusId", "Id");
 
@@ -7235,11 +8267,13 @@ namespace REAC.EntityFrameworkCore.Migrations
 
                             b1.Property<string>("LanguageCode")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Description for Language Code");
 
                             b1.Property<string>("LitigationRequestOwnerType")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Description for Litigation Request Owner Type");
 
                             b1.HasKey("SysLitigationRequestOwnerTypeId", "Id");
 
@@ -7267,11 +8301,13 @@ namespace REAC.EntityFrameworkCore.Migrations
 
                             b1.Property<string>("LanguageCode")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Description for Language Code");
 
                             b1.Property<string>("RequestStatus")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Description for Request Status");
 
                             b1.HasKey("SysLitigationRequestStatusId", "Id");
 
@@ -7299,11 +8335,13 @@ namespace REAC.EntityFrameworkCore.Migrations
 
                             b1.Property<string>("LanguageCode")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Description for Language Code");
 
                             b1.Property<string>("StatusName")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Status of the name");
 
                             b1.HasKey("SysReformerStatusId", "Id");
 
@@ -7367,11 +8405,13 @@ namespace REAC.EntityFrameworkCore.Migrations
 
                             b1.Property<string>("LanguageCode")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Description for Language Code");
 
                             b1.Property<string>("LogMessage")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Description for Log Message");
 
                             b1.HasKey("WorkFlowLogId", "Id");
 
@@ -7462,11 +8502,13 @@ namespace REAC.EntityFrameworkCore.Migrations
 
                             b1.Property<string>("LanguageCode")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Language code for workflow localization");
 
                             b1.Property<string>("WorkFlowName")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Name of the work flow");
 
                             b1.HasKey("WorkFlowId", "Id");
 
@@ -7524,11 +8566,13 @@ namespace REAC.EntityFrameworkCore.Migrations
 
                             b1.Property<string>("LanguageCode")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Description for Language Code");
 
                             b1.Property<string>("NotificationMessage")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Description for Notification Message");
 
                             b1.HasKey("WorkFlowNotificationId", "Id");
 
@@ -7566,11 +8610,13 @@ namespace REAC.EntityFrameworkCore.Migrations
 
                             b1.Property<string>("DestinationType")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Description for Destination Type");
 
                             b1.Property<string>("LanguageCode")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Description for Language Code");
 
                             b1.HasKey("WorkFlowNotificationDestinationTypeId", "Id");
 
@@ -7598,11 +8644,13 @@ namespace REAC.EntityFrameworkCore.Migrations
 
                             b1.Property<string>("LanguageCode")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Description for Language Code");
 
                             b1.Property<string>("NotificationPlan")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Description for Notification Plan");
 
                             b1.HasKey("WorkFlowNotificationPlanId", "Id");
 
@@ -7630,11 +8678,13 @@ namespace REAC.EntityFrameworkCore.Migrations
 
                             b1.Property<string>("LanguageCode")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Description for Language Code");
 
                             b1.Property<string>("NotificationType")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Description for Notification Type");
 
                             b1.HasKey("WorkFlowNotificationTypeId", "Id");
 
@@ -7699,15 +8749,18 @@ namespace REAC.EntityFrameworkCore.Migrations
 
                             b1.Property<string>("CreationLogMessage")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Log message displayed when the workflow step is created");
 
                             b1.Property<string>("LanguageCode")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Language code for workflow step localization");
 
                             b1.Property<string>("StepName")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Name of the step");
 
                             b1.HasKey("WorkFlowStepId", "Id");
 
@@ -7779,14 +8832,17 @@ namespace REAC.EntityFrameworkCore.Migrations
                                 .HasColumnType("int");
 
                             b1.Property<string>("EventName")
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Name of the event");
 
                             b1.Property<string>("LanguageCode")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Description for Language Code");
 
                             b1.Property<string>("LogMessage")
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Description for Log Message");
 
                             b1.HasKey("WorkFlowStepEventId", "Id");
 
@@ -7824,11 +8880,13 @@ namespace REAC.EntityFrameworkCore.Migrations
 
                             b1.Property<string>("ActionMode")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Description for Action Mode");
 
                             b1.Property<string>("LanguageCode")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Description for Language Code");
 
                             b1.HasKey("WorkFlowStepEventActionModeId", "Id");
 
@@ -7856,11 +8914,13 @@ namespace REAC.EntityFrameworkCore.Migrations
 
                             b1.Property<string>("LanguageCode")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Description for Language Code");
 
                             b1.Property<string>("SecurityLevel")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Description for Security Level");
 
                             b1.HasKey("WorkFlowStepEventSecurityLevelId", "Id");
 
@@ -7921,11 +8981,13 @@ namespace REAC.EntityFrameworkCore.Migrations
 
                             b1.Property<string>("LanguageCode")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Description for Language Code");
 
                             b1.Property<string>("SecurityLevelActorType")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Description for Security Level Actor Type");
 
                             b1.HasKey("WorkFlowStepEventSecurityLevelActorTypeId", "Id");
 
@@ -7953,11 +9015,13 @@ namespace REAC.EntityFrameworkCore.Migrations
 
                             b1.Property<string>("LanguageCode")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Language code for stage localization");
 
                             b1.Property<string>("StageName")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Name of the stage");
 
                             b1.HasKey("WorkFlowStepStageId", "Id");
 
@@ -7985,11 +9049,13 @@ namespace REAC.EntityFrameworkCore.Migrations
 
                             b1.Property<string>("LanguageCode")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Language code for work mode localization");
 
                             b1.Property<string>("WorkMode")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Work mode description for workflow steps");
 
                             b1.HasKey("WorkFlowStepWorkModeId", "Id");
 
@@ -8017,11 +9083,13 @@ namespace REAC.EntityFrameworkCore.Migrations
 
                             b1.Property<string>("ActorType")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Description for Actor Type");
 
                             b1.Property<string>("LanguageCode")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                                .HasColumnType("nvarchar(max)")
+                                .HasComment("Description for Language Code");
 
                             b1.HasKey("WorkFlowStepsActorTypeId", "Id");
 

@@ -15,6 +15,7 @@ namespace REAC.Application.Contracts.Dtos.Litigation.Get
         public string? ContractAddress { get; set; }
         public bool? IsFinancialLitigation { get; set; }
         public Guid? LitigationRequestAmountId { get; set; }
+        public decimal LitigationRequestAmount { get; set; }
         public string? Title { get; set; }
         public string? Description { get; set; }
         public decimal Fees { get; set; }
