@@ -177,7 +177,7 @@ public partial class LitigationRequest : BaseEntity<Guid>
     public decimal ReconciliationFees { get; set; } = 0;
     [Comment("Fees for the arbitration stage")]
     public decimal ArbitrationFees { get; set; } = 0;
-    public decimal DisputeAmount { get; set; } = 0;
+    public decimal? DisputeAmount { get; set; } = 0;
 
     /// <summary>
     [Comment("Indicates whether litigation fees collection request is being sent")]
