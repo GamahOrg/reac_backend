@@ -1,16 +1,16 @@
 ﻿-----Remove session link 
  update sysSetting
   set [Value] = N'تم اضافة موعد لجلسة الحكم في الدعوي المسجلة برقم {LitigationCode}'
-  where Id='2EFA2177-2D45-46CA-BC3E-90413343A08F'
+  where [Key] like '%ArbitrationSession.Added%'
 
 update sysSetting
 set [Value] = N'تم تحديد موعد لجلسة الصلح  رقم الدعوى: {LitigationCode} برجاء التواجد فى {SessionDatetime},'
-where Id='DAE1B827-E123-45DD-82CC-B33EFC8769E3'
+where [Key] like '%ReconciliationSession.Set%'
 
 
 update sysSetting
 set [Value] = N'تم أعادة تعيين جلسة الصلح  ترقم الدعوى: {LitigationCode} برجاء التواجد فى {SessionDatetime},'
-where Id='6D4525EB-D821-4825-BFB8-B71EC6783EDD'
+where [Key] like '%ReconciliationSession.Reset%'
 ----------------------------------------------------------------------
 
 ------adding new step to arbitration
@@ -26,3 +26,7 @@ where Id='6D4525EB-D821-4825-BFB8-B71EC6783EDD'
   Add ArbitrationMinutesOn datetime null
 
 -----------------------------------------------------------------------
+
+-------------------adding new step-----------------------------------
+  insert SysLitigationRequestStatus (Id,RequestStatus, CreatedOn,IsDeleted,Translations) values (39,N'تم ارسال قائمة اختيار محكم','2025-10-05 19:14:23.9567362',0,N'[{"LanguageCode":"en-US","RequestStatus":"ArbitratorsNominationListIsSent"},{"LanguageCode":"ar","RequestStatus": "تم ارسال قائمة اختيار محكم"}]')
+  insert SysLitigationRequestStatus (Id,RequestStatus, CreatedOn,IsDeleted,Translations) values (40,N'تم اختيار المحكمين','2025-10-05 19:14:23.9567362',0,N'[{"LanguageCode":"en-US","RequestStatus":"ArbitratorsSelectionIsDone"},{"LanguageCode":"ar","RequestStatus": "تم اختيار المحكمين"}]')
