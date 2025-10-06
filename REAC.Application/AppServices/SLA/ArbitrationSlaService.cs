@@ -575,18 +575,50 @@ namespace REAC.Application.AppServices.SLA
                                         // يرجى سرعة اتمام عملية إختيار هيئة التحكيم على الدعوى رقم ......
                                         try
                                         {
-                                            var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_ArbitratorsSelect_FirstWarning).Result.Data?.Value;
-                                            msg = msg?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
-                                            var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
-                                            string body;
-                                            using (StreamReader streamReader = File.OpenText(pathToFile))
+
+                                            if (litigationRequest.ArbitratorsCount == 1 && litigationRequest.LitigationRequestArbitratorNominationLists.Where(x => x.DefendantPriority.HasValue == true).Count() > 0)
                                             {
-                                                body = await streamReader.ReadToEndAsync();
-                                                body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_ArbitratorsSelect_FirstWarning).Result.Data?.Value);
-                                                body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                                                await _repository.AddAsync<WorkFlowLog, Guid>(new WorkFlowLog()
+                                                {
+                                                    Id = Guid.NewGuid(),
+                                                    CreatedOn = DateTime.Now,
+                                                    RequestId = litigationRequest.Id,
+                                                    ShowForApplicant = false,
+                                                    LogMessage = "تم إضافة أولوية إختيار قائمة تعيين هيئة التحكيم من قبل النظام للمدعى لتخطيه مدة الاختيار القصوى  "
+                                                });
+                                                litigationRequest.IsPlaintiffArbitratorNominationListDone = true;
+
+                                                foreach (var item in litigationRequest?.LitigationRequestArbitratorNominationLists.ToList())
+                                                {
+                                                    item.PlaintiffPriority = item.DefendantPriority;
+                                                    item.TotalPriority = item.PlaintiffPriority + item.DefendantPriority;
+
+                                                }
+                                                litigationRequest.ArbitratorsNominationListSelectionDoneDateTime = DateTime.Now;
+                                                litigationRequest.ExternalStatusId = RequestStatus.ArbitratorsSelectionIsDone;
+                                                litigationRequest.InternalStatusId = RequestStatus.ArbitratorsSelectionIsDone;
+                                                var selectedArbitrator = litigationRequest.LitigationRequestArbitratorNominationLists.OrderBy(x => x.TotalPriority).FirstOrDefault();
+                                                if (selectedArbitrator != null)
+                                                {
+                                                    await AddSingleNominationAssigningArbitrator(litigationRequest, selectedArbitrator);
+                                                }
                                             }
-                                            await SendNotificationMS(body, msg, litigationRequest, "سرعة اتمام عملية إختيار هيئة التحكيم", NotificationActorType.Plaintiff, RequestType.ArbitratorNominationList
-                                              , notifyApplicant: true, notifyFirstParty: true);
+                                            else
+                                            {
+                                                var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_ArbitratorsSelect_FirstWarning).Result.Data?.Value;
+                                                msg = msg?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                                                var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                                string body;
+                                                using (StreamReader streamReader = File.OpenText(pathToFile))
+                                                {
+                                                    body = await streamReader.ReadToEndAsync();
+                                                    body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_ArbitratorsSelect_FirstWarning).Result.Data?.Value);
+                                                    body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                                                }
+                                                await SendNotificationMS(body, msg, litigationRequest, "سرعة اتمام عملية إختيار هيئة التحكيم", NotificationActorType.Plaintiff, RequestType.ArbitratorNominationList
+                                                  , notifyApplicant: true, notifyFirstParty: true);
+
+                                            }
                                         }
                                         catch (Exception ex) { }
 
@@ -598,18 +630,49 @@ namespace REAC.Application.AppServices.SLA
                                         // يرجى سرعة اتمام عملية إختيار هيئة التحكيم على الدعوى رقم ......
                                         try
                                         {
-                                            var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_ArbitratorsSelect_FirstWarning).Result.Data?.Value;
-                                            msg = msg?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
-                                            var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
-                                            string body;
-                                            using (StreamReader streamReader = File.OpenText(pathToFile))
+
+                                            if (litigationRequest.ArbitratorsCount == 1 && litigationRequest.LitigationRequestArbitratorNominationLists.Where(x => x.PlaintiffPriority.HasValue == true).Count() > 0)
                                             {
-                                                body = await streamReader.ReadToEndAsync();
-                                                body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_ArbitratorsSelect_FirstWarning).Result.Data?.Value);
-                                                body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                                                await _repository.AddAsync<WorkFlowLog, Guid>(new WorkFlowLog()
+                                                {
+                                                    Id = Guid.NewGuid(),
+                                                    CreatedOn = DateTime.Now,
+                                                    RequestId = litigationRequest.Id,
+                                                    ShowForApplicant = false,
+                                                    LogMessage = "تم إضافة أولوية إختيار قائمة تعيين هيئة التحكيم من قبل النظام للمدعى لتخطيه مدة الاختيار القصوى  "
+                                                });
+                                                litigationRequest.IsDefendantArbitratorNominationListDone = true;
+
+                                                foreach (var item in litigationRequest?.LitigationRequestArbitratorNominationLists.ToList())
+                                                {
+                                                    item.DefendantPriority = item.PlaintiffPriority;
+                                                    item.TotalPriority = item.PlaintiffPriority + item.DefendantPriority;
+
+                                                }
+                                                litigationRequest.ArbitratorsNominationListSelectionDoneDateTime = DateTime.Now;
+                                                litigationRequest.ExternalStatusId = RequestStatus.ArbitratorsSelectionIsDone;
+                                                litigationRequest.InternalStatusId = RequestStatus.ArbitratorsSelectionIsDone;
+                                                var selectedArbitrator = litigationRequest.LitigationRequestArbitratorNominationLists.OrderBy(x => x.TotalPriority).FirstOrDefault();
+                                                if (selectedArbitrator != null)
+                                                {
+                                                    await AddSingleNominationAssigningArbitrator(litigationRequest, selectedArbitrator);
+                                                }
                                             }
-                                            await SendNotificationMS(body, msg, litigationRequest, "سرعة اتمام عملية إختيار هيئة التحكيم", NotificationActorType.Defendant, RequestType.ArbitratorNominationList
-                                              , notifySecondParty: true);
+                                            else
+                                            {
+                                                var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_ArbitratorsSelect_FirstWarning).Result.Data?.Value;
+                                                msg = msg?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                                                var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                                string body;
+                                                using (StreamReader streamReader = File.OpenText(pathToFile))
+                                                {
+                                                    body = await streamReader.ReadToEndAsync();
+                                                    body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_ArbitratorsSelect_FirstWarning).Result.Data?.Value);
+                                                    body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                                                }
+                                                await SendNotificationMS(body, msg, litigationRequest, "سرعة اتمام عملية إختيار هيئة التحكيم", NotificationActorType.Defendant, RequestType.ArbitratorNominationList
+                                                  , notifySecondParty: true);
+                                            }
                                         }
                                         catch (Exception ex) { }
 
@@ -1880,5 +1943,81 @@ namespace REAC.Application.AppServices.SLA
         }
 
         #endregion
+
+        public async Task AddSingleNominationAssigningArbitrator(LitigationRequest litigationRequest, LitigationRequestArbitratorNominationList selectedArbitrator)
+        {
+
+            LitigationRequestArbitratorAssigningRequest litigationRequestOneArbitratorAssigningRequest = new LitigationRequestArbitratorAssigningRequest();
+            litigationRequestOneArbitratorAssigningRequest.LitigationRequestId = litigationRequest.Id;
+            litigationRequestOneArbitratorAssigningRequest.RequestOn = DateTime.Now;
+            litigationRequestOneArbitratorAssigningRequest.ArbitratorAssigningRequestTypeId = ArbitratorAssigningRequestType.Arbitrator;
+            litigationRequestOneArbitratorAssigningRequest.LitigationRequestId = litigationRequest.Id;
+            litigationRequestOneArbitratorAssigningRequest.LitigationRequestArbitratorNominationListId = selectedArbitrator.Id;
+            litigationRequestOneArbitratorAssigningRequest.CitizenId = selectedArbitrator.ArbitratorCitizenId;
+            litigationRequestOneArbitratorAssigningRequest.Response = LitigationRequestArbitratorAssigningRequestStatus.None;
+            await _repository.AddAsync<LitigationRequestArbitratorAssigningRequest, Guid>(litigationRequestOneArbitratorAssigningRequest);
+            selectedArbitrator.IsSent = true;
+            // Send Notification
+            // يوجد طلب مهمه جديده كمحكم علي الدعوي رقم
+            try
+            {
+                var Fmsg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Arbitration_Arbitraor_Assigned).Result.Data?.Value;
+                Fmsg = Fmsg?.Replace("{LitigationCode}", litigationRequest.RequestCode);
+                var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                string body;
+                using (StreamReader streamReader = File.OpenText(pathToFile))
+                {
+                    body = await streamReader.ReadToEndAsync();
+                    body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Arbitration_Arbitraor_Assigned).Result.Data?.Value);
+                    body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                }
+                var citizenInfo = (await _repository.GetQueryable<Citizen, Guid>())
+                                    .Where(c => c.Id == litigationRequestOneArbitratorAssigningRequest.CitizenId)
+                                    .FirstOrDefault();
+
+
+                List<SysNotificationDto> notificationList = new List<SysNotificationDto>() {
+
+                           new SysNotificationDto{
+                        ActorId = litigationRequestOneArbitratorAssigningRequest.CitizenId,
+                        RequestId=litigationRequest.Id,
+                        CreatedOn= DateTime.Now,
+                        RequestTypeId=RequestType.ArbitratorTaskrequests,
+                        ActorTypeId=NotificationActorType.Arbitrator,
+                        Message=Fmsg
+                        }
+
+                        };
+                List<string> emailList = new List<string>() {
+                                  citizenInfo.Email
+                                };
+
+                List<string> recipientList = new List<string>()
+                            {
+                                  citizenInfo.Mobile
+                            };
+
+                await _notificationService.SendNotifications(new Contracts.Dtos.Notification.SendEmailDto()
+                {
+                    To = emailList,
+                    Subject = "طلب مهمة جديدة كمحكم علي الدعوي",
+                    Body = body
+                }, new Contracts.Dtos.Integration.GEE.SMSRequestDto()
+                {
+                    message_text = Fmsg,
+                    recipients = recipientList,
+                    notification_type = "SMS",
+
+                }, notificationList);
+
+            }
+            catch (Exception e)
+            {
+
+
+            }
+
+
+        }
     }
 }
