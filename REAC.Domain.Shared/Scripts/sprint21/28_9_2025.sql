@@ -1,4 +1,8 @@
-﻿-----Remove session link 
+﻿
+
+
+
+-----Remove session link 
  update sysSetting
   set [Value] = N'تم اضافة موعد لجلسة الحكم في الدعوي المسجلة برقم {LitigationCode}'
   where [Key] like '%ArbitrationSession.Added%'
@@ -24,6 +28,12 @@ where [Key] like '%ReconciliationSession.Reset%'
   
      alter table dbo.LitigationRequestArbitratorAssigningRequest 
   Add ArbitrationMinutesOn datetime null
+
+     alter table dbo.LitigationRequestArbitrationReport 
+  Add IsPublished bit null
+
+  alter table dbo.LitigationRequestArbitrationReport 
+  Add PublishedDate datetime null
 
 -----------------------------------------------------------------------
 
