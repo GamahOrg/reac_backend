@@ -81,7 +81,14 @@ public enum RequestStatus
     ///<summary>بانتظار اختيار محكم</summary>
     WaitingForArbitratorsSelection = 36,
     ///<summary>بأنتظار تحديد ميعاد جلسه</summary>
-    WaitingForAsessionTimeSelection = 37
+    WaitingForAsessionTimeSelection = 37,
+         ///<summary>بانتظار موافقة المحكمين </summary>
+    WaitingForArbitratorsApproval = 38,
+    ///<summary>  تم ارسال قائمة اختيار محكم </summary>
+    ArbitratorsNominationListIsSent = 39,
+    ///<summary>  تم اختيار المحكمين </summary>
+    ArbitratorsSelectionIsDone = 40,
+
 
 }
 

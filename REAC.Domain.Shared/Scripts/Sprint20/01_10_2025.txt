@@ -1,0 +1,18 @@
+﻿﻿INSERT INTO dbo.SysSetting (Id, [Key], [Value]) VALUES (NEWID(), 'GetRegionList', 'http://localhost:7144/v1/rega/crm/module/fields?ModuleName=Cases&fields=rejon_c')
+
+  INSERT INTO dbo.SysSetting (Id, [Key], [Value]) VALUES (NEWID(), 'GetContact', 'http://localhost:7144/v1/rega/crm/entry/list?ModuleName=Contacts&QueryField=national_id_c&QueryFieldValue={nationalId}&SelectFields=id,first_name,last_name,email1,national_id_c,phone_mobile')
+ 
+ 
+ INSERT INTO dbo.SysSetting (Id, [Key], [Value]) VALUES (NEWID(), 'GetCasesByContact', 'http://localhost:7144//v1/rega/crm/entry/list?ModuleName=Contacts&QueryField=national_id_c&QueryFieldValue={nationalId}&SelectFields=id,first_name,last_name,email1,national_id_c,phone_mobile')
+ 
+ INSERT INTO dbo.SysSetting (Id, [Key], [Value]) VALUES (NEWID(), 'CreateNewNote', 'http://localhost:7144/v1/rega/crm/entry')
+  
+  INSERT INTO dbo.SysSetting (Id, [Key], [Value]) VALUES(NEWID(), 'UploadFileToNote', 'http://localhost:7144/v1/rega/crm/note-attachment')
+  
+  INSERT INTO dbo.SysSetting (Id, [Key], [Value]) VALUES(NEWID(), 'CreateContact', 'http://localhost:7144/v1/rega/crm/entry')
+  
+  INSERT INTO dbo.SysSetting (Id, [Key], [Value]) VALUES(NEWID(), 'CreateNewCase', 'http://localhost:7144/v1/rega/crm/entry')
+  
+  INSERT INTO dbo.SysSetting (Id, [Key], [Value]) VALUES(NEWID(), 'LinkNoteToCase', 'http://localhost:7144/v1/rega/crm/relationship')
+  
+  INSERT INTO dbo.SysSetting (Id, [Key], [Value]) VALUES(NEWID(), 'LinkContactToCase', 'http://localhost:7144/v1/rega/crm/relationship');

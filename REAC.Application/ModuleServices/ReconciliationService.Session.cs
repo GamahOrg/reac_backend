@@ -25,7 +25,10 @@ namespace REAC.Application.ModuleServices
             {
                 Guid referenceId = Guid.Empty;
                 _jwtReader.GetReferenceId(ref referenceId);
-                requestPayload.SessionDateTime = requestPayload.SessionDateTimeStr != null ? DateTime.Parse(requestPayload.SessionDateTimeStr) : DateTime.Now;
+                //requestPayload.SessionDateTime = requestPayload.SessionDateTimeStr != null ? DateTime.Parse(requestPayload.SessionDateTimeStr) : DateTime.Now;
+                TimeZoneInfo ksaTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Arab Standard Time");
+                DateTime ksaDateTime = TimeZoneInfo.ConvertTime(requestPayload.SessionDateTime != null ? DateTime.Parse(requestPayload.SessionDateTime.ToString()) : DateTime.Now, ksaTimeZone);
+                requestPayload.SessionDateTime = ksaDateTime;// requestPayload.SessionDateTimeStr != null ? DateTime.Parse(requestPayload.SessionDateTimeStr, saCulture) :DateTime.Now;
                 var msg = "";
                 var sessionUrl = "";
                 var _zoomMeeting = new ZoomMeting();
@@ -251,7 +254,7 @@ namespace REAC.Application.ModuleServices
                             {
                                 msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.ReconciliationSession_set).Result.Data?.Value;
                                 msg = msg?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
-                                msg = msg?.Replace("{SessionLink}", sessionUrl);
+                                //msg = msg?.Replace("{SessionLink}", sessionUrl);
                                 msg = msg?.Replace("{SessionDatetime}", sessionDateGreg.ToString("M/d/yyyy h:mm:ss tt", provider));
                                 var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
                                 string body;
@@ -260,7 +263,7 @@ namespace REAC.Application.ModuleServices
                                     body = await streamReader.ReadToEndAsync();
                                     body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.ReconciliationSession_set).Result.Data?.Value);
                                     body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
-                                    body = body?.Replace("{SessionLink}", sessionUrl);
+                                    //body = body?.Replace("{SessionLink}", sessionUrl);
                                     body = body?.Replace("{SessionDatetime}", sessionDateGreg.ToString("M/d/yyyy h:mm:ss tt", provider));
                                 }
                                 await SendNotificationMS(body, msg, litigationRequest);
@@ -290,7 +293,7 @@ namespace REAC.Application.ModuleServices
                             {
                                 msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.ReconciliationSession_Reset).Result.Data?.Value;
                                 msg = msg?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
-                                msg = msg?.Replace("{SessionLink}", sessionUrl);
+                                //msg = msg?.Replace("{SessionLink}", sessionUrl);
                                 msg = msg?.Replace("{SessionDatetime}", sessionDateGreg.ToString("M/d/yyyy h:mm:ss tt", provider));
                                 var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
                                 string body;
@@ -299,7 +302,7 @@ namespace REAC.Application.ModuleServices
                                     body = await streamReader.ReadToEndAsync();
                                     body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.ReconciliationSession_Reset).Result.Data?.Value);
                                     body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
-                                    body = body?.Replace("{SessionLink}", sessionUrl);
+                                    //body = body?.Replace("{SessionLink}", sessionUrl);
                                     body = body?.Replace("{SessionDatetime}", sessionDateGreg.ToString("M/d/yyyy h:mm:ss tt", provider));
                                 }
 

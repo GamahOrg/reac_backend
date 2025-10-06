@@ -1,10 +1,12 @@
 ﻿using Core.GenericRepository.Shared.BaseEntities;
 using REAC.EntityFrameworkCore.Entities.Litigation;
+using Microsoft.EntityFrameworkCore;
 
 namespace REAC.EntityFrameworkCore.Entities.System;
 
 public partial class SysExemptionReductionCategory : BaseEntity<Guid>
 {
+    [Comment("Category of the name")]
     public string ExemptionReductionCategoryName { get; set; } = null!;
 
     public virtual ICollection<SysExemptionReductionCategoryTranslation> Translations { get; set; } = new List<SysExemptionReductionCategoryTranslation>();

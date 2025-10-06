@@ -24,6 +24,61 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                         Key = "SecurityApiUrl",
                         Value = "http://localhost:7144/",
                     },
+
+                    #region Complaints Integration
+                    new SysSetting
+                    {
+                        Id = Guid.NewGuid(),
+                        Key = "GetRegionList",
+                        Value = "http://localhost:7144/v1/rega/crm/module/fields?ModuleName=Cases&fields=rejon_c",
+                    },new SysSetting
+                    {
+                        Id = Guid.NewGuid(),
+                        Key = "GetContact",
+                        Value = "http://localhost:7144/v1/rega/crm/entry/list?ModuleName=Contacts&QueryField=national_id_c&QueryFieldValue={nationalId}&SelectFields=id,first_name,last_name,email1,national_id_c,phone_mobile",
+                    },new SysSetting
+                    {
+                        Id = Guid.NewGuid(),
+                        Key = "GetCaseById",
+                        Value = "http://localhost:7144/v1/rega/crm/entry/list?ModuleName=Cases&QueryField=cases.id&QueryFieldValue={CaseId}&SelectFields=id,rejon_c,requestclassification_c,program_c,reference_number_c,request_number_c,name,description,date_entered,case_number,status",
+                    },new SysSetting
+                    {
+                        Id = Guid.NewGuid(),
+                        Key = "GetCasesByContact",
+                        Value = "http://localhost:7144//v1/rega/crm/entry/list?ModuleName=Contacts&QueryField=national_id_c&QueryFieldValue={nationalId}&SelectFields=id,first_name,last_name,email1,national_id_c,phone_mobile",
+                    },new SysSetting
+                    {
+                        Id = Guid.NewGuid(),
+                        Key = "CreateNewNote",
+                        Value = "http://localhost:7144/v1/rega/crm/entry",
+                    },new SysSetting
+                    {
+                        Id = Guid.NewGuid(),
+                        Key = "UploadFileToNote",
+                        Value = "http://localhost:7144/v1/rega/crm/note-attachment",
+                    },new SysSetting
+                    {
+                        Id = Guid.NewGuid(),
+                        Key = "CreateContact",
+                        Value = "http://localhost:7144/v1/rega/crm/entry",
+                    },new SysSetting
+                    {
+                        Id = Guid.NewGuid(),
+                        Key = "CreateNewCase",
+                        Value = "http://localhost:7144/v1/rega/crm/entry",
+                    },new SysSetting
+                    {
+                        Id = Guid.NewGuid(),
+                        Key = "LinkNoteToCase",
+                        Value = "http://localhost:7144/v1/rega/crm/relationship",
+                    },new SysSetting
+                    {
+                        Id = Guid.NewGuid(),
+                        Key = "LinkContactToCase",
+                        Value = "http://localhost:7144/v1/rega/crm/relationship",
+                    },
+	                #endregion
+
                     #region GEE Login Integration
 
                     new SysSetting

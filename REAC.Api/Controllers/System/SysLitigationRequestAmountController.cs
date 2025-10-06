@@ -33,6 +33,13 @@ public class SysLitigationRequestAmountController : BaseController<SysLitigation
         var returnValue = await _amountService.GetOrderedListAsync();
         return  Ok(returnValue);
     }
+    
+    [HttpGet("GetRegisterationFees")]
+    public async Task<IActionResult> GetRegisterationFees(decimal amount)
+    {
+        var returnValue = await _amountService.GetRegisterationFees(amount);
+        return  Ok(returnValue);
+    }
 
     [HttpGet("GetByIdAsync")]
     public  async Task<IActionResult> GetByIdAsync(Guid id)

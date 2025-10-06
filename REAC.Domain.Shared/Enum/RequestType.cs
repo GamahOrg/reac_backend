@@ -75,5 +75,6 @@
         LitigationRequestCorrespondenceReply = 21,
         //فواتير
         Invoices = 22,
+        Complains=23
     }
 }

@@ -1,11 +1,13 @@
 ﻿using Core.GenericRepository.Shared.BaseEntities;
 using REAC.Domain.Shared.Enum;
 using REAC.EntityFrameworkCore.Entities.Actor;
+using Microsoft.EntityFrameworkCore;
 
 namespace REAC.EntityFrameworkCore.Entities.System;
 
 public partial class SysGender : BaseEntity<Gender>
 {
+    [Comment("Description for Gender")]
     public string Gender { get; set; } = null!;
 
     public virtual ICollection<Citizen> Citizens { get; set; } = new List<Citizen>();

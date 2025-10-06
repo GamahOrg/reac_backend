@@ -108,18 +108,27 @@ namespace REAC.Application.AppServices.Litigation
                           .Include(x => x.LitigationRequestAmount)
                           .Where(x => x.Contract.Id == model.ContractId).ToList().FirstOrDefault();
 
+                var litigationRequestAmount = (await _repository.GetQueryable<SysLitigationRequestAmount, Guid>())
+                    .AsNoTracking()
+                    .FirstOrDefault(x => x.FromAmount <= model.LitigationRequestAmount && x.ToAmount >= model.LitigationRequestAmount);
+
                 litigationRequest.Title = model.Title;
                 litigationRequest.Description = model.Description;
                 litigationRequest.IsFinancialLitigation = model.IsFinancialLitigation;
 
-                if (model.LitigationRequestAmountId != Guid.Empty)
-                    litigationRequest.LitigationRequestAmountId = model.LitigationRequestAmountId;
+                if (litigationRequestAmount != null)
+                {
+                    litigationRequest.LitigationRequestAmountId = litigationRequestAmount.Id;
+                    litigationRequest.DisputeAmount = model.LitigationRequestAmount;
+                }
                 else
                 {
-                    var lowestFeesId = (await _repository.GetQueryable<SysLitigationRequestAmount, Guid>())
-                        .AsNoTracking().OrderBy(x => x.Fees).First().Id;
-
-                    litigationRequest.LitigationRequestAmountId = lowestFeesId;
+                    
+                    return new BaseResponse()
+                    {
+                        Message = "المبلغ خارج النطاق المحدد, برجاء الرجوع لمدير النظام",
+                        IsDone = false,
+                    };
 
                 }
 
@@ -1346,7 +1355,7 @@ namespace REAC.Application.AppServices.Litigation
                 .Include(x => x.LitigationRequestReformerAssigningRequests)
                 .Include(x => x.LitigationRequestArbitratorAssigningRequests)
                 .Include(x => x.Contract)
-
+                .Include(x=>x.LitigationRequestArbitrationReports)
                 .Include(x => x.LitigationRequestCategory)
                 .Include(x => x.Area)
                 .Include(x => x.City)
@@ -1441,6 +1450,9 @@ namespace REAC.Application.AppServices.Litigation
 
                  .Include(x => x.Delegator)
                  .ThenInclude(x => x.Citizen)
+                 .ThenInclude(x => x.Nationality)
+                 .Include(x => x.Delegator)
+                 .ThenInclude(x => x.DelegatorCitizen)
                  .ThenInclude(x => x.Nationality)
                  .Include(x => x.Delegator)
                  .ThenInclude(x => x.Facility)
@@ -3565,7 +3577,7 @@ namespace REAC.Application.AppServices.Litigation
 
                 var contract = (await _repository.GetQueryable<LitigationRequestContract, Guid>())
                     .Include(x => x.LitigationRequests)
-                    .Where(x => x.ContractKey == litigationRequestDto.key & x.LitigationRequestContractTypeId == litigationRequestDto.ContractType)
+                    .Where(x => x.ContractKey == litigationRequestDto.key && x.LitigationRequestContractTypeId == litigationRequestDto.ContractType && x.LitigationRequests.Any(y => y.ExternalStatusId != RequestStatus.Cancelled && y.InternalStatusId != RequestStatus.Cancelled))
                     .ToList();
 
                 if (contract != null)
@@ -4022,7 +4034,7 @@ namespace REAC.Application.AppServices.Litigation
 
                 var contract = (await _repository.GetQueryable<LitigationRequestContract, Guid>())
                     .Include(x => x.LitigationRequests)
-                    .Where(x => x.ContractKey == litigationRequestDto.key & x.LitigationRequestContractTypeId == litigationRequestDto.ContractType).ToList();
+                    .Where(x => x.ContractKey == litigationRequestDto.key && x.LitigationRequestContractTypeId == litigationRequestDto.ContractType && x.LitigationRequests.Any(y => y.ExternalStatusId != RequestStatus.Cancelled && y.InternalStatusId != RequestStatus.Cancelled)).ToList();
 
                 if (contract != null)
                 {

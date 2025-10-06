@@ -104,6 +104,9 @@ namespace REAC.Application.ModuleServices
                     litigationRequest.LitigationRequestSubStage = LitigationRequestSubStage.LitigationRequestAddArbitratorListNominationDone;
                     litigationRequest.ArbitratorsNominationListCreationDateTime = DateTime.Now;
 
+                    litigationRequest.ExternalStatusId = RequestStatus.ArbitratorsNominationListIsSent;
+                    litigationRequest.InternalStatusId = RequestStatus.ArbitratorsNominationListIsSent;
+
                     await _repository.AddAsync<WorkFlowLog, Guid>(new WorkFlowLog()
                     {
                         Id = Guid.NewGuid(),
@@ -1564,6 +1567,9 @@ namespace REAC.Application.ModuleServices
             if (litigationRequest.IsPlaintiffArbitratorNominationListDone.HasValue & litigationRequest.IsDefendantArbitratorNominationListDone.HasValue)
             {
                 litigationRequest.ArbitratorsNominationListSelectionDoneDateTime = DateTime.Now;
+                litigationRequest.ExternalStatusId = RequestStatus.ArbitratorsSelectionIsDone;
+                litigationRequest.InternalStatusId = RequestStatus.ArbitratorsSelectionIsDone;
+
                 var arbitratorsList = litigationRequest.LitigationRequestArbitratorNominationLists.OrderBy(x => x.TotalPriority).ThenBy(x => x.DefendantPriority).ToList();
                 var RejectedArbitrators = litigationRequest.LitigationRequestArbitratorNominationLists.Where(x => x.LitigationRequestArbitratorAssigningRequests.Any(s => s.Response == LitigationRequestArbitratorAssigningRequestStatus.Reject || s.Response == LitigationRequestArbitratorAssigningRequestStatus.Cancelled)).ToList();
 

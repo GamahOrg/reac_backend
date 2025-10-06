@@ -318,6 +318,7 @@ namespace REAC.Application.Contracts
             CreateMap<SysFileManager, RentSecondPartyDto>();
             CreateMap<LititgationRequestModificationRequest, LitigationModificationRequestDto>();
             CreateMap<LitigationRequest, LitigationDetailsDto>()
+                .ForMember(dest => dest.LitigationRequestAmount, opt => opt.MapFrom(src => src.DisputeAmount))
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
                 .ForMember(dest => dest.RequestCode, opt => opt.MapFrom(src => src.RequestCode))
                 .ForMember(dest => dest.Fees, opt => opt.MapFrom(src => src.Fees))

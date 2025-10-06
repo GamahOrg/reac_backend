@@ -1,10 +1,12 @@
 ﻿using Core.GenericRepository.Shared.BaseEntities;
 using REAC.Domain.Shared.Enum.Wpf;
+using Microsoft.EntityFrameworkCore;
 
 namespace REAC.EntityFrameworkCore.Entities.Wpf.System;
 
 public partial class WorkFlowStepWorkMode : BaseEntity<StepWorkMode>
 {
+    [Comment("Description for Work Mode")]
     public string WorkMode { get; set; } = null!;
 
     public virtual ICollection<WorkFlowStep> WorkFlowSteps { get; set; } = new List<WorkFlowStep>();

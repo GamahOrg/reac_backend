@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
 using Core.GenericRepository.BaseRepository;
 using Core.GenericRepository.Shared.Pagging;
+using Core.Security.Entities;
 using Core.Shared.Responses;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using REAC.Application.AppServices.System;
@@ -12,6 +14,7 @@ using REAC.Application.Contracts.Dtos.Reconciliation;
 using REAC.Application.Contracts.Dtos.Reconciliation.Process;
 using REAC.Application.Contracts.Dtos.Wpf.Business;
 using REAC.Application.Contracts.IAppServices;
+using REAC.Application.Contracts.IAppServices.Integration;
 using REAC.Application.Contracts.IAppServices.Notification;
 using REAC.Application.Contracts.IAppServices.System;
 using REAC.Application.Contracts.IAppServices.UserManage;
@@ -67,9 +70,11 @@ namespace REAC.Application.ModuleServices
         #endregion
 
         #region Report
+        //Task<BaseResponse> AddArbitrationMinutesReply(Guid requestId, string nationalId, ApproveRejectStatus requestMinutesOfMeetingApprovalStatus);
         Task<BaseResponse> AddArbitrationReport(WritingArbitrationReportRequestPayload requestPayload, CancellationToken cancellationToken);
         Task<BaseResponse> GetLitigationRequestForReport(Guid requestId, CancellationToken cancellationToken);
         Task<BaseResponse> GetLitigationRequestForReport(int pageIndex, int pageSize, CancellationToken cancellationToken);
+        Task<BaseResponse> CallNafathForArbitrationReport(Guid requestId, ApproveRejectStatus agreementRequestStatus);
         #endregion
 
         #region ExplanationRequest
@@ -132,11 +137,14 @@ namespace REAC.Application.ModuleServices
         protected readonly INotificationService _notificationService;
         private readonly ISysEmployeeService _sysEmployeeService;
         private readonly IZoomService _zoomService;
+        private readonly INafathService _nafathService;
+        private UserManager<User> _userManager;
+
         protected readonly IHubContext<NotificationHub, INotificationClient> _notificationHub;
         public ArbitrationService(IEntityRepository repository, ISysSettingService settingService,
                           IWorkFlowProcessingLogService workFlowProcessingLogService,
                           IMapper mapper, ISysInvoiceService sysInvoiceService,
-                          IJwtReader jwtReader, ISysEmployeeService sysEmployeeService, INotificationService notificationService, IZoomService zoomService)
+                          IJwtReader jwtReader, ISysEmployeeService sysEmployeeService, INotificationService notificationService, IZoomService zoomService, INafathService nafathService, UserManager<User> userManager)
         {
             _mapper = mapper;
             _sysInvoiceService = sysInvoiceService;
@@ -146,6 +154,8 @@ namespace REAC.Application.ModuleServices
             _sysEmployeeService = sysEmployeeService;
             _notificationService = notificationService;
             _zoomService = zoomService;
+            _nafathService = nafathService;
+            _userManager = userManager;
         }
 
         public async Task<BaseResponse> GetLitigationRequestForFullAllArbitrator(int pageIndex, int pageSize, CancellationToken cancellationToken)
