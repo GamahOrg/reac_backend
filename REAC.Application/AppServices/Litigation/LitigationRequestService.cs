@@ -108,30 +108,32 @@ namespace REAC.Application.AppServices.Litigation
                           .Include(x => x.LitigationRequestAmount)
                           .Where(x => x.Contract.Id == model.ContractId).ToList().FirstOrDefault();
 
-                var litigationRequestAmount = (await _repository.GetQueryable<SysLitigationRequestAmount, Guid>())
-                    .AsNoTracking()
-                    .FirstOrDefault(x => x.FromAmount <= model.LitigationRequestAmount && x.ToAmount >= model.LitigationRequestAmount);
-
-                litigationRequest.Title = model.Title;
-                litigationRequest.Description = model.Description;
-                litigationRequest.IsFinancialLitigation = model.IsFinancialLitigation;
-
-                if (litigationRequestAmount != null)
+                if (model.IsFinancialLitigation == true)
                 {
-                    litigationRequest.LitigationRequestAmountId = litigationRequestAmount.Id;
-                    litigationRequest.DisputeAmount = model.LitigationRequestAmount;
-                }
-                else
-                {
-                    
-                    return new BaseResponse()
+                    var litigationRequestAmount = (await _repository.GetQueryable<SysLitigationRequestAmount, Guid>())
+                        .AsNoTracking()
+                        .FirstOrDefault(x => x.FromAmount <= model.LitigationRequestAmount && x.ToAmount >= model.LitigationRequestAmount);
+
+                    litigationRequest.Title = model.Title;
+                    litigationRequest.Description = model.Description;
+                    litigationRequest.IsFinancialLitigation = model.IsFinancialLitigation;
+
+                    if (litigationRequestAmount != null)
                     {
-                        Message = "المبلغ خارج النطاق المحدد, برجاء الرجوع لمدير النظام",
-                        IsDone = false,
-                    };
+                        litigationRequest.LitigationRequestAmountId = litigationRequestAmount.Id;
+                        litigationRequest.DisputeAmount = model.LitigationRequestAmount;
+                    }
+                    else
+                    {
 
+                        return new BaseResponse()
+                        {
+                            Message = "المبلغ خارج النطاق المحدد, برجاء الرجوع لمدير النظام",
+                            IsDone = false,
+                        };
+
+                    }
                 }
-
 
                 if (model.AreaId != Guid.Empty)
                     litigationRequest.AreaId = model.AreaId;
@@ -1519,6 +1521,27 @@ namespace REAC.Application.AppServices.Litigation
                 .ThenInclude(x => x.FileManager)
 
                 .Include(x => x.LitigationRequestRequests)
+
+                .Include(x => x.Delegator)
+                 .ThenInclude(x => x.Citizen)
+                 .ThenInclude(x => x.Nationality)
+                 .Include(x => x.Delegator)
+                 .ThenInclude(x => x.DelegatorCitizen)
+                 .ThenInclude(x => x.Nationality)
+                 .Include(x => x.Delegator)
+                 .ThenInclude(x => x.Facility)
+                 .Include(x => x.Delegator)
+                 .ThenInclude(x => x.DelegationFile)
+                 .Include(x => x.Delegator)
+                 .ThenInclude(x => x.DecisionFile)
+                 .Include(x => x.Delegator)
+                 .ThenInclude(x => x.CommercialRegisterationFile)
+                 .Include(x => x.Delegator)
+                 .ThenInclude(x => x.CustodyFile)
+                 .Include(x => x.Delegator)
+                 .ThenInclude(x => x.RepresentationFile)
+                 .Include(x => x.Delegator)
+                 .ThenInclude(x => x.EstablishmentFile)
                 .FirstOrDefault(x => x.Id == litigationId);
 
 
@@ -3224,7 +3247,8 @@ namespace REAC.Application.AppServices.Litigation
                     RepresentationFileId = input.RepresentationFileId,
                     DecisionFileId = input.DecisionFileId,
                     EstablishmentFileId = input.EstablishmentFileId,
-                    IsActive = true
+                    IsActive = true,
+                    IndividualCapacity=input.IndividualCapacity
                 };
 
                 var addDelegator = await _repository.AddAsync<Delegator, Guid>(delegator);
@@ -5469,6 +5493,9 @@ namespace REAC.Application.AppServices.Litigation
             var delegationRequest = (await _repository.GetQueryable<DelegationRequest, Guid>())
                 .Include(x => x.Delegator)
                  .ThenInclude(x => x.Citizen)
+                 .ThenInclude(x => x.Nationality)
+                 .Include(x => x.Delegator)
+                 .ThenInclude(x => x.DelegatorCitizen)
                  .ThenInclude(x => x.Nationality)
                  .Include(x => x.Delegator)
                  .ThenInclude(x => x.Facility)
