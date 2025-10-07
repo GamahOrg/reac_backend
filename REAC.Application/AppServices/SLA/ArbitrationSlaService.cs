@@ -4,6 +4,7 @@ using Core.Log.Application.Contracts.Dto;
 using Core.Log.Application.Contracts.IAppServices;
 using Core.Shared.Responses;
 using Microsoft.EntityFrameworkCore;
+using REAC.Application.AppServices.System;
 using REAC.Application.Contracts.Dtos.Arbitration;
 using REAC.Application.Contracts.Dtos.Integration.GEE;
 using REAC.Application.Contracts.Dtos.Litigation.CreateUpdate.Litigation;
@@ -639,7 +640,7 @@ namespace REAC.Application.AppServices.SLA
                                                     CreatedOn = DateTime.Now,
                                                     RequestId = litigationRequest.Id,
                                                     ShowForApplicant = false,
-                                                    LogMessage = "تم إضافة أولوية إختيار قائمة تعيين هيئة التحكيم من قبل النظام للمدعى لتخطيه مدة الاختيار القصوى  "
+                                                    LogMessage = "تم إضافة أولوية إختيار قائمة تعيين هيئة التحكيم من قبل النظام للمدعى عليه لتخطيه مدة الاختيار القصوى  "
                                                 });
                                                 litigationRequest.IsDefendantArbitratorNominationListDone = true;
 
@@ -2019,5 +2020,83 @@ namespace REAC.Application.AppServices.SLA
 
 
         }
+
+        // Escalate to arbitration office manager
+        private async Task EscalateToManager(LitigationRequest litigationRequest, List<LitigationRequestArbitratorNominationList> tiedArbitrators, List<ArbitratorSelectionScore> arbitratorScores)
+        {
+            // Find arbitrators with minimum total score
+            //var minScore = arbitratorScores.Min(x => x.TotalScore);
+            //tiedArbitrators = tiedArbitrators.Where(x => x.TotalPriority == minScore).ToList();
+            tiedArbitrators = arbitratorScores.Select(x => x.Arbitrator).ToList();
+
+            foreach (var arbitrator in tiedArbitrators)
+            {
+
+                // Reset the sent status for escalation
+                arbitrator.IsEscalated = true;
+                arbitrator.EscalateDate = DateTime.Now;
+                //arbitrator.IsSelectedFromManager = false;
+            }
+
+            // Notify arbitration office manager
+            // Send Notification
+            // يتطلب القرار اليدوي لاختيار المحكم للدعوى
+            try
+            {
+                var msg = $"يتطلب القرار اليدوي لاختيار المحكم للدعوى رقم {litigationRequest.RequestCode}";
+                var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                string body;
+                using (StreamReader streamReader = File.OpenText(pathToFile))
+                {
+                    body = await streamReader.ReadToEndAsync();
+                    body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.ArbitratorsNominationList_AssignedAndSent).Result.Data?.Value);
+                    body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                }
+                var arbitrationAdmin = await _employeeService.GetAdminsByDepartmentType(DepartmentType.Arbitration);
+                if (arbitrationAdmin.IsDone)
+                {
+                    List<SysNotificationDto> notificationList = new List<SysNotificationDto>() {
+
+                           new SysNotificationDto{
+                        ActorId = (Guid)arbitrationAdmin.Data?.Id,
+                        RequestId=litigationRequest.Id,
+                        CreatedOn= DateTime.Now,
+                        RequestTypeId=RequestType.LitigationRequest,
+                        ActorTypeId=NotificationActorType.Employee,
+                        Message=msg
+                        }
+
+                        };
+                    List<string> emailList = new List<string>() {
+                                  arbitrationAdmin.Data?.Email
+                                };
+
+                    List<string> recipientList = new List<string>()
+                            {
+                                  arbitrationAdmin.Data?.Mobile
+                            };
+
+                    await _notificationService.SendNotifications(new Contracts.Dtos.Notification.SendEmailDto()
+                    {
+                        To = emailList,
+                        Subject = "يتطلب القرار اليدوي لاختيار المحكم للدعوى رقم",
+                        Body = body
+                    }, new Contracts.Dtos.Integration.GEE.SMSRequestDto()
+                    {
+                        message_text = msg,
+                        recipients = recipientList,
+                        notification_type = "SMS",
+
+                    }, notificationList);
+                }
+            }
+            catch (Exception ex)
+            {
+
+
+            }
+
+        }
+
     }
 }
