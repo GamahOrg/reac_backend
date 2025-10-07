@@ -40,3 +40,9 @@ where [Key] like '%ReconciliationSession.Reset%'
 -------------------adding new step-----------------------------------
   insert SysLitigationRequestStatus (Id,RequestStatus, CreatedOn,IsDeleted,Translations) values (39,N'تم ارسال قائمة اختيار محكم','2025-10-05 19:14:23.9567362',0,N'[{"LanguageCode":"en-US","RequestStatus":"ArbitratorsNominationListIsSent"},{"LanguageCode":"ar","RequestStatus": "تم ارسال قائمة اختيار محكم"}]')
   insert SysLitigationRequestStatus (Id,RequestStatus, CreatedOn,IsDeleted,Translations) values (40,N'تم اختيار المحكمين','2025-10-05 19:14:23.9567362',0,N'[{"LanguageCode":"en-US","RequestStatus":"ArbitratorsSelectionIsDone"},{"LanguageCode":"ar","RequestStatus": "تم اختيار المحكمين"}]')
+
+  ------------------------------------------------------------------
+  -------------------adding delegator capacity
+    alter table [dbo].[Delegator]
+  Add IndividualCapacity nvarchar(100) null
+  ---------------------------------------

@@ -14,7 +14,7 @@ namespace REAC.Application.Contracts.Dtos.Litigation.Create.Litigation
         public string? Description { get; set; } // وصف الدعوي
         public bool? IsFinancialLitigation { get; set; } // نزاع مالي ام لا 
         public Guid? LitigationRequestAmountId { get; set; }// مبلغ المنازعه
-        public decimal LitigationRequestAmount { get; set; }// مبلغ المنازعه
+        public decimal? LitigationRequestAmount { get; set; }// مبلغ المنازعه
         public List<LitigationRequests>? Requests { get; set; }
         public List<LitigationReferences>? References { get; set; }
         public RequestStatus? InternalStatusId { get; set; }

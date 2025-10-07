@@ -53,6 +53,8 @@ public partial class Delegator : BaseEntity<Guid>
 
     [Comment("Indicates whether the record is active")]
     public bool IsActive { get; set; }
+
+    public string? IndividualCapacity { get; set; }
     public virtual SysDelegationRelationshipType SysDelegationRelationshipType { get; set; } = null!;
 
     public virtual Citizen? Citizen { get; set; }
