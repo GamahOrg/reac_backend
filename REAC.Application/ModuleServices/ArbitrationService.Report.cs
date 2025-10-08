@@ -20,7 +20,7 @@ namespace REAC.Application.ModuleServices
 
 
         #region Report
-        
+
         public async Task<BaseResponse> AddArbitrationReport(WritingArbitrationReportRequestPayload requestPayload, CancellationToken cancellationToken)
         {
             try
@@ -75,10 +75,10 @@ namespace REAC.Application.ModuleServices
                         litigationRequest.LitigationRequestSubStage = LitigationRequestSubStage.JudgmentDecisionIssued;
                         litigationRequest.InternalStatusId = RequestStatus.JudgmentDecisionIssued;
                         litigationRequest.ExternalStatusId = RequestStatus.JudgmentDecisionIssued;
-                          // adding publish 
+                        // adding publish 
                         litigationRequestReconciliationReport.IsPublished = true;
                         litigationRequestReconciliationReport.PublishedDate = DateTime.Now;
-                        
+
                     }
                     else
                     {
@@ -323,8 +323,8 @@ namespace REAC.Application.ModuleServices
                                 litigationRequest.ApplicantCitizen.Mobile,
                                   arbitrationAdmin.Data?.Mobile
                             };
-               
-                            
+
+
 
                             foreach (var arbitrator in litigationRequest.LitigationRequestArbitratorAssigningRequests)
                             {
@@ -435,7 +435,10 @@ namespace REAC.Application.ModuleServices
             var request = _mapper.Map<LitigationRequestShortDto>(litigationRequest);
 
             //modifiy fees of arbitration amount 
-            request.LitigationRequestAmount.Fees = litigationRequest.LitigationRequestInvoice?.TotalAmount ?? 0;
+            if (request.LitigationRequestAmount != null)
+            {
+                request.LitigationRequestAmount.Fees = litigationRequest.LitigationRequestInvoice?.TotalAmount ?? 0;
+            }
             if (!string.IsNullOrEmpty(litigationRequest.ArbitratorCitizen?.SigntureFile?.FilePath))
             {
                 string inputFilePath = Path.Combine(Directory.GetCurrentDirectory(), litigationRequest.ArbitratorCitizen?.SigntureFile?.FilePath);
