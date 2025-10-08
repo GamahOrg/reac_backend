@@ -19,6 +19,7 @@ ARG BUILD_CONFIGURATION=Release
 WORKDIR /api
 COPY . .
 
+Run dotnet clean
 RUN dotnet build "./REAC.Api/REAC.Api.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 FROM build AS publish
