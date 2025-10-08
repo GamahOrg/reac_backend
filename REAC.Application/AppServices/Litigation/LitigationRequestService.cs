@@ -1384,12 +1384,26 @@ namespace REAC.Application.AppServices.Litigation
 
                 .Include(x => x.LitigationRequestRequests)
 
-                    .Include(x => x.Delegator)
+                            .Include(x => x.Delegator)
                  .ThenInclude(x => x.Citizen)
                  .ThenInclude(x => x.Nationality)
                  .Include(x => x.Delegator)
                  .ThenInclude(x => x.DelegatorCitizen)
                  .ThenInclude(x => x.Nationality)
+                 .Include(x => x.Delegator)
+                 .ThenInclude(x => x.Facility)
+                 .Include(x => x.Delegator)
+                 .ThenInclude(x => x.DelegationFile)
+                 .Include(x => x.Delegator)
+                 .ThenInclude(x => x.DecisionFile)
+                 .Include(x => x.Delegator)
+                 .ThenInclude(x => x.CommercialRegisterationFile)
+                 .Include(x => x.Delegator)
+                 .ThenInclude(x => x.CustodyFile)
+                 .Include(x => x.Delegator)
+                 .ThenInclude(x => x.RepresentationFile)
+                 .Include(x => x.Delegator)
+                 .ThenInclude(x => x.EstablishmentFile)
                 .FirstOrDefault(x => x.Id == litigationId &&
                 x.ApplicantCitizenId == referenceId
                       |
