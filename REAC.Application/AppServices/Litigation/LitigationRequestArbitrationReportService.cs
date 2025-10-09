@@ -174,8 +174,8 @@ namespace REAC.Application.AppServices.Litigation
                                     ActorTypeId = NotificationActorType.Plaintiff,
                                     Message = msg
                                 });
-                                emails.Add(litigationRequest.Contract.FirstPartyCitizen.Email);
-                                recipients.Add(litigationRequest.Contract.FirstPartyCitizen.Mobile);
+                                emails.Add(litigationRequest.Contract.FirstPartyCitizen?.Email);
+                                recipients.Add(litigationRequest.Contract.FirstPartyCitizen?.Mobile);
 
 
                             }
@@ -191,8 +191,8 @@ namespace REAC.Application.AppServices.Litigation
                                     ActorTypeId = NotificationActorType.Plaintiff,
                                     Message = msg
                                 });
-                                emails.Add(litigationRequest.Contract.FirstPartyFacility.Citizen.Email);
-                                recipients.Add(litigationRequest.Contract.FirstPartyFacility.Citizen.Mobile);
+                                emails.Add(litigationRequest.Contract.FirstPartyFacility.Citizen?.Email);
+                                recipients.Add(litigationRequest.Contract.FirstPartyFacility.Citizen?.Mobile);
                             }
                             ;
                             if (litigationRequest?.Contract?.SecondPartyCitizenId != null)
@@ -206,8 +206,8 @@ namespace REAC.Application.AppServices.Litigation
                                     ActorTypeId = NotificationActorType.Defendant,
                                     Message = msg
                                 });
-                                emails.Add(litigationRequest.Contract.SecondPartyCitizen.Email);
-                                recipients.Add(litigationRequest.Contract.SecondPartyCitizen.Mobile);
+                                emails.Add(litigationRequest.Contract.SecondPartyCitizen?.Email);
+                                recipients.Add(litigationRequest.Contract.SecondPartyCitizen?.Mobile);
                             }
                             ;
                             if (litigationRequest?.Contract?.SecondPartyFacilityId != null)
@@ -221,8 +221,8 @@ namespace REAC.Application.AppServices.Litigation
                                     ActorTypeId = NotificationActorType.Defendant,
                                     Message = msg
                                 });
-                                emails.Add(litigationRequest.Contract.SecondPartyFacility.Citizen.Email);
-                                recipients.Add(litigationRequest.Contract.SecondPartyFacility.Citizen.Mobile);
+                                emails.Add(litigationRequest.Contract.SecondPartyFacility.Citizen?.Email);
+                                recipients.Add(litigationRequest.Contract.SecondPartyFacility.Citizen?.Mobile);
                             }
                             ;
 
@@ -240,7 +240,8 @@ namespace REAC.Application.AppServices.Litigation
                                 emails.Add(arbitrator.ArbitratorCitizen.Email);
                                 recipients.Add(arbitrator.ArbitratorCitizen.Mobile);
                             }
-
+                            emails = emails.Where(e => e != null).ToList();
+                            recipients = recipients.Where(r => r != null).ToList();
                             await _notificationService.SendNotifications(new Contracts.Dtos.Notification.SendEmailDto()
                             {
                                 To = emails,
