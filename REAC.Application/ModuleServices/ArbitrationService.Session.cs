@@ -258,14 +258,14 @@ namespace REAC.Application.ModuleServices
 
 
                             List<SysNotificationDto> notifications = new List<SysNotificationDto>() {
-                                  new SysNotificationDto{
-                        ActorId = litigationRequest.ArbitratorCitizen.Id,
-                        RequestId=litigationRequest.Id,
-                        CreatedOn= DateTime.Now,
-                        RequestTypeId=RequestType.LitigationRequest,
-                        ActorTypeId=NotificationActorType.Arbitrator,
-                        Message=msg
-                        },
+                        //          new SysNotificationDto{
+                        //ActorId = litigationRequest.ArbitratorCitizen.Id,
+                        //RequestId=litigationRequest.Id,
+                        //CreatedOn= DateTime.Now,
+                        //RequestTypeId=RequestType.LitigationRequest,
+                        //ActorTypeId=NotificationActorType.Arbitrator,
+                        //Message=msg
+                        //},
                         new SysNotificationDto{
                         ActorId = litigationRequest.ApplicantCitizen.Id,
                         RequestId=litigationRequest.Id,

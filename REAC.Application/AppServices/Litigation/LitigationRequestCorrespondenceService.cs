@@ -667,7 +667,7 @@ namespace REAC.Application.AppServices.Litigation
                          .Include(x => x.LitigationRequest)
                          .ThenInclude(x => x.LitigationRequestCorrespondences)
                          .Where(x => x.LitigationRequest.LitigationRequestCorrespondences.Any() & x.LitigationRequest.LitigationRequestStage == LitigationRequestStage.Arbitration)
-                          .OrderByDescending(x => x.LitigationRequest.CreatedOn)
+                          .OrderBy(x => x.LitigationRequest.CreatedOn)
                          .GroupBy(x => x.LitigationRequest.RequestCode)
                          .Select(x => x.First()).AsNoTracking();
 
