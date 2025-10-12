@@ -18,7 +18,6 @@ namespace Bpf.Application.ModuleServices
             {
                 Guid referenceId = Guid.Empty;
                 _jwtReader.GetReferenceId(ref referenceId);
-
                 var employee = (await _repository.GetQueryable<SysEmployee, Guid>())?
                     .Where(x => x.Id == referenceId).Single();
 
@@ -42,6 +41,15 @@ namespace Bpf.Application.ModuleServices
                         x.FeesDifference
                     }).First();
 
+                decimal minFees = 0;
+                if (litigationStageFees?.LitigationRequestAmount == null)
+                {
+                    minFees = (await _repository.GetQueryable<SysLitigationRequestAmount, Guid>())?
+                  .Where(x => x.FromAmount == 0)
+                  .FirstOrDefault()?.Fees ?? 0;
+                }
+
+
                 var processinglog = (await _repository.GetQueryable<WorkFlowProcessingLog, Guid>())?
                     .Where(x => x.RequestId == requestId & x.IsFinished == false)
                     .Include(x => x.LitigationRequest)
@@ -63,11 +71,11 @@ namespace Bpf.Application.ModuleServices
 
                 WorkFlowStepEventForActorShortDtos.AllowAssign = employee.AllowAssign;
                 WorkFlowStepEventForActorShortDtos.AllowReAssign = employee.AllowReAssign;
-                WorkFlowStepEventForActorShortDtos.Fees = litigationStageFees.LitigationRequestStage == REAC.Domain.Shared.Enum.LitigationRequestStage.Review && !litigationStageFees.IsLitigationFeesHaveBeenCollected ? litigationStageFees.FeesDifference != 0 ? litigationStageFees.FeesDifference.ToString("0.#") : litigationStageFees.LitigationRequestAmount?.Fees.ToString("0.#"): null;
-                    
-
-
-                
+                WorkFlowStepEventForActorShortDtos.Fees = litigationStageFees.LitigationRequestStage == REAC.Domain.Shared.Enum.LitigationRequestStage.Review && !litigationStageFees.IsLitigationFeesHaveBeenCollected ? litigationStageFees.FeesDifference != 0 ? litigationStageFees.FeesDifference.ToString("0.#") : litigationStageFees.LitigationRequestAmount?.Fees.ToString("0.#") :null;
+                if (litigationStageFees?.LitigationRequestAmount == null)
+                {
+                    WorkFlowStepEventForActorShortDtos.Fees = litigationStageFees.LitigationRequestStage == REAC.Domain.Shared.Enum.LitigationRequestStage.Review && !litigationStageFees.IsLitigationFeesHaveBeenCollected ? minFees.ToString("0.#") : null;
+                }
 
                 processinglog?.ForEach(x =>
                 {
@@ -80,13 +88,13 @@ namespace Bpf.Application.ModuleServices
 
                         x.WorkFlowStep.WorkFlowStepEvents.Remove(removeAgreement);
                     }
-                    
+
 
                     x.WorkFlowStep.WorkFlowStepEvents.ToList().ForEach(y =>
                     {
                         bool allowAdd = true;
 
-                        if(y.EventName == "إرسال طلب تحصيل رسوم الصلح" || y.EventName == "تأكيد دفع رسوم الصلح")
+                        if (y.EventName == "إرسال طلب تحصيل رسوم الصلح" || y.EventName == "تأكيد دفع رسوم الصلح")
                         {
                             var reconciliationFees = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reconciliation_Fees).Result.Data?.Value;
 

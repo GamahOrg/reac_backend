@@ -1357,7 +1357,7 @@ namespace REAC.Application.AppServices.Litigation
                 .Include(x => x.LitigationRequestReformerAssigningRequests)
                 .Include(x => x.LitigationRequestArbitratorAssigningRequests)
                 .Include(x => x.Contract)
-                .Include(x=>x.LitigationRequestArbitrationReports)
+                .Include(x => x.LitigationRequestArbitrationReports)
                 .Include(x => x.LitigationRequestCategory)
                 .Include(x => x.Area)
                 .Include(x => x.City)
@@ -1425,7 +1425,14 @@ namespace REAC.Application.AppServices.Litigation
             var reconciliationFees = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reconciliation_Fees).Result.Data?.Value;
 
             result.ReconciliationFees = decimal.Parse(reconciliationFees);
-
+            if (result.IsFinancialLitigation != true)
+            {
+                //رسوم الدعوه 
+                var minFees = (await _repository.GetQueryable<SysLitigationRequestAmount, Guid>())?
+                 .Where(x => x.FromAmount == 0)
+                 .FirstOrDefault()?.Fees ?? 0;
+                result.FeesDifference = minFees;
+            }
             return new DataResponse<LitigationRequest> { Data = result, IsDone = true };
         }
 
@@ -3269,7 +3276,7 @@ namespace REAC.Application.AppServices.Litigation
                     DecisionFileId = input.DecisionFileId,
                     EstablishmentFileId = input.EstablishmentFileId,
                     IsActive = true,
-                    IndividualCapacity=input.IndividualCapacity
+                    IndividualCapacity = input.IndividualCapacity
                 };
 
                 var addDelegator = await _repository.AddAsync<Delegator, Guid>(delegator);
@@ -3380,7 +3387,7 @@ namespace REAC.Application.AppServices.Litigation
                 .AsNoTracking()
                 .FirstOrDefault(x => x.Id == input.LitigationRequestId);
 
-            if(litigationData.Contract.FirstPartyCitizenId == referenceId || litigationData.Contract.SecondPartyCitizenId == referenceId || litigationData.ApplicantCitizenId == referenceId)
+            if (litigationData.Contract.FirstPartyCitizenId == referenceId || litigationData.Contract.SecondPartyCitizenId == referenceId || litigationData.ApplicantCitizenId == referenceId)
                 return new DataResponse<DelegationRequest> { IsDone = false, Message = "لتقديم طلب التفويض لابد ان لا تكون طرف من اطراف الدعوي" };
 
 
@@ -5810,7 +5817,7 @@ namespace REAC.Application.AppServices.Litigation
                 IsDone = true
             };
         }
-        
+
         public async Task<BaseResponse> GetInActiveDelegatorsForUser(Guid litigationRequestId, LitigationRequestParty delegationParty)
         {
             var referenceId = Guid.Empty;
@@ -5918,7 +5925,7 @@ namespace REAC.Application.AppServices.Litigation
                     return saveChanges;
 
                 // Notification
-                if(delegationRequest.DelegationParty == LitigationRequestParty.Plaintiff && delegationRequest.LitigationRequest.Contract.FirstPartyCitizen != null && delegationRequest.Delegator.DelegatorCitizen != null)
+                if (delegationRequest.DelegationParty == LitigationRequestParty.Plaintiff && delegationRequest.LitigationRequest.Contract.FirstPartyCitizen != null && delegationRequest.Delegator.DelegatorCitizen != null)
                 {
                     try
                     {
@@ -5942,7 +5949,7 @@ namespace REAC.Application.AppServices.Litigation
                         await _notificationService.SendNotifications(
                         new SendEmailDto()
                         {
-                            To = new List<string>() { delegationRequest.LitigationRequest.Contract.FirstPartyCitizen.Email , delegationRequest.Delegator.DelegatorCitizen.Email },
+                            To = new List<string>() { delegationRequest.LitigationRequest.Contract.FirstPartyCitizen.Email, delegationRequest.Delegator.DelegatorCitizen.Email },
                             Subject = "ايقاف المفوض",
                             Body = body
                         },
@@ -5983,7 +5990,7 @@ namespace REAC.Application.AppServices.Litigation
 
                     }
                 }
-                else if(delegationRequest.DelegationParty == LitigationRequestParty.Defendant && delegationRequest.LitigationRequest.Contract.SecondPartyCitizen != null && delegationRequest.Delegator.DelegatorCitizen != null)
+                else if (delegationRequest.DelegationParty == LitigationRequestParty.Defendant && delegationRequest.LitigationRequest.Contract.SecondPartyCitizen != null && delegationRequest.Delegator.DelegatorCitizen != null)
                 {
                     try
                     {
@@ -6007,14 +6014,14 @@ namespace REAC.Application.AppServices.Litigation
                         await _notificationService.SendNotifications(
                         new SendEmailDto()
                         {
-                            To = new List<string>() { delegationRequest.LitigationRequest.Contract.SecondPartyCitizen.Email,  delegationRequest.Delegator.DelegatorCitizen.Email},
+                            To = new List<string>() { delegationRequest.LitigationRequest.Contract.SecondPartyCitizen.Email, delegationRequest.Delegator.DelegatorCitizen.Email },
                             Subject = "ايقاف المفوض",
                             Body = body
                         },
                         new SMSRequestDto()
                         {
                             message_text = msg,
-                            recipients = new List<string>() { delegationRequest.LitigationRequest.Contract.SecondPartyCitizen.Mobile , delegationRequest.Delegator.DelegatorCitizen.Mobile },
+                            recipients = new List<string>() { delegationRequest.LitigationRequest.Contract.SecondPartyCitizen.Mobile, delegationRequest.Delegator.DelegatorCitizen.Mobile },
                             notification_type = "SMS",
                         },
                         new List<SysNotificationDto>()
@@ -6050,7 +6057,7 @@ namespace REAC.Application.AppServices.Litigation
                 }
 
 
-                    return new BaseResponse { IsDone = true, Message = "تم ايقاف التفويض" };
+                return new BaseResponse { IsDone = true, Message = "تم ايقاف التفويض" };
 
             }
 
@@ -6373,10 +6380,10 @@ namespace REAC.Application.AppServices.Litigation
                 .GetPaged(pageIndex, pageSize);
 
             var mappedRequests = _mapper.Map<List<GetLitigationRequestWithoutDelegator>>(litigationRequests.Results);
-            
+
             foreach (var item in mappedRequests)
             {
-                
+
             }
 
             return new DataResponse<PagedResult<GetLitigationRequestWithoutDelegator>>
