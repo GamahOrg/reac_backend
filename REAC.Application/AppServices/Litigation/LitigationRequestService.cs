@@ -3308,6 +3308,7 @@ namespace REAC.Application.AppServices.Litigation
             }
             else if (input.DelegationRelationshipTypeId == DelegationRelationshipType.Facility)
             {
+
                 var addFacility = await AddFacility(input);
 
                 if (!addFacility.IsDone)
@@ -3591,20 +3592,26 @@ namespace REAC.Application.AppServices.Litigation
             if (input == null)
                 return new DataResponse<Facility> { IsDone = false, Message = "خطأ في إضافة بيانات المنشأة" };
 
-            // Add Facility
-            var facility = new Facility()
+            var ExistFacility = (await _repository.GetQueryable<Facility, Guid>()).Where(x => x.Facility700Number == input.FacilityCommercialRegisterationNumber).FirstOrDefault();
+            if (ExistFacility == null)
             {
-                Id = Guid.NewGuid(),
-                CommercialRegisterNumber = input.FacilityCommercialRegisterationNumber,
-                ArabicFacilityName = input.ArabicFacilityName,
-                EnglishFacilityName = input.ArabicFacilityName,
-                Facility700Number = input.Facility700Number,
-            };
-            var addFacility = await _repository.AddAsync<Facility, Guid>(facility);
-            //var addFacilityResponse = await _repository.SaveChangesAsync();
-            if (!addFacility.IsDone)
-                return new DataResponse<Facility> { IsDone = false, Message = "خطأ في إضافة بيانات المنشأة" };
-            return new DataResponse<Facility> { IsDone = true, Message = "تم إضافة بيانات المنشأة بنجاح", Data = facility };
+                // Add Facility
+                var facility = new Facility()
+                {
+                    Id = Guid.NewGuid(),
+                    CommercialRegisterNumber = input.FacilityCommercialRegisterationNumber,
+                    ArabicFacilityName = input.ArabicFacilityName,
+                    EnglishFacilityName = input.ArabicFacilityName,
+                    Facility700Number = input.Facility700Number,
+                };
+                var addFacility = await _repository.AddAsync<Facility, Guid>(facility);
+                //var addFacilityResponse = await _repository.SaveChangesAsync();
+                if (!addFacility.IsDone)
+                    return new DataResponse<Facility> { IsDone = false, Message = "خطأ في إضافة بيانات المنشأة" };
+                return new DataResponse<Facility> { IsDone = true, Message = "تم إضافة بيانات المنشأة بنجاح", Data = facility };
+            }
+            return new DataResponse<Facility> { IsDone = true, Message = "تم إضافة بيانات المنشأة بنجاح", Data = ExistFacility };
+
         }
         public async Task<BaseResponse> CreateLitigationRequestManual(CreateLitigationRequestNoIntegrationDto litigationRequestDto)
         {
