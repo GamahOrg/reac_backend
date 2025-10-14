@@ -3281,7 +3281,6 @@ namespace REAC.Application.AppServices.Litigation
                     DecisionFileId = input.DecisionFileId,
                     EstablishmentFileId = input.EstablishmentFileId,
                     EstablishmentLetterFileId = input.EstablishmentLetterFileId,
-                    IsActive = true
                     IsActive = true,
                     IndividualCapacity = input.IndividualCapacity
                 };
