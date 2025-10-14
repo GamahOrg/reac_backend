@@ -19,7 +19,6 @@ ARG BUILD_CONFIGURATION=Release
 
 RUN dotnet publish "./REAC.Api/REAC.Api.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
-RUN apt-get update && apt-get install -y unzip
 
 FROM base AS final
 WORKDIR /app
