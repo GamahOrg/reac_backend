@@ -1498,6 +1498,8 @@ namespace REAC.Application.AppServices.Litigation
                  .ThenInclude(x => x.RepresentationFile)
                  .Include(x => x.Delegator)
                  .ThenInclude(x => x.EstablishmentFile)
+                 .Include(x => x.Delegator)
+                 .ThenInclude(x => x.EstablishmentLetterFile)
                 .FirstOrDefault(x => x.Id == litigationId);
 
             return new DataResponse<LitigationRequest> { Data = result, IsDone = true };
@@ -1922,6 +1924,8 @@ namespace REAC.Application.AppServices.Litigation
                     .ThenInclude(x => x.RepresentationFile)
                     .Include(x => x.Delegator)
                     .ThenInclude(x => x.EstablishmentFile)
+                    .Include(x => x.Delegator)
+                    .ThenInclude(x => x.EstablishmentLetterFile)
                     .FirstOrDefault(x => x.Id == litigationId);
 
                 if (result == null)
@@ -2074,6 +2078,7 @@ namespace REAC.Application.AppServices.Litigation
                     litigationPartiesDetailsDto.LitigationRequestDelegationDataDto.CustodyFile = _mapper.Map<SysFileManagerCreateUpdateDto>(result.Delegator.CustodyFile);
                     litigationPartiesDetailsDto.LitigationRequestDelegationDataDto.CommercialRegisterationFile = _mapper.Map<SysFileManagerCreateUpdateDto>(result.Delegator.CommercialRegisterationFile);
                     litigationPartiesDetailsDto.LitigationRequestDelegationDataDto.EstablishmentFile = _mapper.Map<SysFileManagerCreateUpdateDto>(result.Delegator.EstablishmentFile);
+                    litigationPartiesDetailsDto.LitigationRequestDelegationDataDto.EstablishmentLetterFile = _mapper.Map<SysFileManagerCreateUpdateDto>(result.Delegator.EstablishmentLetterFile);
 
 
                     if (result.Delegator.DelegationRelationshipTypeId == DelegationRelationshipType.Individual && result.Delegator.Citizen is not null)
@@ -3275,6 +3280,8 @@ namespace REAC.Application.AppServices.Litigation
                     RepresentationFileId = input.RepresentationFileId,
                     DecisionFileId = input.DecisionFileId,
                     EstablishmentFileId = input.EstablishmentFileId,
+                    EstablishmentLetterFileId = input.EstablishmentLetterFileId,
+                    IsActive = true
                     IsActive = true,
                     IndividualCapacity = input.IndividualCapacity
                 };
@@ -3327,6 +3334,7 @@ namespace REAC.Application.AppServices.Litigation
                     RepresentationFileId = input.RepresentationFileId,
                     DecisionFileId = input.DecisionFileId,
                     EstablishmentFileId = input.EstablishmentFileId,
+                    EstablishmentLetterFileId = input.EstablishmentLetterFileId,
                     IsActive = true
                 };
 
@@ -3409,6 +3417,7 @@ namespace REAC.Application.AppServices.Litigation
                     RepresentationFileId = input.LitigationRequestDelegationData.RepresentationFileId,
                     DecisionFileId = input.LitigationRequestDelegationData.DecisionFileId,
                     EstablishmentFileId = input.LitigationRequestDelegationData.EstablishmentFileId,
+                    EstablishmentLetterFileId = input.LitigationRequestDelegationData.EstablishmentLetterFileId,
                     IsActive = false
                 };
 
@@ -3507,6 +3516,7 @@ namespace REAC.Application.AppServices.Litigation
                     RepresentationFileId = input.LitigationRequestDelegationData.RepresentationFileId,
                     DecisionFileId = input.LitigationRequestDelegationData.DecisionFileId,
                     EstablishmentFileId = input.LitigationRequestDelegationData.EstablishmentFileId,
+                    EstablishmentLetterFileId = input.LitigationRequestDelegationData.EstablishmentLetterFileId,
                     IsActive = false
                 };
 
@@ -5475,7 +5485,7 @@ namespace REAC.Application.AppServices.Litigation
                 }
 
             }
-
+            litigationShortDetailsDto.LitigationRequestContractTypeId = existLitigationRequest.Contract.LitigationRequestContractTypeId;
             return new DataResponse<LitigationShortDetailsDto>()
             {
                 IsDone = true,
@@ -5546,6 +5556,8 @@ namespace REAC.Application.AppServices.Litigation
                  .ThenInclude(x => x.RepresentationFile)
                  .Include(x => x.Delegator)
                  .ThenInclude(x => x.EstablishmentFile)
+                 .Include(x => x.Delegator)
+                 .ThenInclude(x => x.EstablishmentLetterFile)
                 .AsNoTracking()
                 .FirstOrDefault(x => x.Id == delegationRequestId);
 

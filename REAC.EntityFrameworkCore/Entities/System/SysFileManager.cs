@@ -45,6 +45,9 @@ public partial class SysFileManager : CreationBaseEntity<Guid>
     [InverseProperty(nameof(Delegator.EstablishmentFile))]
     public virtual ICollection<Delegator> EstablishmentFiles { get; set; } = new List<Delegator>();
     
+    [InverseProperty(nameof(Delegator.EstablishmentLetterFile))]
+    public virtual ICollection<Delegator> EstablishmentLetterFiles { get; set; } = new List<Delegator>();
+    
     [InverseProperty(nameof(Delegator.RepresentationFile))]
     public virtual ICollection<Delegator> RepresentationFiles { get; set; } = new List<Delegator>();
     

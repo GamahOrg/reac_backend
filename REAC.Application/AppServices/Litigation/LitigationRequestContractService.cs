@@ -122,6 +122,7 @@ namespace REAC.Application.AppServices.Litigation
                             .SetProperty(z => z.DelegationFileId,model.LitigationRequestDelegationDataDto.DelegationFileId)
                             .SetProperty(z => z.DecisionFileId,model.LitigationRequestDelegationDataDto.DecisionFileId)
                             .SetProperty(z => z.EstablishmentFileId,model.LitigationRequestDelegationDataDto.EstablishmentFileId)
+                            .SetProperty(z => z.EstablishmentLetterFileId,model.LitigationRequestDelegationDataDto.EstablishmentLetterFileId)
                             .SetProperty(z => z.CustodyFileId,model.LitigationRequestDelegationDataDto.CustodyFileId)
                             .SetProperty(z => z.CommercialRegisterationFileId,model.LitigationRequestDelegationDataDto.CommercialRegisterationFileId)
                             .SetProperty(z => z.RepresentationFileId,model.LitigationRequestDelegationDataDto.RepresentationFileId)
