@@ -1,13 +1,5 @@
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 
-USER root
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends tzdata libgdiplus && \
-    ln -snf /usr/share/zoneinfo/Asia/Riyadh /etc/localtime && \
-    echo "Asia/Riyadh" > /etc/timezone && \
-    dpkg-reconfigure -f noninteractive tzdata && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
-
 USER app
 
 WORKDIR /app
