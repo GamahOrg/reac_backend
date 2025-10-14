@@ -45,5 +45,6 @@ namespace REAC.Application.Contracts.Dtos.Litigation.Get
         public string? PartyIdentity { get; set; }
         public string? PartyCapacity { get; set; }
         public DelegationRelationshipType? DelegationRelationshipTypeId { get; set; }
+        public LitigationRequestContractType LitigationRequestContractTypeId { get; set; }
     }
 }

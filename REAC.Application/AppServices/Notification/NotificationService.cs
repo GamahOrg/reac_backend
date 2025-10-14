@@ -12,6 +12,7 @@ using REAC.Application.Contracts.IAppServices;
 using REAC.Application.Contracts.IAppServices.Common;
 using REAC.Application.Contracts.IAppServices.Integration;
 using REAC.Application.Contracts.IAppServices.Notification;
+using REAC.EntityFrameworkCore.Entities.Actor;
 using REAC.EntityFrameworkCore.Entities.Notification;
 using System.Text.RegularExpressions;
 using Wafi.Application.Hubs;
@@ -207,7 +208,35 @@ namespace REAC.Application.AppServices.Notification
                         );
 
                     if (!isExist)
+                    {
+                        if (notification.ActorTypeId == Domain.Shared.Enum.NotificationActorType.Defendant)
+                        {
+                            // Retrieve the Citizen entity using ActorId
+                            var citizenResponse = await _repository.GetByIdAsync<Citizen, Guid>(notification.ActorId);
+                            if (citizenResponse?.IsDone == true && citizenResponse is DataResponse<Citizen> citizenData && citizenData.Data != null)
+                            {
+                                var citizen = citizenData.Data;
+
+                                // Add Email2 to email.To if not null/empty and not already present
+                                if (email != null && !string.IsNullOrWhiteSpace(citizen.Email2))
+                                {
+                                    if (!email.To.Contains(citizen.Email2))
+                                        email.To.Add(citizen.Email2);
+                                }
+
+                                // Add Mobile2 to sms.recipients if not null/empty and not already present
+                                if (sms != null && !string.IsNullOrWhiteSpace(citizen.Mobile2))
+                                {
+                                    if (!sms.recipients.Contains(citizen.Mobile2))
+                                        sms.recipients.Add(citizen.Mobile2);
+                                }
+                            }
+                        }
+
                         newNotificationsList.Add(notification);
+                    }
+
+
                 }
 
                 if (email is not null)
@@ -226,7 +255,7 @@ namespace REAC.Application.AppServices.Notification
 
                     sms.recipients = recipiants;
                     //var smsResultCitizen = await _smsService.SendSMS(sms);
-                     await _smsService.SendSMSToSLA(sms);
+                    await _smsService.SendSMSToSLA(sms);
                 }
 
                 if (newNotificationsList.Any())
@@ -265,12 +294,12 @@ namespace REAC.Application.AppServices.Notification
                 return new BaseResponse() { IsDone = false, Message = ex.Message };
             }
         }
-        
+
         public async Task<BaseResponse> SendNotificationsWithoutDuplicationChecking(SendEmailDto email, SMSRequestDto sms, List<SysNotificationDto> notifications)
         {
             try
             {
-               
+
                 if (email is not null)
                 {
                     await _emailService.SendMailToSLA(email.To, email.Subject, email.Body);
@@ -287,7 +316,7 @@ namespace REAC.Application.AppServices.Notification
 
                     sms.recipients = recipiants;
                     //var smsResultCitizen = await _smsService.SendSMS(sms);
-                     await _smsService.SendSMSToSLA(sms);
+                    await _smsService.SendSMSToSLA(sms);
                 }
 
                 if (notifications.Any())

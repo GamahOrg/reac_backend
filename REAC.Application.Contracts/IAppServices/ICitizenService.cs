@@ -42,5 +42,6 @@ namespace REAC.Application.Contracts.IAppServices
         Task<BaseResponse> ActivateReformerAccount(ReformerFreeUpDecisionCreateDto reformerFreeUpDecisionCreateDto);
         Task<BaseResponse> DeActivateArbitratorAccount(ArbitratorStopDecisionCreateDto arbitratorStopDecisionCreateDto);
         Task<BaseResponse> ActivateArbitratorAccount(ArbitratorFreeUpDecisionCreateDto arbitratorFreeUpDecisionCreateDto);
+        Task<BaseResponse> ChangeCitizenData(ChangeCitizenData input);
     }
 }

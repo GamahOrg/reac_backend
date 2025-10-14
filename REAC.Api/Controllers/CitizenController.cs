@@ -57,6 +57,18 @@ public class CitizenController : ControllerBase
 
         return BadRequest();
     }
+    
+    [HttpPost(nameof(ChangeCitizenData))]
+    public async Task<ActionResult> ChangeCitizenData(ChangeCitizenData input)
+    {
+        if (ModelState.IsValid)
+        {
+            var returnValue = await _citizenService.ChangeCitizenData(input);
+            return Ok(returnValue);
+        }
+
+        return BadRequest();
+    }
 
     [HttpPost(nameof(AddArbitratorFreeUpDecision))]
     public async Task<ActionResult> AddArbitratorFreeUpDecision(ArbitratorFreeUpDecisionCreateDto arbitratorFreeUpDecisionCreateDto)

@@ -21,6 +21,7 @@ using REAC.EntityFrameworkCore.Entities.Actor;
 using REAC.EntityFrameworkCore.Entities.Arbitration;
 using REAC.EntityFrameworkCore.Entities.Litigation;
 using REAC.EntityFrameworkCore.Entities.System;
+using REAC.EntityFrameworkCore.Entities.Wpf.Business;
 using System;
 
 namespace REAC.Application.AppServices
@@ -302,7 +303,7 @@ namespace REAC.Application.AppServices
 
             //get citizen request for update about breif
             var LastCitizenRequest = (await _repository.GetQueryable<CitizenRequest, Guid>())
-                                                       .Where(s=>s.CitizenId == citizen.Id)
+                                                       .Where(s => s.CitizenId == citizen.Id)
                                                        .OrderBy(x => x.RequestOn).LastOrDefault();
 
             if (LastCitizenRequest != null)
@@ -346,7 +347,7 @@ namespace REAC.Application.AppServices
                 await _repository.AddAsync<CitizenRequest, Guid>(request);
             }
 
-                var saveResponse = _repository.SaveChangesAsync().Result;
+            var saveResponse = _repository.SaveChangesAsync().Result;
             if (saveResponse.IsDone != true)
                 return response;
 
@@ -1818,5 +1819,78 @@ namespace REAC.Application.AppServices
             }
         }
 
+
+        public async Task<BaseResponse> ChangeCitizenData(ChangeCitizenData input)
+        {
+            Guid referenceId = Guid.Empty;
+            _jwtReader.GetReferenceId(ref referenceId);
+
+            var employee = (await _repository.GetQueryable<SysEmployee, Guid>())
+                .FirstOrDefault(x => x.Id == referenceId);
+
+
+            if (input.Mobile2 != null)
+            {
+
+                var isExistMobile = (await _repository.GetQueryable<Citizen, Guid>())
+                    .Any(x => x.Id == input.CitizenId && x.Mobile == input.Mobile2);
+                if (isExistMobile)
+                    return new BaseResponse() { IsDone = false, Message = "رقم الجوال 2 موجود مسبقاً" };
+
+                var result = await _repository.ExecuteUpdateAsync<Citizen, Guid>(
+                filter: x => x.Id == input.CitizenId,
+                updateExpression: s => s
+                    .SetProperty(c => c.Mobile2, c => input.Mobile2)
+            );
+
+                if (!result.IsDone)
+                    return new BaseResponse() { IsDone = false, Message = "خطأ داخلي" };
+
+                
+
+                await _repository.AddAsync<WorkFlowLog, Guid>(new WorkFlowLog()
+                {
+                    Id = Guid.NewGuid(),
+                    CreatedOn = DateTime.Now,
+                    RequestId = input.LitigationRequestId,
+                    ShowForApplicant = false,
+                    LogMessage = $"{employee?.EmployeeName}تم اضافة رقم جوال ثاني للمدعي عليه بواسطة المدقق "
+                });
+
+                await _repository.SaveChangesAsync(new CancellationToken());
+            }
+            else if (input.Email2 != null)
+            {
+                var isExistEmail = (await _repository.GetQueryable<Citizen, Guid>())
+                    .Any(x => x.Id == input.CitizenId && x.Email == input.Email2);
+                if (isExistEmail)
+                    return new BaseResponse() { IsDone = false, Message = "البريد الالكتروني 2 موجود مسبقاً" };
+                var result = await _repository.ExecuteUpdateAsync<Citizen, Guid>(
+                filter: x => x.Id == input.CitizenId,
+                updateExpression: s => s
+                    .SetProperty(c => c.Email2, c => input.Email2)
+            );
+                if (!result.IsDone)
+                    return new BaseResponse() { IsDone = false, Message = "خطأ داخلي" };
+
+                await _repository.AddAsync<WorkFlowLog, Guid>(new WorkFlowLog()
+                {
+                    Id = Guid.NewGuid(),
+                    CreatedOn = DateTime.Now,
+                    RequestId = input.LitigationRequestId,
+                    ShowForApplicant = false,
+                    LogMessage = $"{employee?.EmployeeName} تم اضافة ايميل  ثاني للمدعي عليه بواسطة المدقق "
+                });
+
+                await _repository.SaveChangesAsync(new CancellationToken());
+            }
+
+
+            return new BaseResponse()
+            {
+                IsDone = true,
+                Message = "تم تعديل البيانات بنجاح"
+            };
+        }
     }
 }

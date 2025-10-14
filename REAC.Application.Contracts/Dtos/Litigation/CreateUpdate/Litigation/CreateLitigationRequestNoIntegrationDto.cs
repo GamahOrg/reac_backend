@@ -38,6 +38,8 @@ namespace REAC.Application.Contracts.Dtos.Litigation.CreateUpdate.Litigation
         public SysFileManagerCreateUpdateDto? CommercialRegisterationFile { get; set; }
         public Guid? EstablishmentFileId { get; set; }
         public SysFileManagerCreateUpdateDto? EstablishmentFile { get; set; }
+        public Guid? EstablishmentLetterFileId { get; set; }
+        public SysFileManagerCreateUpdateDto? EstablishmentLetterFile { get; set; }
         public Guid? RepresentationFileId { get; set; }
         public SysFileManagerCreateUpdateDto? RepresentationFile { get; set; }
         public Guid? DecisionFileId { get; set; }

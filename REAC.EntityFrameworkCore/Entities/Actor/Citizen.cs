@@ -42,6 +42,7 @@ public partial class Citizen : BaseEntity<Guid>
     public string? Employer { get; set; } = null!;
     [Comment("Mobile phone number")]
     public string Mobile { get; set; } = null!;
+    public string? Mobile2 { get; set; } = null!;
     [Comment("Telephone number")]
     public string? HomeTelephone { get; set; }
     [Comment("Telephone number")]
@@ -50,6 +51,7 @@ public partial class Citizen : BaseEntity<Guid>
     public string? Fax { get; set; }
     [Comment("Email address")]
     public string? Email { get; set; } = null!;
+    public string? Email2 { get; set; } = null!;
     [Comment("Unique identifier of the area")]
     public Guid? AreaId { get; set; }
     [Comment("Unique identifier of the city")]
