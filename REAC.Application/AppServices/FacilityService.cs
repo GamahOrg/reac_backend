@@ -180,7 +180,7 @@ namespace REAC.Application.AppServices
 
                 var _identityTypeId = citizen?.IdentityTypeId != null ? (int)citizen.IdentityTypeId : citizen?.IdentityNumber[0] == '1' ? 1 : 3;
 
-                var _nationalityCode = citizen?.Nationality?.NationalityCode != null ? (int)citizen.Nationality.NationalityCode : 113;
+                //var _nationalityCode = citizen?.Nationality?.NationalityCode != null ? (int)citizen.Nationality.NationalityCode : 113;
                 //var validateOwner = await _mCService.ValidateRelatedCRs(nationalNumberInfomationResponse.Data.CRNationalNumber, _identityTypeId.ToString(), citizen.IdentityNumber, _nationalityCode.ToString());
                 //if (validateOwner == null)
                 //    return new BaseResponse { Message = "البيانات المدخلة غير صحيحة" };

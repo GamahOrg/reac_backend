@@ -29,7 +29,9 @@ public enum LitigationRequestOwnerType
     ///<summary>العضو المنتدب</summary>
     ManagingDirector = 11,
     ///<summary>أمين تفليسة</summary>
-    BankruptcyTrustee = 12
+    BankruptcyTrustee = 12,
+    ///<summary>ممثل عن جمعية</summary>
+    AssociationRepresentitive = 13
 
 }
 

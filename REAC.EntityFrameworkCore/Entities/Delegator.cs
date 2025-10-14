@@ -21,6 +21,9 @@ public partial class Delegator : BaseEntity<Guid>
     //إرفاق عقد التأسيس
     [Comment("Unique identifier of the establishment contract file")]
     public Guid? EstablishmentFileId { get; set; }
+    //إرفاق خطاب التأسيس
+    [Comment("Unique identifier of the establishment Letter file")]
+    public Guid? EstablishmentLetterFileId { get; set; }
     //إرفاق مستند التمثيل
     [Comment("Unique identifier of the representation document file")]
     public Guid? RepresentationFileId { get; set; }
@@ -67,6 +70,8 @@ public partial class Delegator : BaseEntity<Guid>
 
     [ForeignKey(nameof(EstablishmentFileId))]
     public virtual SysFileManager? EstablishmentFile { get; set; }
+    [ForeignKey(nameof(EstablishmentLetterFileId))]
+    public virtual SysFileManager? EstablishmentLetterFile { get; set; }
     
     [ForeignKey(nameof(RepresentationFileId))]
     public virtual SysFileManager? RepresentationFile { get; set; }
