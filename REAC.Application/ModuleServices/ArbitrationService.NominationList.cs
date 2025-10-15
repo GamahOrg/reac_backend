@@ -1301,17 +1301,17 @@ namespace REAC.Application.ModuleServices
                                     citizenArbitratorShortStatusDto.Value = litigationRequestArbitratorNominationList.DefendantPriority;
                             }
 
-                            if (litigationRequest.Contract.FirstPartyFacilityId.HasValue)
-                            {
-                                if (litigationRequest.Contract.FirstPartyFacilityId.HasValue)
-                                    citizenArbitratorShortStatusDto.Value = litigationRequestArbitratorNominationList.PlaintiffPriority;
+                            //if (litigationRequest.Contract.FirstPartyFacilityId.HasValue)
+                            //{
+                            //    if (litigationRequest.Contract.FirstPartyFacilityId.HasValue)
+                            //        citizenArbitratorShortStatusDto.Value = litigationRequestArbitratorNominationList.PlaintiffPriority;
 
-                            }
-                            if (litigationRequest.Contract.SecondPartyFacilityId.HasValue)
-                            {
-                                if (litigationRequest.Contract.SecondPartyFacilityId.HasValue)
-                                    citizenArbitratorShortStatusDto.Value = litigationRequestArbitratorNominationList.DefendantPriority;
-                            }
+                            //}
+                            //if (litigationRequest.Contract.SecondPartyFacilityId.HasValue)
+                            //{
+                            //    if (litigationRequest.Contract.SecondPartyFacilityId.HasValue)
+                            //        citizenArbitratorShortStatusDto.Value = litigationRequestArbitratorNominationList.DefendantPriority;
+                            //}
 
                             litigationRequestForAllArbitratorNominationListDto.CitizenArbitratorShortStatusDtos.Add(citizenArbitratorShortStatusDto);
                         }

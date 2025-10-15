@@ -3396,7 +3396,7 @@ namespace REAC.Application.AppServices.Litigation
                 .FirstOrDefault(x => x.Id == input.LitigationRequestId);
 
             if (litigationData.Contract.FirstPartyCitizenId == referenceId || litigationData.Contract.SecondPartyCitizenId == referenceId || litigationData.ApplicantCitizenId == referenceId)
-                return new DataResponse<DelegationRequest> { IsDone = false, Message = "لتقديم طلب التفويض لابد ان لا تكون طرف من اطراف الدعوي" };
+                return new DataResponse<DelegationRequest> { IsDone = false, Message = "لا يمكن تمثيل طرفي النزاع في نفس الدعوى" };
 
 
             if (input.LitigationRequestDelegationData.DelegationRelationshipTypeId == DelegationRelationshipType.Individual)
