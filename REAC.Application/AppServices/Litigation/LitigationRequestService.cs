@@ -1357,7 +1357,7 @@ namespace REAC.Application.AppServices.Litigation
                 .Include(x => x.LitigationRequestReformerAssigningRequests)
                 .Include(x => x.LitigationRequestArbitratorAssigningRequests)
                 .Include(x => x.Contract)
-                .Include(x=>x.LitigationRequestArbitrationReports)
+                .Include(x => x.LitigationRequestArbitrationReports)
                 .Include(x => x.LitigationRequestCategory)
                 .Include(x => x.Area)
                 .Include(x => x.City)
@@ -1425,7 +1425,14 @@ namespace REAC.Application.AppServices.Litigation
             var reconciliationFees = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reconciliation_Fees).Result.Data?.Value;
 
             result.ReconciliationFees = decimal.Parse(reconciliationFees);
-
+            if (result.IsFinancialLitigation != true)
+            {
+                //رسوم الدعوه 
+                var minFees = (await _repository.GetQueryable<SysLitigationRequestAmount, Guid>())?
+                 .Where(x => x.FromAmount == 0)
+                 .FirstOrDefault()?.Fees ?? 0;
+                result.FeesDifference = minFees;
+            }
             return new DataResponse<LitigationRequest> { Data = result, IsDone = true };
         }
 
@@ -1491,6 +1498,8 @@ namespace REAC.Application.AppServices.Litigation
                  .ThenInclude(x => x.RepresentationFile)
                  .Include(x => x.Delegator)
                  .ThenInclude(x => x.EstablishmentFile)
+                 .Include(x => x.Delegator)
+                 .ThenInclude(x => x.EstablishmentLetterFile)
                 .FirstOrDefault(x => x.Id == litigationId);
 
             return new DataResponse<LitigationRequest> { Data = result, IsDone = true };
@@ -1915,6 +1924,8 @@ namespace REAC.Application.AppServices.Litigation
                     .ThenInclude(x => x.RepresentationFile)
                     .Include(x => x.Delegator)
                     .ThenInclude(x => x.EstablishmentFile)
+                    .Include(x => x.Delegator)
+                    .ThenInclude(x => x.EstablishmentLetterFile)
                     .FirstOrDefault(x => x.Id == litigationId);
 
                 if (result == null)
@@ -2067,6 +2078,7 @@ namespace REAC.Application.AppServices.Litigation
                     litigationPartiesDetailsDto.LitigationRequestDelegationDataDto.CustodyFile = _mapper.Map<SysFileManagerCreateUpdateDto>(result.Delegator.CustodyFile);
                     litigationPartiesDetailsDto.LitigationRequestDelegationDataDto.CommercialRegisterationFile = _mapper.Map<SysFileManagerCreateUpdateDto>(result.Delegator.CommercialRegisterationFile);
                     litigationPartiesDetailsDto.LitigationRequestDelegationDataDto.EstablishmentFile = _mapper.Map<SysFileManagerCreateUpdateDto>(result.Delegator.EstablishmentFile);
+                    litigationPartiesDetailsDto.LitigationRequestDelegationDataDto.EstablishmentLetterFile = _mapper.Map<SysFileManagerCreateUpdateDto>(result.Delegator.EstablishmentLetterFile);
 
 
                     if (result.Delegator.DelegationRelationshipTypeId == DelegationRelationshipType.Individual && result.Delegator.Citizen is not null)
@@ -3268,8 +3280,9 @@ namespace REAC.Application.AppServices.Litigation
                     RepresentationFileId = input.RepresentationFileId,
                     DecisionFileId = input.DecisionFileId,
                     EstablishmentFileId = input.EstablishmentFileId,
+                    EstablishmentLetterFileId = input.EstablishmentLetterFileId,
                     IsActive = true,
-                    IndividualCapacity=input.IndividualCapacity
+                    IndividualCapacity = input.IndividualCapacity
                 };
 
                 var addDelegator = await _repository.AddAsync<Delegator, Guid>(delegator);
@@ -3301,6 +3314,7 @@ namespace REAC.Application.AppServices.Litigation
             }
             else if (input.DelegationRelationshipTypeId == DelegationRelationshipType.Facility)
             {
+
                 var addFacility = await AddFacility(input);
 
                 if (!addFacility.IsDone)
@@ -3319,6 +3333,7 @@ namespace REAC.Application.AppServices.Litigation
                     RepresentationFileId = input.RepresentationFileId,
                     DecisionFileId = input.DecisionFileId,
                     EstablishmentFileId = input.EstablishmentFileId,
+                    EstablishmentLetterFileId = input.EstablishmentLetterFileId,
                     IsActive = true
                 };
 
@@ -3380,8 +3395,8 @@ namespace REAC.Application.AppServices.Litigation
                 .AsNoTracking()
                 .FirstOrDefault(x => x.Id == input.LitigationRequestId);
 
-            if(litigationData.Contract.FirstPartyCitizenId == referenceId || litigationData.Contract.SecondPartyCitizenId == referenceId || litigationData.ApplicantCitizenId == referenceId)
-                return new DataResponse<DelegationRequest> { IsDone = false, Message = "لتقديم طلب التفويض لابد ان لا تكون طرف من اطراف الدعوي" };
+            if (litigationData.Contract.FirstPartyCitizenId == referenceId || litigationData.Contract.SecondPartyCitizenId == referenceId || litigationData.ApplicantCitizenId == referenceId)
+                return new DataResponse<DelegationRequest> { IsDone = false, Message = "لا يمكن تمثيل طرفي النزاع في نفس الدعوى" };
 
 
             if (input.LitigationRequestDelegationData.DelegationRelationshipTypeId == DelegationRelationshipType.Individual)
@@ -3401,6 +3416,7 @@ namespace REAC.Application.AppServices.Litigation
                     RepresentationFileId = input.LitigationRequestDelegationData.RepresentationFileId,
                     DecisionFileId = input.LitigationRequestDelegationData.DecisionFileId,
                     EstablishmentFileId = input.LitigationRequestDelegationData.EstablishmentFileId,
+                    EstablishmentLetterFileId = input.LitigationRequestDelegationData.EstablishmentLetterFileId,
                     IsActive = false
                 };
 
@@ -3499,6 +3515,7 @@ namespace REAC.Application.AppServices.Litigation
                     RepresentationFileId = input.LitigationRequestDelegationData.RepresentationFileId,
                     DecisionFileId = input.LitigationRequestDelegationData.DecisionFileId,
                     EstablishmentFileId = input.LitigationRequestDelegationData.EstablishmentFileId,
+                    EstablishmentLetterFileId = input.LitigationRequestDelegationData.EstablishmentLetterFileId,
                     IsActive = false
                 };
 
@@ -3584,20 +3601,26 @@ namespace REAC.Application.AppServices.Litigation
             if (input == null)
                 return new DataResponse<Facility> { IsDone = false, Message = "خطأ في إضافة بيانات المنشأة" };
 
-            // Add Facility
-            var facility = new Facility()
+            var ExistFacility = (await _repository.GetQueryable<Facility, Guid>()).Where(x => x.Facility700Number == input.FacilityCommercialRegisterationNumber).FirstOrDefault();
+            if (ExistFacility == null)
             {
-                Id = Guid.NewGuid(),
-                CommercialRegisterNumber = input.FacilityCommercialRegisterationNumber,
-                ArabicFacilityName = input.ArabicFacilityName,
-                EnglishFacilityName = input.ArabicFacilityName,
-                Facility700Number = input.Facility700Number,
-            };
-            var addFacility = await _repository.AddAsync<Facility, Guid>(facility);
-            //var addFacilityResponse = await _repository.SaveChangesAsync();
-            if (!addFacility.IsDone)
-                return new DataResponse<Facility> { IsDone = false, Message = "خطأ في إضافة بيانات المنشأة" };
-            return new DataResponse<Facility> { IsDone = true, Message = "تم إضافة بيانات المنشأة بنجاح", Data = facility };
+                // Add Facility
+                var facility = new Facility()
+                {
+                    Id = Guid.NewGuid(),
+                    CommercialRegisterNumber = input.FacilityCommercialRegisterationNumber,
+                    ArabicFacilityName = input.ArabicFacilityName,
+                    EnglishFacilityName = input.ArabicFacilityName,
+                    Facility700Number = input.Facility700Number,
+                };
+                var addFacility = await _repository.AddAsync<Facility, Guid>(facility);
+                //var addFacilityResponse = await _repository.SaveChangesAsync();
+                if (!addFacility.IsDone)
+                    return new DataResponse<Facility> { IsDone = false, Message = "خطأ في إضافة بيانات المنشأة" };
+                return new DataResponse<Facility> { IsDone = true, Message = "تم إضافة بيانات المنشأة بنجاح", Data = facility };
+            }
+            return new DataResponse<Facility> { IsDone = true, Message = "تم إضافة بيانات المنشأة بنجاح", Data = ExistFacility };
+
         }
         public async Task<BaseResponse> CreateLitigationRequestManual(CreateLitigationRequestNoIntegrationDto litigationRequestDto)
         {
@@ -5461,7 +5484,7 @@ namespace REAC.Application.AppServices.Litigation
                 }
 
             }
-
+            litigationShortDetailsDto.LitigationRequestContractTypeId = existLitigationRequest.Contract.LitigationRequestContractTypeId;
             return new DataResponse<LitigationShortDetailsDto>()
             {
                 IsDone = true,
@@ -5532,6 +5555,8 @@ namespace REAC.Application.AppServices.Litigation
                  .ThenInclude(x => x.RepresentationFile)
                  .Include(x => x.Delegator)
                  .ThenInclude(x => x.EstablishmentFile)
+                 .Include(x => x.Delegator)
+                 .ThenInclude(x => x.EstablishmentLetterFile)
                 .AsNoTracking()
                 .FirstOrDefault(x => x.Id == delegationRequestId);
 
@@ -5810,7 +5835,7 @@ namespace REAC.Application.AppServices.Litigation
                 IsDone = true
             };
         }
-        
+
         public async Task<BaseResponse> GetInActiveDelegatorsForUser(Guid litigationRequestId, LitigationRequestParty delegationParty)
         {
             var referenceId = Guid.Empty;
@@ -5918,7 +5943,7 @@ namespace REAC.Application.AppServices.Litigation
                     return saveChanges;
 
                 // Notification
-                if(delegationRequest.DelegationParty == LitigationRequestParty.Plaintiff && delegationRequest.LitigationRequest.Contract.FirstPartyCitizen != null && delegationRequest.Delegator.DelegatorCitizen != null)
+                if (delegationRequest.DelegationParty == LitigationRequestParty.Plaintiff && delegationRequest.LitigationRequest.Contract.FirstPartyCitizen != null && delegationRequest.Delegator.DelegatorCitizen != null)
                 {
                     try
                     {
@@ -5942,7 +5967,7 @@ namespace REAC.Application.AppServices.Litigation
                         await _notificationService.SendNotifications(
                         new SendEmailDto()
                         {
-                            To = new List<string>() { delegationRequest.LitigationRequest.Contract.FirstPartyCitizen.Email , delegationRequest.Delegator.DelegatorCitizen.Email },
+                            To = new List<string>() { delegationRequest.LitigationRequest.Contract.FirstPartyCitizen.Email, delegationRequest.Delegator.DelegatorCitizen.Email },
                             Subject = "ايقاف المفوض",
                             Body = body
                         },
@@ -5983,7 +6008,7 @@ namespace REAC.Application.AppServices.Litigation
 
                     }
                 }
-                else if(delegationRequest.DelegationParty == LitigationRequestParty.Defendant && delegationRequest.LitigationRequest.Contract.SecondPartyCitizen != null && delegationRequest.Delegator.DelegatorCitizen != null)
+                else if (delegationRequest.DelegationParty == LitigationRequestParty.Defendant && delegationRequest.LitigationRequest.Contract.SecondPartyCitizen != null && delegationRequest.Delegator.DelegatorCitizen != null)
                 {
                     try
                     {
@@ -6007,14 +6032,14 @@ namespace REAC.Application.AppServices.Litigation
                         await _notificationService.SendNotifications(
                         new SendEmailDto()
                         {
-                            To = new List<string>() { delegationRequest.LitigationRequest.Contract.SecondPartyCitizen.Email,  delegationRequest.Delegator.DelegatorCitizen.Email},
+                            To = new List<string>() { delegationRequest.LitigationRequest.Contract.SecondPartyCitizen.Email, delegationRequest.Delegator.DelegatorCitizen.Email },
                             Subject = "ايقاف المفوض",
                             Body = body
                         },
                         new SMSRequestDto()
                         {
                             message_text = msg,
-                            recipients = new List<string>() { delegationRequest.LitigationRequest.Contract.SecondPartyCitizen.Mobile , delegationRequest.Delegator.DelegatorCitizen.Mobile },
+                            recipients = new List<string>() { delegationRequest.LitigationRequest.Contract.SecondPartyCitizen.Mobile, delegationRequest.Delegator.DelegatorCitizen.Mobile },
                             notification_type = "SMS",
                         },
                         new List<SysNotificationDto>()
@@ -6050,7 +6075,7 @@ namespace REAC.Application.AppServices.Litigation
                 }
 
 
-                    return new BaseResponse { IsDone = true, Message = "تم ايقاف التفويض" };
+                return new BaseResponse { IsDone = true, Message = "تم ايقاف التفويض" };
 
             }
 
@@ -6373,10 +6398,10 @@ namespace REAC.Application.AppServices.Litigation
                 .GetPaged(pageIndex, pageSize);
 
             var mappedRequests = _mapper.Map<List<GetLitigationRequestWithoutDelegator>>(litigationRequests.Results);
-            
+
             foreach (var item in mappedRequests)
             {
-                
+
             }
 
             return new DataResponse<PagedResult<GetLitigationRequestWithoutDelegator>>

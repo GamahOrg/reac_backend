@@ -167,10 +167,11 @@ namespace REAC.Application.AppServices.Integration.GEE
             // Step 2: Upload File
             var uploadFileUrl = _settingService.GetBySettingKey(SysSettingKeyConstants.UploadFileToNote).Result.Data?.Value;
             input.id = noteData.id;
-
+            UploadComplaintFileRequestDto complaintFileNoteDto = new UploadComplaintFileRequestDto();
+            complaintFileNoteDto.note = input;
             var uploadRequest = new HttpRequestMessage(HttpMethod.Post, uploadFileUrl)
             {
-                Content = JsonContent.Create(input)
+                Content = JsonContent.Create(complaintFileNoteDto)
             };
             uploadRequest.Headers.Add("Authorization", $"Bearer {token}");
 

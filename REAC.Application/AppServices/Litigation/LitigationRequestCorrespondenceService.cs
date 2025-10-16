@@ -450,6 +450,7 @@ namespace REAC.Application.AppServices.Litigation
                                 .Include(x => x.Contract).ThenInclude(x => x.SecondPartyFacility).ThenInclude(x => x.Citizen)
                                 .Include(x => x.ReformerCitizen)//المصلح مواطن
                                 .Include(x => x.ApplicantCitizen)
+                                .Include(x => x.ArbitratorCitizen)
                                 .AsNoTracking()
                                 .FirstOrDefault(x => x.LitigationRequestCorrespondences.Any(l => l.Id == litigationCorrespondenceReply.LitigationRequestCorrespondenceId));
 
@@ -531,10 +532,12 @@ namespace REAC.Application.AppServices.Litigation
                     }
                     else
                     {
-                        await SendNotificationMS(body, msg, litigationRequest, "Message Reply Added", NotificationActorType.Arbitrator, RequestType.LitigationRequestCorrespondence, null, true, false, false, true, true);
+                        await SendNotificationMS(body, msg, litigationRequest, "Message Reply Added", NotificationActorType.Arbitrator, RequestType.LitigationRequestCorrespondence,null, true,true, false, true, true);
 
                     }
-
+                    var saveResponse2 = await _repository.SaveChangesAsync();
+                    if (!saveResponse2.IsDone)
+                        return saveResponse2;
                 }
 
 
@@ -664,7 +667,7 @@ namespace REAC.Application.AppServices.Litigation
                          .Include(x => x.LitigationRequest)
                          .ThenInclude(x => x.LitigationRequestCorrespondences)
                          .Where(x => x.LitigationRequest.LitigationRequestCorrespondences.Any() & x.LitigationRequest.LitigationRequestStage == LitigationRequestStage.Arbitration)
-                          .OrderByDescending(x => x.LitigationRequest.CreatedOn)
+                          .OrderBy(x => x.LitigationRequest.CreatedOn)
                          .GroupBy(x => x.LitigationRequest.RequestCode)
                          .Select(x => x.First()).AsNoTracking();
 
@@ -902,13 +905,13 @@ namespace REAC.Application.AppServices.Litigation
             }
 
             // Notify Arbitrator Citizen
-            if (notifyArbitrators && arbitrator?.ArbitratorCitizen is not null)
+            if (notifyArbitrators && litigationRequest?.ArbitratorCitizen is not null)
             {
-                objEmail.To.Add(arbitrator.ArbitratorCitizen.Email);
-                objSms.recipients.Add(arbitrator.ArbitratorCitizen.Mobile);
+                objEmail.To.Add(litigationRequest.ArbitratorCitizen.Email);
+                objSms.recipients.Add(litigationRequest.ArbitratorCitizen.Mobile);
                 lstNotification.Add(new Contracts.Dtos.Notification.SysNotificationDto()
                 {
-                    ActorId = arbitrator.ArbitratorCitizenId,
+                    ActorId = (Guid) litigationRequest?.ArbitratorCitizen?.Id,
                     CreatedOn = DateTime.Now,
                     ActorTypeId = notificationActorType,
                     IsViewed = false,
@@ -918,6 +921,8 @@ namespace REAC.Application.AppServices.Litigation
                     Message = msg,
                 });
             }
+
+
 
             // Notify Department Admin
             if (notifyDeptAdmin && deptAdminInfoArbitration != null)

@@ -1431,6 +1431,9 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("nvarchar(max)")
                         .HasComment("Description");
 
+                    b.Property<decimal>("DisputeAmount")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<DateTime?>("EndArbitrationDate")
                         .HasColumnType("datetime2")
                         .HasComment("Date when arbitration period ends");
@@ -4543,6 +4546,10 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasComment("Unique identifier of the establishment contract file");
 
+                    b.Property<Guid?>("EstablishmentLetterFileId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Unique identifier of the establishment Letter file");
+
                     b.Property<Guid?>("FacilityId")
                         .HasColumnType("uniqueidentifier")
                         .HasComment("Unique identifier of the facility being delegated");
@@ -4585,6 +4592,8 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.HasIndex("DelegatorCitizenId");
 
                     b.HasIndex("EstablishmentFileId");
+
+                    b.HasIndex("EstablishmentLetterFileId");
 
                     b.HasIndex("FacilityId");
 
@@ -7648,6 +7657,10 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .WithMany("EstablishmentFiles")
                         .HasForeignKey("EstablishmentFileId");
 
+                    b.HasOne("REAC.EntityFrameworkCore.Entities.System.SysFileManager", "EstablishmentLetterFile")
+                        .WithMany("EstablishmentLetterFiles")
+                        .HasForeignKey("EstablishmentLetterFileId");
+
                     b.HasOne("REAC.EntityFrameworkCore.Entities.Facility", "Facility")
                         .WithMany("Delegators")
                         .HasForeignKey("FacilityId")
@@ -7670,6 +7683,8 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Navigation("DelegatorCitizen");
 
                     b.Navigation("EstablishmentFile");
+
+                    b.Navigation("EstablishmentLetterFile");
 
                     b.Navigation("Facility");
 
@@ -9470,6 +9485,8 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Navigation("Delegators");
 
                     b.Navigation("EstablishmentFiles");
+
+                    b.Navigation("EstablishmentLetterFiles");
 
                     b.Navigation("ExemptionReductionCategoryFiles");
 
