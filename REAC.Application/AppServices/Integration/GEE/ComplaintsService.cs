@@ -322,79 +322,99 @@ namespace REAC.Application.AppServices.Integration.GEE
             if (linkNoteData == null || linkNoteData.created != 1)
                 return new BaseResponse(false, "فشل ربط الملاحظة بالشكوى");
 
-
             return new BaseResponse(true, "تمت إضافة الشكوى بنجاح");
         }
 
         public async Task<DataResponse<CasesByContactResponseDto>> GetCasesByContactAsync(string nationalId)
         {
-            //var url = _settingService.GetBySettingKey(SysSettingKeyConstants.GetCasesByContact).Result.Data?.Value;
-            //url = url.Replace("{nationalId}", nationalId);
-            //var token = (await _gEELoginService.Login()).Data?.Access_token;
+            var getContactDataUrl = _settingService.GetBySettingKey(SysSettingKeyConstants.GetContact).Result.Data?.Value;
+            getContactDataUrl = getContactDataUrl.Replace("{nationalId}", nationalId);
+            var token = (await _gEELoginService.Login()).Data?.Access_token;
 
-            //var request = new HttpRequestMessage(HttpMethod.Get, url);
-            //request.Headers.Add("Authorization", $"Bearer {token}");
+            var getContactDataRequest = new HttpRequestMessage(HttpMethod.Get, getContactDataUrl);
+            getContactDataRequest.Headers.Add("Authorization", $"Bearer {token}");
 
-            //var response = await _httpClient.SendAsync(request);
-            //if (!response.IsSuccessStatusCode)
-            //    return new DataResponse<CasesByContactResponseDto>(null, false, "حدث خطأ اثناء جلب الشكاوى");
+            var getContactDataResponse = await _httpClient.SendAsync(getContactDataRequest);
+            if (!getContactDataResponse.IsSuccessStatusCode)
+                return new DataResponse<CasesByContactResponseDto>(null, false, "حدث خطأ اثناء جلب بيانات المستخدم");
 
-            //var json = await response.Content.ReadAsStringAsync();
-            //var data = JsonSerializer.Deserialize<CasesByContactResponseDto>(json);
+            var contactJson = await getContactDataResponse.Content.ReadAsStringAsync();
+            var contactData = JsonSerializer.Deserialize<CasesByContactResponseDto>(contactJson);
 
-            //if (data == null)
-            //    return new DataResponse<CasesByContactResponseDto>(null, false, "خطأ داخلي");
+            if (contactData == null || contactData.entry_list == null || !contactData.entry_list.Any())
+                return new DataResponse<CasesByContactResponseDto>(null, false, "خطأ داخلي");
+
+            var moduleId = contactData.entry_list.First().id;
+
+            var getCasesByContactUrl = _settingService.GetBySettingKey(SysSettingKeyConstants.GetContact).Result.Data?.Value;
+            getCasesByContactUrl = getCasesByContactUrl.Replace("{ModuleId}", moduleId);
+
+            var getCasesByContactRequest = new HttpRequestMessage(HttpMethod.Get, getCasesByContactUrl);
+            getCasesByContactRequest.Headers.Add("Authorization", $"Bearer {token}");
+
+            var response = await _httpClient.SendAsync(getCasesByContactRequest);
+            if (!response.IsSuccessStatusCode)
+                return new DataResponse<CasesByContactResponseDto>(null, false, "حدث خطأ اثناء جلب الشكاوى");
+
+            var casesResponse = await response.Content.ReadAsStringAsync();
+            var casesData = JsonSerializer.Deserialize<CasesByContactResponseDto>(casesResponse);
+
+            if (casesData == null)
+                return new DataResponse<CasesByContactResponseDto>(null, false, "خطأ داخلي");
+
+            return new DataResponse<CasesByContactResponseDto>(casesData, true,"");
+
+
 
             // Test Data
-            var entry1 = new CaseEntry()
-            {
-                id = nationalId,
-                module_name = "",
-                name_value_list = new CaseNameValueList()
-                {
-                    id = new NameValue() { name = "id", value = "1" },
-                    name = new NameValue() { name = "name", value = "شكوى على خدمة المياه" },
-                    case_number = new NameValue() { name = "case_number", value = "12345" },
-                    status = new NameValue() { name = "status", value = "Open_New" },
-                    description = new NameValue() { name = "description", value = "تفاصيل الشكوى هنا" },
-                    rejon_c = new NameValue() { name = "rejon_c", value = "1" },
-                    requestclassification_c = new NameValue() { name = "requestclassification_c", value = "نوع الشكوى" },
-                    date_entered = new NameValue() { name = "date_entered", value = "2023-10-01 10:00:00" }
+            //var entry1 = new CaseEntry()
+            //{
+            //    id = nationalId,
+            //    module_name = "",
+            //    name_value_list = new CaseNameValueList()
+            //    {
+            //        id = new NameValue() { name = "id", value = "1" },
+            //        name = new NameValue() { name = "name", value = "شكوى على خدمة المياه" },
+            //        case_number = new NameValue() { name = "case_number", value = "12345" },
+            //        status = new NameValue() { name = "status", value = "Open_New" },
+            //        description = new NameValue() { name = "description", value = "تفاصيل الشكوى هنا" },
+            //        rejon_c = new NameValue() { name = "rejon_c", value = "1" },
+            //        requestclassification_c = new NameValue() { name = "requestclassification_c", value = "نوع الشكوى" },
+            //        date_entered = new NameValue() { name = "date_entered", value = "2023-10-01 10:00:00" }
 
-                }
-            };
-            
-            var entry2 = new CaseEntry()
-            {
-                id = nationalId,
-                module_name = "",
-                name_value_list = new CaseNameValueList()
-                {
-                    id = new NameValue() { name = "id", value = "2" },
-                    name = new NameValue() { name = "name", value = "شكوى على خدمة المياه" },
-                    case_number = new NameValue() { name = "case_number", value = "12345" },
-                    status = new NameValue() { name = "status", value = "Open_New" },
-                    description = new NameValue() { name = "description", value = "تفاصيل الشكوى هنا" },
-                    rejon_c = new NameValue() { name = "rejon_c", value = "1" },
-                    requestclassification_c = new NameValue() { name = "requestclassification_c", value = "نوع الشكوى" },
-                    date_entered = new NameValue() { name = "date_entered", value = "2023-10-01 10:00:00" }
+            //    }
+            //};
 
-                }
-            };
-            var entryList = new List<CaseEntry>() { };
-            entryList.Add(entry1);
-            entryList.Add(entry2);
+            //var entry2 = new CaseEntry()
+            //{
+            //    id = nationalId,
+            //    module_name = "",
+            //    name_value_list = new CaseNameValueList()
+            //    {
+            //        id = new NameValue() { name = "id", value = "2" },
+            //        name = new NameValue() { name = "name", value = "شكوى على خدمة المياه" },
+            //        case_number = new NameValue() { name = "case_number", value = "12345" },
+            //        status = new NameValue() { name = "status", value = "Open_New" },
+            //        description = new NameValue() { name = "description", value = "تفاصيل الشكوى هنا" },
+            //        rejon_c = new NameValue() { name = "rejon_c", value = "1" },
+            //        requestclassification_c = new NameValue() { name = "requestclassification_c", value = "نوع الشكوى" },
+            //        date_entered = new NameValue() { name = "date_entered", value = "2023-10-01 10:00:00" }
 
-            var testData = new CasesByContactResponseDto()
-            {
-                entry_list = entryList,
-                result_count = entryList.Count,
-                next_offset = 0,
-                total_count = entryList.Count.ToString(),
-                relationship_list = new List<object>()
-            };
+            //    }
+            //};
+            //var entryList = new List<CaseEntry>() { };
+            //entryList.Add(entry1);
+            //entryList.Add(entry2);
 
-            return new DataResponse<CasesByContactResponseDto>(testData, true, "Success");
+            //var testData = new CasesByContactResponseDto()
+            //{
+            //    entry_list = entryList,
+            //    result_count = entryList.Count,
+            //    next_offset = 0,
+            //    total_count = entryList.Count.ToString(),
+            //    relationship_list = new List<object>()
+            //};
+
         }
     }
 }
