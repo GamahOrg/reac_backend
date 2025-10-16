@@ -1,0 +1,5 @@
+﻿
+ALTER TABLE dbo.SysSetting
+ALTER COLUMN [Value] NVARCHAR(1000) Not NULL;
+
+update dbo.SysSetting set value = N'https://api-test.rega.gov.sa/v1/rega/crm/entry/relationship?ModuleName=Contacts&ModuleId={ModuleId}&RelatedModuleQuery=&Deleted=0&RelatedFields=id,case_number,name,status,date_entered&RelatedModuleLinkName=&LinkFieldName=cases' where [key] like '%GetCasesByContact%'
