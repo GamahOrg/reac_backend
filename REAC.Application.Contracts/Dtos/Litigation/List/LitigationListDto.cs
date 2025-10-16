@@ -7,6 +7,7 @@ namespace REAC.Application.Contracts.Dtos.Litigation.List
     {
         public string? RequestCode { get; set; }
         public DateTime? CreatedOn { get; set; }
+        public DateTime? SentOn { get; set; }
         public string? FirstPartyName { get; set; }
         public string? SecondPartyName { get; set; }
         public int? PretenderRating { get; set; }

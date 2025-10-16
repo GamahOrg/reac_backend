@@ -967,7 +967,7 @@ namespace REAC.Application.AppServices.Litigation
                     CustomLitigationRequestMircoArbitratorAllDto litigationRequestMircoDto = new CustomLitigationRequestMircoArbitratorAllDto();
                     litigationRequestMircoDto.Id = litigationRequest.Id;
                     litigationRequestMircoDto.RequestId = litigationRequest.LitigationRequest.Id;
-                    litigationRequestMircoDto.RequestDate = litigationRequest.LitigationRequest.CreatedOn;
+                    litigationRequestMircoDto.RequestDate = litigationRequest.LitigationRequest.SentOn != null ? (DateTime)litigationRequest.LitigationRequest.SentOn : litigationRequest.LitigationRequest.CreatedOn;
                     litigationRequestMircoDto.RequestCode = litigationRequest.LitigationRequest.RequestCode;
                     litigationRequestMircoDto.ArbitrationPeriod = litigationRequest.LitigationRequest.ArbitrationPeriod;
                     litigationRequestMircoDto.ArbitratorAssigningRequestType = litigationRequest.ArbitratorAssigningRequestTypeId;
