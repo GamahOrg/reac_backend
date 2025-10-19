@@ -3655,7 +3655,7 @@ namespace REAC.Application.AppServices.Litigation
                 
                 var contract = (await _repository.GetQueryable<LitigationRequestContract, Guid>())
                     .Include(x => x.LitigationRequests)
-                    .Where(x => x.ContractKey == litigationRequestDto.key && x.LitigationRequestContractTypeId == litigationRequestDto.ContractType && x.LitigationRequests.Any(y => (y.ExternalStatusId != RequestStatus.Rejected && y.InternalStatusId != RequestStatus.Cancelled) 
+                    .Where(x => x.ContractKey == litigationRequestDto.key && x.LitigationRequestContractTypeId == litigationRequestDto.ContractType && x.LitigationRequests.Any(y => y.ExternalStatusId != RequestStatus.Cancelled && y.InternalStatusId != RequestStatus.Cancelled 
                     && (y.ExternalStatusId != RequestStatus.Rejected && y.InternalStatusId != RequestStatus.Rejected)))
                     .ToList();
 
