@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Azure.Core;
 using Core.GenericRepository.BaseRepository;
 using Core.GenericRepository.Shared.Pagging;
