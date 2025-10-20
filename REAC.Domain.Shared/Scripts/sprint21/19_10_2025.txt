@@ -1,0 +1,1 @@
+﻿ INSERT INTO dbo.SysSetting (Id, [Key], [Value]) VALUES (NEWID(), 'DelegationValidation', 'https://localhost:4177/v1/moj/external-attorney/GetAttorneys?request.attorneyCode={attorneyCode}&request.identityNumber={identityNumber}')

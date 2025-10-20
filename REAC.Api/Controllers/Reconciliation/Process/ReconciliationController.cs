@@ -226,11 +226,11 @@ public class ReconciliationController : ControllerBase
         return BadRequest();
     }
     [HttpGet(nameof(GetLitigationRequestExtendPeriod))]
-    public async Task<IActionResult> GetLitigationRequestExtendPeriod(CancellationToken cancellationToken)
+    public async Task<IActionResult> GetLitigationRequestExtendPeriod(int pageIndex, int pageSize, CancellationToken cancellationToken)
     {
         if (ModelState.IsValid)
         {
-            var returnValue = await _reconciliationService.GetLitigationRequestExtendPeriod(cancellationToken);
+            var returnValue = await _reconciliationService.GetPagedLitigationRequestExtendPeriod(pageIndex,pageSize,cancellationToken);
             return Ok(returnValue);
         }
 
