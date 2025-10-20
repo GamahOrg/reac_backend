@@ -1632,12 +1632,12 @@ namespace REAC.Application.AppServices.Litigation
                         assigningRequest.ArbitratorCitizen?.FullName,
                 AssociationName = litigationRequest.Contract.AssociationName,
                 ContractNumber = litigationRequest.Contract.ContractKey,
-                ContractReleaseDate = litigationRequest.LitigationRequestArbitratorAssigningRequests.FirstOrDefault()?.RequestOn.ToString("dd/MM/yyyy h:mm:ss tt", arCultureGregorian),
+                ContractReleaseDate = litigationRequest.LitigationRequestArbitratorAssigningRequests.FirstOrDefault()?.RequestOn.ToString("dd/MM/yyyy", arCultureGregorian),
                 LitigationNumber = litigationRequest.RequestCode,
                 LitigationType = litigationRequest.Contract.LitigationRequestContractType.TypeName,
                 Subject = "100",
                 ArbitratorAssignerName = "مركز التحكيم العقاري",
-                ArbitratorAssigningDate = litigationRequest.LitigationRequestArbitratorAssigningRequests.FirstOrDefault(l => l.Id == requestId).ResponseOn.ToString(),
+                ArbitratorAssigningDate = litigationRequest.LitigationRequestArbitratorAssigningRequests.FirstOrDefault()?.RequestOn.ToString("dd/MM/yyyy", arCultureGregorian),
                 ArbitratorAssigningCost = litigationRequest.LitigationRequestAmount?.LitigationRequestFees.Where(x => x.ArbitratorsCount == litigationRequest.ArbitratorsCount).FirstOrDefault()?.ArbitrationFees != null ? litigationRequest.LitigationRequestAmount?.LitigationRequestFees.Where(x => x.ArbitratorsCount == litigationRequest.ArbitratorsCount).FirstOrDefault()?.ArbitrationFees.ToString("G29") : litigationRequest.LitigationRequestAmount?.Fees.ToString(),
                 Response = litigationRequest.LitigationRequestArbitratorAssigningRequests.FirstOrDefault(l => l.Id == requestId).Response,
                 RequestTypeId = litigationRequest.Contract.LitigationRequestContractType.Id.GetHashCode(),
@@ -1704,8 +1704,8 @@ namespace REAC.Application.AppServices.Litigation
                 ArbitratorName = citizenInfo != null ? citizenInfo.FullName : null,
                 AssociationName = litigationRequest.Contract.AssociationName,
                 ContractNumber = litigationRequest.Contract.ContractKey,
-                ContractReleaseDate = litigationRequest.LitigationRequestArbitratorAssigningRequests.FirstOrDefault()?.RequestOn.ToString("dd/MM/yyyy h:mm:ss tt", arCultureGregorian),
-                ArbitratorAssigningDate = litigationRequest.ArbitratorsNominationListSelectionDoneDateTime?.ToString("dd/MM/yyyy h:mm:ss tt", arCultureGregorian),
+                ContractReleaseDate = litigationRequest.LitigationRequestArbitratorAssigningRequests.FirstOrDefault()?.RequestOn.ToString("dd/MM/yyyy", arCultureGregorian),
+                ArbitratorAssigningDate = litigationRequest.ArbitratorsNominationListSelectionDoneDateTime?.ToString("dd/MM/yyyy", arCultureGregorian),
                 LitigationNumber = litigationRequest.RequestCode,
                 LitigationType = litigationRequest.Contract.LitigationRequestContractType.TypeName,
                 Subject = "100",
@@ -1778,12 +1778,12 @@ namespace REAC.Application.AppServices.Litigation
                     litigationRequest.ReformerCitizen?.FullName,
                 AssociationName = litigationRequest.Contract.AssociationName,
                 ContractNumber = litigationRequest.Contract.ContractKey,
-                ContractReleaseDate = assigningRequest.RequestOn.Value.ToString("dd/MM/yyyy h:mm:ss tt", arCultureGregorian),
+                ContractReleaseDate = assigningRequest.RequestOn.Value.ToString("dd/MM/yyyy", arCultureGregorian),
                 LitigationNumber = litigationRequest.RequestCode,
                 LitigationType = litigationRequest.Contract.LitigationRequestContractType.TypeName,
                 Subject = "100",
                 ReformerAssignerName = "مركز التحكيم العقاري",
-                ReformerAssigningDate = assigningRequest.ResponseOn.Value.ToString("dd/MM/yyyy h:mm:ss tt", arCultureGregorian),
+                ReformerAssigningDate = assigningRequest.ResponseOn.Value.ToString("dd/MM/yyyy", arCultureGregorian),
                 ReformerAssigningCost = "100",
                 Response = assigningRequest.Response,
                 RequestTypeId = litigationRequest.Contract.LitigationRequestContractType.Id.GetHashCode(),
@@ -1846,7 +1846,7 @@ namespace REAC.Application.AppServices.Litigation
                 ReformerName = citizenInfo != null ? citizenInfo.FullName : null,
                 AssociationName = litigationRequest.Contract.AssociationName,
                 ContractNumber = litigationRequest.Contract.ContractKey,
-                ContractReleaseDate = litigationRequest.LitigationRequestReformerAssigningRequests.FirstOrDefault()?.RequestOn.Value.ToString("dd/MM/yyyy h:mm:ss tt", arCultureGregorian),
+                ContractReleaseDate = litigationRequest.LitigationRequestReformerAssigningRequests.FirstOrDefault()?.RequestOn.Value.ToString("dd/MM/yyyy", arCultureGregorian),
                 LitigationNumber = litigationRequest.RequestCode,
                 LitigationType = litigationRequest.Contract.LitigationRequestContractType.TypeName,
                 Subject = "100",
@@ -3242,7 +3242,7 @@ namespace REAC.Application.AppServices.Litigation
                     && x.Contract.ContractKey == litigationRequestDto.key
                     && (x.Contract.SecondPartyCitizen.IdentityNumber == litigationRequestDto.SecondPartyNationalId || x.Contract.SecondPartyFacility.CommercialRegisterNumber == litigationRequestDto.SecondPartyFacilityCommercialRegistrationNo)
                     && (x.Delegator.Citizen != null && x.Delegator.Citizen.IdentityNumber == litigationRequestDto.litigationRequestDelegationDataDto.IndividualIdentityNumber)
-                    || (x.Delegator.Facility != null && x.Delegator.Facility.Facility700Number == litigationRequestDto.litigationRequestDelegationDataDto.Facility700Number)
+                    && (x.Delegator.Facility != null && x.Delegator.Facility.Facility700Number == litigationRequestDto.litigationRequestDelegationDataDto.Facility700Number)
                     );
 
             if (existLitigationRequestDelegationData)
