@@ -31,6 +31,11 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                         Id = Guid.NewGuid(),
                         Key = "GetRegionList",
                         Value = "http://localhost:7144/v1/rega/crm/module/fields?ModuleName=Cases&fields=rejon_c",
+                    }, new SysSetting
+                    {
+                        Id = Guid.NewGuid(),
+                        Key = "GetCaseById",
+                        Value = "http://localhost:7144/v1/rega/crm/entry/list?ModuleName=Cases&QueryField=cases.id&QueryFieldValue={caseId}&SelectFields=id,rejon_c,requestclassification_c,program_c,reference_number_c,request_number_c,name,description,date_entered,case_number,status",
                     },new SysSetting
                     {
                         Id = Guid.NewGuid(),
@@ -76,6 +81,15 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                         Id = Guid.NewGuid(),
                         Key = "LinkContactToCase",
                         Value = "http://localhost:7144/v1/rega/crm/relationship",
+                    },
+	                #endregion
+
+                    #region DelegationIntegration
+                    new SysSetting
+                    {
+                        Id = Guid.NewGuid(),
+                        Key = "DelegationValidation",
+                        Value = "https//localhost:4177/v1/moj/external-attorney/GetAttorneys?request.attorneyCode={attorneyCode}&request.identityNumber={identityNumber}",
                     },
 	                #endregion
 

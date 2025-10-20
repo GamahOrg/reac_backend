@@ -33,6 +33,18 @@ public class DelegatorController : ControllerBase
 
     }
     
+    [HttpGet(nameof(ValidateDelegation))]
+    public async Task<ActionResult> ValidateDelegation(string attorneyCode, string identityNumber)
+    {
+        if (ModelState.IsValid)
+        {
+            var returnValue = await _delegatorService.ValidateDelegation(attorneyCode,identityNumber);
+            return Ok(returnValue);
+        }
+        return BadRequest();
+
+    }
+    
     [HttpGet(nameof(GetLawyersDelegators))]
     public async Task<ActionResult> GetLawyersDelegators([FromQuery] int pageIndex, [FromQuery] int pageSize, [FromQuery] string? searchKey)
     {
@@ -137,4 +149,6 @@ public class DelegatorController : ControllerBase
 
         return BadRequest();
     }
+
+
 }

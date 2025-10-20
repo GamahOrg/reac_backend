@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Core.Shared.Responses;
 using REAC.Application.Contracts.IAppServices.System;
 using REAC.Domain.Shared.Constants;
+using static iText.IO.Util.IntHashtable;
 
 namespace REAC.Application.AppServices.Integration.GEE
 {
@@ -362,14 +363,14 @@ namespace REAC.Application.AppServices.Integration.GEE
             if (casesData == null)
                 return new DataResponse<CasesByContactResponseDto>(null, false, "خطأ داخلي");
 
-            return new DataResponse<CasesByContactResponseDto>(casesData, true,"");
+            return new DataResponse<CasesByContactResponseDto>(casesData, true, "");
 
 
 
             // Test Data
             //var entry1 = new CaseEntry()
             //{
-            //    id = nationalId,
+            //    id = "1",
             //    module_name = "",
             //    name_value_list = new CaseNameValueList()
             //    {
@@ -377,9 +378,7 @@ namespace REAC.Application.AppServices.Integration.GEE
             //        name = new NameValue() { name = "name", value = "شكوى على خدمة المياه" },
             //        case_number = new NameValue() { name = "case_number", value = "12345" },
             //        status = new NameValue() { name = "status", value = "Open_New" },
-            //        description = new NameValue() { name = "description", value = "تفاصيل الشكوى هنا" },
-            //        rejon_c = new NameValue() { name = "rejon_c", value = "1" },
-            //        requestclassification_c = new NameValue() { name = "requestclassification_c", value = "نوع الشكوى" },
+                   
             //        date_entered = new NameValue() { name = "date_entered", value = "2023-10-01 10:00:00" }
 
             //    }
@@ -387,7 +386,7 @@ namespace REAC.Application.AppServices.Integration.GEE
 
             //var entry2 = new CaseEntry()
             //{
-            //    id = nationalId,
+            //    id = "2",
             //    module_name = "",
             //    name_value_list = new CaseNameValueList()
             //    {
@@ -414,6 +413,62 @@ namespace REAC.Application.AppServices.Integration.GEE
             //    total_count = entryList.Count.ToString(),
             //    relationship_list = new List<object>()
             //};
+
+            //return new DataResponse<CasesByContactResponseDto>(testData, true, "Success");
+        }
+
+        public async Task<DataResponse<CaseByIdResponseDto>> GetCaseByIdAsync(string caseId)
+        {
+            var url = _settingService.GetBySettingKey(SysSettingKeyConstants.GetCaseById).Result.Data?.Value;
+            url = url.Replace("{caseId}", caseId);
+            var token = (await _gEELoginService.Login()).Data?.Access_token;
+
+            var request = new HttpRequestMessage(HttpMethod.Get, url);
+            request.Headers.Add("Authorization", $"Bearer {token}");
+
+            var response = await _httpClient.SendAsync(request);
+            if (!response.IsSuccessStatusCode) return new DataResponse<CaseByIdResponseDto>(null, false, "حدث خطأ اثناء جلب بيانات الشكوى");
+
+            var json = await response.Content.ReadAsStringAsync();
+            var data = JsonSerializer.Deserialize<CaseByIdResponseDto>(json);
+            if (data == null)
+                return new DataResponse<CaseByIdResponseDto>(null, false, "خطأ داخلي ");
+
+            return new DataResponse<CaseByIdResponseDto>(data, true, "Success");
+
+            // Test Data
+
+            //var entry1 = new CaseEntry()
+            //{
+            //    id = caseId,
+            //    module_name = "",
+            //    name_value_list = new CaseNameValueList()
+            //    {
+            //        id = new NameValue() { name = "id", value = caseId },
+            //        name = new NameValue() { name = "name", value = "شكوى على خدمة المياه" },
+            //        case_number = new NameValue() { name = "case_number", value = "12345" },
+            //        status = new NameValue() { name = "status", value = "Open_New" },
+            //        description = new NameValue() { name = "description", value = "تفاصيل الشكوى هنا" },
+            //        rejon_c = new NameValue() { name = "rejon_c", value = "1" },
+            //        requestclassification_c = new NameValue() { name = "requestclassification_c", value = "نوع الشكوى" },
+            //        date_entered = new NameValue() { name = "date_entered", value = "2023-10-01 10:00:00" }
+
+            //    }
+            //};
+
+            //var entryList = new List<CaseEntry>() { };
+            //entryList.Add(entry1);
+
+            //var testData = new CaseByIdResponseDto()
+            //{
+            //    entry_list = entryList,
+            //    result_count = entryList.Count,
+            //    next_offset = 0,
+            //    total_count = entryList.Count.ToString(),
+            //    relationship_list = new List<object>()
+            //};
+
+            //return new DataResponse<CaseByIdResponseDto>(testData, true, "Success");
 
         }
     }
