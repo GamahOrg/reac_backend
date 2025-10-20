@@ -1,0 +1,6 @@
+﻿
+ALTER TABLE dbo.SysSetting
+ALTER COLUMN [Value] NVARCHAR(1000) Not NULL;
+
+update dbo.SysSetting set value = N'https://api-test.rega.gov.sa/v1/rega/crm/entry/relationship?ModuleName=Contacts&ModuleId={ModuleId}&RelatedModuleQuery=&Deleted=0&RelatedFields=id,case_number,name,status,date_entered&RelatedModuleLinkName=&LinkFieldName=cases' where [key] = 'GetCasesByContact'
+ INSERT INTO dbo.SysSetting (Id, [Key], [Value]) VALUES (NEWID(), 'GetCaseById', N'https://api-test.rega.gov.sa/v1/rega/crm/entry/list?ModuleName=Cases&QueryField=cases.id&QueryFieldValue={caseId}&SelectFields=id,rejon_c,requestclassification_c,program_c,reference_number_c,request_number_c,name,description,date_entered,case_number,status')

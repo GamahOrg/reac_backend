@@ -22,5 +22,6 @@ namespace REAC.Application.Contracts.IAppServices
         Task<BaseResponse> AddLawyerDelagator(LawyerDelegatorDto delegatorDto);
         Task<BaseResponse> AddLawyerCitizenAndDelagator(LawyerDelegatorDto delegatorDto);
         Task<BaseResponse> DeleteLawyerDelegator(Guid delegatorId);
+        Task<DataResponse<bool>> ValidateDelegation(string attorneyCode, string identityNumber);
     }
 }

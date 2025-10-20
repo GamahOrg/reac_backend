@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Azure.Core;
 using Core.GenericRepository.BaseRepository;
 using Core.GenericRepository.Shared.Pagging;
@@ -1611,6 +1611,8 @@ namespace REAC.Application.AppServices.Litigation
                 return new BaseResponse() { IsDone = false, Message = "Not Found" };
 
             var assigningRequest = litigationRequest.LitigationRequestArbitratorAssigningRequests.FirstOrDefault(l => l.Id == requestId);
+            CultureInfo arCultureGregorian = new CultureInfo("ar-SA");
+            arCultureGregorian.DateTimeFormat.Calendar = new GregorianCalendar();
 
             string base64String = string.Empty;
             if (!string.IsNullOrEmpty(assigningRequest?.ArbitratorCitizen?.SigntureFile?.FilePath))
@@ -1630,12 +1632,12 @@ namespace REAC.Application.AppServices.Litigation
                         assigningRequest.ArbitratorCitizen?.FullName,
                 AssociationName = litigationRequest.Contract.AssociationName,
                 ContractNumber = litigationRequest.Contract.ContractKey,
-                ContractReleaseDate = litigationRequest.CreatedOn.ToString()?.Replace("بعد الهجرة", "هجرياً"),
+                ContractReleaseDate = litigationRequest.LitigationRequestArbitratorAssigningRequests.FirstOrDefault()?.RequestOn.ToString("dd/MM/yyyy", arCultureGregorian),
                 LitigationNumber = litigationRequest.RequestCode,
                 LitigationType = litigationRequest.Contract.LitigationRequestContractType.TypeName,
                 Subject = "100",
                 ArbitratorAssignerName = "مركز التحكيم العقاري",
-                ArbitratorAssigningDate = litigationRequest.LitigationRequestArbitratorAssigningRequests.FirstOrDefault(l => l.Id == requestId).ResponseOn.ToString(),
+                ArbitratorAssigningDate = litigationRequest.LitigationRequestArbitratorAssigningRequests.FirstOrDefault()?.RequestOn.ToString("dd/MM/yyyy", arCultureGregorian),
                 ArbitratorAssigningCost = litigationRequest.LitigationRequestAmount?.LitigationRequestFees.Where(x => x.ArbitratorsCount == litigationRequest.ArbitratorsCount).FirstOrDefault()?.ArbitrationFees != null ? litigationRequest.LitigationRequestAmount?.LitigationRequestFees.Where(x => x.ArbitratorsCount == litigationRequest.ArbitratorsCount).FirstOrDefault()?.ArbitrationFees.ToString("G29") : litigationRequest.LitigationRequestAmount?.Fees.ToString(),
                 Response = litigationRequest.LitigationRequestArbitratorAssigningRequests.FirstOrDefault(l => l.Id == requestId).Response,
                 RequestTypeId = litigationRequest.Contract.LitigationRequestContractType.Id.GetHashCode(),
@@ -1685,6 +1687,9 @@ namespace REAC.Application.AppServices.Litigation
                 .AsNoTracking()
                 .FirstOrDefault(x => x.Id == citizenId);
 
+            CultureInfo arCultureGregorian = new CultureInfo("ar-SA");
+            arCultureGregorian.DateTimeFormat.Calendar = new GregorianCalendar();
+
             string base64String = string.Empty;
             if (!string.IsNullOrEmpty(citizenInfo?.SigntureFile?.FilePath))
             {
@@ -1699,8 +1704,8 @@ namespace REAC.Application.AppServices.Litigation
                 ArbitratorName = citizenInfo != null ? citizenInfo.FullName : null,
                 AssociationName = litigationRequest.Contract.AssociationName,
                 ContractNumber = litigationRequest.Contract.ContractKey,
-                ContractReleaseDate = litigationRequest.CreatedOn.ToLongDateString()?.Replace("بعد الهجرة", "هجرياً"),
-                ArbitratorAssigningDate = litigationRequest.ArbitratorsNominationListSelectionDoneDateTime?.ToLongDateString()?.Replace("بعد الهجرة", "هجرياً"),
+                ContractReleaseDate = litigationRequest.LitigationRequestArbitratorAssigningRequests.FirstOrDefault()?.RequestOn.ToString("dd/MM/yyyy", arCultureGregorian),
+                ArbitratorAssigningDate = litigationRequest.ArbitratorsNominationListSelectionDoneDateTime?.ToString("dd/MM/yyyy", arCultureGregorian),
                 LitigationNumber = litigationRequest.RequestCode,
                 LitigationType = litigationRequest.Contract.LitigationRequestContractType.TypeName,
                 Subject = "100",
@@ -1747,6 +1752,9 @@ namespace REAC.Application.AppServices.Litigation
                 return new BaseResponse() { IsDone = false, Message = "Not Found" };
 
             var assigningRequest = litigationRequest.LitigationRequestReformerAssigningRequests.FirstOrDefault(l => l.Id == requestId);
+            CultureInfo arCultureGregorian = new CultureInfo("ar-SA");
+            arCultureGregorian.DateTimeFormat.Calendar = new GregorianCalendar();
+
 
             var citizenInfo = (await _repository.GetQueryable<Citizen, Guid>())
                 .Include(x => x.SigntureFile)
@@ -1766,18 +1774,18 @@ namespace REAC.Application.AppServices.Litigation
             var response = new LitigationReconciliationTaskAcceptOrRejectDocumentDto()
             {
                 ReformerName = assigningRequest.ReformerCitizen !=
-                        null ? assigningRequest.ReformerCitizen.FullName :
-                        litigationRequest.ReformerCitizen?.FullName,
+                    null ? assigningRequest.ReformerCitizen.FullName :
+                    litigationRequest.ReformerCitizen?.FullName,
                 AssociationName = litigationRequest.Contract.AssociationName,
                 ContractNumber = litigationRequest.Contract.ContractKey,
-                ContractReleaseDate = litigationRequest.CreatedOn.ToString()?.Replace("بعد الهجرة", "هجرياً"),
+                ContractReleaseDate = assigningRequest.RequestOn.Value.ToString("dd/MM/yyyy", arCultureGregorian),
                 LitigationNumber = litigationRequest.RequestCode,
                 LitigationType = litigationRequest.Contract.LitigationRequestContractType.TypeName,
                 Subject = "100",
                 ReformerAssignerName = "مركز التحكيم العقاري",
-                ReformerAssigningDate = litigationRequest.LitigationRequestReformerAssigningRequests.FirstOrDefault(l => l.Id == requestId).ResponseOn.ToString(),
+                ReformerAssigningDate = assigningRequest.ResponseOn.Value.ToString("dd/MM/yyyy", arCultureGregorian),
                 ReformerAssigningCost = "100",
-                Response = litigationRequest.LitigationRequestReformerAssigningRequests.FirstOrDefault(l => l.Id == requestId).Response,
+                Response = assigningRequest.Response,
                 RequestTypeId = litigationRequest.Contract.LitigationRequestContractType.Id.GetHashCode(),
                 FirstPartyName = (litigationRequest.Contract.FirstPartyCitizen == null) ? litigationRequest.Contract.FirstPartyFacility.ArabicFacilityName : litigationRequest.Contract.FirstPartyCitizen.FullName,
                 SecondPartyName = (litigationRequest.Contract.SecondPartyCitizen == null) ? litigationRequest.Contract.SecondPartyFacility.ArabicFacilityName : litigationRequest.Contract.SecondPartyCitizen.FullName,
@@ -1822,6 +1830,8 @@ namespace REAC.Application.AppServices.Litigation
                 .AsNoTracking()
                 .FirstOrDefault(x => x.Id == citizenId);
 
+            CultureInfo arCultureGregorian = new CultureInfo("ar-SA");
+            arCultureGregorian.DateTimeFormat.Calendar = new GregorianCalendar();
             string base64String = string.Empty;
             if (!string.IsNullOrEmpty(citizenInfo?.SigntureFile?.FilePath))
             {
@@ -1836,7 +1846,7 @@ namespace REAC.Application.AppServices.Litigation
                 ReformerName = citizenInfo != null ? citizenInfo.FullName : null,
                 AssociationName = litigationRequest.Contract.AssociationName,
                 ContractNumber = litigationRequest.Contract.ContractKey,
-                ContractReleaseDate = litigationRequest.CreatedOn.ToString()?.Replace("بعد الهجرة", "هجرياً"),
+                ContractReleaseDate = litigationRequest.LitigationRequestReformerAssigningRequests.FirstOrDefault()?.RequestOn.Value.ToString("dd/MM/yyyy", arCultureGregorian),
                 LitigationNumber = litigationRequest.RequestCode,
                 LitigationType = litigationRequest.Contract.LitigationRequestContractType.TypeName,
                 Subject = "100",
@@ -3228,11 +3238,11 @@ namespace REAC.Application.AppServices.Litigation
                     .Include(x => x.Contract.SecondPartyFacility)
                     .Include(x => x.Delegator.Citizen)
                     .Include(x => x.Delegator.Facility)
-                    .Any(x => x.IsFinished != true && (x.ExternalStatusId != RequestStatus.Cancelled && x.InternalStatusId != RequestStatus.Cancelled || x.ExternalStatusId != RequestStatus.Rejected && x.InternalStatusId != RequestStatus.Rejected)
+                    .Any(x => x.IsFinished != true && ((x.ExternalStatusId != RequestStatus.Cancelled && x.InternalStatusId != RequestStatus.Cancelled) && (x.ExternalStatusId != RequestStatus.Rejected && x.InternalStatusId != RequestStatus.Rejected))
                     && x.Contract.ContractKey == litigationRequestDto.key
                     && (x.Contract.SecondPartyCitizen.IdentityNumber == litigationRequestDto.SecondPartyNationalId || x.Contract.SecondPartyFacility.CommercialRegisterNumber == litigationRequestDto.SecondPartyFacilityCommercialRegistrationNo)
                     && (x.Delegator.Citizen != null && x.Delegator.Citizen.IdentityNumber == litigationRequestDto.litigationRequestDelegationDataDto.IndividualIdentityNumber)
-                    || (x.Delegator.Facility != null && x.Delegator.Facility.Facility700Number == litigationRequestDto.litigationRequestDelegationDataDto.Facility700Number)
+                    && (x.Delegator.Facility != null && x.Delegator.Facility.Facility700Number == litigationRequestDto.litigationRequestDelegationDataDto.Facility700Number)
                     );
 
             if (existLitigationRequestDelegationData)
@@ -3643,9 +3653,12 @@ namespace REAC.Application.AppServices.Litigation
 
 
 
+                
+                
                 var contract = (await _repository.GetQueryable<LitigationRequestContract, Guid>())
                     .Include(x => x.LitigationRequests)
-                    .Where(x => x.ContractKey == litigationRequestDto.key && x.LitigationRequestContractTypeId == litigationRequestDto.ContractType && x.LitigationRequests.Any(y => y.ExternalStatusId != RequestStatus.Cancelled && y.InternalStatusId != RequestStatus.Cancelled))
+                    .Where(x => x.ContractKey == litigationRequestDto.key && x.LitigationRequestContractTypeId == litigationRequestDto.ContractType && x.LitigationRequests.Any(y => (y.ExternalStatusId != RequestStatus.Rejected && y.InternalStatusId != RequestStatus.Cancelled) 
+                    && (y.ExternalStatusId != RequestStatus.Rejected && y.InternalStatusId != RequestStatus.Rejected)))
                     .ToList();
 
                 if (contract != null)
@@ -3880,7 +3893,7 @@ namespace REAC.Application.AppServices.Litigation
                 var existLitigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>()).
                     Include(x => x.Contract.SecondPartyCitizen)
                     .Include(x => x.Contract.SecondPartyFacility)
-                    .FirstOrDefault(x => x.IsFinished != true && (x.ExternalStatusId != RequestStatus.Cancelled && x.InternalStatusId != RequestStatus.Cancelled || x.ExternalStatusId != RequestStatus.Rejected && x.InternalStatusId != RequestStatus.Rejected)
+                    .FirstOrDefault(x => x.IsFinished != true && ((x.ExternalStatusId != RequestStatus.Cancelled && x.InternalStatusId != RequestStatus.Cancelled) && (x.ExternalStatusId != RequestStatus.Rejected && x.InternalStatusId != RequestStatus.Rejected))
                     && x.Contract.ContractKey == litigationRequestDto.key
                     && (x.Contract.SecondPartyCitizen.IdentityNumber == litigationRequestDto.SecondPartyNationalId || x.Contract.SecondPartyFacility.CommercialRegisterNumber == litigationRequestDto.SecondPartyFacilityCommercialRegistrationNo));
 
@@ -4102,7 +4115,8 @@ namespace REAC.Application.AppServices.Litigation
 
                 var contract = (await _repository.GetQueryable<LitigationRequestContract, Guid>())
                     .Include(x => x.LitigationRequests)
-                    .Where(x => x.ContractKey == litigationRequestDto.key && x.LitigationRequestContractTypeId == litigationRequestDto.ContractType && x.LitigationRequests.Any(y => y.ExternalStatusId != RequestStatus.Cancelled && y.InternalStatusId != RequestStatus.Cancelled)).ToList();
+                    .Where(x => x.ContractKey == litigationRequestDto.key && x.LitigationRequestContractTypeId == litigationRequestDto.ContractType && x.LitigationRequests.Any(y => (y.ExternalStatusId != RequestStatus.Cancelled && y.InternalStatusId != RequestStatus.Cancelled) 
+                    &&(y.ExternalStatusId != RequestStatus.Rejected && y.InternalStatusId != RequestStatus.Rejected) )).ToList();
 
                 if (contract != null)
                 {

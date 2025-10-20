@@ -5,9 +5,15 @@
         public const string SecurityApiUrl = "SecurityApiUrl"; // http://localhost:7144/
         public const string REACPortalUrl = "REACPortalUrl"; // http://localhost:7144/
 
+        #region Delegation
+        public const string DelegationValidation = "DelegationValidation";
+
+        #endregion
+
         #region Complaint Integration
         public const string GetRegionList = "GetRegionList";
         public const string GetContact = "GetContact";
+        public const string GetCaseById = "GetCaseById";
         public const string GetCasesByContact = "GetCasesByContact";
         public const string CreateNewNote = "CreateNewNote";
         public const string UploadFileToNote = "UploadFileToNote";

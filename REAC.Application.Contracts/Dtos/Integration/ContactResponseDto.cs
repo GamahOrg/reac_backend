@@ -26,9 +26,5 @@ namespace REAC.Application.Contracts.Dtos.Integration
         public NameValue phone_mobile { get; set; }
     }
 
-    public class NameValue
-    {
-        public string name { get; set; }
-        public string value { get; set; }
-    }
+    
 }
