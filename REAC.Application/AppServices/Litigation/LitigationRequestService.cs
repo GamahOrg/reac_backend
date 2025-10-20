@@ -1830,6 +1830,8 @@ namespace REAC.Application.AppServices.Litigation
                 .AsNoTracking()
                 .FirstOrDefault(x => x.Id == citizenId);
 
+            CultureInfo arCultureGregorian = new CultureInfo("ar-SA");
+            arCultureGregorian.DateTimeFormat.Calendar = new GregorianCalendar();
             string base64String = string.Empty;
             if (!string.IsNullOrEmpty(citizenInfo?.SigntureFile?.FilePath))
             {
@@ -1844,7 +1846,7 @@ namespace REAC.Application.AppServices.Litigation
                 ReformerName = citizenInfo != null ? citizenInfo.FullName : null,
                 AssociationName = litigationRequest.Contract.AssociationName,
                 ContractNumber = litigationRequest.Contract.ContractKey,
-                ContractReleaseDate = litigationRequest.CreatedOn.ToString()?.Replace("بعد الهجرة", "هجرياً"),
+                ContractReleaseDate = litigationRequest.LitigationRequestReformerAssigningRequests.FirstOrDefault()?.RequestOn.Value.ToString("dd/MM/yyyy h:mm:ss tt", arCultureGregorian),
                 LitigationNumber = litigationRequest.RequestCode,
                 LitigationType = litigationRequest.Contract.LitigationRequestContractType.TypeName,
                 Subject = "100",
@@ -3655,7 +3657,7 @@ namespace REAC.Application.AppServices.Litigation
                 
                 var contract = (await _repository.GetQueryable<LitigationRequestContract, Guid>())
                     .Include(x => x.LitigationRequests)
-                    .Where(x => x.ContractKey == litigationRequestDto.key && x.LitigationRequestContractTypeId == litigationRequestDto.ContractType && x.LitigationRequests.Any(y => y.ExternalStatusId != RequestStatus.Cancelled && y.InternalStatusId != RequestStatus.Cancelled 
+                    .Where(x => x.ContractKey == litigationRequestDto.key && x.LitigationRequestContractTypeId == litigationRequestDto.ContractType && x.LitigationRequests.Any(y => (y.ExternalStatusId != RequestStatus.Rejected && y.InternalStatusId != RequestStatus.Cancelled) 
                     && (y.ExternalStatusId != RequestStatus.Rejected && y.InternalStatusId != RequestStatus.Rejected)))
                     .ToList();
 

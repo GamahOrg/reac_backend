@@ -21,6 +21,12 @@ using REAC.EntityFrameworkCore.Entities.Litigation;
 using REAC.EntityFrameworkCore.Entities.System;
 using System.Globalization;
 using static REAC.Application.Contracts.IAppServices.Litigation.ILitigationRequestService;
+using System.Net.Http;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using REAC.Application.Contracts.Dtos.Integration.MOJ;
+using REAC.Application.AppServices.Integration.GEE;
+using REAC.Application.Contracts.Dtos.Integration.Rent;
 
 namespace REAC.Application.AppServices
 {
@@ -34,9 +40,9 @@ namespace REAC.Application.AppServices
         private readonly INotificationService _notificationService;
         private readonly ISysSettingService _sysSettingService;
         private readonly UserManager<User> _userManager;
-
+        private readonly IGEELoginService _gEELoginService;
         public DelegatorService(IEntityRepository repository,
-            IMapper mapper, ILoggerManager loggerManager, IJwtReader jwtReader, IMOJService mOJService, INotificationService notificationService, ISysSettingService sysSettingService, UserManager<User> userManager)
+            IMapper mapper, ILoggerManager loggerManager, IJwtReader jwtReader, IMOJService mOJService, INotificationService notificationService, ISysSettingService sysSettingService, UserManager<User> userManager, IGEELoginService gEELoginService)
         {
             _repository = repository;
             _mapper = mapper;
@@ -46,6 +52,7 @@ namespace REAC.Application.AppServices
             _notificationService = notificationService;
             _sysSettingService = sysSettingService;
             _userManager = userManager;
+            _gEELoginService = gEELoginService;
         }
 
 
@@ -891,5 +898,94 @@ namespace REAC.Application.AppServices
 
             }
         }
+
+        public async Task<DataResponse<bool>> ValidateDelegation(string attorneyCode, string identityNumber)
+        {
+            try 
+            {
+                using var httpClient = new HttpClient();
+
+                var url = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.DelegationValidation).Result.Data?.Value;
+                url = url.Replace("{attorneyCode}", attorneyCode);
+                url = url.Replace("{identityNumber}", identityNumber);
+                var token = (await _gEELoginService.Login()).Data?.Access_token;
+
+                if (string.IsNullOrEmpty(token))
+                {
+                    return new DataResponse<bool>
+                    {
+                        IsDone = false,
+                        Message = "خطأ في التحقق من الوكالة",
+                        Data = true
+                    };
+                }
+
+                var request = new HttpRequestMessage(HttpMethod.Get, url);
+                request.Headers.Add("Authorization", $"Bearer {token}");
+
+                var response = await httpClient.SendAsync(request);
+                if (!response.IsSuccessStatusCode)
+                {
+                    return new DataResponse<bool>
+                    {
+                        IsDone = false,
+                        Message = "خطأ في التحقق من الوكالة",
+                        Data = true
+                    };
+                }
+
+                var content = await response.Content.ReadAsStringAsync();
+                var validationResponse = JsonSerializer.Deserialize<MOJAttorneyValidationResponse>(content);
+
+                if (validationResponse?.ResponseObject?.Results == null ||
+                    !validationResponse.ResponseObject.Results.Any())
+                {
+
+
+                    return new DataResponse<bool>
+                    {
+                        IsDone = false,
+                        Message = "الوكالة غير موجودة",
+                        Data = false
+
+                    };
+                }
+                else
+                {
+                    Guid referenceId = Guid.Empty;
+                    _jwtReader.GetReferenceId(ref referenceId);
+
+                    var delegatorCitizen = (await _repository.GetQueryable<Citizen, Guid>()).FirstOrDefault(x => x.Id == referenceId);
+
+                    // Check Second Party Nationality 
+                    if (!validationResponse.ResponseObject.Results.Any(x => x.Model.SecondParties.Any(y => y.IdentityNo == delegatorCitizen.IdentityNumber)))
+                    {
+                        return new DataResponse<bool>
+                        {
+                            IsDone = false,
+                            Message = "الوكالة غير موجودة",
+                            Data = false
+                        };
+                    }
+                }
+
+                return new DataResponse<bool>
+                {
+                    IsDone = true,
+                    Message = "تم التحقق بنجاح",
+                    Data = true
+                };
+            }
+            catch (Exception ex)
+            {
+                return new DataResponse<bool>
+                {
+                    IsDone = false,
+                    Message = "خطأ داخلي",
+                    Data = true
+                };
+            }
+        }
+
     }
 }

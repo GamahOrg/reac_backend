@@ -15,5 +15,6 @@ namespace REAC.Application.Contracts.IAppServices.Integration
         Task<BaseResponse> UploadComplaintFileAsync(UploadComplaintFileNoteDto input);
         Task<BaseResponse> CreateComplaintAsync(CreateComplaintRequestDto request);
         Task<DataResponse<CasesByContactResponseDto>> GetCasesByContactAsync(string contactId);
+        Task<DataResponse<CaseByIdResponseDto>> GetCaseByIdAsync(string caseId);
     }
 }

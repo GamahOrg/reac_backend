@@ -22,6 +22,10 @@ namespace REAC.Api.Controllers.Integration
         public async Task<IActionResult> GetCasesByContactAsync(string nationalId)
           => Ok(await _complaintService.GetCasesByContactAsync(nationalId));
         
+        [HttpGet(nameof(GetCaseByIdAsync))]
+        public async Task<IActionResult> GetCaseByIdAsync(string caseId)
+          => Ok(await _complaintService.GetCaseByIdAsync(caseId));
+        
         [HttpGet(nameof(GetContactAsync))]
         public async Task<IActionResult> GetContactAsync(string nationalId)
           => Ok(await _complaintService.GetContactAsync(nationalId));
