@@ -1611,6 +1611,11 @@ namespace REAC.Application.AppServices.Litigation
                 return new BaseResponse() { IsDone = false, Message = "Not Found" };
 
             var assigningRequest = litigationRequest.LitigationRequestArbitratorAssigningRequests.FirstOrDefault(l => l.Id == requestId);
+
+            var RequestAmount = (await _repository.GetQueryable<SysLitigationRequestAmount, Guid>())
+                                 .Include(x => x.LitigationRequestFees)
+                               .Where(x => x.FromAmount == 0).FirstOrDefault();
+
             CultureInfo arCultureGregorian = new CultureInfo("ar-SA");
             arCultureGregorian.DateTimeFormat.Calendar = new GregorianCalendar();
 
@@ -1638,7 +1643,7 @@ namespace REAC.Application.AppServices.Litigation
                 Subject = "100",
                 ArbitratorAssignerName = "مركز التحكيم العقاري",
                 ArbitratorAssigningDate = litigationRequest.LitigationRequestArbitratorAssigningRequests.FirstOrDefault()?.RequestOn.ToString("dd/MM/yyyy", arCultureGregorian),
-                ArbitratorAssigningCost = litigationRequest.LitigationRequestAmount?.LitigationRequestFees.Where(x => x.ArbitratorsCount == litigationRequest.ArbitratorsCount).FirstOrDefault()?.ArbitrationFees != null ? litigationRequest.LitigationRequestAmount?.LitigationRequestFees.Where(x => x.ArbitratorsCount == litigationRequest.ArbitratorsCount).FirstOrDefault()?.ArbitrationFees.ToString("G29") : litigationRequest.LitigationRequestAmount?.Fees.ToString(),
+                ArbitratorAssigningCost = litigationRequest.LitigationRequestAmount?.LitigationRequestFees.Where(x => x.ArbitratorsCount == litigationRequest.ArbitratorsCount).FirstOrDefault()?.ArbitrationFees != null ? litigationRequest.LitigationRequestAmount?.LitigationRequestFees.Where(x => x.ArbitratorsCount == litigationRequest.ArbitratorsCount).FirstOrDefault()?.ArbitrationFees.ToString("G29") : RequestAmount?.LitigationRequestFees.Where(x => x.ArbitratorsCount == litigationRequest.ArbitratorsCount).FirstOrDefault()?.ArbitrationFees.ToString("G29"),
                 Response = litigationRequest.LitigationRequestArbitratorAssigningRequests.FirstOrDefault(l => l.Id == requestId).Response,
                 RequestTypeId = litigationRequest.Contract.LitigationRequestContractType.Id.GetHashCode(),
                 FirstPartyName = (litigationRequest.Contract.FirstPartyCitizen == null) ? litigationRequest.Contract.FirstPartyFacility.ArabicFacilityName : litigationRequest.Contract.FirstPartyCitizen.FullName,
@@ -1687,6 +1692,10 @@ namespace REAC.Application.AppServices.Litigation
                 .AsNoTracking()
                 .FirstOrDefault(x => x.Id == citizenId);
 
+            var MinRequestAmount = (await _repository.GetQueryable<SysLitigationRequestAmount, Guid>())
+                                 .Include(x => x.LitigationRequestFees)
+                               .Where(x => x.FromAmount == 0).FirstOrDefault();
+
             CultureInfo arCultureGregorian = new CultureInfo("ar-SA");
             arCultureGregorian.DateTimeFormat.Calendar = new GregorianCalendar();
 
@@ -1704,13 +1713,13 @@ namespace REAC.Application.AppServices.Litigation
                 ArbitratorName = citizenInfo != null ? citizenInfo.FullName : null,
                 AssociationName = litigationRequest.Contract.AssociationName,
                 ContractNumber = litigationRequest.Contract.ContractKey,
-                ContractReleaseDate = litigationRequest.LitigationRequestArbitratorAssigningRequests.FirstOrDefault()?.RequestOn.ToString("dd/MM/yyyy", arCultureGregorian),
-                ArbitratorAssigningDate = litigationRequest.ArbitratorsNominationListSelectionDoneDateTime?.ToString("dd/MM/yyyy", arCultureGregorian),
+                ArbitratorAssigningDate = litigationRequest.LitigationRequestArbitratorAssigningRequests.FirstOrDefault()?.RequestOn.ToString("dd/MM/yyyy", arCultureGregorian),
+                ContractReleaseDate = litigationRequest.ArbitratorsNominationListSelectionDoneDateTime?.ToString("dd/MM/yyyy", arCultureGregorian),
                 LitigationNumber = litigationRequest.RequestCode,
                 LitigationType = litigationRequest.Contract.LitigationRequestContractType.TypeName,
                 Subject = "100",
                 ArbitratorAssignerName = "مركز التحكيم العقاري",
-                ArbitratorAssigningCost = litigationRequest.LitigationRequestAmount?.LitigationRequestFees.Where(x => x.ArbitratorsCount == litigationRequest.ArbitratorsCount).FirstOrDefault()?.ArbitrationFees != null ? litigationRequest.LitigationRequestAmount?.LitigationRequestFees.Where(x => x.ArbitratorsCount == litigationRequest.ArbitratorsCount).FirstOrDefault()?.ArbitrationFees.ToString("G29") : litigationRequest.LitigationRequestAmount?.Fees.ToString(),
+                ArbitratorAssigningCost = litigationRequest.LitigationRequestAmount?.LitigationRequestFees.Where(x => x.ArbitratorsCount == litigationRequest.ArbitratorsCount).FirstOrDefault()?.ArbitrationFees != null ? litigationRequest.LitigationRequestAmount?.LitigationRequestFees.Where(x => x.ArbitratorsCount == litigationRequest.ArbitratorsCount).FirstOrDefault()?.ArbitrationFees.ToString("G29") : MinRequestAmount?.LitigationRequestFees.Where(x => x.ArbitratorsCount == litigationRequest.ArbitratorsCount).FirstOrDefault()?.ArbitrationFees.ToString("G29"),
                 RequestTypeId = litigationRequest.Contract.LitigationRequestContractType.Id.GetHashCode(),
                 FirstPartyName = (litigationRequest.Contract.FirstPartyCitizen == null) ? litigationRequest.Contract.FirstPartyFacility.ArabicFacilityName : litigationRequest.Contract.FirstPartyCitizen.FullName,
                 SecondPartyName = (litigationRequest.Contract.SecondPartyCitizen == null) ? litigationRequest.Contract.SecondPartyFacility.ArabicFacilityName : litigationRequest.Contract.SecondPartyCitizen.FullName,
