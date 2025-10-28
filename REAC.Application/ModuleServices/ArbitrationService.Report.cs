@@ -11,6 +11,7 @@ using REAC.Domain.Shared.Enum;
 using REAC.EntityFrameworkCore.Entities.Actor;
 using REAC.EntityFrameworkCore.Entities.Arbitration;
 using REAC.EntityFrameworkCore.Entities.Litigation;
+using REAC.EntityFrameworkCore.Entities.System;
 using REAC.EntityFrameworkCore.Entities.Wpf.Business;
 
 namespace REAC.Application.ModuleServices
@@ -362,6 +363,7 @@ namespace REAC.Application.ModuleServices
             var litigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>())
                          .Include(x => x.ArbitratorCitizen)
                          .ThenInclude(x => x.SigntureFile)
+                         .Include(x => x.ArbitratorCitizen.City)
                          .Include(x => x.Area)
                          .Include(x => x.City)
                          .Include(x => x.LitigationRequestSessions)
@@ -409,6 +411,18 @@ namespace REAC.Application.ModuleServices
             if (request.LitigationRequestAmount != null)
             {
                 request.LitigationRequestAmount.Fees = litigationRequest.LitigationRequestInvoice?.TotalAmount ?? 0;
+            }
+            else
+            {
+                var MinRequestAmount = (await _repository.GetQueryable<SysLitigationRequestAmount, Guid>())
+                                 .Include(x => x.LitigationRequestFees)
+                               .Where(x => x.FromAmount == 0).FirstOrDefault();
+
+                request.LitigationRequestAmount = new SysLitigationRequestAmountCreateUpdateDto()
+                {
+                    Fees = MinRequestAmount.LitigationRequestFees.FirstOrDefault().ArbitrationFees,
+                    
+                };
             }
             if (!string.IsNullOrEmpty(litigationRequest.ArbitratorCitizen?.SigntureFile?.FilePath))
             {
