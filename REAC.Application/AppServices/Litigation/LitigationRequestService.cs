@@ -108,15 +108,19 @@ namespace REAC.Application.AppServices.Litigation
                           .Include(x => x.LitigationRequestAmount)
                           .Where(x => x.Contract.Id == model.ContractId).ToList().FirstOrDefault();
 
+
+
+                litigationRequest.Title = model.Title;
+                litigationRequest.Description = model.Description;
+                litigationRequest.IsFinancialLitigation = model.IsFinancialLitigation;
+
                 if (model.IsFinancialLitigation == true)
                 {
                     var litigationRequestAmount = (await _repository.GetQueryable<SysLitigationRequestAmount, Guid>())
                         .AsNoTracking()
                         .FirstOrDefault(x => x.FromAmount <= model.LitigationRequestAmount && x.ToAmount >= model.LitigationRequestAmount);
 
-                    litigationRequest.Title = model.Title;
-                    litigationRequest.Description = model.Description;
-                    litigationRequest.IsFinancialLitigation = model.IsFinancialLitigation;
+                   
 
                     if (litigationRequestAmount != null)
                     {
@@ -783,10 +787,10 @@ namespace REAC.Application.AppServices.Litigation
                 litigations = litigations.Where(x => x.WorkFlowProcessingLogs.Where(t => t.EmployeeId == employeeId).Count() > 0);
             }
 
-            litigations = litigations.OrderByDescending(x => x.CreatedOn);
+            litigations = litigations.OrderByDescending(x => x.SentOn);
             litigations = litigations.Where(x => x.LitigationRequestStage == LitigationRequestStage.Review && x.InternalStatusId != RequestStatus.SaveAsDraft && x.InternalStatusId != RequestStatus.AcceptanceOfTheReconciliationReport && x.InternalStatusId != RequestStatus.ReconciliationWasNotMadeAndMoveToArbitration);
 
-            litigationRequests = litigations.OrderByDescending(x => x.CreatedOn)
+            litigationRequests = litigations.OrderByDescending(x => x.SentOn)
                                             .AsSplitQuery()
                                             .AsNoTracking()
                                             .GetPaged(pageIndex, pageSize);
@@ -3902,7 +3906,8 @@ namespace REAC.Application.AppServices.Litigation
                 var existLitigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>()).
                     Include(x => x.Contract.SecondPartyCitizen)
                     .Include(x => x.Contract.SecondPartyFacility)
-                    .FirstOrDefault(x => x.IsFinished != true && ((x.ExternalStatusId != RequestStatus.Cancelled && x.InternalStatusId != RequestStatus.Cancelled) && (x.ExternalStatusId != RequestStatus.Rejected && x.InternalStatusId != RequestStatus.Rejected))
+                    .FirstOrDefault(x => x.IsFinished != true 
+                    && ((x.ExternalStatusId != RequestStatus.Cancelled && x.InternalStatusId != RequestStatus.Cancelled) && (x.ExternalStatusId != RequestStatus.Rejected && x.InternalStatusId != RequestStatus.Rejected))
                     && x.Contract.ContractKey == litigationRequestDto.key
                     && (x.Contract.SecondPartyCitizen.IdentityNumber == litigationRequestDto.SecondPartyNationalId || x.Contract.SecondPartyFacility.CommercialRegisterNumber == litigationRequestDto.SecondPartyFacilityCommercialRegistrationNo));
 

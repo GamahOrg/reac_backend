@@ -376,6 +376,7 @@ namespace REAC.Application.ModuleServices
                         litigationRequestMircoDto.ArbitratorName = litigationRequest.ArbitratorCitizen?.FullName;
                         litigationRequestMircoDto.ArbitratoId = litigationRequest.ArbitratorCitizen?.Id;
                         litigationRequestMircoDto.ArbitratorAssigningRequestTypeId = ArbitratorAssigningRequestType.ArbitratorsChairman;
+                        //litigationRequestMircoDto.LitigationRequestArbitratorListId = litigationRequest.LitigationRequestArbitratorLists.Where(s => s.ArbitratorCitizenId == litigationRequest.ArbitratorCitizen?.Id).FirstOrDefault().Id;
                         litigationRequestMircoDtos.Add(litigationRequestMircoDto);
                     }
                     //if (litigationRequest.LitigationRequestSubStage == LitigationRequestSubStage.LitigationRequestAddArbitratorListNominationDone && (litigationRequest.IsDefendantArbitratorNominationListDone != true || litigationRequest.IsPlaintiffArbitratorNominationListDone != true))
@@ -397,6 +398,8 @@ namespace REAC.Application.ModuleServices
                             litigationRequestMircoDto.ArbitratorName = t.ArbitratorCitizen?.FullName;
                             litigationRequestMircoDto.ArbitratoId = t.ArbitratorCitizen?.Id;
                             litigationRequestMircoDto.ArbitratorAssigningRequestTypeId = ArbitratorAssigningRequestType.Arbitrator;
+                            //litigationRequestMircoDto.LitigationRequestArbitratorListId = litigationRequest.LitigationRequestArbitratorLists.Where(s => s.ArbitratorCitizenId == t.ArbitratorCitizen?.Id).FirstOrDefault().Id;
+
                             litigationRequestMircoDtos.Add(litigationRequestMircoDto);
                         });
                     }
@@ -412,6 +415,8 @@ namespace REAC.Application.ModuleServices
                         litigationRequestMircoDto.ArbitratorAssigningRequestTypeId = ArbitratorAssigningRequestType.Arbitrator;
                         litigationRequestMircoDto.ArbitratorName = litigationRequest.LitigationRequestArbitratorAssigningRequests?.OrderByDescending(s=>s.RequestOn)?.FirstOrDefault()?.ArbitratorCitizen?.FullName;
                         litigationRequestMircoDto.ArbitratoId = litigationRequest.LitigationRequestArbitratorAssigningRequests?.OrderByDescending(s => s.RequestOn)?.FirstOrDefault()?.ArbitratorCitizen?.Id;
+                        //litigationRequestMircoDto.LitigationRequestArbitratorListId = litigationRequest.LitigationRequestArbitratorLists.Any() ? litigationRequest.LitigationRequestArbitratorLists.Where(s => s.ArbitratorCitizenId == litigationRequestMircoDto.ArbitratoId).FirstOrDefault().Id : Guid.Empty;
+
                         litigationRequestMircoDtos.Add(litigationRequestMircoDto);
                     }
                 }
@@ -530,11 +535,11 @@ namespace REAC.Application.ModuleServices
                 }
                 var litigationRequestArbitratorList = (await _repository.GetQueryable<LitigationRequestArbitratorList, Guid>())?
                            .Include(x => x.ArbitratorCitizen)
-                            .Where(x => x.Id == assignRequestPayload.LitigationRequestArbitratorListId).SingleOrDefault();
+                            .Where(x => x.LitigationRequestId== assignRequestPayload.RequestId && x.ArbitratorCitizenId == assignRequestPayload.LitigationRequestArbitratorListId).SingleOrDefault();
                 try
                 {
 
-                    if (assignRequestPayload.LitigationRequestArbitratorListId != Guid.Empty)
+                    if (litigationRequestArbitratorList!=null)
                     {
                         switch (assignRequestPayload.ArbitratorAssigningRequestTypeId)
                         {
@@ -702,6 +707,23 @@ namespace REAC.Application.ModuleServices
                 {
 
 
+                }
+
+                var litigationRequestAssigningRequest = (await _repository.GetQueryable<LitigationRequestArbitratorAssigningRequest, Guid>())?
+                           .Include(x => x.ArbitratorCitizen)
+                            .Where(x => x.LitigationRequestId == assignRequestPayload.RequestId && x.CitizenId == assignRequestPayload.LitigationRequestArbitratorListId && x.Response==LitigationRequestArbitratorAssigningRequestStatus.None).FirstOrDefault();
+
+                if (litigationRequestAssigningRequest != null)
+                {
+                    _repository.Remove<LitigationRequestArbitratorAssigningRequest, Guid>(litigationRequestAssigningRequest);
+                    await _repository.AddAsync<WorkFlowLog, Guid>(new WorkFlowLog()
+                    {
+                        Id = Guid.NewGuid(),
+                        CreatedOn = DateTime.Now,
+                        RequestId = litigationRequest.Id,
+                        ShowForApplicant = false,
+                        LogMessage = "تم إلغاء تعيين  للمحكم " + litigationRequestAssigningRequest?.ArbitratorCitizen?.FullName
+                    });
                 }
 
                 var newArbitrator = (await _repository.GetQueryable<Citizen, Guid>())?

@@ -842,8 +842,8 @@ namespace REAC.Application.AppServices.Litigation
 
 
             var result = ascending
-                ? litigationRequests.OrderBy(x => x.CreatedOn).GetPaged(pageIndex, pageSize)
-                : litigationRequests.OrderByDescending(x => x.CreatedOn).GetPaged(pageIndex, pageSize);
+                ? litigationRequests.OrderBy(x => x.SentOn).GetPaged(pageIndex, pageSize)
+                : litigationRequests.OrderByDescending(x => x.SentOn).GetPaged(pageIndex, pageSize);
 
             List<CustomLitigationRequestMircoArbitratorDto> litigationRequestMircoDtos = new List<CustomLitigationRequestMircoArbitratorDto>();
             if (result != null)
@@ -943,7 +943,7 @@ namespace REAC.Application.AppServices.Litigation
 
             litigationRequestArbitratorAssigningRequests = entitiesQuerable.Where(x => x.LitigationRequest.LitigationRequestStage
             == LitigationRequestStage.Arbitration)
-                                       .OrderByDescending(x => x.LitigationRequest.CreatedOn)
+                                       .OrderByDescending(x => x.LitigationRequest.SentOn)
                                        .AsSplitQuery()
                                        .AsNoTracking()
                                        .GetPaged(pageIndex, pageSize);
