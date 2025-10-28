@@ -77,7 +77,7 @@ namespace REAC.Application.AppServices.Litigation
                     LitigationRequestId = litigationCorrespondence.LitigationRequestId,
                     Subject = litigationCorrespondence.Subject,
                     Message = litigationCorrespondence.Message,
-                    LitigationRequestCategoryId = litigationRequest.LitigationRequestStage == LitigationRequestStage.Reconciliation ? LitigationRequestCategory.Reconciliation 
+                    LitigationRequestCategoryId = litigationRequest.LitigationRequestStage == LitigationRequestStage.Reconciliation ? LitigationRequestCategory.Reconciliation
                     : litigationRequest.LitigationRequestStage == LitigationRequestStage.Arbitration ? LitigationRequestCategory.Arbitration : litigationCorrespondence.LitigationRequestCategoryId,
                     LitigationRequestCorrespondenceStatusId = CorrespondenceStatus.NotRepliedOn,
                     LitigationRequestCorrespondenceDestinationId = (LitigationRequestCorrespondenceDestination)litigationCorrespondence.LitigationRequestCorrespondenceDestinationId,
@@ -110,14 +110,15 @@ namespace REAC.Application.AppServices.Litigation
 
                     if (!logAddResult.IsDone)
                         return fileAddResult;
-                };
+                }
+                ;
 
                 var saveResponse = await _repository.SaveChangesAsync();
                 if (!saveResponse.IsDone)
                     return saveResponse;
 
                 // Send Notifications
-                
+
                 if (litigationRequest != null)
                 {
                     var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequestCorrespondenceAdded).Result.Data?.Value;
@@ -191,7 +192,7 @@ namespace REAC.Application.AppServices.Litigation
                           .AsNoTracking()
                           .FirstOrDefault(x => x.Id == litigationRequestId);
 
-                          
+
 
 
                 if (litigationRequest == null)
@@ -305,11 +306,11 @@ namespace REAC.Application.AppServices.Litigation
                                                //| 
                                                x.Contract.SecondPartyCitizenId == citizenId & x.LitigationRequestStage == LitigationRequestStage.Reconciliation & x.LitigationRequestCorrespondences.Any(l => l.LitigationRequestCorrespondenceDestinationId == LitigationRequestCorrespondenceDestination.Defendant | l.LitigationRequestCorrespondenceDestinationId == LitigationRequestCorrespondenceDestination.BothOfThem)
                                                | x.ApplicantCitizenId == citizenId & x.LitigationRequestStage == LitigationRequestStage.Reconciliation & x.LitigationRequestCorrespondences.Any(l => l.LitigationRequestCorrespondenceDestinationId == LitigationRequestCorrespondenceDestination.Plaintiff | l.LitigationRequestCorrespondenceDestinationId == LitigationRequestCorrespondenceDestination.BothOfThem)
-                                               
+
                                                //|x.Contract.FirstPartyCitizenId == citizenId & x.LitigationRequestStage == LitigationRequestStage.Arbitration
                                                | x.Contract.SecondPartyCitizenId == citizenId & x.LitigationRequestStage == LitigationRequestStage.Arbitration
                                                | x.ApplicantCitizenId == citizenId & x.LitigationRequestStage == LitigationRequestStage.Arbitration
-                                                
+
                                                )
                                                .OrderByDescending(x => x.CreatedOn)
                                                .GetPaged(pageIndex, pageSize);
@@ -346,7 +347,7 @@ namespace REAC.Application.AppServices.Litigation
 
                 var litigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>())
                           .Include(x => x.LitigationRequestCorrespondences
-                          .Where(l => 
+                          .Where(l =>
                           (l.LitigationRequestCategoryId == LitigationRequestCategory.Reconciliation && l.LitigationRequestCorrespondenceDestinationId == LitigationRequestCorrespondenceDestination.BothOfThem || l.LitigationRequestCorrespondenceDestinationId == (LitigationRequestCorrespondenceDestination)destination.Result)
                           || (l.LitigationRequestCategoryId == LitigationRequestCategory.Arbitration)
                           ))
@@ -394,13 +395,13 @@ namespace REAC.Application.AppServices.Litigation
 
                 var allowAdd = true;
 
-                
+
 
                 var request = _mapper.Map<LitigationRequestShortDto>(litigationRequest);
 
                 var correspondences = _mapper.Map<List<LitigationRequestCorrespondenceDto>>(litigationRequest?.LitigationRequestCorrespondences);
 
-                foreach(var correspondence in correspondences)
+                foreach (var correspondence in correspondences)
                 {
                     if (correspondence.LitigationRequestCategoryId == LitigationRequestCategory.Arbitration & correspondence.LitigationRequestCorrespondenceDestinationId == LitigationRequestCorrespondenceDestination.Plaintiff & (litigationRequest?.Contract?.FirstPartyCitizenId == referenceId || litigationRequest?.Contract?.FirstPartyFacilityId == referenceId))
                         correspondence.AllowAddReply = true;
@@ -480,7 +481,7 @@ namespace REAC.Application.AppServices.Litigation
                         FileManagerId = (Guid)litigationCorrespondenceReply.CorrespondenceReplyFileId
                     });
 
-                    if(litigationRequest is not null)
+                    if (litigationRequest is not null)
                     {
                         var logAddResult = await _repository.AddAsync<WorkFlowLog, Guid>(new WorkFlowLog()
                         {
@@ -494,8 +495,9 @@ namespace REAC.Application.AppServices.Litigation
                         if (!logAddResult.IsDone)
                             return fileAddResult;
                     }
-                    
-                };
+
+                }
+                ;
 
                 var updateCorrespondenceResult = _dbContext.Set<LitigationRequestCorrespondence>()
                     .Where(x => x.Id == litigationCorrespondenceReply.LitigationRequestCorrespondenceId)
@@ -532,7 +534,7 @@ namespace REAC.Application.AppServices.Litigation
                     }
                     else
                     {
-                        await SendNotificationMS(body, msg, litigationRequest, "Message Reply Added", NotificationActorType.Arbitrator, RequestType.LitigationRequestCorrespondence,null, true,true, false, true, true);
+                        await SendNotificationMS(body, msg, litigationRequest, "Message Reply Added", NotificationActorType.Arbitrator, RequestType.LitigationRequestCorrespondence, null, true, true, false, true, true);
 
                     }
                     var saveResponse2 = await _repository.SaveChangesAsync();
@@ -609,10 +611,10 @@ namespace REAC.Application.AppServices.Litigation
                 {
                     if (correspondence.LitigationRequestCategoryId == LitigationRequestCategory.Arbitration & correspondence.LitigationRequestCorrespondenceDestinationId == LitigationRequestCorrespondenceDestination.Plaintiff & (litigationRequest?.Contract?.FirstPartyCitizenId == referenceId || litigationRequest?.Contract?.FirstPartyFacilityId == referenceId))
                         correspondence.AllowAddReply = true;
-                    
+
                     if (correspondence.LitigationRequestCategoryId == LitigationRequestCategory.Arbitration & correspondence.LitigationRequestCorrespondenceDestinationId == LitigationRequestCorrespondenceDestination.Defendant & (litigationRequest?.Contract?.SecondPartyCitizenId == referenceId || litigationRequest?.Contract?.SecondPartyCitizenId == referenceId))
                         correspondence.AllowAddReply = true;
-                    
+
                     if (correspondence.LitigationRequestCategoryId == LitigationRequestCategory.Arbitration & correspondence.LitigationRequestCorrespondenceDestinationId == LitigationRequestCorrespondenceDestination.BothOfThem)
                         correspondence.AllowAddReply = true;
 
@@ -665,9 +667,9 @@ namespace REAC.Application.AppServices.Litigation
                          .Include(x => x.LitigationRequest.Contract.SecondPartyCitizen)
                          .Include(x => x.LitigationRequest.Contract.LitigationRequestContractType)
                          .Include(x => x.LitigationRequest)
-                         .ThenInclude(x => x.LitigationRequestCorrespondences)
+                         .ThenInclude(x => x.LitigationRequestCorrespondences.OrderByDescending(x => x.CreatedOn))
                          .Where(x => x.LitigationRequest.LitigationRequestCorrespondences.Any() & x.LitigationRequest.LitigationRequestStage == LitigationRequestStage.Arbitration)
-                          .OrderBy(x => x.LitigationRequest.CreatedOn)
+                          .OrderByDescending(x => x.LitigationRequest.CreatedOn)
                          .GroupBy(x => x.LitigationRequest.RequestCode)
                          .Select(x => x.First()).AsNoTracking();
 
@@ -721,7 +723,11 @@ namespace REAC.Application.AppServices.Litigation
                     litigationRequestMircoDto.Status = litigationRequest.LitigationRequest.ExternalStatus.RequestStatus;
                     litigationRequestMircoDtos.Add(litigationRequestMircoDto);
                 }
+                litigationRequestMircoDtos = litigationRequestMircoDtos
+                            .OrderByDescending(x => x.RequestDate)
+                            .ToList();
             }
+
 
             return new DataResponse<PagedResult<CustomLitigationRequestMircoArbitratorAllDto>>
             {
@@ -737,7 +743,7 @@ namespace REAC.Application.AppServices.Litigation
                 IsDone = true
             };
         }
-        
+
         public async Task<BaseResponse> GetLitigationRequestReconciliationCorrespondence(int pageIndex, int pageSize, CancellationToken cancellationToken)
         {
             Guid referenceId = Guid.Empty;
@@ -761,7 +767,7 @@ namespace REAC.Application.AppServices.Litigation
                          .Include(x => x.LitigationRequest.Contract.SecondPartyCitizen)
                          .Include(x => x.LitigationRequest.Contract.LitigationRequestContractType)
                          .Include(x => x.LitigationRequest)
-                         .ThenInclude(x => x.LitigationRequestCorrespondences)
+                         .ThenInclude(x => x.LitigationRequestCorrespondences.OrderByDescending(x => x.CreatedBy))
                          .Where(x => x.LitigationRequest.LitigationRequestCorrespondences.Any()
                        & (x.LitigationRequest.LitigationRequestCategoryId == LitigationRequestCategory.Reconciliation
                        || x.LitigationRequest.LitigationRequestCategoryId == LitigationRequestCategory.ReconciliationAndArbitration)
@@ -811,6 +817,10 @@ namespace REAC.Application.AppServices.Litigation
                     litigationRequestMircoDto.Status = litigationRequest.LitigationRequest.InternalStatus.RequestStatus;
                     litigationRequestMircoDtos.Add(litigationRequestMircoDto);
                 }
+
+                litigationRequestMircoDtos = litigationRequestMircoDtos
+                        .OrderByDescending(x => x.RequestDate)
+                        .ToList();
             }
             return new DataResponse<PagedResult<CustomLitigationRequestMircoAllDto>>
             {
@@ -856,18 +866,18 @@ namespace REAC.Application.AppServices.Litigation
                           .Include(x => x.Contract.SecondPartyCitizen)
                 .FirstOrDefault(x => x.Id == litigationRequestId);
 
-            if(litigationRequest is null)
+            if (litigationRequest is null)
                 return 0;
 
             var destination = litigationRequest.Contract.FirstPartyCitizenId == referenceId | litigationRequest.Contract.FirstPartyFacilityId == referenceId ? 1
-                : litigationRequest.Contract.SecondPartyCitizenId == referenceId | litigationRequest.Contract.SecondPartyFacilityId == referenceId ? 2 : 0; 
-            
+                : litigationRequest.Contract.SecondPartyCitizenId == referenceId | litigationRequest.Contract.SecondPartyFacilityId == referenceId ? 2 : 0;
+
             return destination;
         }
         #endregion
 
         #region Notifications
-        private async Task SendNotificationMS(string mailMsg,string msg, LitigationRequest litigationRequest, string subject, NotificationActorType notificationActorType, RequestType requestType, LitigationRequestArbitratorList? arbitrator = null, bool notifyApplicant = false, bool notifyArbitrators = false, bool notifyDeptAdmin = false, bool notifyFirstParty = false, bool notifySecondParty = false)
+        private async Task SendNotificationMS(string mailMsg, string msg, LitigationRequest litigationRequest, string subject, NotificationActorType notificationActorType, RequestType requestType, LitigationRequestArbitratorList? arbitrator = null, bool notifyApplicant = false, bool notifyArbitrators = false, bool notifyDeptAdmin = false, bool notifyFirstParty = false, bool notifySecondParty = false)
         {
             var deptAdminInfoArbitration = await _employeeService.GetAdminsByDepartmentType(DepartmentType.Arbitration);
             var objEmail = new SendEmailDto()
@@ -911,7 +921,7 @@ namespace REAC.Application.AppServices.Litigation
                 objSms.recipients.Add(litigationRequest.ArbitratorCitizen.Mobile);
                 lstNotification.Add(new Contracts.Dtos.Notification.SysNotificationDto()
                 {
-                    ActorId = (Guid) litigationRequest?.ArbitratorCitizen?.Id,
+                    ActorId = (Guid)litigationRequest?.ArbitratorCitizen?.Id,
                     CreatedOn = DateTime.Now,
                     ActorTypeId = notificationActorType,
                     IsViewed = false,

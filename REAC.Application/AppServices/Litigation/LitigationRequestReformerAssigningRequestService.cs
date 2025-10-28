@@ -479,12 +479,12 @@ namespace REAC.Application.AppServices.Litigation
                          .Include(x => x.Contract.SecondPartyCitizen)
                          .Include(x => x.Contract.LitigationRequestContractType)
                          .Where(x => x.LitigationRequestReformerAssigningRequests
-                         .Where(t => t.CitizenId == referenceId).Count() > 0).OrderByDescending(x => x.CreatedOn).AsNoTracking().GetPaged(pageIndex, pageSize);
+                         .Where(t => t.CitizenId == referenceId).Count() > 0).OrderByDescending(x => x.SentOn).AsNoTracking().GetPaged(pageIndex, pageSize);
 
 
             litigationRequests.Results = (ascending
-                ? litigationRequests.Results.OrderBy(x => x.CreatedOn).ToList()
-                : litigationRequests.Results.OrderByDescending(x => x.CreatedOn).ToList());
+                ? litigationRequests.Results.OrderBy(x => x.SentOn).ToList()
+                : litigationRequests.Results.OrderByDescending(x => x.SentOn).ToList());
 
 
             List<CustomLitigationRequestMircoDto> litigationRequestMircoDtos = new List<CustomLitigationRequestMircoDto>();
@@ -571,8 +571,8 @@ namespace REAC.Application.AppServices.Litigation
                              && x.LitigationRequest.LitigationRequestCategoryId != LitigationRequestCategory.Arbitration);
 
             litigationRequestsReformerAssigningRequestsQuery = ascending
-                ? litigationRequestsReformerAssigningRequestsQuery.OrderBy(x => x.LitigationRequest.CreatedOn)
-                : litigationRequestsReformerAssigningRequestsQuery.OrderByDescending(x => x.LitigationRequest.CreatedOn);
+                ? litigationRequestsReformerAssigningRequestsQuery.OrderBy(x => x.LitigationRequest.SentOn)
+                : litigationRequestsReformerAssigningRequestsQuery.OrderByDescending(x => x.LitigationRequest.SentOn);
 
 
             var totalCount = await litigationRequestsReformerAssigningRequestsQuery.CountAsync(cancellationToken);
