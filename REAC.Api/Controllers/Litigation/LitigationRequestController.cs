@@ -38,6 +38,7 @@ public class LitigationRequestController : BaseController<LitigationRequest,
         _litigationService = litigationService;
         _mobileLitigationService = mobileLitigationService;
     }
+    
     [HttpPost("CreateLitigation")] 
     public override async Task<IActionResult> Create([FromBody] LitigationCreateUpdateDto model,
           CancellationToken cancellationToken)
