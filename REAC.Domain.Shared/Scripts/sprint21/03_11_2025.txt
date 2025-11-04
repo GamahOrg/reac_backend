@@ -169,3 +169,12 @@ BEGIN
             ELSE @Take 
         END ROWS ONLY
 END
+
+
+
+UPDATE lr
+SET lr.DefendantCitizenId = lrc.SecondPartyCitizenId
+FROM LitigationRequest AS lr
+INNER JOIN LitigationRequestContract AS lrc 
+    ON lrc.Id = lr.ContractId
+WHERE lr.DefendantCitizenId IS NULL;
