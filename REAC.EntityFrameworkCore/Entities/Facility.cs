@@ -3,6 +3,7 @@ using REAC.EntityFrameworkCore.Entities.Actor;
 using REAC.EntityFrameworkCore.Entities.Litigation;
 using REAC.EntityFrameworkCore.Entities.System;
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace REAC.EntityFrameworkCore.Entities;
 
@@ -61,5 +62,11 @@ public partial class Facility : BaseEntity<Guid>
     public virtual ICollection<LitigationRequestContract> LitigationRequestContractFirstPartyFacilities { get; set; } = new List<LitigationRequestContract>();
 
     public virtual ICollection<LitigationRequestContract> LitigationRequestContractSecondPartyFacilities { get; set; } = new List<LitigationRequestContract>();
+
+    [InverseProperty(nameof(LitigationRequest.ApplicantFacility))]
+    public virtual ICollection<LitigationRequest> ApplicantFacility { get; set; } = new List<LitigationRequest>();
+    
+    [InverseProperty(nameof(LitigationRequest.DefendantFacility))]
+    public virtual ICollection<LitigationRequest> DefendantFacility { get; set; } = new List<LitigationRequest>();
 }
 

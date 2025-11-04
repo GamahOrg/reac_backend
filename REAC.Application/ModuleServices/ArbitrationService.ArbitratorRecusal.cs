@@ -518,6 +518,8 @@ namespace REAC.Application.ModuleServices
                                                       .Include(x => x.LitigationRequest.Area)
                                       .Include(x => x.LitigationRequestArbitratorRecusalRequestFiles)
                          .Include(x => x.LitigationRequest.ApplicantCitizen)
+                         .Include(x => x.LitigationRequest.DefendantCitizen)
+                         .Include(x => x.LitigationRequest.DefendantFacility)
                          .Include(x => x.LitigationRequest.Contract)
                          .Include(x => x.LitigationRequest.Contract.ContractFile)
                          .Include(x => x.LitigationRequest.Contract.AssociationRegistrationCertificateFile)
@@ -549,7 +551,7 @@ namespace REAC.Application.ModuleServices
                     litigationRequestMircoDto.RequestCode = litigationRequestArbitratorRecusalRequest.LitigationRequest.RequestCode;
 
                     litigationRequestMircoDto.FirstPartyName = (litigationRequestArbitratorRecusalRequest.LitigationRequest.Contract.FirstPartyCitizen == null) ? litigationRequestArbitratorRecusalRequest.LitigationRequest.Contract.FirstPartyFacility.ArabicFacilityName : litigationRequestArbitratorRecusalRequest.LitigationRequest.Contract.FirstPartyCitizen.FullName;
-                    litigationRequestMircoDto.SecondPartyName = (litigationRequestArbitratorRecusalRequest.LitigationRequest.Contract.SecondPartyCitizen == null) ? litigationRequestArbitratorRecusalRequest.LitigationRequest.Contract.SecondPartyFacility.ArabicFacilityName : litigationRequestArbitratorRecusalRequest.LitigationRequest.Contract.SecondPartyCitizen.FullName;
+                    litigationRequestMircoDto.SecondPartyName = (litigationRequestArbitratorRecusalRequest.LitigationRequest.DefendantCitizen == null) ? litigationRequestArbitratorRecusalRequest.LitigationRequest.DefendantFacility.ArabicFacilityName : litigationRequestArbitratorRecusalRequest.LitigationRequest.DefendantCitizen.FullName;
                     litigationRequestMircoDto.RequestTypeName = litigationRequestArbitratorRecusalRequest.LitigationRequest.Contract.LitigationRequestContractType.TypeName;
                     litigationRequestMircoDto.RequestParty = litigationRequestArbitratorRecusalRequest.RequestParty;
 

@@ -512,6 +512,8 @@ namespace REAC.Application.ModuleServices
                             .Include(x => x.ExternalStatus)
 
                             .Include(x => x.ArbitratorCitizen)
+                            .Include(x => x.DefendantCitizen)
+                            .Include(x => x.DefendantFacility)
                             .Include(x => x.LitigationRequestArbitratorNominationLists)
                             .ThenInclude(x => x.ArbitratorCitizen)
                             .ThenInclude(x => x.LitigationRequestArbitratorAssigningRequests)
@@ -555,7 +557,7 @@ namespace REAC.Application.ModuleServices
                     litigationRequestMircoDto.Status = litigationRequest.InternalStatus.RequestStatus;
 
                     litigationRequestMircoDto.FirstPartyName = (litigationRequest.Contract.FirstPartyCitizen == null) ? litigationRequest.Contract.FirstPartyFacility.ArabicFacilityName : litigationRequest.Contract.FirstPartyCitizen.FullName;
-                    litigationRequestMircoDto.SecondPartyName = (litigationRequest.Contract.SecondPartyCitizen == null) ? litigationRequest.Contract.SecondPartyFacility.ArabicFacilityName : litigationRequest.Contract.SecondPartyCitizen.FullName;
+                    litigationRequestMircoDto.SecondPartyName = (litigationRequest.DefendantCitizen == null) ? litigationRequest.DefendantFacility.ArabicFacilityName : litigationRequest.DefendantCitizen.FullName;
                     litigationRequestMircoDto.RequestTypeName = litigationRequest.Contract.LitigationRequestContractType.TypeName;
                     bool allowAdd = true;
                     bool isDone = false;

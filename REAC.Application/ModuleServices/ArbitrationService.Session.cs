@@ -859,6 +859,8 @@ namespace REAC.Application.ModuleServices
                                       .Include(x => x.LitigationRequestSessions.Where(x => x.LitigationRequestSessionRequestTypeId == LitigationRequestSessionRequestType.Arbitration))
                                       .Include(x => x.LitigationRequestReconciliationReports)
                                       .Include(x => x.ApplicantCitizen)
+                                      .Include(x => x.DefendantCitizen)
+                                      .Include(x => x.DefendantFacility)
                                       .Include(x => x.InternalStatus)
                                       .Include(x => x.ExternalStatus)
                                       .Include(x => x.LitigationRequestAmount)
@@ -900,7 +902,7 @@ namespace REAC.Application.ModuleServices
                     litigationRequestMircoDto.RequestDate = litigationRequest.CreatedOn;
                     litigationRequestMircoDto.RequestCode = litigationRequest.RequestCode;
                     litigationRequestMircoDto.FirstPartyName = (litigationRequest.Contract.FirstPartyCitizen == null) ? litigationRequest.Contract.FirstPartyFacility.ArabicFacilityName : litigationRequest.Contract.FirstPartyCitizen.FullName;
-                    litigationRequestMircoDto.SecondPartyName = (litigationRequest.Contract.SecondPartyCitizen == null) ? litigationRequest.Contract.SecondPartyFacility.ArabicFacilityName : litigationRequest.Contract.SecondPartyCitizen.FullName;
+                    litigationRequestMircoDto.SecondPartyName = (litigationRequest.DefendantCitizen == null) ? litigationRequest.DefendantFacility.ArabicFacilityName : litigationRequest.DefendantCitizen.FullName;
                     litigationRequestMircoDto.RequestTypeName = litigationRequest.Contract.LitigationRequestContractType.TypeName;
                     litigationRequestMircoDto.SessionDatetime = litigationRequest.LitigationRequestSessions.OrderBy(x => x.SessionDatetime).Last().SessionDatetime;
                     litigationRequestMircoDto.Url = litigationRequest.LitigationRequestSessions.OrderBy(x => x.SessionDatetime).Last().SessionUrl;

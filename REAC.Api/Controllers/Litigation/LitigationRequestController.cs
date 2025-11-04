@@ -1,4 +1,5 @@
 ﻿using Core.Shared.Responses;
+using iText.Kernel.Geom;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using REAC.Application.Contracts.Dtos.Delegator;
@@ -38,7 +39,6 @@ public class LitigationRequestController : BaseController<LitigationRequest,
         _litigationService = litigationService;
         _mobileLitigationService = mobileLitigationService;
     }
-    
     [HttpPost("CreateLitigation")] 
     public override async Task<IActionResult> Create([FromBody] LitigationCreateUpdateDto model,
           CancellationToken cancellationToken)
@@ -381,11 +381,11 @@ public class LitigationRequestController : BaseController<LitigationRequest,
     }
 
     [HttpGet(nameof(GetCitizenLitigationRequestForAgreementRequestReply))]
-    public async Task<IActionResult> GetCitizenLitigationRequestForAgreementRequestReply()
+    public async Task<IActionResult> GetCitizenLitigationRequestForAgreementRequestReply(int pageIndex,int pageSize)
     {
         if (ModelState.IsValid)
         {
-            var returnValue = await _litigationService.GetCitizenLitigationRequestForAgreementRequestReply();
+            var returnValue = await _litigationService.GetCitizenLitigationRequestForAgreementRequestReply(pageIndex, pageSize);
             return Ok(returnValue);
         }
         return BadRequest();

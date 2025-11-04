@@ -1,0 +1,171 @@
+﻿-- Add ApplicantFacilityId column
+ALTER TABLE [dbo].[LitigationRequest] 
+ADD [ApplicantFacilityId] uniqueidentifier NULL;
+
+-- Add DefendantFacilityId column
+ALTER TABLE [dbo].[LitigationRequest] 
+ADD [DefendantFacilityId] uniqueidentifier NULL;
+
+-- Create index on ApplicantFacilityId
+CREATE INDEX [IX_LitigationRequest_ApplicantFacilityId] 
+ON [dbo].[LitigationRequest] ([ApplicantFacilityId]);
+
+-- Create index on DefendantFacilityId
+CREATE INDEX [IX_LitigationRequest_DefendantFacilityId] 
+ON [dbo].[LitigationRequest] ([DefendantFacilityId]);
+
+-- Add foreign key constraint for ApplicantFacilityId
+ALTER TABLE [dbo].[LitigationRequest]
+ADD CONSTRAINT [FK_LitigationRequest_Facility_ApplicantFacilityId] 
+FOREIGN KEY ([ApplicantFacilityId]) 
+REFERENCES [dbo].[Facility] ([Id]);
+
+-- Add foreign key constraint for DefendantFacilityId
+ALTER TABLE [dbo].[LitigationRequest]
+ADD CONSTRAINT [FK_LitigationRequest_Facility_DefendantFacilityId] 
+FOREIGN KEY ([DefendantFacilityId]) 
+REFERENCES [dbo].[Facility] ([Id]);
+
+
+USE [REAC_Dev_Feb]
+GO
+/****** Object:  StoredProcedure [dbo].[GetReviewersReport]    Script Date: 11/4/2025 1:26:48 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+ALTER PROCEDURE [dbo].[GetReviewersReport]
+    @EmployeeIds NVARCHAR(MAX) = NULL,              -- Filter by specific employee IDs
+    @FromDate DATETIME = NULL,                      -- Start date for filtering
+    @ToDate DATETIME = NULL,                        -- End date for filtering
+    @ReviewerName NVARCHAR(200) = NULL,             -- Filter by reviewer name (partial match)
+    @ReviewerStatus NVARCHAR(50) = NULL,            -- Filter by reviewer status
+    @Skip INT = 0,                                  -- Number of records to skip (for pagination)
+    @Take INT = NULL                                -- Number of records to take (NULL = all records)
+AS
+BEGIN
+    -- Prevent row count messages from being returned to improve performance
+    SET NOCOUNT ON;
+    
+    -- Validate pagination parameters
+    SET @Skip = ISNULL(@Skip, 0);
+    IF @Skip < 0 SET @Skip = 0;
+    
+    -- Set default date range if not provided
+    SET @FromDate = ISNULL(@FromDate, '1900-01-01');
+    SET @ToDate = ISNULL(@ToDate, GETDATE());
+
+    -- =============================================
+    -- CTE 1: AllReviewers - Get ALL reviewer employees
+    -- Purpose: Start with ALL reviewers first, regardless of litigation assignment
+    -- =============================================
+    WITH AllReviewers AS (
+        SELECT DISTINCT
+            E.Id AS EmployeeId,
+            E.EmployeeName AS ReviewerName,
+            CASE WHEN E.IsActive = 1 THEN 'Active' ELSE 'Inactive' END AS ReviewerStatus
+        FROM SysEmployee E
+        INNER JOIN SysDepartment D ON E.DepartmentId = D.Id
+        WHERE 
+            -- Get ALL employees from departments with DepartmentType = 1 (reviewer departments)
+            D.DepartmentType = 1
+            
+            -- Apply reviewer-specific filters
+            AND (@EmployeeIds IS NULL OR E.Id IN (SELECT value FROM STRING_SPLIT(@EmployeeIds, ',')))
+            AND (@ReviewerName IS NULL OR E.EmployeeName LIKE '%' + @ReviewerName + '%')
+            AND (@ReviewerStatus IS NULL OR 
+                 (@ReviewerStatus = 'Active' AND E.IsActive = 1) OR 
+                 (@ReviewerStatus = 'Inactive' AND E.IsActive = 0))
+    ),
+    
+    -- =============================================
+    -- CTE 2: ReviewerLitigationStats - Get litigation statistics for each reviewer
+    -- Purpose: Calculate statistics for litigation requests assigned to each reviewer
+    -- =============================================
+    ReviewerLitigationStats AS (
+        SELECT 
+            R.EmployeeId,
+            R.ReviewerName,
+            R.ReviewerStatus,
+            
+            -- Reviewer litigation statistics
+            COUNT(L.Id) AS TotalLitigationCount,
+            SUM(CASE WHEN L.IsFinished = 0 THEN 1 ELSE 0 END) AS NotFinishedCount,
+            SUM(CASE WHEN L.IsFinished = 1 THEN 1 ELSE 0 END) AS FinishedCount,
+            
+            -- Review stage due date violations (when both reminder flags are set)
+            SUM(CASE 
+                WHEN L.LitigationRequestStage = 1                     -- Review stage
+                    AND L.IsReminderForReviewerManagerSent = 1       -- Manager reminder sent
+                     AND L.IsReminderForReviewerSent = 1              -- Reviewer reminder sent
+                     AND L.CreatedOn >= @FromDate                     -- Within date range
+                     AND L.CreatedOn <= @ToDate                       -- Within date range
+                THEN 1 ELSE 0 
+            END) AS TotalReviewDueDateCount
+            
+        FROM AllReviewers R
+        
+        -- Left join with WorkFlowProcessingLog to get litigation assignments
+        LEFT JOIN (
+            SELECT WFP.*,
+                   ROW_NUMBER() OVER (PARTITION BY WFP.RequestId , WFP.EmployeeId ORDER BY WFP.CreatedOn DESC) AS rn
+            FROM WorkFlowProcessingLog WFP
+            WHERE WFP.EmployeeId IS NOT NULL
+        ) W ON W.EmployeeId = R.EmployeeId AND W.rn = 1
+        
+        -- Left join with LitigationRequest to get case details
+        LEFT JOIN LitigationRequest L ON L.Id = W.RequestId
+                                      AND L.LitigationRequestStage = 1
+                                      AND L.SentOn >= @FromDate 
+                                      AND L.SentOn <= @ToDate
+        
+        GROUP BY R.EmployeeId, R.ReviewerName, R.ReviewerStatus
+    )
+    
+    -- =============================================
+    -- MAIN QUERY: Generate final reviewer report with statistics
+    -- =============================================
+    SELECT
+        ReviewerName,
+        ReviewerStatus,
+        
+        -- Core count metrics
+        ISNULL(TotalLitigationCount, 0) AS TotalLitigationCount,
+        ISNULL(NotFinishedCount, 0) AS NotFinishedCount,
+        ISNULL(FinishedCount, 0) AS FinishedCount,
+        ISNULL(TotalReviewDueDateCount, 0) AS TotalReviewDueDateCount,
+        
+        -- Performance ratios (percentages)
+        CAST(
+            ISNULL(NotFinishedCount, 0) * 100.0 / 
+            NULLIF(ISNULL(TotalLitigationCount, 0), 0)
+            AS DECIMAL(5,2)
+        ) AS NotFinishedRatio,
+        
+        CAST(
+            ISNULL(FinishedCount, 0) * 100.0 / 
+            NULLIF(ISNULL(TotalLitigationCount, 0), 0)
+            AS DECIMAL(5,2)
+        ) AS FinishedRatio,
+        
+        CAST(
+            ISNULL(TotalReviewDueDateCount, 0) * 100.0 / 
+            NULLIF(ISNULL(TotalLitigationCount, 0), 0)
+            AS DECIMAL(5,2)
+        ) AS TotalReviewDueDateRatio
+		,COUNT(*) OVER() AS TotalCount
+        
+    FROM ReviewerLitigationStats
+    -- Show ALL reviewers, even those with no litigation cases (they'll have zero statistics)
+    ORDER BY ReviewerName
+    
+    -- =============================================
+    -- PAGINATION: Apply OFFSET and FETCH NEXT for pagination
+    -- =============================================
+    OFFSET @Skip ROWS
+    FETCH NEXT 
+        CASE 
+            WHEN @Take IS NULL THEN 2147483647
+            ELSE @Take 
+        END ROWS ONLY
+END

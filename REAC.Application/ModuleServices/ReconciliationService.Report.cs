@@ -333,6 +333,7 @@ namespace REAC.Application.ModuleServices
                          .ThenInclude(x => x.LitigationRequestMeetingReconciliationItems)
                 .Include(x => x.LitigationRequestReformerAssigningRequests)
                          .Include(x => x.ApplicantCitizen)
+                         .Include(x => x.DefendantCitizen.Nationality)
                          .Include(x => x.InternalStatus)
                          .Include(x => x.ExternalStatus)
                          .Include(x => x.LitigationRequestAmount)
@@ -351,6 +352,48 @@ namespace REAC.Application.ModuleServices
                          .Include(x => x.Contract.SecondPartyCitizen)
                          .ThenInclude(x => x.SigntureFile)
                          .Include(x => x.Contract.LitigationRequestContractType)
+
+                         .Include(x => x.LitigationDelegationRequests.Where(y => y.IsActive != null && (bool)y.IsActive))
+                 .ThenInclude(x => x.Delegator)
+                 .ThenInclude(x => x.Citizen)
+                 .ThenInclude(x => x.Nationality)
+
+                .Include(x => x.LitigationDelegationRequests.Where(y =>  y.IsActive != null && (bool)y.IsActive))
+                 .ThenInclude(x => x.Delegator)
+                 .ThenInclude(x => x.DelegatorCitizen)
+                 .ThenInclude(x => x.Nationality)
+
+                .Include(x => x.LitigationDelegationRequests.Where(y => y.IsActive != null && (bool)y.IsActive))
+                 .ThenInclude(x => x.Delegator)
+                 .ThenInclude(x => x.Facility)
+
+                .Include(x => x.LitigationDelegationRequests.Where(y => y.IsActive != null && (bool)y.IsActive))
+                 .ThenInclude(x => x.Delegator)
+                 .ThenInclude(x => x.DelegationFile)
+
+                .Include(x => x.LitigationDelegationRequests.Where(y => y.IsActive != null && (bool)y.IsActive))
+                 .ThenInclude(x => x.Delegator)
+                 .ThenInclude(x => x.DecisionFile)
+
+                .Include(x => x.LitigationDelegationRequests.Where(y => y.IsActive != null && (bool)y.IsActive))
+                 .ThenInclude(x => x.Delegator)
+                 .ThenInclude(x => x.CommercialRegisterationFile)
+
+                .Include(x => x.LitigationDelegationRequests.Where(y => y.IsActive != null && (bool)y.IsActive))
+                 .ThenInclude(x => x.Delegator)
+                 .ThenInclude(x => x.CustodyFile)
+
+                .Include(x => x.LitigationDelegationRequests.Where(y => y.IsActive != null && (bool)y.IsActive))
+                 .ThenInclude(x => x.Delegator)
+                 .ThenInclude(x => x.RepresentationFile)
+
+                .Include(x => x.LitigationDelegationRequests.Where(y => y.IsActive != null && (bool)y.IsActive))
+                 .ThenInclude(x => x.Delegator)
+                 .ThenInclude(x => x.EstablishmentFile)
+
+                .Include(x => x.LitigationDelegationRequests.Where(y => y.IsActive != null && (bool)y.IsActive))
+                 .ThenInclude(x => x.Delegator)
+                 .ThenInclude(x => x.EstablishmentLetterFile)
                          .AsNoTracking()
                          .FirstOrDefault(x => x.Id == requestId
                          &&
@@ -467,6 +510,8 @@ namespace REAC.Application.ModuleServices
                                       .Include(x => x.LitigationRequestSessions)
                                       .Include(x => x.LitigationRequestReconciliationReports)
                                       .Include(x => x.ApplicantCitizen)
+                                      .Include(x => x.DefendantCitizen)
+                                      .Include(x => x.DefendantFacility)
                                       .Include(x => x.InternalStatus)
                                       .Include(x => x.ExternalStatus)
                                       .Include(x => x.LitigationRequestAmount)
@@ -501,7 +546,7 @@ namespace REAC.Application.ModuleServices
                     litigationRequestMircoDto.RequestDate = litigationRequest.CreatedOn;
                     litigationRequestMircoDto.RequestCode = litigationRequest.RequestCode;
                     litigationRequestMircoDto.FirstPartyName = (litigationRequest.Contract.FirstPartyCitizen == null) ? litigationRequest.Contract.FirstPartyFacility.ArabicFacilityName : litigationRequest.Contract.FirstPartyCitizen.FullName;
-                    litigationRequestMircoDto.SecondPartyName = (litigationRequest.Contract.SecondPartyCitizen == null) ? litigationRequest.Contract.SecondPartyFacility.ArabicFacilityName : litigationRequest.Contract.SecondPartyCitizen.FullName;
+                    litigationRequestMircoDto.SecondPartyName = (litigationRequest.DefendantCitizen == null) ? litigationRequest.DefendantFacility.ArabicFacilityName : litigationRequest.DefendantCitizen.FullName;
                     litigationRequestMircoDto.RequestTypeName = litigationRequest.Contract.LitigationRequestContractType.TypeName;
                     bool allowAdd = true;
                     bool isDone = false;

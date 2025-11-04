@@ -261,9 +261,13 @@ namespace REAC.Application.Contracts
                            src.Contract.FirstPartyCitizen.FullName : src.Contract.FirstPartyFacility.ArabicFacilityName))
 
 
+                 //.ForMember(des => des.SecondPartyName,
+                 //          opt => opt.MapFrom(src => src.Contract.SecondPartyCitizenId.HasValue ?
+                 //          src.Contract.SecondPartyCitizen.FullName : src.Contract.SecondPartyFacility.ArabicFacilityName))
+                 
                  .ForMember(des => des.SecondPartyName,
-                           opt => opt.MapFrom(src => src.Contract.SecondPartyCitizenId.HasValue ?
-                           src.Contract.SecondPartyCitizen.FullName : src.Contract.SecondPartyFacility.ArabicFacilityName))
+                           opt => opt.MapFrom(src => src.DefendantCitizenId.HasValue ?
+                           src.DefendantCitizen.FullName : src.DefendantFacility.ArabicFacilityName))
 
 
                    .ForMember(dest => dest.CreatedOn, opt => opt.MapFrom(src => src.CreatedOn))

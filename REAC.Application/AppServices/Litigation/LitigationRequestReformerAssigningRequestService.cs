@@ -554,6 +554,8 @@ namespace REAC.Application.AppServices.Litigation
                 .Include(x => x.ReformerCitizen)
                 .Include(x => x.LitigationRequest)
                 .Include(x => x.LitigationRequest.ApplicantCitizen)
+                .Include(x => x.LitigationRequest.DefendantCitizen.Nationality)
+                .Include(x => x.LitigationRequest.DefendantFacility)
                 .Include(x => x.LitigationRequest.InternalStatus)
                 .Include(x => x.LitigationRequest.ExternalStatus)
                 .Include(x => x.LitigationRequest.LitigationRequestCategory)
@@ -613,9 +615,9 @@ namespace REAC.Application.AppServices.Litigation
                         FirstPartyName = litigationRequest.LitigationRequest.Contract.FirstPartyCitizen == null
                             ? litigationRequest.LitigationRequest.Contract.FirstPartyFacility.ArabicFacilityName
                             : litigationRequest.LitigationRequest.Contract.FirstPartyCitizen.FullName,
-                        SecondPartyName = litigationRequest.LitigationRequest.Contract.SecondPartyCitizen == null
-                            ? litigationRequest.LitigationRequest.Contract.SecondPartyFacility.ArabicFacilityName
-                            : litigationRequest.LitigationRequest.Contract.SecondPartyCitizen.FullName,
+                        SecondPartyName = litigationRequest.LitigationRequest.DefendantCitizenId == null
+                            ? litigationRequest.LitigationRequest.DefendantFacility.ArabicFacilityName
+                            : litigationRequest.LitigationRequest.DefendantCitizen.FullName,
                         RequestTypeName = litigationRequest.LitigationRequest.Contract.LitigationRequestContractType.TypeName,
                         Response = litigationRequest.Response,
                         RejectReason = RejectReason,

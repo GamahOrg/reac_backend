@@ -130,6 +130,9 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("nvarchar(250)")
                         .HasComment("Email address");
 
+                    b.Property<string>("Email2")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Employer")
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)")
@@ -210,6 +213,9 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)")
                         .HasComment("Mobile phone number");
+
+                    b.Property<string>("Mobile2")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("NationalAddress")
                         .HasColumnType("nvarchar(max)")
@@ -1347,6 +1353,9 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasComment("Unique identifier of the applicant citizen");
 
+                    b.Property<Guid?>("ApplicantFacilityId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<decimal>("ArbitrationFees")
                         .HasColumnType("decimal(18,2)")
                         .HasComment("Fees for the arbitration stage");
@@ -1415,6 +1424,12 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("datetime2")
                         .HasComment("Date when the defendant responded to the agreement request");
 
+                    b.Property<Guid?>("DefendantCitizenId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("DefendantFacilityId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<int?>("DefendantRating")
                         .HasColumnType("int")
                         .HasComment("Rating given by the defendant for the litigation process");
@@ -1431,7 +1446,7 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("nvarchar(max)")
                         .HasComment("Description");
 
-                    b.Property<decimal>("DisputeAmount")
+                    b.Property<decimal?>("DisputeAmount")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime?>("EndArbitrationDate")
@@ -1750,6 +1765,8 @@ namespace REAC.EntityFrameworkCore.Migrations
 
                     b.HasIndex("ApplicantCitizenId");
 
+                    b.HasIndex("ApplicantFacilityId");
+
                     b.HasIndex("ArbitratorCitizenId");
 
                     b.HasIndex("AreaId");
@@ -1757,6 +1774,10 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.HasIndex("CityId");
 
                     b.HasIndex("ContractId");
+
+                    b.HasIndex("DefendantCitizenId");
+
+                    b.HasIndex("DefendantFacilityId");
 
                     b.HasIndex("DelegatorCitizenId");
 
@@ -4554,6 +4575,9 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasComment("Unique identifier of the facility being delegated");
 
+                    b.Property<string>("IndividualCapacity")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit")
                         .HasComment("Indicates whether the record is active");
@@ -6941,6 +6965,10 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasForeignKey("ApplicantCitizenId")
                         .HasConstraintName("FKLitigation638578");
 
+                    b.HasOne("REAC.EntityFrameworkCore.Entities.Facility", "ApplicantFacility")
+                        .WithMany("ApplicantFacility")
+                        .HasForeignKey("ApplicantFacilityId");
+
                     b.HasOne("REAC.EntityFrameworkCore.Entities.Actor.Citizen", "ArbitratorCitizen")
                         .WithMany("ArbitratorLitigationRequests")
                         .HasForeignKey("ArbitratorCitizenId")
@@ -6959,6 +6987,14 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasForeignKey("ContractId")
                         .IsRequired()
                         .HasConstraintName("FKLitigation216575");
+
+                    b.HasOne("REAC.EntityFrameworkCore.Entities.Actor.Citizen", "DefendantCitizen")
+                        .WithMany("DefendantCitizen")
+                        .HasForeignKey("DefendantCitizenId");
+
+                    b.HasOne("REAC.EntityFrameworkCore.Entities.Facility", "DefendantFacility")
+                        .WithMany("DefendantFacility")
+                        .HasForeignKey("DefendantFacilityId");
 
                     b.HasOne("REAC.EntityFrameworkCore.Entities.Actor.Citizen", "DelegatorCitizen")
                         .WithMany("DelegatorLitigationRequests")
@@ -7021,6 +7057,8 @@ namespace REAC.EntityFrameworkCore.Migrations
 
                     b.Navigation("ApplicantCitizen");
 
+                    b.Navigation("ApplicantFacility");
+
                     b.Navigation("ArbitratorCitizen");
 
                     b.Navigation("Area");
@@ -7028,6 +7066,10 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Navigation("City");
 
                     b.Navigation("Contract");
+
+                    b.Navigation("DefendantCitizen");
+
+                    b.Navigation("DefendantFacility");
 
                     b.Navigation("Delegator");
 
@@ -9129,6 +9171,8 @@ namespace REAC.EntityFrameworkCore.Migrations
 
                     b.Navigation("CitizenRequests");
 
+                    b.Navigation("DefendantCitizen");
+
                     b.Navigation("DelegatorLitigationRequests");
 
                     b.Navigation("Facilities");
@@ -9225,6 +9269,10 @@ namespace REAC.EntityFrameworkCore.Migrations
 
             modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Facility", b =>
                 {
+                    b.Navigation("ApplicantFacility");
+
+                    b.Navigation("DefendantFacility");
+
                     b.Navigation("Delegators");
 
                     b.Navigation("LitigationRequestContractFirstPartyFacilities");
