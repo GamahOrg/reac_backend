@@ -82,8 +82,8 @@ namespace REAC.Application.ModuleServices
                     litigationRequestMircoDto.Id = litigationRequest.Id;
                     litigationRequestMircoDto.RequestDate = litigationRequest.CreatedOn;
                     litigationRequestMircoDto.RequestCode = litigationRequest.RequestCode;
-                    litigationRequestMircoDto.FirstPartyName = (litigationRequest.Contract.FirstPartyCitizen == null) ? litigationRequest.Contract.FirstPartyFacility.ArabicFacilityName : litigationRequest.Contract.FirstPartyCitizen.FullName;
-                    litigationRequestMircoDto.SecondPartyName = (litigationRequest.DefendantCitizen == null) ? litigationRequest.DefendantFacility.ArabicFacilityName : litigationRequest.DefendantCitizen.FullName;
+                    litigationRequestMircoDto.FirstPartyName = (litigationRequest.Contract.FirstPartyCitizen == null) ? litigationRequest.Contract.FirstPartyFacility?.ArabicFacilityName : litigationRequest.Contract.FirstPartyCitizen?.FullName;
+                    litigationRequestMircoDto.SecondPartyName = (litigationRequest.DefendantCitizen == null) ? litigationRequest.DefendantFacility?.ArabicFacilityName : litigationRequest.DefendantCitizen?.FullName;
                     litigationRequestMircoDto.RequestTypeName = litigationRequest.Contract.LitigationRequestContractType.TypeName;
                     bool allowAdd = true;
                     bool IsDone = false;
@@ -154,7 +154,7 @@ namespace REAC.Application.ModuleServices
                     else
                         litigationRequestMircoDto.IsDone = "تم";
 
-                    litigationRequestMircoDto.Status = litigationRequest.ExternalStatusId.GetHashCode().ToString();
+                    litigationRequestMircoDto.Status = litigationRequest.InternalStatus.RequestStatus;
                     litigationRequestMircoDtos.Add(litigationRequestMircoDto);
 
                 }
