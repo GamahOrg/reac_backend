@@ -17,6 +17,17 @@ RUN dotnet build "./REAC.Api/REAC.Api.csproj" -c $BUILD_CONFIGURATION -o /app/bu
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
 
+RUN apt-get update \
+    && apt-get install -y tzdata \
+    && ln -fs /usr/share/zoneinfo/Asia/Riyadh /etc/localtime \
+    && dpkg-reconfigure -f noninteractive tzdata
+
+ENV TZ=Asia/Riyadh
+
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
+RUN date
+
 RUN dotnet publish "./REAC.Api/REAC.Api.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 
