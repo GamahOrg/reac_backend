@@ -18,6 +18,7 @@ public partial class LitigationRequestShortDto : BaseEntity<Guid>
     public string? ContractAddress { get; set; } // العنوان الوطني
     public bool IsArbitrationFeesHaveBeenCollected { get; set; } = false;
     public ApproveRejectStatus? MintuesOfMeetingApprovalPlaintiffStatus { get; set; }
+    public List<DelegationRequest>? LitigationDelegationRequests { get; set; }
 
     public ApproveRejectStatus? MintuesOfMeetingApprovalDefendantStatus { get; set; }
     public DateTime? MintuesOfMeetingApprovalPlaintiffStatusOn { get; set; }
@@ -33,6 +34,8 @@ public partial class LitigationRequestShortDto : BaseEntity<Guid>
     public bool? IsExemptionReduction { get; set; }
     public int? ArbitratorsCount { get; set; } 
     public virtual CitizenShortDto ApplicantCitizen { get; set; } = null!;
+    public virtual CitizenShortDto DefendantCitizen { get; set; } = null!;
+    public virtual FacilityShortDto DefendantFacility { get; set; } = null!;
     public virtual CitizenShortDto ArbitratorCitizen { get; set; } = null!;
     public virtual CitizenShortDto ReformerCitizen { get; set; } = null!;
     public virtual LitigationRequestContractShortDto Contract { get; set; } = null!;

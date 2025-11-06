@@ -347,7 +347,7 @@ namespace REAC.Application.AppServices.Integration.GEE
 
             var moduleId = contactData.entry_list.First().id;
 
-            var getCasesByContactUrl = _settingService.GetBySettingKey(SysSettingKeyConstants.GetContact).Result.Data?.Value;
+            var getCasesByContactUrl = _settingService.GetBySettingKey(SysSettingKeyConstants.GetCasesByContact).Result.Data?.Value;
             getCasesByContactUrl = getCasesByContactUrl.Replace("{ModuleId}", moduleId);
 
             var getCasesByContactRequest = new HttpRequestMessage(HttpMethod.Get, getCasesByContactUrl);

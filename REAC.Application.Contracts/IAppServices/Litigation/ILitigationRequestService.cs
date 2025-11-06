@@ -14,7 +14,7 @@ namespace REAC.Application.Contracts.IAppServices.Litigation
     public interface ILitigationRequestService : IBasicService<LitigationRequest, Guid>
     {
 
-        Task<BaseResponse> GetCitizenLitigationRequestForAgreementRequestReply();
+        Task<BaseResponse> GetCitizenLitigationRequestForAgreementRequestReply(int pageIndex, int pageSize);
         Task<BaseResponse> GetCitizenLitigationRequestForAgreementRequestReply(Guid requestId);
         Task<BaseResponse> AddCitizenLitigationRequestForAgreementRequestReply(Guid requestId, ApproveRejectStatus agreementRequestStatus);
         Task<BaseResponse> DeleteByIdAsync(Guid id);

@@ -1,12 +1,17 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using REAC.Application.Contracts.Dtos.System.Invoice;
 using REAC.Application.Contracts.IAppServices.System;
+using REAC.Domain.Shared.Constants;
 using REAC.EntityFrameworkCore.Entities.Invoice;
 
 namespace REAC.Api.Controllers.System
 {
     [Route("api/[controller]")]
     [ApiController]
+    [ApiExplorerSettings(GroupName = APISections.System)]
+    [AllowAnonymous]
+
     public class SysInvoiceController : BaseController<SysInvoice, CreateInvoiceDto, InvoiceDto, Guid>
     {
         private readonly ISysInvoiceService _sysInvoiceService;

@@ -189,11 +189,11 @@ public class ReconciliationController : ControllerBase
     }
 
     [HttpGet(nameof(GetCitizenLitigationRequestForReportReply))]
-    public async Task<IActionResult> GetCitizenLitigationRequestForReportReply(CancellationToken cancellationToken)
+    public async Task<IActionResult> GetCitizenLitigationRequestForReportReply(int pageIndex, int pageSize, CancellationToken cancellationToken)
     {
         if (ModelState.IsValid)
         {
-            var returnValue = await _reconciliationService.GetCitizenLitigationRequestForReportReply(cancellationToken);
+            var returnValue = await _reconciliationService.GetCitizenLitigationRequestForReportReply(pageIndex,pageSize,cancellationToken);
             return Ok(returnValue);
         }
 

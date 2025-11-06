@@ -11,6 +11,7 @@ using REAC.Domain.Shared.Enum;
 using REAC.EntityFrameworkCore.Entities.Actor;
 using REAC.EntityFrameworkCore.Entities.Arbitration;
 using REAC.EntityFrameworkCore.Entities.Litigation;
+using REAC.EntityFrameworkCore.Entities.System;
 using REAC.EntityFrameworkCore.Entities.Wpf.Business;
 
 namespace REAC.Application.ModuleServices
@@ -360,8 +361,11 @@ namespace REAC.Application.ModuleServices
 
 
             var litigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>())
+                         .Include(x => x.DefendantCitizen)
+                         .Include(x => x.DefendantFacility)
                          .Include(x => x.ArbitratorCitizen)
                          .ThenInclude(x => x.SigntureFile)
+                         .Include(x => x.ArbitratorCitizen.City)
                          .Include(x => x.Area)
                          .Include(x => x.City)
                          .Include(x => x.LitigationRequestSessions)
@@ -409,6 +413,18 @@ namespace REAC.Application.ModuleServices
             if (request.LitigationRequestAmount != null)
             {
                 request.LitigationRequestAmount.Fees = litigationRequest.LitigationRequestInvoice?.TotalAmount ?? 0;
+            }
+            else
+            {
+                var MinRequestAmount = (await _repository.GetQueryable<SysLitigationRequestAmount, Guid>())
+                                 .Include(x => x.LitigationRequestFees)
+                               .Where(x => x.FromAmount == 0).FirstOrDefault();
+
+                request.LitigationRequestAmount = new SysLitigationRequestAmountCreateUpdateDto()
+                {
+                    Fees = MinRequestAmount.LitigationRequestFees.FirstOrDefault().ArbitrationFees,
+                    
+                };
             }
             if (!string.IsNullOrEmpty(litigationRequest.ArbitratorCitizen?.SigntureFile?.FilePath))
             {
@@ -485,6 +501,8 @@ namespace REAC.Application.ModuleServices
                                       .Include(x => x.LitigationRequestSessions)
                                       .Include(x => x.LitigationRequestArbitrationReports)
                                       .Include(x => x.ApplicantCitizen)
+                                      .Include(x => x.DefendantCitizen)
+                                      .Include(x => x.DefendantFacility)
                                       .Include(x => x.InternalStatus)
                                       .Include(x => x.ExternalStatus)
                                       .Include(x => x.LitigationRequestAmount)
@@ -523,7 +541,7 @@ namespace REAC.Application.ModuleServices
                     litigationRequestMircoDto.RequestDate = litigationRequest.CreatedOn;
                     litigationRequestMircoDto.RequestCode = litigationRequest.RequestCode;
                     litigationRequestMircoDto.FirstPartyName = (litigationRequest.Contract.FirstPartyCitizen == null) ? litigationRequest.Contract.FirstPartyFacility.ArabicFacilityName : litigationRequest.Contract.FirstPartyCitizen.FullName;
-                    litigationRequestMircoDto.SecondPartyName = (litigationRequest.Contract.SecondPartyCitizen == null) ? litigationRequest.Contract.SecondPartyFacility.ArabicFacilityName : litigationRequest.Contract.SecondPartyCitizen.FullName;
+                    litigationRequestMircoDto.SecondPartyName = (litigationRequest.DefendantCitizen == null) ? litigationRequest.DefendantFacility.ArabicFacilityName : litigationRequest.DefendantCitizen.FullName;
                     litigationRequestMircoDto.RequestTypeName = litigationRequest.Contract.LitigationRequestContractType.TypeName;
 
                     bool allowAdd = true;

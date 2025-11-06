@@ -479,12 +479,12 @@ namespace REAC.Application.AppServices.Litigation
                          .Include(x => x.Contract.SecondPartyCitizen)
                          .Include(x => x.Contract.LitigationRequestContractType)
                          .Where(x => x.LitigationRequestReformerAssigningRequests
-                         .Where(t => t.CitizenId == referenceId).Count() > 0).OrderByDescending(x => x.CreatedOn).AsNoTracking().GetPaged(pageIndex, pageSize);
+                         .Where(t => t.CitizenId == referenceId).Count() > 0).OrderByDescending(x => x.SentOn).AsNoTracking().GetPaged(pageIndex, pageSize);
 
 
             litigationRequests.Results = (ascending
-                ? litigationRequests.Results.OrderBy(x => x.CreatedOn).ToList()
-                : litigationRequests.Results.OrderByDescending(x => x.CreatedOn).ToList());
+                ? litigationRequests.Results.OrderBy(x => x.SentOn).ToList()
+                : litigationRequests.Results.OrderByDescending(x => x.SentOn).ToList());
 
 
             List<CustomLitigationRequestMircoDto> litigationRequestMircoDtos = new List<CustomLitigationRequestMircoDto>();
@@ -554,6 +554,8 @@ namespace REAC.Application.AppServices.Litigation
                 .Include(x => x.ReformerCitizen)
                 .Include(x => x.LitigationRequest)
                 .Include(x => x.LitigationRequest.ApplicantCitizen)
+                .Include(x => x.LitigationRequest.DefendantCitizen.Nationality)
+                .Include(x => x.LitigationRequest.DefendantFacility)
                 .Include(x => x.LitigationRequest.InternalStatus)
                 .Include(x => x.LitigationRequest.ExternalStatus)
                 .Include(x => x.LitigationRequest.LitigationRequestCategory)
@@ -571,8 +573,8 @@ namespace REAC.Application.AppServices.Litigation
                              && x.LitigationRequest.LitigationRequestCategoryId != LitigationRequestCategory.Arbitration);
 
             litigationRequestsReformerAssigningRequestsQuery = ascending
-                ? litigationRequestsReformerAssigningRequestsQuery.OrderBy(x => x.LitigationRequest.CreatedOn)
-                : litigationRequestsReformerAssigningRequestsQuery.OrderByDescending(x => x.LitigationRequest.CreatedOn);
+                ? litigationRequestsReformerAssigningRequestsQuery.OrderBy(x => x.LitigationRequest.SentOn)
+                : litigationRequestsReformerAssigningRequestsQuery.OrderByDescending(x => x.LitigationRequest.SentOn);
 
 
             var totalCount = await litigationRequestsReformerAssigningRequestsQuery.CountAsync(cancellationToken);
@@ -613,9 +615,9 @@ namespace REAC.Application.AppServices.Litigation
                         FirstPartyName = litigationRequest.LitigationRequest.Contract.FirstPartyCitizen == null
                             ? litigationRequest.LitigationRequest.Contract.FirstPartyFacility.ArabicFacilityName
                             : litigationRequest.LitigationRequest.Contract.FirstPartyCitizen.FullName,
-                        SecondPartyName = litigationRequest.LitigationRequest.Contract.SecondPartyCitizen == null
-                            ? litigationRequest.LitigationRequest.Contract.SecondPartyFacility.ArabicFacilityName
-                            : litigationRequest.LitigationRequest.Contract.SecondPartyCitizen.FullName,
+                        SecondPartyName = litigationRequest.LitigationRequest.DefendantCitizenId == null
+                            ? litigationRequest.LitigationRequest.DefendantFacility.ArabicFacilityName
+                            : litigationRequest.LitigationRequest.DefendantCitizen.FullName,
                         RequestTypeName = litigationRequest.LitigationRequest.Contract.LitigationRequestContractType.TypeName,
                         Response = litigationRequest.Response,
                         RejectReason = RejectReason,

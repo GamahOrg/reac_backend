@@ -44,11 +44,6 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                     },new SysSetting
                     {
                         Id = Guid.NewGuid(),
-                        Key = "GetCaseById",
-                        Value = "http://localhost:7144/v1/rega/crm/entry/list?ModuleName=Cases&QueryField=cases.id&QueryFieldValue={CaseId}&SelectFields=id,rejon_c,requestclassification_c,program_c,reference_number_c,request_number_c,name,description,date_entered,case_number,status",
-                    },new SysSetting
-                    {
-                        Id = Guid.NewGuid(),
                         Key = "GetCasesByContact",
                         Value = "http://localhost:7144/v1/rega/crm/entry/relationship?ModuleName=Contacts&ModuleId={ModuleId}&RelatedModuleQuery=&Deleted=0&RelatedFields=id,case_number,name,status,date_entered&RelatedModuleLinkName=&LinkFieldName=cases",
                     },new SysSetting

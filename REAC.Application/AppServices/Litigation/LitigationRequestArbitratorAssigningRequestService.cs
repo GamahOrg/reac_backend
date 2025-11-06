@@ -842,8 +842,8 @@ namespace REAC.Application.AppServices.Litigation
 
 
             var result = ascending
-                ? litigationRequests.OrderBy(x => x.CreatedOn).GetPaged(pageIndex, pageSize)
-                : litigationRequests.OrderByDescending(x => x.CreatedOn).GetPaged(pageIndex, pageSize);
+                ? litigationRequests.OrderBy(x => x.SentOn).GetPaged(pageIndex, pageSize)
+                : litigationRequests.OrderByDescending(x => x.SentOn).GetPaged(pageIndex, pageSize);
 
             List<CustomLitigationRequestMircoArbitratorDto> litigationRequestMircoDtos = new List<CustomLitigationRequestMircoArbitratorDto>();
             if (result != null)
@@ -926,6 +926,8 @@ namespace REAC.Application.AppServices.Litigation
             var entitiesQuerable = (await _repository.GetQueryable<LitigationRequestArbitratorAssigningRequest, Guid>())
                          .Include(x => x.ArbitratorCitizen)
                          .Include(x => x.LitigationRequest)
+                         .Include(x => x.LitigationRequest.DefendantCitizen)
+                         .Include(x => x.LitigationRequest.DefendantFacility)
                          .Include(x => x.LitigationRequest.InternalStatus)
                          .Include(x => x.LitigationRequest.ExternalStatus)
                          .Include(x => x.LitigationRequest.LitigationRequestCategory)
@@ -943,7 +945,7 @@ namespace REAC.Application.AppServices.Litigation
 
             litigationRequestArbitratorAssigningRequests = entitiesQuerable.Where(x => x.LitigationRequest.LitigationRequestStage
             == LitigationRequestStage.Arbitration)
-                                       .OrderByDescending(x => x.LitigationRequest.CreatedOn)
+                                       .OrderByDescending(x => x.LitigationRequest.SentOn)
                                        .AsSplitQuery()
                                        .AsNoTracking()
                                        .GetPaged(pageIndex, pageSize);
@@ -972,7 +974,7 @@ namespace REAC.Application.AppServices.Litigation
                     litigationRequestMircoDto.ArbitrationPeriod = litigationRequest.LitigationRequest.ArbitrationPeriod;
                     litigationRequestMircoDto.ArbitratorAssigningRequestType = litigationRequest.ArbitratorAssigningRequestTypeId;
                     litigationRequestMircoDto.FirstPartyName = (litigationRequest.LitigationRequest.Contract.FirstPartyCitizen == null) ? litigationRequest.LitigationRequest.Contract.FirstPartyFacility.ArabicFacilityName : litigationRequest.LitigationRequest.Contract.FirstPartyCitizen.FullName;
-                    litigationRequestMircoDto.SecondPartyName = (litigationRequest.LitigationRequest.Contract.SecondPartyCitizen == null) ? litigationRequest.LitigationRequest.Contract.SecondPartyFacility.ArabicFacilityName : litigationRequest.LitigationRequest.Contract.SecondPartyCitizen.FullName;
+                    litigationRequestMircoDto.SecondPartyName = (litigationRequest.LitigationRequest.DefendantCitizen == null) ? litigationRequest.LitigationRequest.DefendantFacility.ArabicFacilityName : litigationRequest.LitigationRequest.DefendantCitizen.FullName;
                     litigationRequestMircoDto.RequestTypeName = litigationRequest.LitigationRequest.Contract.LitigationRequestContractType.TypeName;
                     litigationRequestMircoDto.RequestTypeId = litigationRequest.LitigationRequest.Contract.LitigationRequestContractType.Id.GetHashCode();
                     litigationRequestMircoDto.Response = litigationRequest.Response;

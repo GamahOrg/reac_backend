@@ -1,0 +1,51 @@
+name: Push Changes to GitLab
+
+on:
+  push:
+    branches:
+      - '**' # Trigger for all branches
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  sync:
+    runs-on: self-hosted
+    steps:
+      # Checkout the current branch
+      - name: Checkout Source Code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # Ensure full commit history is available
+      - name: Install OpenSSH client
+        run: sudo apt-get update && sudo apt-get install -y openssh-client
+
+      # Set up SSH for GitLab
+      - name: Configure SSH for GitLab
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.GITLAB_TOKEN }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H gitlab.rega.gov.sa >> ~/.ssh/known_hosts
+
+      # Configure Git
+      - name: Configure Git
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+
+      # Add GitLab remote
+      - name: Add GitLab Remote
+        run: |
+          git remote add gitlab git@gitlab.rega.gov.sa:rega-softwares/reacbackend.git
+          git fetch gitlab
+
+      # Push changes to GitLab
+      - name: Push to GitLab
+        run: |
+          set -e
+          # Ensure the current branch exists on the GitLab repo
+          git branch --set-upstream-to=gitlab/${GITHUB_REF##*/} || true
+          git push gitlab ${GITHUB_REF##*/} --force-with-lease
+
+      # Log success
+      - name: Log Success
+        run: echo "Successfully synced changes to GitLab."

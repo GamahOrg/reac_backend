@@ -4,6 +4,7 @@ using REAC.Domain.Shared.Enum;
 using REAC.EntityFrameworkCore.Entities.Arbitration;
 using REAC.EntityFrameworkCore.Entities.Litigation;
 using REAC.EntityFrameworkCore.Entities.System;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace REAC.EntityFrameworkCore.Entities.Actor;
 
@@ -122,6 +123,9 @@ public partial class Citizen : BaseEntity<Guid>
     public virtual SysFileManager? LawLicenseFile { get; set; }
     public virtual SysFileManager? SigntureFile { get; set; }
     public virtual ICollection<LitigationRequest> ArbitratorLitigationRequests { get; set; } = new List<LitigationRequest>();
+
+    [InverseProperty(nameof(LitigationRequest.DefendantCitizen))]
+    public virtual ICollection<LitigationRequest> DefendantCitizen { get; set; } = new List<LitigationRequest>();
     public virtual ICollection<LitigationRequestArbitratorAssigningRequest> LitigationRequestArbitratorAssigningRequests { get; set; } = new List<LitigationRequestArbitratorAssigningRequest>();
 
     public virtual ICollection<LitigationRequest> ReformerLitigationRequests { get; set; } = new List<LitigationRequest>();

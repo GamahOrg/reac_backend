@@ -33,6 +33,9 @@ public partial class LitigationRequest : BaseEntity<Guid>
     public string? ContractAddress { get; set; } // العنوان الوطني
     [Comment("Unique identifier of the applicant citizen")]
     public Guid? ApplicantCitizenId { get; set; }
+    public Guid? DefendantCitizenId { get; set; }
+    public Guid? ApplicantFacilityId { get; set; }
+    public Guid? DefendantFacilityId { get; set; }
 
     [Comment("Unique identifier of the delegator citizen")]
     public Guid? DelegatorCitizenId { get; set; }
@@ -275,6 +278,15 @@ public partial class LitigationRequest : BaseEntity<Guid>
     public virtual Delegator? Delegator { get; set; }
 
     public virtual Citizen ApplicantCitizen { get; set; } = null!;
+
+    [ForeignKey(nameof(DefendantCitizenId))]
+    public virtual Citizen DefendantCitizen { get; set; } = null!;
+    
+    [ForeignKey(nameof(DefendantFacilityId))]
+    public virtual Facility DefendantFacility { get; set; } = null!;
+    
+    [ForeignKey(nameof(ApplicantFacilityId))]
+    public virtual Facility ApplicantFacility { get; set; } = null!;
     public virtual SysCity City { get; set; } = null!;
     public virtual SysArea Area { get; set; } = null!;
     public virtual Citizen? ReformerCitizen { get; set; }

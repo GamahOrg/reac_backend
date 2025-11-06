@@ -1,0 +1,26 @@
+﻿WITH RankedDelegators AS (
+    SELECT 
+        dr.LitigationRequestId,
+        d.FacilityId,
+        ROW_NUMBER() OVER (
+            PARTITION BY dr.LitigationRequestId 
+            ORDER BY dr.requestedon asc
+        ) AS RowNum
+    FROM DelegationRequest dr
+    INNER JOIN Delegator d ON dr.DelegatorId = d.Id
+    WHERE d.FacilityId IS NOT NULL 
+)
+UPDATE lr
+SET lr.defendantfacilityid = rd.FacilityId
+FROM LitigationRequest lr
+INNER JOIN RankedDelegators rd ON lr.Id = rd.LitigationRequestId
+WHERE rd.RowNum = 1;
+
+
+UPDATE lr
+SET lr.defendantfacilityid = lrc.SecondPartyFacilityId
+FROM LitigationRequest AS lr
+INNER JOIN LitigationRequestContract AS lrc 
+    ON lrc.Id = lr.ContractId
+WHERE lr.defendantfacilityid IS NULL and lrc.SecondPartyFacilityId is not null;
+

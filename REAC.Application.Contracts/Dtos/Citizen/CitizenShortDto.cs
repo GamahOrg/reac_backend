@@ -1,4 +1,5 @@
 ﻿using Core.GenericRepository.Shared.BaseEntities;
+using REAC.Application.Contracts.Dtos.System.CityDto;
 using REAC.EntityFrameworkCore.Entities.System;
 
 namespace REAC.Application.Contracts.Dtos.Citizen
@@ -8,6 +9,8 @@ namespace REAC.Application.Contracts.Dtos.Citizen
         public string IdentityNumber { get; set; } = null!;
 
         public string FullName { get; set; } = null!;
+        public SysCityDto City { get; set; } = null!;
+
 
         public string Mobile { get; set; } = null!;
 
