@@ -776,6 +776,8 @@ namespace REAC.Application.AppServices.Litigation
                          .ThenInclude(x => x.LitigationRequestExtendPeriodRequestFiles)
                          .ThenInclude(x => x.FileManager)
                          .Include(x => x.ApplicantCitizen)
+                         .Include(x => x.DefendantCitizen)
+                         .Include(x => x.DefendantFacility)
                          .Include(x => x.InternalStatus)
                          .Include(x => x.ExternalStatus)
                          .Include(x => x.LitigationRequestAmount)
@@ -870,7 +872,7 @@ namespace REAC.Application.AppServices.Litigation
                         litigationRequestMircoDto.ArbitrationPeriod = litigationRequestArbitratorAssigningRequest.LitigationRequest.ArbitrationPeriod;
                         litigationRequestMircoDto.ArbitratorAssigningRequestType = litigationRequestArbitratorAssigningRequest.ArbitratorAssigningRequestTypeId;
                         litigationRequestMircoDto.FirstPartyName = (litigationRequest.Contract.FirstPartyCitizen == null) ? litigationRequest.Contract.FirstPartyFacility.ArabicFacilityName : litigationRequest.Contract.FirstPartyCitizen.FullName;
-                        litigationRequestMircoDto.SecondPartyName = (litigationRequest.Contract.SecondPartyCitizen == null) ? litigationRequest.Contract.SecondPartyFacility.ArabicFacilityName : litigationRequest.Contract.SecondPartyCitizen.FullName;
+                        litigationRequestMircoDto.SecondPartyName = (litigationRequest.DefendantCitizen == null) ? litigationRequest.DefendantFacility.ArabicFacilityName : litigationRequest.DefendantCitizen.FullName;
                         litigationRequestMircoDto.RequestTypeName = litigationRequest.Contract.LitigationRequestContractType.TypeName;
                         litigationRequestMircoDto.Response = litigationRequestArbitratorAssigningRequest.Response;
                         litigationRequestMircoDto.ResponseOn = litigationRequestArbitratorAssigningRequest.ResponseOn;
@@ -973,8 +975,8 @@ namespace REAC.Application.AppServices.Litigation
                     litigationRequestMircoDto.RequestCode = litigationRequest.LitigationRequest.RequestCode;
                     litigationRequestMircoDto.ArbitrationPeriod = litigationRequest.LitigationRequest.ArbitrationPeriod;
                     litigationRequestMircoDto.ArbitratorAssigningRequestType = litigationRequest.ArbitratorAssigningRequestTypeId;
-                    litigationRequestMircoDto.FirstPartyName = (litigationRequest.LitigationRequest.Contract.FirstPartyCitizen == null) ? litigationRequest.LitigationRequest.Contract.FirstPartyFacility.ArabicFacilityName : litigationRequest.LitigationRequest.Contract.FirstPartyCitizen.FullName;
-                    litigationRequestMircoDto.SecondPartyName = (litigationRequest.LitigationRequest.DefendantCitizen == null) ? litigationRequest.LitigationRequest.DefendantFacility.ArabicFacilityName : litigationRequest.LitigationRequest.DefendantCitizen.FullName;
+                    litigationRequestMircoDto.FirstPartyName = (litigationRequest.LitigationRequest.Contract.FirstPartyCitizen == null) ? litigationRequest.LitigationRequest.Contract.FirstPartyFacility?.ArabicFacilityName : litigationRequest.LitigationRequest.Contract.FirstPartyCitizen?.FullName;
+                    litigationRequestMircoDto.SecondPartyName = (litigationRequest.LitigationRequest.DefendantCitizen == null) ? litigationRequest.LitigationRequest.DefendantFacility?.ArabicFacilityName : litigationRequest.LitigationRequest.DefendantCitizen?.FullName;
                     litigationRequestMircoDto.RequestTypeName = litigationRequest.LitigationRequest.Contract.LitigationRequestContractType.TypeName;
                     litigationRequestMircoDto.RequestTypeId = litigationRequest.LitigationRequest.Contract.LitigationRequestContractType.Id.GetHashCode();
                     litigationRequestMircoDto.Response = litigationRequest.Response;

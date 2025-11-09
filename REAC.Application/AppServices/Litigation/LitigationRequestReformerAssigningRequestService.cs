@@ -462,6 +462,8 @@ namespace REAC.Application.AppServices.Litigation
                          .ThenInclude(x => x.LitigationRequestExtendPeriodRequestFiles)
                          .ThenInclude(x => x.FileManager)
                          .Include(x => x.ApplicantCitizen)
+                         .Include(x => x.DefendantCitizen)
+                         .Include(x => x.DefendantFacility)
                          .Include(x => x.InternalStatus)
                          .Include(x => x.ExternalStatus)
                          .Include(x => x.LitigationRequestAmount)
@@ -513,9 +515,9 @@ namespace REAC.Application.AppServices.Litigation
                                 FirstPartyName = litigationRequest.Contract.FirstPartyCitizen == null
                                     ? litigationRequest.Contract.FirstPartyFacility.ArabicFacilityName
                                     : litigationRequest.Contract.FirstPartyCitizen.FullName,
-                                SecondPartyName = litigationRequest.Contract.SecondPartyCitizen == null
-                                    ? litigationRequest.Contract.SecondPartyFacility.ArabicFacilityName
-                                    : litigationRequest.Contract.SecondPartyCitizen.FullName,
+                                SecondPartyName = litigationRequest.DefendantCitizen == null
+                                    ? litigationRequest.DefendantFacility.ArabicFacilityName
+                                    : litigationRequest.DefendantCitizen.FullName,
                                 RequestTypeName = litigationRequest.Contract.LitigationRequestContractType.TypeName,
                                 Response = item.Response,
                                 ResponseOn = item.ResponseOn,

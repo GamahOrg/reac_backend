@@ -514,6 +514,8 @@ namespace REAC.Application.ModuleServices
                          .ThenInclude(x => x.LitigationRequestExtendPeriodRequestFiles)
                          .ThenInclude(x => x.FileManager)
                          .Include(x => x.ApplicantCitizen)
+                         .Include(x => x.DefendantCitizen)
+                         .Include(x => x.DefendantFacility)
                          .Include(x => x.InternalStatus)
                          .Include(x => x.ExternalStatus)
                          .Include(x => x.LitigationRequestAmount)
@@ -657,6 +659,8 @@ namespace REAC.Application.ModuleServices
                                       .ThenInclude(x => x.LitigationRequestExtendPeriodRequestFiles)
                                       .ThenInclude(x => x.FileManager)
                                       .Include(x => x.ApplicantCitizen)
+                                      .Include(x => x.DefendantCitizen)
+                                      .Include(x => x.DefendantFacility)
                                       .Include(x => x.InternalStatus)
                                       .Include(x => x.ExternalStatus)
                                       .Include(x => x.LitigationRequestAmount)
@@ -697,7 +701,7 @@ namespace REAC.Application.ModuleServices
                     litigationRequestMircoDto.RequestDate = litigationRequest.CreatedOn;
                     litigationRequestMircoDto.RequestCode = litigationRequest.RequestCode;
                     litigationRequestMircoDto.FirstPartyName = (litigationRequest.Contract.FirstPartyCitizen == null) ? litigationRequest.Contract.FirstPartyFacility.ArabicFacilityName : litigationRequest.Contract.FirstPartyCitizen.FullName;
-                    litigationRequestMircoDto.SecondPartyName = (litigationRequest.Contract.SecondPartyCitizen == null) ? litigationRequest.Contract.SecondPartyFacility.ArabicFacilityName : litigationRequest.Contract.SecondPartyCitizen.FullName;
+                    litigationRequestMircoDto.SecondPartyName = (litigationRequest.DefendantCitizen == null) ? litigationRequest.DefendantFacility.ArabicFacilityName : litigationRequest.DefendantCitizen.FullName;
                     litigationRequestMircoDto.RequestTypeName = litigationRequest.Contract.LitigationRequestContractType.TypeName;
                     bool allowAdd = true;
                     bool isDone = false;

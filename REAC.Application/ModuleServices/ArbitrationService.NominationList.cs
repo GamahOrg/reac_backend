@@ -300,6 +300,8 @@ namespace REAC.Application.ModuleServices
                             .Include(x => x.Area).Include(x => x.City)
 
                             .Include(x => x.ArbitratorCitizen)
+                            .Include(x => x.DefendantCitizen)
+                            .Include(x => x.DefendantFacility)
                             .Include(x => x.InternalStatus)
                             .Include(x => x.ExternalStatus)
 
@@ -628,6 +630,8 @@ namespace REAC.Application.ModuleServices
                             .Include(x => x.ExternalStatus)
 
                             .Include(x => x.ArbitratorCitizen)
+                            .Include(x => x.DefendantCitizen)
+                            .Include(x => x.DefendantFacility)
                             .Include(x => x.LitigationRequestArbitratorNominationLists)
                             .ThenInclude(x => x.ArbitratorCitizen)
                             .ThenInclude(x => x.LitigationRequestArbitratorAssigningRequests)
@@ -731,7 +735,7 @@ namespace REAC.Application.ModuleServices
                     litigationRequestMircoDto.ArbitratorsCount = litigationRequest.ArbitratorsCount;
 
                     litigationRequestMircoDto.FirstPartyName = (litigationRequest.Contract.FirstPartyCitizen == null) ? litigationRequest.Contract.FirstPartyFacility.ArabicFacilityName : litigationRequest.Contract.FirstPartyCitizen.FullName;
-                    litigationRequestMircoDto.SecondPartyName = (litigationRequest.Contract.SecondPartyCitizen == null) ? litigationRequest.Contract.SecondPartyFacility.ArabicFacilityName : litigationRequest.Contract.SecondPartyCitizen.FullName;
+                    litigationRequestMircoDto.SecondPartyName = (litigationRequest.DefendantCitizen == null) ? litigationRequest.DefendantFacility.ArabicFacilityName : litigationRequest.DefendantCitizen.FullName;
                     litigationRequestMircoDto.RequestTypeName = litigationRequest.Contract.LitigationRequestContractType.TypeName;
 
                     if (allowAdd)
@@ -782,6 +786,8 @@ namespace REAC.Application.ModuleServices
 
             var litigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>())
                             .Include(x => x.ArbitratorCitizen)
+                            .Include(x => x.DefendantCitizen.Nationality)
+                            .Include(x => x.DefendantFacility)
                             .Include(x => x.InternalStatus)
                             .Include(x => x.ExternalStatus)
                             .Include(x => x.City)
@@ -813,8 +819,8 @@ namespace REAC.Application.ModuleServices
                             .Where(x => x.Id == requestId
                             &&
                 x.ApplicantCitizenId == referenceId
-                      |
-                      x.Contract.FirstPartyCitizenId == referenceId & x.Id == requestId
+                      //|
+                      //x.Contract.FirstPartyCitizenId == referenceId & x.Id == requestId
                       |
                         x.Contract.SecondPartyCitizenId == referenceId & x.Id == requestId
                       |

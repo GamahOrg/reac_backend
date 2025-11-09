@@ -173,6 +173,8 @@ namespace REAC.Application.AppServices.Litigation
                           .Include(x => x.City)
                           .Include(x => x.LitigationRequestReconciliationReports)
                           .Include(x => x.ApplicantCitizen)
+                          .Include(x => x.DefendantCitizen)
+                          .Include(x => x.DefendantFacility)
                           .Include(x => x.InternalStatus)
                           .Include(x => x.ExternalStatus)
                           .Include(x => x.LitigationRequestAmount)

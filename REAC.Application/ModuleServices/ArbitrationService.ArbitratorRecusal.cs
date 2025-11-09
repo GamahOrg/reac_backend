@@ -600,6 +600,10 @@ namespace REAC.Application.ModuleServices
                           .Include(x => x.LitigationRequest)
                          .ThenInclude(x => x.ApplicantCitizen)
                          .Include(x => x.LitigationRequest)
+                         .ThenInclude(x => x.DefendantCitizen)
+                         .Include(x => x.LitigationRequest)
+                         .ThenInclude(x => x.DefendantFacility)
+                         .Include(x => x.LitigationRequest)
                          .ThenInclude(x => x.Area)
                         .Include(x => x.LitigationRequest)
 

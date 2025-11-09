@@ -384,6 +384,8 @@ namespace REAC.Application.ModuleServices
     .Include(x => x.City)
     .Include(x => x.InternalStatus)
     .Include(x => x.ExternalStatus)
+    .Include(x => x.DefendantCitizen)
+    .Include(x => x.DefendantFacility)
 
     // Main arbitrator with citizen requests and classes
     .Include(x => x.ArbitratorCitizen)
@@ -771,6 +773,8 @@ namespace REAC.Application.ModuleServices
                             .Include(x => x.ExternalStatus)
 
                             .Include(x => x.ArbitratorCitizen)
+                            .Include(x => x.DefendantCitizen)
+                            .Include(x => x.DefendantFacility)
 
                             .Include(x => x.LitigationRequestArbitratorsChairmanNominationLists)
                             .ThenInclude(x => x.ArbitratorChairmanCitizen)
@@ -825,7 +829,7 @@ namespace REAC.Application.ModuleServices
                     litigationRequestMircoDto.Status = litigationRequest.ExternalStatus.RequestStatus;
 
                     litigationRequestMircoDto.FirstPartyName = (litigationRequest.Contract.FirstPartyCitizen == null) ? litigationRequest.Contract.FirstPartyFacility.ArabicFacilityName : litigationRequest.Contract.FirstPartyCitizen.FullName;
-                    litigationRequestMircoDto.SecondPartyName = (litigationRequest.Contract.SecondPartyCitizen == null) ? litigationRequest.Contract.SecondPartyFacility.ArabicFacilityName : litigationRequest.Contract.SecondPartyCitizen.FullName;
+                    litigationRequestMircoDto.SecondPartyName = (litigationRequest.DefendantCitizen == null) ? litigationRequest.DefendantFacility.ArabicFacilityName : litigationRequest.DefendantCitizen.FullName;
                     litigationRequestMircoDto.RequestTypeName = litigationRequest.Contract.LitigationRequestContractType.TypeName;
 
                     if (litigationRequest.LitigationRequestArbitratorsChairmanNominationLists

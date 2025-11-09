@@ -7,6 +7,7 @@ using Core.Log.Application.Contracts.IAppServices;
 using Core.Log.Domain.Shared.Enums;
 using Core.Security.Entities;
 using Core.Shared.Responses;
+using iText.Layout.Properties.Grid;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Data.SqlClient;
@@ -1551,6 +1552,121 @@ namespace REAC.Application.AppServices.Litigation
                  .ThenInclude(x => x.Delegator)
                  .ThenInclude(x => x.EstablishmentLetterFile)
                 .FirstOrDefault(x => x.Id == litigationId);
+
+            return new DataResponse<LitigationRequest> { Data = result, IsDone = true };
+        }
+
+        public async Task<BaseResponse> GetLitigationByIdForReport(string requestCode)
+        {
+            Guid referenceId = Guid.Empty;
+            _jwtReader.GetReferenceId(ref referenceId);
+
+            if (referenceId == Guid.Empty)
+                return new BaseResponse() { IsDone = false, Message = "غير مصرح" };
+
+            Guid litigationId;
+            bool isGuid = Guid.TryParse(requestCode, out litigationId);
+
+            var quarble = await GetQueryableAsync();
+            var result = quarble
+                .Include(x => x.SysExemptionReductionCategory)
+                .Include(x => x.ExemptionReductionFile)
+                .Include(x => x.LitigationRequestAmount)
+                .Include(x => x.LitigationRequestExtendPeriodRequests)
+                .Include(x => x.LitigationRequestSessions)
+                .Include(x => x.Contract)
+                .Include(x => x.LitigationRequestCategory)
+                .Include(x => x.Area)
+                .Include(x => x.City)
+                .Include(x => x.ApplicantCitizen)
+                .Include(x => x.DefendantCitizen.Nationality)
+                .Include(x => x.Contract.SecondPartyCitizen)
+                .Include(x => x.Contract.SecondPartyCitizen.Nationality)
+                .Include(x => x.Contract.FirstPartyCitizen)
+                .Include(x => x.Contract.FirstPartyCitizen.Nationality)
+                .Include(x => x.Contract.FirstPartyFacility)
+                .Include(x => x.Contract.SecondPartyFacility)
+                .Include(x => x.Contract.ContractFile)
+                .Include(x => x.Contract.AssociationRegistrationCertificateFile)
+                .Include(x => x.Contract.FoundingLetterFile)
+                .Include(x => x.Contract.InternalRegulationsFile)
+                .Include(x => x.WorkFlowProcessingLogs)
+                .ThenInclude(x => x.Employee)
+                .Include(x => x.WorkFlowProcessingLogs.Where(y => !string.IsNullOrEmpty(y.Notes)).OrderByDescending(h => h.CreatedOn))
+                .ThenInclude(x => x.WorkFlowProcessingLogFiles).ThenInclude(x => x.FileManager)
+                .Include(x => x.LitigationRequestGrounds)
+                .ThenInclude(x => x.LitigationRequestGroundFiles)
+                .ThenInclude(x => x.FileManager)
+                .Include(x => x.LitigationRequestRequests)
+
+                 .Include(x => x.Delegator)
+                 .ThenInclude(x => x.Citizen)
+                 .ThenInclude(x => x.Nationality)
+
+                 .Include(x => x.Delegator)
+                 .ThenInclude(x => x.DelegatorCitizen)
+                 .ThenInclude(x => x.Nationality)
+
+                 .Include(x => x.Delegator)
+                 .ThenInclude(x => x.Facility)
+                 .Include(x => x.Delegator)
+                 .ThenInclude(x => x.DelegationFile)
+                 .Include(x => x.Delegator)
+                 .ThenInclude(x => x.DecisionFile)
+                 .Include(x => x.Delegator)
+                 .ThenInclude(x => x.CommercialRegisterationFile)
+                 .Include(x => x.Delegator)
+                 .ThenInclude(x => x.CustodyFile)
+                 .Include(x => x.Delegator)
+                 .ThenInclude(x => x.RepresentationFile)
+                 .Include(x => x.Delegator)
+                 .ThenInclude(x => x.EstablishmentFile)
+                 .Include(x => x.Delegator)
+                 .ThenInclude(x => x.EstablishmentLetterFile)
+
+
+                .Include(x => x.LitigationDelegationRequests.Where(y => y.DelegationParty == LitigationRequestParty.Defendant && y.IsActive != null && (bool)y.IsActive))
+                 .ThenInclude(x => x.Delegator)
+                 .ThenInclude(x => x.Citizen)
+                 .ThenInclude(x => x.Nationality)
+
+                .Include(x => x.LitigationDelegationRequests.Where(y => y.DelegationParty == LitigationRequestParty.Defendant && y.IsActive != null && (bool)y.IsActive))
+                 .ThenInclude(x => x.Delegator)
+                 .ThenInclude(x => x.DelegatorCitizen)
+                 .ThenInclude(x => x.Nationality)
+
+                .Include(x => x.LitigationDelegationRequests.Where(y => y.DelegationParty == LitigationRequestParty.Defendant && y.IsActive != null && (bool)y.IsActive))
+                 .ThenInclude(x => x.Delegator)
+                 .ThenInclude(x => x.Facility)
+
+                .Include(x => x.LitigationDelegationRequests.Where(y => y.DelegationParty == LitigationRequestParty.Defendant && y.IsActive != null && (bool)y.IsActive))
+                 .ThenInclude(x => x.Delegator)
+                 .ThenInclude(x => x.DelegationFile)
+
+                .Include(x => x.LitigationDelegationRequests.Where(y => y.DelegationParty == LitigationRequestParty.Defendant && y.IsActive != null && (bool)y.IsActive))
+                 .ThenInclude(x => x.Delegator)
+                 .ThenInclude(x => x.DecisionFile)
+
+                .Include(x => x.LitigationDelegationRequests.Where(y => y.DelegationParty == LitigationRequestParty.Defendant && y.IsActive != null && (bool)y.IsActive))
+                 .ThenInclude(x => x.Delegator)
+                 .ThenInclude(x => x.CommercialRegisterationFile)
+
+                .Include(x => x.LitigationDelegationRequests.Where(y => y.DelegationParty == LitigationRequestParty.Defendant && y.IsActive != null && (bool)y.IsActive))
+                 .ThenInclude(x => x.Delegator)
+                 .ThenInclude(x => x.CustodyFile)
+
+                .Include(x => x.LitigationDelegationRequests.Where(y => y.DelegationParty == LitigationRequestParty.Defendant && y.IsActive != null && (bool)y.IsActive))
+                 .ThenInclude(x => x.Delegator)
+                 .ThenInclude(x => x.RepresentationFile)
+
+                .Include(x => x.LitigationDelegationRequests.Where(y => y.DelegationParty == LitigationRequestParty.Defendant && y.IsActive != null && (bool)y.IsActive))
+                 .ThenInclude(x => x.Delegator)
+                 .ThenInclude(x => x.EstablishmentFile)
+
+                .Include(x => x.LitigationDelegationRequests.Where(y => y.DelegationParty == LitigationRequestParty.Defendant && y.IsActive != null && (bool)y.IsActive))
+                 .ThenInclude(x => x.Delegator)
+                 .ThenInclude(x => x.EstablishmentLetterFile)
+                .FirstOrDefault(x => x.RequestCode == requestCode || (isGuid && x.Id == litigationId));
 
             return new DataResponse<LitigationRequest> { Data = result, IsDone = true };
         }
@@ -3862,7 +3978,7 @@ namespace REAC.Application.AppServices.Litigation
                 if (!string.IsNullOrWhiteSpace(litigationRequestDto.SecondPartyFacilityCommercialRegistrationNo))
                 {
                     facility = (await _repository.GetQueryable<Facility, Guid>())
-                        .FirstOrDefault(x => x.CommercialRegisterNumber == litigationRequestDto.SecondPartyFacilityCommercialRegistrationNo);
+                        .FirstOrDefault(x => x.CommercialRegisterNumber == litigationRequestDto.SecondPartyFacilityCommercialRegistrationNo || x.Facility700Number == litigationRequestDto.SecondPartyFacilityCommercialRegistrationNo);
 
                     if (facility == null)
                     {
@@ -4102,7 +4218,7 @@ namespace REAC.Application.AppServices.Litigation
                 if (!string.IsNullOrWhiteSpace(litigationRequestDto.SecondPartyFacilityCommercialRegistrationNo))
                 {
                     facility = (await _repository.GetQueryable<Facility, Guid>())
-                        .FirstOrDefault(x => x.CommercialRegisterNumber == litigationRequestDto.SecondPartyFacilityCommercialRegistrationNo);
+                        .FirstOrDefault(x => x.CommercialRegisterNumber == litigationRequestDto.SecondPartyFacilityCommercialRegistrationNo || x.Facility700Number == litigationRequestDto.SecondPartyFacilityCommercialRegistrationNo);
 
                     if (facility == null)
                     {
@@ -4359,7 +4475,7 @@ namespace REAC.Application.AppServices.Litigation
                 if (!string.IsNullOrWhiteSpace(litigationRequestDto.SecondPartyFacilityCommercialRegistrationNo))
                 {
                     facility = (await _repository.GetQueryable<Facility, Guid>())
-                        .FirstOrDefault(x => x.CommercialRegisterNumber == litigationRequestDto.SecondPartyFacilityCommercialRegistrationNo);
+                        .FirstOrDefault(x => x.CommercialRegisterNumber == litigationRequestDto.SecondPartyFacilityCommercialRegistrationNo || x.Facility700Number == litigationRequestDto.SecondPartyFacilityCommercialRegistrationNo);
 
                     if (facility == null)
                     {
