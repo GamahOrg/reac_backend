@@ -872,7 +872,7 @@ namespace REAC.Application.AppServices.Litigation
                         litigationRequestMircoDto.ArbitrationPeriod = litigationRequestArbitratorAssigningRequest.LitigationRequest.ArbitrationPeriod;
                         litigationRequestMircoDto.ArbitratorAssigningRequestType = litigationRequestArbitratorAssigningRequest.ArbitratorAssigningRequestTypeId;
                         litigationRequestMircoDto.FirstPartyName = (litigationRequest.Contract.FirstPartyCitizen == null) ? litigationRequest.Contract.FirstPartyFacility.ArabicFacilityName : litigationRequest.Contract.FirstPartyCitizen.FullName;
-                        litigationRequestMircoDto.SecondPartyName = (litigationRequest.DefendantCitizen == null) ? litigationRequest.DefendantFacility.ArabicFacilityName : litigationRequest.DefendantCitizen.FullName;
+                        litigationRequestMircoDto.SecondPartyName = (litigationRequest.DefendantCitizen == null) ? litigationRequest.DefendantFacility?.ArabicFacilityName : litigationRequest.DefendantCitizen?.FullName;
                         litigationRequestMircoDto.RequestTypeName = litigationRequest.Contract.LitigationRequestContractType.TypeName;
                         litigationRequestMircoDto.Response = litigationRequestArbitratorAssigningRequest.Response;
                         litigationRequestMircoDto.ResponseOn = litigationRequestArbitratorAssigningRequest.ResponseOn;

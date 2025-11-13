@@ -901,7 +901,9 @@ namespace REAC.Application.AppServices
 
         public async Task<DataResponse<bool>> ValidateDelegation(string attorneyCode, string identityNumber)
         {
-            try 
+
+
+            try
             {
                 using var httpClient = new HttpClient();
 

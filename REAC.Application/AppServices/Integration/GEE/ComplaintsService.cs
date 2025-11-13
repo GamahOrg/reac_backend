@@ -29,6 +29,9 @@ namespace REAC.Application.AppServices.Integration.GEE
             var url = _settingService.GetBySettingKey(SysSettingKeyConstants.GetRegionList).Result.Data?.Value;
             var token = (await _gEELoginService.Login()).Data?.Access_token;
 
+            if(string.IsNullOrEmpty(token) || string.IsNullOrEmpty(url))
+                return new DataResponse<RegionListResponseDto>(null, false, "حدث خطأ اثناء التكامل");
+
             var request = new HttpRequestMessage(HttpMethod.Get, url);
             request.Headers.Add("Authorization", $"Bearer {token}");
 
@@ -38,11 +41,11 @@ namespace REAC.Application.AppServices.Integration.GEE
             var json = await response.Content.ReadAsStringAsync();
             var data = JsonSerializer.Deserialize<RegionListResponseDto>(json);
 
-            if (data == null)
-                return new DataResponse<RegionListResponseDto>(null, false, "خطأ داخلي ");
+            if (data == null || data.module_fields.rejon_c.options.Count == 0)
+                return new DataResponse<RegionListResponseDto>(null, false, "خطأ داخلي");
 
             // Test Data
-            //var region = new RegionListResponseDto()
+            //var data = new RegionListResponseDto()
             //{
             //    link_fields = new List<object>(),
             //    table_name = "cases",
@@ -59,19 +62,19 @@ namespace REAC.Application.AppServices.Integration.GEE
             //            name = "rejon_c",
             //            options = new Dictionary<string, RegionOption>()
             //            {
-            //                { "1", new RegionOption() { name = "الرياض", value = "1" } },
-            //                { "2", new RegionOption() { name = "مكة المكرمة", value = "2" } },
-            //                { "3", new RegionOption() { name = "المدينة المنورة", value = "3" } },
-            //                { "4", new RegionOption() { name = "الشرقية", value = "4" } },
-            //                { "5", new RegionOption() { name = "القصيم", value = "5" } },
-            //                { "6", new RegionOption() { name = "تبوك", value = "6" } },
-            //                { "7", new RegionOption() { name = "حائل", value = "7" } },
-            //                { "8", new RegionOption() { name = "عسير", value = "8" } },
-            //                { "9", new RegionOption() { name = "جازان", value = "9" } },
-            //                { "10", new RegionOption() { name = "نجران", value = "10" } },
-            //                { "11", new RegionOption() { name = "الباحة", value = "11" } },
-            //                { "12", new RegionOption() { name = "الجوف", value = "12" } },
-            //                { "13", new RegionOption() { name = "الحدود الشمالية", value = "13" } }
+            //                { "1", new RegionOption() { name = "الرياض", value = "الرياض" } },
+            //                { "2", new RegionOption() { name = "مكة المكرمة", value = "مكة المكرمة" } },
+            //                { "3", new RegionOption() { name = "المدينة المنورة", value = "المدينة المنورة" } },
+            //                { "4", new RegionOption() { name = "الشرقية", value = "الشرقية" } },
+            //                { "5", new RegionOption() { name = "القصيم", value = "القصيم" } },
+            //                { "6", new RegionOption() { name = "تبوك", value = "تبوك" } },
+            //                { "7", new RegionOption() { name = "حائل", value = "حائل" } },
+            //                { "8", new RegionOption() { name = "عسير", value = "عسير" } },
+            //                { "9", new RegionOption() { name = "جازان", value = "جازان" } },
+            //                { "10", new RegionOption() { name = "نجران", value = "نجران" } },
+            //                { "11", new RegionOption() { name = "الباحة", value = "الباحة" } },
+            //                { "12", new RegionOption() { name = "الجوف", value = "الجوف" } },
+            //                { "13", new RegionOption() { name = "الحدود الشمالية", value = "الحدود الشمالية" } }
             //            },
             //            related_module = "",
             //            required = 0,
@@ -87,50 +90,65 @@ namespace REAC.Application.AppServices.Integration.GEE
 
         public async Task<DataResponse<ContactResponseDto>> GetContactAsync(string nationalId)
         {
-            var url = _settingService.GetBySettingKey(SysSettingKeyConstants.GetContact).Result.Data?.Value;
-            url = url.Replace("{nationalId}", nationalId);
-            var token = (await _gEELoginService.Login()).Data?.Access_token;
+            try
+            {
+                var url = _settingService.GetBySettingKey(SysSettingKeyConstants.GetContact).Result.Data?.Value;
+                url = url.Replace("{nationalId}", nationalId);
+                var token = (await _gEELoginService.Login()).Data?.Access_token;
 
-            var request = new HttpRequestMessage(HttpMethod.Get, url);
-            request.Headers.Add("Authorization", $"Bearer {token}");
+                if (string.IsNullOrEmpty(token) || string.IsNullOrEmpty(url))
+                    return new DataResponse<ContactResponseDto>(null, false, "حدث خطأ اثناء التكامل");
 
-            var response = await _httpClient.SendAsync(request);
-            if (!response.IsSuccessStatusCode) return new DataResponse<ContactResponseDto>(null, false, "حدث خطأ اثناء التكامل مع بيانات المستخدم");
+                var request = new HttpRequestMessage(HttpMethod.Get, url);
+                request.Headers.Add("Authorization", $"Bearer {token}");
 
-            var json = await response.Content.ReadAsStringAsync();
-            var data = JsonSerializer.Deserialize<ContactResponseDto>(json);
+                var response = await _httpClient.SendAsync(request);
+                if (!response.IsSuccessStatusCode) return new DataResponse<ContactResponseDto>(null, false, "حدث خطأ اثناء التكامل مع بيانات المستخدم");
 
-            if (data == null)
-                return new DataResponse<ContactResponseDto>(null, false, "خطأ داخلي ");
+                var json = await response.Content.ReadAsStringAsync();
+                var data = JsonSerializer.Deserialize<ContactResponseDto>(json);
 
 
-            // Test Data
-            //var entryList = new List<ContactEntry>();
-            //var entry = new ContactEntry()
-            //{
-            //    id = "1",
-            //    module_name = "Contacts",
-            //    name_value_list = new NameValueList()
-            //    {
-            //        id = new NameValue() { name = "id", value = "1" },
-            //        first_name = new NameValue() { name = "first_name", value = "John" },
-            //        last_name = new NameValue() { name = "last_name", value = "Doe" },
-            //        email1 = new NameValue() { name = "email1", value = "a@a.com" },
-            //        national_id_c = new NameValue() { name = "national_id_c", value = "1234567890" },
-            //        phone_mobile = new NameValue() { name = "phone_mobile", value = "0501234567" }
-            //    }
-            //};
-            //entryList.Add(entry);
 
-            //var testData = new ContactResponseDto() { 
-            //    entry_list = entryList, 
-            //    result_count = 0, 
-            //    next_offset = 0, 
-            //    total_count = "0", 
-            //    relationship_list = new List<object>()
-            //};
+                if (data == null || data.total_count == 0)
+                    return new DataResponse<ContactResponseDto>(null, false, "");
 
-            return new DataResponse<ContactResponseDto>(data, true, "Success");
+
+                // Test Data
+                //var entryList = new List<ContactEntry>();
+                //var entry = new ContactEntry()
+                //{
+                //    id = "1",
+                //    module_name = "Contacts",
+                //    name_value_list = new NameValueList()
+                //    {
+                //        id = new NameValue() { name = "id", value = "1" },
+                //        first_name = new NameValue() { name = "first_name", value = "John" },
+                //        last_name = new NameValue() { name = "last_name", value = "Doe" },
+                //        email1 = new NameValue() { name = "email1", value = "a@a.com" },
+                //        national_id_c = new NameValue() { name = "national_id_c", value = "1234567890" },
+                //        phone_mobile = new NameValue() { name = "phone_mobile", value = "0501234567" }
+                //    }
+                //};
+                //entryList.Add(entry);
+
+                //var data = new ContactResponseDto()
+                //{
+                //    entry_list = entryList,
+                //    result_count = 0,
+                //    next_offset = 0,
+                //    total_count = 0,
+                //    relationship_list = new List<object>()
+                //};
+
+                return new DataResponse<ContactResponseDto>(data, true, "تم اضافة الشكوي بنجاح");
+            }
+            catch(Exception e)
+            {
+                return new DataResponse<ContactResponseDto>(null, false,"خطأ داخلي");
+
+            }
+
 
         }
 
@@ -192,6 +210,9 @@ namespace REAC.Application.AppServices.Integration.GEE
         public async Task<BaseResponse> CreateComplaintAsync(CreateComplaintRequestDto request)
         {
             var token = (await _gEELoginService.Login()).Data?.Access_token;
+
+            if(token is null)
+                return new BaseResponse(false,"حدث خطأ اثناء التكامل");
 
             // Step 1: Create Contact if contact_id is null
             string contactId = string.Empty;

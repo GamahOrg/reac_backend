@@ -1083,8 +1083,8 @@ namespace REAC.Application.ModuleServices
                         Id = litigationRequest.Id,
                         RequestDate = litigationRequest.CreatedOn,
                         RequestCode = litigationRequest.RequestCode,
-                        FirstPartyName = litigationRequest.Contract.FirstPartyCitizen == null ? litigationRequest.Contract.FirstPartyFacility.ArabicFacilityName : litigationRequest.Contract.FirstPartyCitizen.FullName,
-                        SecondPartyName = litigationRequest.DefendantCitizen == null ? litigationRequest.DefendantFacility.ArabicFacilityName : litigationRequest.DefendantCitizen.FullName,
+                        FirstPartyName = litigationRequest.Contract.FirstPartyCitizen == null ? litigationRequest.Contract.FirstPartyFacility?.ArabicFacilityName : litigationRequest.Contract.FirstPartyCitizen?.FullName,
+                        SecondPartyName = litigationRequest.DefendantCitizen == null ? litigationRequest.DefendantFacility?.ArabicFacilityName : litigationRequest.DefendantCitizen?.FullName,
                         RequestTypeName = litigationRequest.Contract.LitigationRequestContractType.TypeName,
                         ReformerId = litigationRequest.ReformerCitizen?.Id,
                         ReformerName = litigationRequest.ReformerCitizen != null ? litigationRequest.ReformerCitizen.FullName : litigationRequest.LitigationRequestReformerAssigningRequests?.OrderByDescending(l => l.RequestOn).FirstOrDefault()?.ReformerCitizen?.FullName

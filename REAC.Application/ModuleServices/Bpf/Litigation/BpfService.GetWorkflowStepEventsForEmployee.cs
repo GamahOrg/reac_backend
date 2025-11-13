@@ -71,7 +71,7 @@ namespace Bpf.Application.ModuleServices
 
                 WorkFlowStepEventForActorShortDtos.AllowAssign = employee.AllowAssign;
                 WorkFlowStepEventForActorShortDtos.AllowReAssign = employee.AllowReAssign;
-                WorkFlowStepEventForActorShortDtos.Fees = litigationStageFees.LitigationRequestStage == REAC.Domain.Shared.Enum.LitigationRequestStage.Review && !litigationStageFees.IsLitigationFeesHaveBeenCollected ? litigationStageFees.FeesDifference != 0 ? litigationStageFees.FeesDifference.ToString("0.#") : litigationStageFees.LitigationRequestAmount?.Fees.ToString("0.#") :null;
+                WorkFlowStepEventForActorShortDtos.Fees = litigationStageFees.LitigationRequestStage == REAC.Domain.Shared.Enum.LitigationRequestStage.Review && !litigationStageFees.IsLitigationFeesHaveBeenCollected ? litigationStageFees.FeesDifference != 0 ? litigationStageFees.FeesDifference.ToString("0.#") : litigationStageFees.LitigationRequestAmount?.Fees.ToString("0.#") : null;
                 if (litigationStageFees?.LitigationRequestAmount == null)
                 {
                     WorkFlowStepEventForActorShortDtos.Fees = litigationStageFees.LitigationRequestStage == REAC.Domain.Shared.Enum.LitigationRequestStage.Review && !litigationStageFees.IsLitigationFeesHaveBeenCollected ? minFees.ToString("0.#") : null;
@@ -82,7 +82,7 @@ namespace Bpf.Application.ModuleServices
                     if (x.LitigationRequest.LitigationRequestCategoryId == REAC.Domain.Shared.Enum.LitigationRequestCategory.Reconciliation)
                     {
                         var removeAgreement = x.WorkFlowStep.WorkFlowStepEvents
-                        .FirstOrDefault(x => x.ExternalStatusId == REAC.Domain.Shared.Enum.RequestStatus.AgreementRequestHasBeenSent);
+                            .FirstOrDefault(x => x.ExternalStatusId == REAC.Domain.Shared.Enum.RequestStatus.AgreementRequestHasBeenSent);
 
                         // Remove Agreement item from the collection
 
@@ -253,6 +253,18 @@ namespace Bpf.Application.ModuleServices
                     });
                 });
 
+                //filter WorkFlowStepEventShortDtos remove duplicate for show actions 
+                WorkFlowStepEventForActorShortDtos.WorkFlowStepEventShortDtos =
+                                                                                 WorkFlowStepEventForActorShortDtos.WorkFlowStepEventShortDtos
+                                                                                     .DistinctBy(item => new
+                                                                                     {
+                                                                                         item.Id,
+                                                                                         item.EventName,
+                                                                                         item.AllowFileUpload,
+                                                                                         item.AllowNotes,
+                                                                                         item.CustomActionType
+                                                                                     })
+                                                                                     .ToList();
                 return new DataResponse<WorkFlowStepEventForActorShortDto>()
                 {
                     Data = WorkFlowStepEventForActorShortDtos,

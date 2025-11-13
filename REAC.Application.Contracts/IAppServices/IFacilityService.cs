@@ -9,6 +9,6 @@ namespace REAC.Application.Contracts.IAppServices
         Task<BaseResponse> GetAllFacilitiesDropdown();
         Task<BaseResponse> GetFacilityByIdAsync(Guid facilityId);
         Task<BaseResponse> EditFacilityAsync(EditFacilityRequestDto input);
-        Task<BaseResponse> ValidateAndAddFacility(string crNumber, Guid? citizenId , bool allowAddFacility);
+        Task<BaseResponse> ValidateAndAddFacility(string crNumber, Guid? citizenId , bool allowAddFacility, string? address = null);
     }
 }

@@ -747,6 +747,7 @@ namespace REAC.Application.AppServices.Litigation
 
             var litigations = await GetQueryableAsync();
             litigations = litigations.Include(x => x.DefendantCitizen);
+            litigations = litigations.Include(x => x.DefendantFacility);
             litigations = litigations.Include(x => x.Contract);
             litigations = litigations.Include(x => x.Contract.LitigationRequestContractType);
             litigations = litigations.Include(x => x.Contract.FirstPartyCitizen);
@@ -1465,6 +1466,7 @@ namespace REAC.Application.AppServices.Litigation
                 .Include(x => x.City)
                 .Include(x => x.ApplicantCitizen)
                 .Include(x => x.DefendantCitizen.Nationality)
+                .Include(x => x.DefendantFacility)
                 .Include(x => x.Contract.SecondPartyCitizen)
                 .Include(x => x.Contract.SecondPartyCitizen.Nationality)
                 .Include(x => x.Contract.FirstPartyCitizen)
@@ -1697,6 +1699,7 @@ namespace REAC.Application.AppServices.Litigation
                 .Include(x => x.City)
                 .Include(x => x.ApplicantCitizen)
                 .Include(x => x.DefendantCitizen.Nationality)
+                .Include(x => x.DefendantFacility)
                 .Include(x => x.Contract.SecondPartyCitizen)
                 .Include(x => x.Contract.SecondPartyCitizen.Area)
                 .Include(x => x.Contract.SecondPartyCitizen.City)
@@ -3617,6 +3620,14 @@ namespace REAC.Application.AppServices.Litigation
             if (input == null)
                 return new DataResponse<DelegationRequest> { IsDone = false, Message = "خطأ في إضافة بيانات التفويض" };
 
+            if ((input.LitigationRequestDelegationData.DelegationFileId != Guid.Empty || input.LitigationRequestDelegationData.DelegationFileId is not null))
+            {
+
+                if (string.IsNullOrEmpty(input.LitigationRequestDelegationData.DelegationNumber))
+                    return new DataResponse<DelegationRequest> { IsDone = false, Message = "لا يمكن اضافة طلب تفويض و ملف التوكيل بدون رقم التوكيل" };
+            }
+
+
             Guid referenceId = Guid.Empty;
             _jwtReader.GetReferenceId(ref referenceId);
 
@@ -3982,7 +3993,7 @@ namespace REAC.Application.AppServices.Litigation
 
                     if (facility == null)
                     {
-                        var addNewFacilityFromIntegrationResponse = await _facilityService.ValidateAndAddFacility(litigationRequestDto.SecondPartyFacilityCommercialRegistrationNo, citizen.FirstOrDefault().Id, false);
+                        var addNewFacilityFromIntegrationResponse = await _facilityService.ValidateAndAddFacility(litigationRequestDto.SecondPartyFacilityCommercialRegistrationNo, citizen.FirstOrDefault().Id, false,litigationRequestDto.ContractAddress);
                         if (!addNewFacilityFromIntegrationResponse.IsDone)
                             return addNewFacilityFromIntegrationResponse;
 
@@ -4003,7 +4014,8 @@ namespace REAC.Application.AppServices.Litigation
                     FirstPartyCitizenId = (litigationRequestDto.FirstPartyIndividualId == Guid.Empty) ? referenceId : litigationRequestDto.FirstPartyIndividualId,
                     FirstPartyFacilityId = (litigationRequestDto.FirstPartyFacilityId != Guid.Empty) ? litigationRequestDto.FirstPartyFacilityId : null,
                     FirstPartyCapacity = litigationRequestDto.FirstPartyCapacity,
-                    SecondPartyCitizenId = (facility == null) ? citizen.FirstOrDefault()?.Id : null,
+                    //SecondPartyCitizenId = (facility == null) ? citizen.FirstOrDefault()?.Id : null,
+                    SecondPartyCitizenId = citizen != null ? citizen.FirstOrDefault()?.Id : null ,
                     SecondPartyFacilityId = (facility == null) ? null : facility.Id,
                     SecondPartyCapacity = litigationRequestDto.SecondPartyCapacity
                 };
@@ -4222,7 +4234,7 @@ namespace REAC.Application.AppServices.Litigation
 
                     if (facility == null)
                     {
-                        var addNewFacilityFromIntegrationResponse = await _facilityService.ValidateAndAddFacility(litigationRequestDto.SecondPartyFacilityCommercialRegistrationNo, citizen.FirstOrDefault().Id, false);
+                        var addNewFacilityFromIntegrationResponse = await _facilityService.ValidateAndAddFacility(litigationRequestDto.SecondPartyFacilityCommercialRegistrationNo, citizen.FirstOrDefault().Id, false, litigationRequestDto.ContractAddress);
                         if (!addNewFacilityFromIntegrationResponse.IsDone)
                             return addNewFacilityFromIntegrationResponse;
 
@@ -4242,7 +4254,9 @@ namespace REAC.Application.AppServices.Litigation
                     FirstPartyCitizenId = (litigationRequestDto.FirstPartyIndividualId == Guid.Empty) ? referenceId : litigationRequestDto.FirstPartyIndividualId,
                     FirstPartyFacilityId = (litigationRequestDto.FirstPartyFacilityId != Guid.Empty) ? litigationRequestDto.FirstPartyFacilityId : null,
                     FirstPartyCapacity = litigationRequestDto.FirstPartyCapacity,
-                    SecondPartyCitizenId = (facility == null) ? citizen.FirstOrDefault()?.Id : null,
+                    //SecondPartyCitizenId = (facility == null) ? citizen.FirstOrDefault()?.Id : null,
+                    SecondPartyCitizenId = citizen != null ? citizen.FirstOrDefault()?.Id : null,
+
                     SecondPartyFacilityId = (facility == null) ? null : facility.Id,
                     SecondPartyCapacity = litigationRequestDto.SecondPartyCapacity
                 };
@@ -4479,7 +4493,7 @@ namespace REAC.Application.AppServices.Litigation
 
                     if (facility == null)
                     {
-                        var addNewFacilityFromIntegrationResponse = await _facilityService.ValidateAndAddFacility(litigationRequestDto.SecondPartyFacilityCommercialRegistrationNo, defendantCitizen.FirstOrDefault().Id, false);
+                        var addNewFacilityFromIntegrationResponse = await _facilityService.ValidateAndAddFacility(litigationRequestDto.SecondPartyFacilityCommercialRegistrationNo, defendantCitizen.FirstOrDefault().Id, false, litigationRequestDto.ContractAddress);
                         if (!addNewFacilityFromIntegrationResponse.IsDone)
                             return addNewFacilityFromIntegrationResponse;
 
@@ -4497,7 +4511,10 @@ namespace REAC.Application.AppServices.Litigation
                     FirstPartyCitizenId = (litigationRequestDto.FirstPartyIndividualId == Guid.Empty) ? referenceId : litigationRequestDto.FirstPartyIndividualId,
                     FirstPartyFacilityId = (litigationRequestDto.FirstPartyFacilityId != Guid.Empty) ? litigationRequestDto.FirstPartyFacilityId : null,
                     FirstPartyCapacity = plaintiffDefendantSharedData.PlaintiffEjarCapacity,
-                    SecondPartyCitizenId = (facility == null) ? defendantCitizen.FirstOrDefault()?.Id : null,
+                    //SecondPartyCitizenId = (facility == null) ? defendantCitizen.FirstOrDefault()?.Id : null,
+                    SecondPartyCitizenId = defendantCitizen != null ? defendantCitizen.FirstOrDefault()?.Id : null,
+
+
                     SecondPartyFacilityId = (facility == null) ? null : facility.Id,
                     SecondPartyCapacity = plaintiffDefendantSharedData.DefendantEjarCapacity,
                 };
@@ -5143,50 +5160,32 @@ namespace REAC.Application.AppServices.Litigation
 
         public async Task<BaseResponse> AddCitizenLitigationRequestForAgreementRequestReply(Guid requestId, ApproveRejectStatus agreementRequestStatus)
         {
-            Guid referenceId = Guid.Empty;
-            _jwtReader.GetReferenceId(ref referenceId);
-
-            var litigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>()).Include(x => x.Area).Include(x => x.City)
-                          .Include(x => x.WorkFlowProcessingLogs)
-                          .ThenInclude(x => x.Employee)
-                          .Include(x => x.ApplicantCitizen)
-                          .Include(x => x.Contract)
-                          .Include(x => x.Contract.FirstPartyFacility)
-                          .Include(x => x.Contract.FirstPartyCitizen)
-                          .Include(x => x.Contract.SecondPartyFacility)
-                          .Include(x => x.Contract.SecondPartyCitizen)
-                          .Where(x => x.Id == requestId).ToList().FirstOrDefault();
-
-            bool isDone = false;
-            if (litigationRequest != null)
+            try
             {
-                if (litigationRequest.ApplicantCitizen != null)
-                {
-                    if (litigationRequest.ApplicantCitizenId == referenceId)
-                    {
-                        if (!litigationRequest.PlaintiffAgreementRequestResponse.HasValue)
-                        {
-                            litigationRequest.PlaintiffAgreementRequestResponse = agreementRequestStatus;
-                            litigationRequest.PlaintiffAgreementRequestResponseOn = DateTime.Now;
-                            isDone = true;
 
-                            await _repository.AddAsync<WorkFlowLog, Guid>(new WorkFlowLog()
-                            {
-                                Id = Guid.NewGuid(),
-                                CreatedOn = DateTime.Now,
-                                RequestId = litigationRequest.Id,
-                                ShowForApplicant = false,
-                                LogMessage = agreementRequestStatus == ApproveRejectStatus.Approve ? "تم قبول المشارطة من قبل مقدم الطلب" : "تم رفض المشارطة من قبل مقدم الطلب"
-                            });
-                        }
-                    }
-                }
+                Guid referenceId = Guid.Empty;
+                _jwtReader.GetReferenceId(ref referenceId);
 
-                if (!isDone)
+                var litigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>())
+                    .Include(x => x.Area)
+                    .Include(x => x.City)
+                              .Include(x => x.WorkFlowProcessingLogs)
+                              .ThenInclude(x => x.Employee)
+                              .Include(x => x.ApplicantCitizen)
+                              .Include(x => x.Contract)
+                              .Include(x => x.Contract.FirstPartyFacility)
+                              .Include(x => x.Contract.FirstPartyCitizen)
+                              .Include(x => x.Contract.SecondPartyFacility)
+                              .Include(x => x.Contract.SecondPartyCitizen)
+                              .Where(x => x.Id == requestId).ToList().FirstOrDefault();
+                BaseResponse repositorySaveResponse = new BaseResponse();
+
+                bool isDone = false;
+                if (litigationRequest != null && referenceId != null)
                 {
-                    if (litigationRequest.Contract.FirstPartyCitizen != null)
+                    if (litigationRequest.ApplicantCitizen != null)
                     {
-                        if (litigationRequest.Contract.FirstPartyCitizenId == referenceId)
+                        if (litigationRequest.ApplicantCitizenId == referenceId)
                         {
                             if (!litigationRequest.PlaintiffAgreementRequestResponse.HasValue)
                             {
@@ -5200,190 +5199,290 @@ namespace REAC.Application.AppServices.Litigation
                                     CreatedOn = DateTime.Now,
                                     RequestId = litigationRequest.Id,
                                     ShowForApplicant = false,
-                                    LogMessage = agreementRequestStatus == ApproveRejectStatus.Approve ? "تم قبول المشارطة من قبل المدعي" : "تم رفض المشارطة من قبل المدعي"
+                                    LogMessage = agreementRequestStatus == ApproveRejectStatus.Approve ? "تم قبول المشارطة من قبل مقدم الطلب" : "تم رفض المشارطة من قبل مقدم الطلب"
                                 });
+
+                                repositorySaveResponse = await _repository.SaveChangesAsync(new CancellationToken());
+                                if (!repositorySaveResponse.IsDone)
+                                    return repositorySaveResponse;
                             }
                         }
                     }
-                }
 
-                if (!isDone)
-                {
-                    if (litigationRequest.Contract.SecondPartyCitizen != null)
+                    if (!isDone)
                     {
-                        if (litigationRequest.Contract.SecondPartyCitizenId == referenceId)
+                        if (litigationRequest.Contract.FirstPartyCitizen != null)
                         {
-                            if (!litigationRequest.DefendantAgreementRequestResponse.HasValue)
+                            if (litigationRequest.Contract.FirstPartyCitizenId == referenceId)
                             {
-                                litigationRequest.DefendantAgreementRequestResponse = agreementRequestStatus;
-                                litigationRequest.DefendantAgreementRequestResponseOn = DateTime.Now;
-                                isDone = true;
-
-                                await _repository.AddAsync<WorkFlowLog, Guid>(new WorkFlowLog()
+                                if (!litigationRequest.PlaintiffAgreementRequestResponse.HasValue)
                                 {
-                                    Id = Guid.NewGuid(),
-                                    CreatedOn = DateTime.Now,
-                                    RequestId = litigationRequest.Id,
-                                    ShowForApplicant = false,
-                                    LogMessage = agreementRequestStatus == ApproveRejectStatus.Approve ? "تم قبول المشارطة من قبل المدعي عليه" : "تم رفض المشارطة من قبل المدعي عليه"
-                                });
+                                    litigationRequest.PlaintiffAgreementRequestResponse = agreementRequestStatus;
+                                    litigationRequest.PlaintiffAgreementRequestResponseOn = DateTime.Now;
+                                    isDone = true;
+
+                                    await _repository.AddAsync<WorkFlowLog, Guid>(new WorkFlowLog()
+                                    {
+                                        Id = Guid.NewGuid(),
+                                        CreatedOn = DateTime.Now,
+                                        RequestId = litigationRequest.Id,
+                                        ShowForApplicant = false,
+                                        LogMessage = agreementRequestStatus == ApproveRejectStatus.Approve ? "تم قبول المشارطة من قبل المدعي" : "تم رفض المشارطة من قبل المدعي"
+                                    });
+
+                                    repositorySaveResponse = await _repository.SaveChangesAsync(new CancellationToken());
+                                    if (!repositorySaveResponse.IsDone)
+                                        return repositorySaveResponse;
+                                }
                             }
                         }
                     }
-                }
 
-                if (!isDone)
-                {
-                    if (litigationRequest.Contract.FirstPartyFacility != null)
+                    if (!isDone)
                     {
-                        if (litigationRequest.Contract.FirstPartyFacility.CitizenId == referenceId)
+                        if (litigationRequest.Contract.SecondPartyCitizen != null)
                         {
-                            if (!litigationRequest.PlaintiffAgreementRequestResponse.HasValue)
+                            if (litigationRequest.Contract.SecondPartyCitizenId == referenceId)
                             {
-                                litigationRequest.PlaintiffAgreementRequestResponse = agreementRequestStatus;
-                                litigationRequest.PlaintiffAgreementRequestResponseOn = DateTime.Now;
-                                isDone = true;
-
-                                await _repository.AddAsync<WorkFlowLog, Guid>(new WorkFlowLog()
+                                if (!litigationRequest.DefendantAgreementRequestResponse.HasValue)
                                 {
-                                    Id = Guid.NewGuid(),
-                                    CreatedOn = DateTime.Now,
-                                    RequestId = litigationRequest.Id,
-                                    ShowForApplicant = false,
-                                    LogMessage = agreementRequestStatus == ApproveRejectStatus.Approve ? "تم قبول المشارطة من قبل المدعي" : "تم رفض المشارطة من قبل المدعي"
-                                });
+                                    litigationRequest.DefendantAgreementRequestResponse = agreementRequestStatus;
+                                    litigationRequest.DefendantAgreementRequestResponseOn = DateTime.Now;
+                                    isDone = true;
+
+                                    await _repository.AddAsync<WorkFlowLog, Guid>(new WorkFlowLog()
+                                    {
+                                        Id = Guid.NewGuid(),
+                                        CreatedOn = DateTime.Now,
+                                        RequestId = litigationRequest.Id,
+                                        ShowForApplicant = false,
+                                        LogMessage = agreementRequestStatus == ApproveRejectStatus.Approve ? "تم قبول المشارطة من قبل المدعي عليه" : "تم رفض المشارطة من قبل المدعي عليه"
+                                    });
+
+                                    repositorySaveResponse = await _repository.SaveChangesAsync(new CancellationToken());
+                                    if (!repositorySaveResponse.IsDone)
+                                        return repositorySaveResponse;
+                                }
                             }
                         }
                     }
-                }
 
-                if (!isDone)
-                {
-                    if (litigationRequest.Contract.SecondPartyFacility != null)
+                    if (!isDone)
                     {
-                        if (litigationRequest.Contract.SecondPartyFacility.CitizenId == referenceId)
+                        if (litigationRequest.Contract.FirstPartyFacility != null)
                         {
-                            if (!litigationRequest.DefendantAgreementRequestResponse.HasValue)
+                            if (litigationRequest.Contract.FirstPartyFacility.CitizenId == referenceId)
                             {
-                                litigationRequest.DefendantAgreementRequestResponse = agreementRequestStatus;
-                                litigationRequest.DefendantAgreementRequestResponseOn = DateTime.Now;
-                                isDone = true;
-
-                                await _repository.AddAsync<WorkFlowLog, Guid>(new WorkFlowLog()
+                                if (!litigationRequest.PlaintiffAgreementRequestResponse.HasValue)
                                 {
-                                    Id = Guid.NewGuid(),
-                                    CreatedOn = DateTime.Now,
-                                    RequestId = litigationRequest.Id,
-                                    ShowForApplicant = false,
-                                    LogMessage = agreementRequestStatus == ApproveRejectStatus.Approve ? "تم قبول المشارطة من قبل المدعي عليه" : "تم رفض المشارطة من قبل المدعي عليه"
-                                });
+                                    litigationRequest.PlaintiffAgreementRequestResponse = agreementRequestStatus;
+                                    litigationRequest.PlaintiffAgreementRequestResponseOn = DateTime.Now;
+                                    isDone = true;
+
+                                    await _repository.AddAsync<WorkFlowLog, Guid>(new WorkFlowLog()
+                                    {
+                                        Id = Guid.NewGuid(),
+                                        CreatedOn = DateTime.Now,
+                                        RequestId = litigationRequest.Id,
+                                        ShowForApplicant = false,
+                                        LogMessage = agreementRequestStatus == ApproveRejectStatus.Approve ? "تم قبول المشارطة من قبل المدعي" : "تم رفض المشارطة من قبل المدعي"
+                                    });
+
+                                    repositorySaveResponse = await _repository.SaveChangesAsync(new CancellationToken());
+                                    if (!repositorySaveResponse.IsDone)
+                                        return repositorySaveResponse;
+                                }
+                            }
+                        }
+                    }
+
+                    if (!isDone)
+                    {
+                        if (litigationRequest.Contract.SecondPartyFacility != null)
+                        {
+                            if (litigationRequest.Contract.SecondPartyFacility.CitizenId == referenceId)
+                            {
+                                if (!litigationRequest.DefendantAgreementRequestResponse.HasValue)
+                                {
+                                    litigationRequest.DefendantAgreementRequestResponse = agreementRequestStatus;
+                                    litigationRequest.DefendantAgreementRequestResponseOn = DateTime.Now;
+                                    isDone = true;
+
+                                    await _repository.AddAsync<WorkFlowLog, Guid>(new WorkFlowLog()
+                                    {
+                                        Id = Guid.NewGuid(),
+                                        CreatedOn = DateTime.Now,
+                                        RequestId = litigationRequest.Id,
+                                        ShowForApplicant = false,
+                                        LogMessage = agreementRequestStatus == ApproveRejectStatus.Approve ? "تم قبول المشارطة من قبل المدعي عليه" : "تم رفض المشارطة من قبل المدعي عليه"
+                                    });
+
+                                    repositorySaveResponse = await _repository.SaveChangesAsync(new CancellationToken());
+                                    if (!repositorySaveResponse.IsDone)
+                                        return repositorySaveResponse;
+                                }
                             }
                         }
                     }
                 }
-            }
 
-            if (litigationRequest.PlaintiffAgreementRequestResponse.HasValue & litigationRequest.DefendantAgreementRequestResponse.HasValue)
-            {
-                if (litigationRequest.PlaintiffAgreementRequestResponse != ApproveRejectStatus.Approve | litigationRequest.DefendantAgreementRequestResponse != ApproveRejectStatus.Approve)
+                if (litigationRequest.PlaintiffAgreementRequestResponse.HasValue && litigationRequest.DefendantAgreementRequestResponse.HasValue)
                 {
-                    // if the type is arbitiration and reconciliation we will continue on reconciliatrion only
-                    if (litigationRequest.LitigationRequestCategoryId == LitigationRequestCategory.ReconciliationAndArbitration)
+                    if ((litigationRequest.PlaintiffAgreementRequestResponse.HasValue & litigationRequest.PlaintiffAgreementRequestResponse != ApproveRejectStatus.Approve) | (litigationRequest.DefendantAgreementRequestResponse.HasValue & litigationRequest.DefendantAgreementRequestResponse != ApproveRejectStatus.Approve))
                     {
-                        var _bpfService = _serviceProvider.GetRequiredService<IBpfService>();
-                        await _bpfService.ExcuteWorkFlow(litigationRequest.Id, default, 2);
-                        litigationRequest.InternalStatusId = RequestStatus.LitigationFeesHaveBeenCollected;
-                        litigationRequest.ExternalStatusId = RequestStatus.LitigationFeesHaveBeenCollected;
-
-                        //  Send Notification 
-                        // تم رفض طلب المشارطة على الدعوى وجارى استكمال الصلح ..........
-                        // المدعى - المدعى عليه - مدير ادارة التدقيق - موظف التدقيق
-                        try
+                        // if the type is arbitiration and reconciliation we will continue on reconciliatrion only
+                        if (litigationRequest.LitigationRequestCategoryId == LitigationRequestCategory.ReconciliationAndArbitration)
                         {
-                            var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Reject_Agreement).Result.Data?.Value;
-                            msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
-                            var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
-                            string body;
-                            using (StreamReader streamReader = File.OpenText(pathToFile))
+                            litigationRequest.InternalStatusId = RequestStatus.LitigationFeesHaveBeenCollected;
+                            litigationRequest.ExternalStatusId = RequestStatus.LitigationFeesHaveBeenCollected;
+
+                            repositorySaveResponse = await _repository.SaveChangesAsync(new CancellationToken());
+                            if (!repositorySaveResponse.IsDone)
+                                return repositorySaveResponse;
+
+                            var _bpfService = _serviceProvider.GetRequiredService<IBpfService>();
+                            var exResponse = _bpfService.ExcuteWorkFlow(litigationRequest.Id, default, 2).GetAwaiter().GetResult();
+                            if (!exResponse.IsDone)
+                                return exResponse;
+
+                            //  Send Notification 
+                            // تم رفض طلب المشارطة على الدعوى وجارى استكمال الصلح ..........
+                            // المدعى - المدعى عليه - مدير ادارة التدقيق - موظف التدقيق
+                            try
                             {
-                                body = await streamReader.ReadToEndAsync();
-                                body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Reject_Agreement).Result.Data?.Value);
-                                body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                                var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Reject_Agreement).Result.Data?.Value;
+                                msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
+                                var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                string body;
+                                using (StreamReader streamReader = File.OpenText(pathToFile))
+                                {
+                                    body = await streamReader.ReadToEndAsync();
+                                    body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Reject_Agreement).Result.Data?.Value);
+                                    body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                                }
+                                await SendNotificationMSWithDefendant(body, msg, litigationRequest, RequestType.LitigationAgreementRequest, " رفض طلب المشارطة وجارى استكمال مرحلة الصلح");
                             }
-                            await SendNotificationMSWithDefendant(body, msg, litigationRequest, RequestType.LitigationAgreementRequest, " رفض طلب المشارطة وجارى استكمال مرحلة الصلح");
+                            catch { }
                         }
-                        catch { }
+                        // else "arbitiration" do old logic
+                        else
+                        {
+                            litigationRequest.InternalStatusId = RequestStatus.Cancelled;
+                            litigationRequest.ExternalStatusId = RequestStatus.Cancelled;
+                            litigationRequest.IsFinished = true;
+                            litigationRequest.IsActive = false;
+
+                            repositorySaveResponse = await _repository.SaveChangesAsync(new CancellationToken());
+                            if (!repositorySaveResponse.IsDone)
+                                return repositorySaveResponse;
+
+                            //  Send Notification 
+                            // تم رفض طلب المشارطة على الدعوى رقم..........
+                            // المدعى - المدعى عليه - مدير ادارة التدقيق - موظف التدقيق
+                            try
+                            {
+                                var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Reject_Agreement).Result.Data?.Value;
+                                msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
+                                var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                string body;
+                                using (StreamReader streamReader = File.OpenText(pathToFile))
+                                {
+                                    body = await streamReader.ReadToEndAsync();
+                                    body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Reject_Agreement).Result.Data?.Value);
+                                    body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                                }
+                                await SendNotificationMSWithDefendant(body, msg, litigationRequest, RequestType.LitigationAgreementRequest, "رفض طلب المشارطة");
+                            }
+                            catch (Exception ex)
+                            {
+                                return new ExceptionResponse() { IsDone = false, Message = ex.Message, Exception = ex.ToString() };
+
+                            }
+                        }
                     }
-                    // else "arbitiration" do old logic
                     else
                     {
-
-                        litigationRequest.InternalStatusId = RequestStatus.AgreementRequestHasBeenRejected;
-                        litigationRequest.ExternalStatusId = RequestStatus.AgreementRequestHasBeenRejected;
-                        litigationRequest.IsFinished = true;
-                        litigationRequest.IsActive = false;
-                        //  Send Notification 
-                        // تم رفض طلب المشارطة على الدعوى رقم..........
-                        // المدعى - المدعى عليه - مدير ادارة التدقيق - موظف التدقيق
-                        try
+                        if (litigationRequest.PlaintiffAgreementRequestResponse.HasValue & litigationRequest.DefendantAgreementRequestResponse.HasValue)
                         {
-                            var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Reject_Agreement).Result.Data?.Value;
-                            msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
-                            var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
-                            string body;
-                            using (StreamReader streamReader = File.OpenText(pathToFile))
+                            litigationRequest.InternalStatusId = RequestStatus.LitigationFeesHaveBeenCollected;
+                            litigationRequest.ExternalStatusId = RequestStatus.LitigationFeesHaveBeenCollected;
+                            repositorySaveResponse = await _repository.SaveChangesAsync(new CancellationToken());
+                            if (!repositorySaveResponse.IsDone)
+                                return repositorySaveResponse;
+
+
+                            var _bpfService = _serviceProvider.GetRequiredService<IBpfService>();
+                            var exResponse = _bpfService.ExcuteWorkFlow(litigationRequest.Id, default, 2).GetAwaiter().GetResult();
+                            if (!exResponse.IsDone)
+                                return exResponse;
+
+                            //  Send Notification 
+                            // تم الموافقة على طلب المشارطة على الدعوى رقم........
+                            // المدعى - المدعى عليه - مدير ادارة التدقيق - موظف التدقيق
+                            try
                             {
-                                body = await streamReader.ReadToEndAsync();
-                                body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Reject_Agreement).Result.Data?.Value);
-                                body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                                var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Accept_Agreement).Result.Data?.Value;
+                                msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
+                                var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                string body;
+                                using (StreamReader streamReader = File.OpenText(pathToFile))
+                                {
+                                    body = await streamReader.ReadToEndAsync();
+                                    body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Accept_Agreement).Result.Data?.Value);
+                                    body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                                }
+
+                                await SendNotificationMSWithDefendant(body, msg, litigationRequest, RequestType.LitigationAgreementRequest, "قبول طلب المشارطة");
                             }
-                            await SendNotificationMSWithDefendant(body, msg, litigationRequest, RequestType.LitigationAgreementRequest, "رفض طلب المشارطة");
+                            catch (Exception ex)
+                            {
+                                return new ExceptionResponse() { IsDone = false, Message = ex.Message, Exception = ex.ToString() };
+                            }
                         }
-                        catch { }
+
                     }
+
                 }
                 else
                 {
-                    var _bpfService = _serviceProvider.GetRequiredService<IBpfService>();
-                    await _bpfService.ExcuteWorkFlow(litigationRequest.Id, default, 2);
-                    litigationRequest.InternalStatusId = RequestStatus.LitigationFeesHaveBeenCollected;
-                    litigationRequest.ExternalStatusId = RequestStatus.LitigationFeesHaveBeenCollected;
-
-                    //  Send Notification 
-                    // تم الموافقة على طلب المشارطة على الدعوى رقم........
-                    // المدعى - المدعى عليه - مدير ادارة التدقيق - موظف التدقيق
-                    try
-                    {
-                        var msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Accept_Agreement).Result.Data?.Value;
-                        msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
-                        var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
-                        string body;
-                        using (StreamReader streamReader = File.OpenText(pathToFile))
-                        {
-                            body = await streamReader.ReadToEndAsync();
-                            body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_Accept_Agreement).Result.Data?.Value);
-                            body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
-                        }
-                        await SendNotificationMSWithDefendant(body, msg, litigationRequest, RequestType.LitigationAgreementRequest, "قبول طلب المشارطة");
-                    }
-                    catch { }
+                    //var _bpfService = _serviceProvider.GetRequiredService<IBpfService>();
+                    //await _bpfService.ExcuteWorkFlow(litigationRequest.Id, default);
+                    //litigationRequest.InternalStatusId = RequestStatus.New;
+                    //litigationRequest.ExternalStatusId = RequestStatus.New;
                 }
 
+
+                //var repositorySaveResponse = await _repository.SaveChangesAsync(new CancellationToken());
+                if (!repositorySaveResponse.IsDone)
+                    return repositorySaveResponse;
+
+
+                BaseResponse getresponse = new BaseResponse();
+            again:
+                try
+                {
+                    getresponse = GetCitizenLitigationRequestForAgreementRequestReply(requestId).GetAwaiter().GetResult();
+                    return getresponse;
+                }
+                catch
+                {
+                    if (!getresponse.IsDone)
+                        goto again;
+                    else
+                        return getresponse;
+
+                }
             }
-            else
+            catch (Exception e)
             {
-                //var _bpfService = _serviceProvider.GetRequiredService<IBpfService>();
-                //await _bpfService.ExcuteWorkFlow(litigationRequest.Id, default);
-                //litigationRequest.InternalStatusId = RequestStatus.New;
-                //litigationRequest.ExternalStatusId = RequestStatus.New;
+                _loggerManager.Log(Core.Log.Domain.Shared.Enums.LoggerType.Database
+                              , new LogDto()
+                              {
+                                  Type = Core.Log.Domain.Shared.Enums.LogType.Exception,
+                                  Message = $"AddCitizenLitigationRequestForAgreementRequestReply ==> {e}"
+                              });
+                return new BaseResponse() { IsDone = false, Message = e.ToString() };
             }
-
-
-            var repositorySaveResponse = await _repository.SaveChangesAsync(new CancellationToken());
-            if (!repositorySaveResponse.IsDone)
-                return repositorySaveResponse;
-
-            return await GetCitizenLitigationRequestForAgreementRequestReply(requestId);
 
         }
 

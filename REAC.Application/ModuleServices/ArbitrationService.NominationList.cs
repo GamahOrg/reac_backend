@@ -299,6 +299,7 @@ namespace REAC.Application.ModuleServices
                             .Include(x => x.LitigationRequestArbitratorAssigningRequests)
                             .Include(x => x.Area).Include(x => x.City)
 
+                            .Include(x => x.LitigationRequestCategory)
                             .Include(x => x.ArbitratorCitizen)
                             .Include(x => x.DefendantCitizen)
                             .Include(x => x.DefendantFacility)
@@ -559,7 +560,7 @@ namespace REAC.Application.ModuleServices
                     litigationRequestMircoDto.Status = litigationRequest.InternalStatus.RequestStatus;
 
                     litigationRequestMircoDto.FirstPartyName = (litigationRequest.Contract.FirstPartyCitizen == null) ? litigationRequest.Contract.FirstPartyFacility.ArabicFacilityName : litigationRequest.Contract.FirstPartyCitizen.FullName;
-                    litigationRequestMircoDto.SecondPartyName = (litigationRequest.DefendantCitizen == null) ? litigationRequest.DefendantFacility.ArabicFacilityName : litigationRequest.DefendantCitizen.FullName;
+                    litigationRequestMircoDto.SecondPartyName = (litigationRequest.DefendantCitizen == null) ? litigationRequest.DefendantFacility?.ArabicFacilityName : litigationRequest.DefendantCitizen?.FullName;
                     litigationRequestMircoDto.RequestTypeName = litigationRequest.Contract.LitigationRequestContractType.TypeName;
                     bool allowAdd = true;
                     bool isDone = false;
@@ -735,7 +736,7 @@ namespace REAC.Application.ModuleServices
                     litigationRequestMircoDto.ArbitratorsCount = litigationRequest.ArbitratorsCount;
 
                     litigationRequestMircoDto.FirstPartyName = (litigationRequest.Contract.FirstPartyCitizen == null) ? litigationRequest.Contract.FirstPartyFacility.ArabicFacilityName : litigationRequest.Contract.FirstPartyCitizen.FullName;
-                    litigationRequestMircoDto.SecondPartyName = (litigationRequest.DefendantCitizen == null) ? litigationRequest.DefendantFacility.ArabicFacilityName : litigationRequest.DefendantCitizen.FullName;
+                    litigationRequestMircoDto.SecondPartyName = (litigationRequest.DefendantCitizen == null) ? litigationRequest.DefendantFacility?.ArabicFacilityName : litigationRequest.DefendantCitizen?.FullName;
                     litigationRequestMircoDto.RequestTypeName = litigationRequest.Contract.LitigationRequestContractType.TypeName;
 
                     if (allowAdd)
@@ -785,6 +786,7 @@ namespace REAC.Application.ModuleServices
             _jwtReader.GetReferenceId(ref referenceId);
 
             var litigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>())
+                            .Include(x => x.LitigationRequestCategory)
                             .Include(x => x.ArbitratorCitizen)
                             .Include(x => x.DefendantCitizen.Nationality)
                             .Include(x => x.DefendantFacility)

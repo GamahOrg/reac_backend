@@ -32,6 +32,7 @@ namespace REAC.Application.AppServices.UserManage
         private string clientID;
         private string clientSecret;
         private string accountID;
+        private string meetingAlternativeEmail;
         private int meetingDuration;
         private string meetingDefaultStartTime = DateTime.UtcNow.AddMinutes(10).ToString("yyyy-MM-ddTHH:mm:ssZ");//to be el litigiation date time
 
@@ -105,6 +106,8 @@ namespace REAC.Application.AppServices.UserManage
         public async Task<ZoomMeting?> GenerateMeeting(string meetingTopic,DateTime meetingStartTime)
         {
             meetingDuration = int.Parse(_settingService.GetBySettingKey(SysSettingKeyConstants.Zoom_MeetingDuration).Result.Data?.Value);
+            meetingAlternativeEmail = _settingService.GetBySettingKey(SysSettingKeyConstants.Zoom_MeetingAlternativeEmail).Result.Data?.Value;
+
             string accessToken = await GetAccessToken();
 
             HttpClient httpclient = new HttpClient();
@@ -133,7 +136,8 @@ namespace REAC.Application.AppServices.UserManage
                     participant_video = true,
                     auto_recording = "cloud",
                     jbh_time = 10,//If the value of the join_before_host field is true, this field indicates the time limits when a participant can join a meeting before the meeting's host.
-                    join_before_host = true//Whether participants can join the meeting before its host
+                    join_before_host = true,//Whether participants can join the meeting before its host
+                    alternative_hosts= meetingAlternativeEmail //A semicolon - separated list of the meeting's alternative hosts' email addresses or IDs.
                 }
             };
 
