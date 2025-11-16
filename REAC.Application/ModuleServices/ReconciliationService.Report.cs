@@ -333,6 +333,7 @@ namespace REAC.Application.ModuleServices
                          .ThenInclude(x => x.LitigationRequestMeetingReconciliationItems)
                 .Include(x => x.LitigationRequestReformerAssigningRequests)
                          .Include(x => x.ApplicantCitizen)
+                         .Include(x => x.DefendantFacility)
                          .Include(x => x.DefendantCitizen.Nationality)
                          .Include(x => x.InternalStatus)
                          .Include(x => x.ExternalStatus)
