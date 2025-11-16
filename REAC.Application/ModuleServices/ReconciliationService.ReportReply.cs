@@ -811,7 +811,8 @@ namespace REAC.Application.ModuleServices
                 });
             }
             //litigationRequest.Contract.FirstPartyFacility.Citizen
-            if (litigationRequest?.Contract?.FirstPartyFacility != null && litigationRequest?.Contract?.FirstPartyFacility?.Citizen.Id != litigationRequest.ApplicantCitizen.Id)
+            if (litigationRequest?.Contract?.FirstPartyFacility != null && litigationRequest?.Contract?.FirstPartyFacility?.Citizen?.Id !=
+                litigationRequest.ApplicantCitizen.Id)
             {
                 objEmail.To.Add(litigationRequest?.Contract?.FirstPartyFacility.Email);
                 objSms.recipients.Add(litigationRequest.Contract.FirstPartyFacility?.Citizen.Mobile);

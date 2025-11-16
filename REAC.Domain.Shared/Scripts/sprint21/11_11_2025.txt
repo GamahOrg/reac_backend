@@ -1,5 +1,4 @@
-﻿USE [REAC_Dev_Feb]
-GO
+﻿GO
 
 /** Object:  Index [UQ_Facility_E3FD678860036876]    Script Date: 11/11/2025 1:25:16 PM **/
 DROP INDEX [UQ_Facility_E3FD678860036876] ON [dbo].[Facility]
@@ -10,7 +9,7 @@ INSERT INTO dbo.SysSetting (Id, [Key], [Value]) VALUES (NEWID(), 'ExcuteWorkflow
 
 -----------------------------------------------------------------------
 
-INSERT [dbo].[SysSetting] ([Id], [Key], [Value]) VALUES (NEWID(), N'Zoom.MeetingAlternativeEmail', N'mohamednader@asgatech.com;')
+INSERT [dbo].[SysSetting] ([Id], [Key], [Value]) VALUES (NEWID(), N'Zoom.MeetingAlternativeEmail', N'')
 
 
 --------------------------------------------------------------------------------------------------------
@@ -933,4 +932,214 @@ BEGIN
             WHEN @Take IS NULL THEN 2147483647
             ELSE @Take 
         END ROWS ONLY
+END
+
+---------------------------------------------------------------------------------
+
+ALTER PROCEDURE [dbo].[GetArbitratorsReport]
+    @EmployeeIds NVARCHAR(MAX) = NULL,              -- Filter by specific arbitrator employee IDs
+    @FromDate DATETIME = NULL,                      -- Start date for filtering
+    @ToDate DATETIME = NULL,                        -- End date for filtering
+    @ArbitratorName NVARCHAR(200) = NULL,           -- Filter by arbitrator name (partial match)
+    @ArbitratorStatus NVARCHAR(50) = NULL,          -- Filter by arbitrator status (Active/Inactive)
+    @ExperienceYears INT = NULL,                    -- Filter by years of experience
+    @Skip INT = 0,                                  -- Number of records to skip (for pagination)
+    @Take INT = NULL                                -- Number of records to take (NULL = all records)
+AS
+BEGIN
+    -- Prevent row count messages from being returned to improve performance
+    SET NOCOUNT ON;
+    
+    -- Validate pagination parameters
+    SET @Skip = ISNULL(@Skip, 0);
+    IF @Skip < 0 SET @Skip = 0;
+    
+    -- Set default date range if not provided
+    -- Default from date: earliest possible date to include all historical records
+    SET @FromDate = ISNULL(@FromDate, '1900-01-01');
+    -- Default to date: current date and time to include all records up to now
+    SET @ToDate = ISNULL(@ToDate, GETDATE());
+
+    -- =============================================
+    -- CTE 1: AllArbitrators
+    -- Purpose: Get ALL arbitrator citizens first, regardless of litigation assignment
+    -- This ensures we show all arbitrators even those with no cases
+    -- =============================================
+    ;WITH AllArbitrators AS (
+        SELECT DISTINCT
+            C.Id AS ArbitratorCitizenId,
+            C.FullName AS ArbitratorName,
+            -- Convert boolean ArbitratorStatusId to descriptive text
+            CASE WHEN C.ArbitratorStatusId = 1 THEN N'مفعل' ELSE N'غير مفعل' END AS ArbitratorStatus,
+            ISNULL(CR.ExperienceYears, 0) AS ExperienceYears
+        FROM Citizen C
+        LEFT JOIN CitizenRequest CR ON C.Id = CR.Id
+        WHERE 
+            -- Get ALL citizens who are arbitrators (based on IsArbitrator flag)
+            C.IsArbitrator = 1
+            -- Apply arbitrator-specific filters
+            AND (@EmployeeIds IS NULL OR C.Id IN (
+                SELECT value FROM STRING_SPLIT(@EmployeeIds, ',')
+            ))
+            -- Filter by arbitrator name (partial match, case-insensitive)
+            AND (@ArbitratorName IS NULL OR C.FullName LIKE '%' + @ArbitratorName + '%')
+            -- Filter by arbitrator status with proper boolean conversion
+            AND (@ArbitratorStatus IS NULL OR 
+                 (@ArbitratorStatus = 'Active' AND C.ArbitratorStatusId = 1) OR 
+                 (@ArbitratorStatus = 'Inactive' AND C.ArbitratorStatusId = 0))
+            -- Filter by years of experience
+            AND (@ExperienceYears IS NULL OR ISNULL(CR.ExperienceYears, 0) >= @ExperienceYears)
+    ),
+    
+    -- =============================================
+    -- CTE 2: ChairmanLitigations
+    -- Purpose: Get litigation requests where arbitrator is the chairman/main arbitrator
+    -- =============================================
+    ChairmanLitigations AS (
+        SELECT 
+            A.ArbitratorCitizenId,
+            L.Id,
+            L.IsFinished,
+            L.LitigationRequestStage,
+            L.ArbitrationPeriod
+        FROM AllArbitrators A
+        -- LEFT JOIN to keep ALL arbitrators even those without litigation cases
+        LEFT JOIN (
+            SELECT
+                L2.*,
+                ROW_NUMBER() OVER (PARTITION BY L2.Id ORDER BY L2.CreatedOn DESC) AS rn
+            FROM LitigationRequest AS L2
+            WHERE
+                L2.ArbitratorCitizenId IS NOT NULL
+                AND L2.LitigationRequestStage = 3       -- Only arbitration stage cases
+                AND L2.SentOn >= @FromDate              -- Filter by date range
+                AND L2.SentOn <= @ToDate
+        ) AS L ON L.ArbitratorCitizenId = A.ArbitratorCitizenId AND L.rn = 1
+    ),
+    
+    -- =============================================
+    -- CTE 3: RegularArbitratorLitigations
+    -- Purpose: Get litigation requests where arbitrator is a regular arbitrator (panel member)
+    -- =============================================
+    RegularArbitratorLitigations AS (
+        SELECT 
+            A.ArbitratorCitizenId,
+            L.Id,
+            L.IsFinished,
+            L.LitigationRequestStage,
+            L.ArbitrationPeriod
+        FROM AllArbitrators A
+        -- Left join with litigation requests where this person is a regular arbitrator
+        LEFT JOIN LitigationRequestArbitrator LRA ON LRA.ArbitratorCitizenId = A.ArbitratorCitizenId
+        LEFT JOIN LitigationRequest L ON L.Id = LRA.LitigationRequestId 
+                                      AND L.LitigationRequestStage = 3    -- Only arbitration stage cases
+                                      AND L.SentOn >= @FromDate           -- Filter by date range
+                                      AND L.SentOn <= @ToDate
+    ),
+    
+    -- =============================================
+    -- CTE 4: CombinedLitigations
+    -- Purpose: Combine both chairman and regular arbitrator litigations
+    -- =============================================
+    CombinedLitigations AS (
+    SELECT DISTINCT 
+        ArbitratorCitizenId,
+        Id,
+        IsFinished,
+        LitigationRequestStage,
+        ArbitrationPeriod
+    FROM (
+        SELECT ArbitratorCitizenId, Id, IsFinished, LitigationRequestStage, ArbitrationPeriod
+        FROM ChairmanLitigations
+        UNION ALL
+        SELECT ArbitratorCitizenId, Id, IsFinished, LitigationRequestStage, ArbitrationPeriod
+        FROM RegularArbitratorLitigations
+    ) AS X
+),
+    
+    -- =============================================
+    -- CTE 5: BaseArbitratorLitigations
+    -- Purpose: Join all arbitrators with their combined litigation statistics
+    -- =============================================
+    BaseArbitratorLitigations AS (
+        SELECT 
+            A.ArbitratorCitizenId,
+            A.ArbitratorName,
+            A.ArbitratorStatus,
+            A.ExperienceYears,
+            CL.Id,
+            CL.IsFinished,
+            CL.LitigationRequestStage,
+            CL.ArbitrationPeriod
+        FROM AllArbitrators A
+        LEFT JOIN CombinedLitigations CL ON CL.ArbitratorCitizenId = A.ArbitratorCitizenId
+    )
+    
+    -- =============================================
+    -- MAIN QUERY: Generate aggregated report by arbitrator
+    -- Purpose: Group litigation data by arbitrator and calculate key statistics
+    -- Includes both chairman and regular arbitrator cases
+    -- =============================================
+    SELECT
+        -- Arbitrator identification
+        ArbitratorName,
+        ArbitratorStatus,
+        ExperienceYears,
+        
+        -- Core count metrics (counts ALL cases: chairman + regular arbitrator)
+        COUNT(Id) AS TotalLitigationCount,                          -- Total cases assigned to this arbitrator
+        
+        -- Completion status counts (following same pattern as reviewers/reformers)
+        SUM(CASE WHEN IsFinished = 0 THEN 1 ELSE 0 END) AS NotFinishedCount,    -- Cases not finished
+        SUM(CASE WHEN IsFinished = 1 THEN 1 ELSE 0 END) AS FinishedCount,       -- Cases finished
+        
+        -- Delayed cases (cases in stage 3 that have exceeded arbitration period)
+        SUM(CASE 
+            WHEN LitigationRequestStage = 3                 -- In arbitration stage
+                 AND ArbitrationPeriod = 0                  -- Period has expired
+            THEN 1 ELSE 0 
+        END) AS DueDateCount,                                       -- Overdue arbitration cases
+        
+        -- Performance ratios (percentages)
+        -- Calculate percentage of cases that are not finished
+        CAST(
+            SUM(CASE WHEN IsFinished = 0 THEN 1 ELSE 0 END) * 100.0 / 
+            NULLIF(COUNT(Id), 0)                                    -- Avoid division by zero
+            AS DECIMAL(5,2)
+        ) AS NotFinishedRatio,                                      -- Percentage of pending cases
+        
+        -- Calculate percentage of cases that are finished
+        CAST(
+            SUM(CASE WHEN IsFinished = 1 THEN 1 ELSE 0 END) * 100.0 / 
+            NULLIF(COUNT(Id), 0)                                    -- Avoid division by zero
+            AS DECIMAL(5,2)
+        ) AS FinishedRatio,                                         -- Percentage of completed cases
+        
+        -- Calculate percentage of delayed cases
+        CAST(
+            SUM(CASE 
+                WHEN LitigationRequestStage = 3 AND ArbitrationPeriod = 0 
+                THEN 1 ELSE 0 
+            END) * 100.0 / NULLIF(COUNT(Id), 0)                     -- Avoid division by zero
+            AS DECIMAL(5,2)
+        ) AS DueDateRatio,                                          -- Percentage of overdue arbitration cases
+        
+        -- Total count for pagination info (total records before pagination)
+        COUNT(*) OVER() AS TotalCount
+        
+    FROM BaseArbitratorLitigations
+    -- Group by arbitrator to get per-arbitrator statistics
+    -- Note: We group by ALL arbitrators, including those with zero cases
+    GROUP BY ArbitratorName, ArbitratorStatus, ExperienceYears
+    ORDER BY ArbitratorName                                         -- Sort results alphabetically by arbitrator name
+    
+    -- =============================================
+    -- PAGINATION: Apply OFFSET and FETCH NEXT for pagination
+    -- =============================================
+    OFFSET @Skip ROWS                                               -- Skip the specified number of rows
+    FETCH NEXT 
+        CASE 
+            WHEN @Take IS NULL THEN 2147483647                      -- If @Take is NULL, fetch maximum possible rows
+            ELSE @Take 
+        END ROWS ONLY                                               -- Fetch only the specified number of rows
 END

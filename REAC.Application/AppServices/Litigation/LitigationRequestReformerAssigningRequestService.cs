@@ -88,9 +88,9 @@ namespace REAC.Application.AppServices.Litigation
                        {
                             citizenInfo.Mobile,
                             litigationRequest.Contract.FirstPartyCitizen?.Mobile,
-                            litigationRequest.Contract.FirstPartyFacility?.Citizen.Mobile,
+                            litigationRequest.Contract.FirstPartyFacility?.Citizen?.Mobile,
                             litigationRequest.Contract.SecondPartyCitizen?.Mobile,
-                            litigationRequest.Contract.SecondPartyFacility?.Citizen.Mobile,
+                            litigationRequest.Contract.SecondPartyFacility?.Citizen?.Mobile,
                             deptAdminInfoReconciliation.Data.Mobile
                         }.Where(m => !string.IsNullOrEmpty(m))
                          .ToList();

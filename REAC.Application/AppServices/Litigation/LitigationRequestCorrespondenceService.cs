@@ -276,6 +276,7 @@ namespace REAC.Application.AppServices.Litigation
 
             var litigations = (await _repository.GetQueryable<LitigationRequest, Guid>())
                     .Include(x => x.DefendantCitizen)
+                    .Include(x => x.DefendantFacility)
                     .Include(x => x.Contract)
                     .Include(x => x.Contract.LitigationRequestContractType)
                     .Include(x => x.Contract.FirstPartyCitizen)
