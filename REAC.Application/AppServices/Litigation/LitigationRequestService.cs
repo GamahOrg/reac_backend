@@ -4993,6 +4993,8 @@ namespace REAC.Application.AppServices.Litigation
             _jwtReader.GetReferenceId(ref referenceId);
 
             var litigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>())
+                         .Include(x => x.City)
+                         .Include(x => x.Area)
                          .Include(x => x.ApplicantCitizen)
                          .Include(x => x.DefendantCitizen.Nationality)
                          .Include(x => x.DefendantFacility)
