@@ -3620,7 +3620,7 @@ namespace REAC.Application.AppServices.Litigation
             if (input == null)
                 return new DataResponse<DelegationRequest> { IsDone = false, Message = "خطأ في إضافة بيانات التفويض" };
 
-            if ((input.LitigationRequestDelegationData.DelegationFileId != Guid.Empty || input.LitigationRequestDelegationData.DelegationFileId is not null))
+            if ((input.LitigationRequestDelegationData.DelegationFileId != Guid.Empty && input.LitigationRequestDelegationData.DelegationFileId is not null))
             {
 
                 if (string.IsNullOrEmpty(input.LitigationRequestDelegationData.DelegationNumber))
