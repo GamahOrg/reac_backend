@@ -1,0 +1,24 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/.vs/REAC
+/Core/Core/obj
+/Core/Core.Shared/obj
+/Core/GenericRepository/Core.GenericRepository/obj
+/Core/GenericRepository/Core.GenericRepository.Shared/obj/Debug/net8.0
+/Core/GenericRepository/Core.GenericRepository.Shared/obj
+/Core/Log/Core.Log.Application/obj
+/Core/Log/Core.Log.Application.Contracts/obj
+/Core/Log/Core.Log.Domain.Shared/obj
+/Core/Log/Core.Log.EntityFrameworkCore/obj
+/Core/Security/Core.Security/obj
+/Core/Security/Core.Security.Api/obj
+/REAC.Api/obj
+/REAC.Application/obj
+/REAC.Application.Contracts/obj
+/REAC.Domain.Shared/obj
+/REAC.EntityFrameworkCore/obj
+/REAC.Mobile/obj
+/REAC.Api/REAC.Api.csproj.user
+/REAC.Mobile/REAC.Mobile.csproj.user
