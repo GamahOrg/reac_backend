@@ -1513,47 +1513,47 @@ namespace REAC.Application.AppServices.Litigation
 
 
                 .Include(x => x.LitigationDelegationRequests.Where(y =>  y.IsActive != null && (bool)y.IsActive))
- .ThenInclude(x => x.Delegator)
- .ThenInclude(x => x.Citizen)
- .ThenInclude(x => x.Nationality)
+                 .ThenInclude(x => x.Delegator)
+                 .ThenInclude(x => x.Citizen)
+                 .ThenInclude(x => x.Nationality)
 
-.Include(x => x.LitigationDelegationRequests.Where(y =>  y.IsActive != null && (bool)y.IsActive))
- .ThenInclude(x => x.Delegator)
- .ThenInclude(x => x.DelegatorCitizen)
- .ThenInclude(x => x.Nationality)
+                .Include(x => x.LitigationDelegationRequests.Where(y =>  y.IsActive != null && (bool)y.IsActive))
+                 .ThenInclude(x => x.Delegator)
+                 .ThenInclude(x => x.DelegatorCitizen)
+                 .ThenInclude(x => x.Nationality)
 
-.Include(x => x.LitigationDelegationRequests.Where(y =>  y.IsActive != null && (bool)y.IsActive))
- .ThenInclude(x => x.Delegator)
- .ThenInclude(x => x.Facility)
+                .Include(x => x.LitigationDelegationRequests.Where(y =>  y.IsActive != null && (bool)y.IsActive))
+                 .ThenInclude(x => x.Delegator)
+                 .ThenInclude(x => x.Facility)
 
-.Include(x => x.LitigationDelegationRequests.Where(y =>  y.IsActive != null && (bool)y.IsActive))
- .ThenInclude(x => x.Delegator)
- .ThenInclude(x => x.DelegationFile)
+                .Include(x => x.LitigationDelegationRequests.Where(y =>  y.IsActive != null && (bool)y.IsActive))
+                 .ThenInclude(x => x.Delegator)
+                 .ThenInclude(x => x.DelegationFile)
 
-.Include(x => x.LitigationDelegationRequests.Where(y => y.IsActive != null && (bool)y.IsActive))
- .ThenInclude(x => x.Delegator)
- .ThenInclude(x => x.DecisionFile)
+                .Include(x => x.LitigationDelegationRequests.Where(y => y.IsActive != null && (bool)y.IsActive))
+                 .ThenInclude(x => x.Delegator)
+                 .ThenInclude(x => x.DecisionFile)
 
-.Include(x => x.LitigationDelegationRequests.Where(y =>  y.IsActive != null && (bool)y.IsActive))
- .ThenInclude(x => x.Delegator)
- .ThenInclude(x => x.CommercialRegisterationFile)
+                .Include(x => x.LitigationDelegationRequests.Where(y =>  y.IsActive != null && (bool)y.IsActive))
+                 .ThenInclude(x => x.Delegator)
+                 .ThenInclude(x => x.CommercialRegisterationFile)
 
-.Include(x => x.LitigationDelegationRequests.Where(y =>  y.IsActive != null && (bool)y.IsActive))
- .ThenInclude(x => x.Delegator)
- .ThenInclude(x => x.CustodyFile)
+                .Include(x => x.LitigationDelegationRequests.Where(y =>  y.IsActive != null && (bool)y.IsActive))
+                 .ThenInclude(x => x.Delegator)
+                 .ThenInclude(x => x.CustodyFile)
 
-.Include(x => x.LitigationDelegationRequests.Where(y =>  y.IsActive != null && (bool)y.IsActive))
- .ThenInclude(x => x.Delegator)
- .ThenInclude(x => x.RepresentationFile)
+                .Include(x => x.LitigationDelegationRequests.Where(y =>  y.IsActive != null && (bool)y.IsActive))
+                 .ThenInclude(x => x.Delegator)
+                 .ThenInclude(x => x.RepresentationFile)
 
-.Include(x => x.LitigationDelegationRequests.Where(y =>  y.IsActive != null && (bool)y.IsActive))
- .ThenInclude(x => x.Delegator)
- .ThenInclude(x => x.EstablishmentFile)
+                .Include(x => x.LitigationDelegationRequests.Where(y =>  y.IsActive != null && (bool)y.IsActive))
+                 .ThenInclude(x => x.Delegator)
+                 .ThenInclude(x => x.EstablishmentFile)
 
-.Include(x => x.LitigationDelegationRequests.Where(y =>  y.IsActive != null && (bool)y.IsActive))
- .ThenInclude(x => x.Delegator)
- .ThenInclude(x => x.EstablishmentLetterFile)
-.FirstOrDefault(x => x.Id == litigationId);
+                .Include(x => x.LitigationDelegationRequests.Where(y =>  y.IsActive != null && (bool)y.IsActive))
+                 .ThenInclude(x => x.Delegator)
+                 .ThenInclude(x => x.EstablishmentLetterFile)
+                .FirstOrDefault(x => x.Id == litigationId);
 
             return new DataResponse<LitigationRequest> { Data = result, IsDone = true };
         }
@@ -3495,7 +3495,7 @@ namespace REAC.Application.AppServices.Litigation
             };
         }
 
-        private async Task<DataResponse<Delegator>> AddDelegationData(LitigationRequestDelegationDataDto input, LitigationRequest litigationRequest)
+        private async Task<DataResponse<Delegator>> AddDelegationData(LitigationRequestDelegationDataDto input, LitigationRequest litigationRequest, string? delegatorCapacity = null)
         {
 
             if (input == null)
@@ -3526,7 +3526,7 @@ namespace REAC.Application.AppServices.Litigation
                     EstablishmentFileId = input.EstablishmentFileId,
                     EstablishmentLetterFileId = input.EstablishmentLetterFileId,
                     IsActive = true,
-                    IndividualCapacity = input.IndividualCapacity
+                    IndividualCapacity = delegatorCapacity
                 };
 
                 var addDelegator = await _repository.AddAsync<Delegator, Guid>(delegator);
@@ -4013,7 +4013,8 @@ namespace REAC.Application.AppServices.Litigation
                     IncorporationContractFileId = litigationRequestDto.IncorporationContractFileId,
                     FirstPartyCitizenId = (litigationRequestDto.FirstPartyIndividualId == Guid.Empty) ? referenceId : litigationRequestDto.FirstPartyIndividualId,
                     FirstPartyFacilityId = (litigationRequestDto.FirstPartyFacilityId != Guid.Empty) ? litigationRequestDto.FirstPartyFacilityId : null,
-                    FirstPartyCapacity = litigationRequestDto.FirstPartyCapacity,
+                    FirstPartyCapacity = !string.IsNullOrEmpty(litigationRequestDto.litigationRequestDelegationDataDto?.IndividualCapacity) ? litigationRequestDto.litigationRequestDelegationDataDto?.IndividualCapacity : litigationRequestDto.FirstPartyCapacity,
+                    //FirstPartyCapacity = litigationRequestDto.FirstPartyCapacity,
                     //SecondPartyCitizenId = (facility == null) ? citizen.FirstOrDefault()?.Id : null,
                     SecondPartyCitizenId = citizen != null ? citizen.FirstOrDefault()?.Id : null,
                     SecondPartyFacilityId = (facility == null) ? null : facility.Id,
@@ -4047,7 +4048,7 @@ namespace REAC.Application.AppServices.Litigation
 
                 if (litigationRequestDto.LitigationRequestOwnerType != LitigationRequestOwnerType.Personal && litigationRequestDto.litigationRequestDelegationDataDto is not null)
                 {
-                    var addDelegationDataResponse = await AddDelegationData(litigationRequestDto.litigationRequestDelegationDataDto, litigationRequest);
+                    var addDelegationDataResponse = await AddDelegationData(litigationRequestDto.litigationRequestDelegationDataDto, litigationRequest, litigationRequestDto?.FirstPartyCapacity);
 
                     if (!addDelegationDataResponse.IsDone)
                         return addDelegationDataResponse;
@@ -4253,7 +4254,8 @@ namespace REAC.Application.AppServices.Litigation
                     IncorporationContractFileId = litigationRequestDto.IncorporationContractFileId,
                     FirstPartyCitizenId = (litigationRequestDto.FirstPartyIndividualId == Guid.Empty) ? referenceId : litigationRequestDto.FirstPartyIndividualId,
                     FirstPartyFacilityId = (litigationRequestDto.FirstPartyFacilityId != Guid.Empty) ? litigationRequestDto.FirstPartyFacilityId : null,
-                    FirstPartyCapacity = litigationRequestDto.FirstPartyCapacity,
+                    FirstPartyCapacity = !string.IsNullOrEmpty(litigationRequestDto.litigationRequestDelegationDataDto?.IndividualCapacity) ? litigationRequestDto.litigationRequestDelegationDataDto?.IndividualCapacity : litigationRequestDto.FirstPartyCapacity,
+                    //FirstPartyCapacity = litigationRequestDto.FirstPartyCapacity,
                     //SecondPartyCitizenId = (facility == null) ? citizen.FirstOrDefault()?.Id : null,
                     SecondPartyCitizenId = citizen != null ? citizen.FirstOrDefault()?.Id : null,
 
@@ -4290,7 +4292,7 @@ namespace REAC.Application.AppServices.Litigation
                 {
 
 
-                    var addDelegationDataResponse = await AddDelegationData(litigationRequestDto.litigationRequestDelegationDataDto, litigationRequest);
+                    var addDelegationDataResponse = await AddDelegationData(litigationRequestDto.litigationRequestDelegationDataDto, litigationRequest, litigationRequestDto?.FirstPartyCapacity);
 
                     if (!addDelegationDataResponse.IsDone)
                         return addDelegationDataResponse;
@@ -4510,7 +4512,8 @@ namespace REAC.Application.AppServices.Litigation
                     VersionNumber = litigationRequestDto.SubKey,
                     FirstPartyCitizenId = (litigationRequestDto.FirstPartyIndividualId == Guid.Empty) ? referenceId : litigationRequestDto.FirstPartyIndividualId,
                     FirstPartyFacilityId = (litigationRequestDto.FirstPartyFacilityId != Guid.Empty) ? litigationRequestDto.FirstPartyFacilityId : null,
-                    FirstPartyCapacity = plaintiffDefendantSharedData.PlaintiffEjarCapacity,
+                    FirstPartyCapacity = !string.IsNullOrEmpty(plaintiffDefendantSharedData.PlaintiffEjarCapacity) ? plaintiffDefendantSharedData.PlaintiffEjarCapacity : litigationRequestDto.FirstPartyCapacity,
+                    //FirstPartyCapacity = plaintiffDefendantSharedData.PlaintiffEjarCapacity,
                     //SecondPartyCitizenId = (facility == null) ? defendantCitizen.FirstOrDefault()?.Id : null,
                     SecondPartyCitizenId = defendantCitizen != null ? defendantCitizen.FirstOrDefault()?.Id : null,
 
@@ -4547,7 +4550,7 @@ namespace REAC.Application.AppServices.Litigation
 
                 if (litigationRequestDto.LitigationRequestOwnerType != LitigationRequestOwnerType.Personal && litigationRequestDto.litigationRequestDelegationDataDto is not null)
                 {
-                    var addDelegationDataResponse = await AddDelegationData(litigationRequestDto.litigationRequestDelegationDataDto, litigationRequest);
+                    var addDelegationDataResponse = await AddDelegationData(litigationRequestDto.litigationRequestDelegationDataDto, litigationRequest, plaintiffDefendantSharedData?.PlaintiffEjarCapacity);
 
                     if (!addDelegationDataResponse.IsDone)
                         return addDelegationDataResponse;
