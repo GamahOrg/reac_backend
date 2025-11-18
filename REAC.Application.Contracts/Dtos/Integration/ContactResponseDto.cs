@@ -1,9 +1,14 @@
+using REAC.Domain.Shared.Helpers;
+using System.Text.Json.Serialization;
+
 namespace REAC.Application.Contracts.Dtos.Integration
 {
     public class ContactResponseDto
     {
         public int result_count { get; set; }
-        public string total_count { get; set; }
+
+        [JsonConverter(typeof(StringOrIntConverter))]
+        public int total_count { get; set; }
         public int next_offset { get; set; }
         public List<ContactEntry> entry_list { get; set; }
         public List<object> relationship_list { get; set; }

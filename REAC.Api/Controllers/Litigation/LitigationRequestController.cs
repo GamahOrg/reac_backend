@@ -265,6 +265,20 @@ public class LitigationRequestController : BaseController<LitigationRequest,
         return BadRequest();
     }
 
+    [HttpGet(nameof(GetLitigationByCodeForReport))]
+    public async Task<ActionResult<IEnumerable<LitigationRequest>>> GetLitigationByCodeForReport(string requestCode)
+    {
+        if (ModelState.IsValid)
+        {
+            var returnValue = await _litigationService.GetLitigationByIdForReport(requestCode);
+            if (returnValue.IsDone == false) return Unauthorized(returnValue);
+
+            return Ok(returnValue);
+        }
+
+        return BadRequest();
+    }
+
     [HttpGet(nameof(GetLitigationArbitrationTaskAcceptanceOrRejectDocumentData))]
     [AllowAnonymous]
     public async Task<ActionResult<LitigationArbitrationTaskAcceptOrRejectDocumentDto>> GetLitigationArbitrationTaskAcceptanceOrRejectDocumentData(Guid litigationId, Guid? requestId = null)

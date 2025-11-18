@@ -35,6 +35,7 @@
 
         public const string Arbitration = "Arbitration";
         public const string LitigationRequestContract = "LitigationRequestContract";
+        public const string LitigationRequestInvoice = "LitigationRequestInvoice";
         public const string LitigationRequestCorrespondence = "LitigationRequestCorrespondence";
         public const string LitigationRequestCorrespondenceFile = "LitigationRequestCorrespondenceFile";
         public const string LitigationRequestExtendPeriodRequest = "LitigationRequestExtendPeriodRequest";

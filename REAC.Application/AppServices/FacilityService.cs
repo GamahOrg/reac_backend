@@ -145,7 +145,7 @@ namespace REAC.Application.AppServices
             catch (Exception ex) { return new BaseResponse() { IsDone = false, Message = "خطأ داخلي" }; }
         }
 
-        public async Task<BaseResponse> ValidateAndAddFacility(string crNationalNumber, Guid? citizenId, bool AllowAddFacility)
+        public async Task<BaseResponse> ValidateAndAddFacility(string crNationalNumber, Guid? citizenId, bool AllowAddFacility,string? address = null)
         {
             try
             {
@@ -159,7 +159,7 @@ namespace REAC.Application.AppServices
                     return new BaseResponse { Message = "البيانات المدخلة غير صحيحة" };
 
                 if (!nationalNumberInfomationResponse.IsDone)
-                    return new BaseResponse { Message = nationalNumberInfomationResponse.Message };
+                    return new BaseResponse { Message = "حدث خطأ في التكامل برجاء مراجعة بيانات المنشأة" };
 
                 if (nationalNumberInfomationResponse.Data == null)
                     return new BaseResponse { Message = "البيانات المدخلة غير صحيحة" };
@@ -216,7 +216,7 @@ namespace REAC.Application.AppServices
                         Code = code,
                         Facility700Number = nationalNumberInfomationResponse.Data.CRNationalNumber,
                         CommercialRegisterNumber = nationalNumberInfomationResponse.Data.CRNumber,
-                        Street = nationalNumberInfomationResponse.Data.CRAddress,
+                        Street = string.IsNullOrEmpty(nationalNumberInfomationResponse.Data.CRAddress) ? address : nationalNumberInfomationResponse.Data.CRAddress,
                     };
 
                     await _repository.AddAsync<Facility, Guid>(facility);

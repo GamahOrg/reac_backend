@@ -40,6 +40,7 @@ namespace REAC.Application.Contracts.IAppServices.Litigation
         Task<BaseResponse> GetLitigationReconciliationTaskAcceptanceOrRejectDocumentData(Guid litigationId);
         Task<BaseResponse> GetLitigationPartiesDetails(Guid litigationId);
         Task<BaseResponse> GetLitigationDetails(Guid litigationId);
+        Task<BaseResponse> GetLitigationByIdForReport(string requestCode);
         Task<BaseResponse> AddLitigation(LitigationCreateUpdateDto model);
         Task<BaseResponse> CreateLitigationRequest(LitigationRequestDto litigationRequestDto);
         Task<BaseResponse> CreateLitigationRequestManual(CreateLitigationRequestNoIntegrationDto litigationRequestDto);

@@ -414,6 +414,8 @@
         public const string Zoom_ClientSecret = "Zoom.ClientSecret";
         public const string Zoom_AccountID = "Zoom.AccountID";
         public const string Zoom_MeetingDuration = "Zoom.MeetingDuration";
+        public const string Zoom_MeetingAlternativeEmail = "Zoom.MeetingAlternativeEmail";
+
 
         #endregion
 

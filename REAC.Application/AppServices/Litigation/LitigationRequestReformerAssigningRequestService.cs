@@ -88,9 +88,9 @@ namespace REAC.Application.AppServices.Litigation
                        {
                             citizenInfo.Mobile,
                             litigationRequest.Contract.FirstPartyCitizen?.Mobile,
-                            litigationRequest.Contract.FirstPartyFacility?.Citizen.Mobile,
+                            litigationRequest.Contract.FirstPartyFacility?.Citizen?.Mobile,
                             litigationRequest.Contract.SecondPartyCitizen?.Mobile,
-                            litigationRequest.Contract.SecondPartyFacility?.Citizen.Mobile,
+                            litigationRequest.Contract.SecondPartyFacility?.Citizen?.Mobile,
                             deptAdminInfoReconciliation.Data.Mobile
                         }.Where(m => !string.IsNullOrEmpty(m))
                          .ToList();
@@ -462,6 +462,8 @@ namespace REAC.Application.AppServices.Litigation
                          .ThenInclude(x => x.LitigationRequestExtendPeriodRequestFiles)
                          .ThenInclude(x => x.FileManager)
                          .Include(x => x.ApplicantCitizen)
+                         .Include(x => x.DefendantCitizen)
+                         .Include(x => x.DefendantFacility)
                          .Include(x => x.InternalStatus)
                          .Include(x => x.ExternalStatus)
                          .Include(x => x.LitigationRequestAmount)
@@ -511,11 +513,11 @@ namespace REAC.Application.AppServices.Litigation
                                 ReconciliationPeriod = item.LitigationRequest.ReconciliationPeriod,
                                 ReformerAssigningDate = item.RequestOn,
                                 FirstPartyName = litigationRequest.Contract.FirstPartyCitizen == null
-                                    ? litigationRequest.Contract.FirstPartyFacility.ArabicFacilityName
-                                    : litigationRequest.Contract.FirstPartyCitizen.FullName,
-                                SecondPartyName = litigationRequest.Contract.SecondPartyCitizen == null
-                                    ? litigationRequest.Contract.SecondPartyFacility.ArabicFacilityName
-                                    : litigationRequest.Contract.SecondPartyCitizen.FullName,
+                                    ? litigationRequest.Contract.FirstPartyFacility?.ArabicFacilityName
+                                    : litigationRequest.Contract.FirstPartyCitizen?.FullName,
+                                SecondPartyName = litigationRequest.DefendantCitizen == null
+                                    ? litigationRequest.DefendantFacility?.ArabicFacilityName
+                                    : litigationRequest.DefendantCitizen?.FullName,
                                 RequestTypeName = litigationRequest.Contract.LitigationRequestContractType.TypeName,
                                 Response = item.Response,
                                 ResponseOn = item.ResponseOn,
@@ -613,11 +615,11 @@ namespace REAC.Application.AppServices.Litigation
                         ReconciliationPeriod = litigationRequest.LitigationRequest.ReconciliationPeriod,
                         RequestCode = litigationRequest.LitigationRequest.RequestCode,
                         FirstPartyName = litigationRequest.LitigationRequest.Contract.FirstPartyCitizen == null
-                            ? litigationRequest.LitigationRequest.Contract.FirstPartyFacility.ArabicFacilityName
-                            : litigationRequest.LitigationRequest.Contract.FirstPartyCitizen.FullName,
+                            ? litigationRequest.LitigationRequest.Contract.FirstPartyFacility?.ArabicFacilityName
+                            : litigationRequest.LitigationRequest.Contract.FirstPartyCitizen?.FullName,
                         SecondPartyName = litigationRequest.LitigationRequest.DefendantCitizenId == null
-                            ? litigationRequest.LitigationRequest.DefendantFacility.ArabicFacilityName
-                            : litigationRequest.LitigationRequest.DefendantCitizen.FullName,
+                            ? litigationRequest.LitigationRequest.DefendantFacility?.ArabicFacilityName
+                            : litigationRequest.LitigationRequest.DefendantCitizen?.FullName,
                         RequestTypeName = litigationRequest.LitigationRequest.Contract.LitigationRequestContractType.TypeName,
                         Response = litigationRequest.Response,
                         RejectReason = RejectReason,
