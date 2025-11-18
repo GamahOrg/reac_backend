@@ -1,10 +1,14 @@
-﻿using Core.Shared.Responses;
+﻿using Azure.Core;
+using Core.Log.Application.Contracts.Dto;
+using Core.Shared.Responses;
 using Microsoft.EntityFrameworkCore;
 using REAC.Application.Contracts.Dtos.Integration.GEE;
+using REAC.Application.Contracts.Dtos.Integration.Invoice;
 using REAC.Application.Contracts.Dtos.Notification;
 using REAC.Application.Contracts.Dtos.Wpf.Business;
 using REAC.Application.Contracts.Dtos.Wpf.Business.WorkFlowLog;
 using REAC.Application.Contracts.Dtos.Wpf.System;
+using REAC.Application.Contracts.Dtos.Wpf.System.WorkFlowStepEvent;
 using REAC.Domain.Shared.Constants;
 using REAC.Domain.Shared.Enum;
 using REAC.Domain.Shared.Enum.Wpf;
@@ -13,6 +17,8 @@ using REAC.EntityFrameworkCore.Entities.Litigation;
 using REAC.EntityFrameworkCore.Entities.System;
 using REAC.EntityFrameworkCore.Entities.Wpf.Business;
 using REAC.EntityFrameworkCore.Entities.Wpf.System;
+using System.Net.Http.Json;
+using System.Text.Json;
 
 namespace Bpf.Application.ModuleServices
 {
@@ -88,6 +94,89 @@ namespace Bpf.Application.ModuleServices
 
                 if (processingLog.IsFinished)
                     return new BaseResponse() { IsDone = false, Message = "Not Allowed" };
+                #endregion
+
+
+                #region invoice integration
+
+                var litigationStageFees = (await _repository.GetQueryable<LitigationRequest, Guid>())?
+                    .Where(x => x.Id == requestPayload.RequestId & x.IsFinished == false)
+                    .Select(x => new
+                    {
+                        x.LitigationRequestAmount,
+                        x.LitigationRequestStage,
+                        x.IsLitigationFeesHaveBeenCollected,
+                        x.FeesDifference
+                    }).First();
+
+                decimal minFees = 0;
+                if (litigationStageFees?.LitigationRequestAmount == null)
+                {
+                    minFees = (await _repository.GetQueryable<SysLitigationRequestAmount, Guid>())?
+                  .Where(x => x.FromAmount == 0)
+                  .FirstOrDefault()?.Fees ?? 0;
+                }
+
+                var Fees = litigationStageFees.LitigationRequestStage == REAC.Domain.Shared.Enum.LitigationRequestStage.Review && !litigationStageFees.IsLitigationFeesHaveBeenCollected ? litigationStageFees.FeesDifference != 0 ? litigationStageFees.FeesDifference.ToString("0.#") : litigationStageFees.LitigationRequestAmount?.Fees.ToString("0.#") : null;
+                if (litigationStageFees?.LitigationRequestAmount == null)
+                {
+                   Fees = litigationStageFees.LitigationRequestStage == REAC.Domain.Shared.Enum.LitigationRequestStage.Review && !litigationStageFees.IsLitigationFeesHaveBeenCollected ? minFees.ToString("0.#") : null;
+                }
+
+                var invoiceResponse = await CreateIntegratedInvoice(litigationRequest, Fees);
+
+                if (invoiceResponse.IsDone)
+                {
+                    var invoiceData = invoiceResponse.Data;
+
+                    var litigationRequestInvoice = new LitigationRequestInvoice
+                    {
+                        // Generate new Guid for the entity Id (inherited from BaseEntity<Guid>)
+                        Id = Guid.NewGuid(),
+
+                        // Map ReferenceId from the response Id
+                        ReferenceId = invoiceData.Id,
+
+                        // Set the foreign key
+                        LitigationRequestId = litigationRequest.Id,
+
+                        // Map date fields with appropriate parsing
+                        InvDateJ = DateTime.TryParse(invoiceData.InvDateJ, out var invDateJ) ? invDateJ : (DateTime?)null,
+                        InvDueDate = DateTime.TryParse(invoiceData.InvDueDate, out var invDueDate) ? invDueDate : (DateTime?)null,
+
+                        // Map string fields directly
+                        SadadNumber = invoiceData.SadadNumber,
+                        SadadStatus = invoiceData.SadadStatus,
+                        InvoiceType = invoiceData.InvoiceType,
+                        InvDateH = invoiceData.InvDateH,
+                        InvTime = invoiceData.InvTime,
+                        Description = invoiceData.Description,
+                        IsDeleted = invoiceData.IsDeleted,
+                        DeletedReason = invoiceData.DeletedReason,
+                        Reference = invoiceData.Reference,
+                        Source = invoiceData.Source,
+                        Project = invoiceData.Project,
+                        Client = invoiceData.Client,
+                        CreatedBy = invoiceData.CreatedBy,
+                        InvoicedNumber = invoiceData.InvoicedNumber,
+                        ProvinceName = invoiceData.ProvinceName,
+                        CityName = invoiceData.CityName,
+                        NeighborhoodName = invoiceData.NeighborhoodName,
+
+                        // Map numeric fields with appropriate parsing
+                        Price = decimal.TryParse(invoiceData.Price, out var price) ? price : (decimal?)null,
+                        TotalQuantity = int.TryParse(invoiceData.TotalQuantity, out var totalQty) ? totalQty : (int?)null,
+                        TotalPrice = decimal.TryParse(invoiceData.TotalPrice, out var totalPrice) ? totalPrice : (decimal?)null,
+                        TotalNonTaxable = decimal.TryParse(invoiceData.TotalNonTaxable, out var totalNonTaxable) ? totalNonTaxable : (decimal?)null,
+                        TotalTaxable = decimal.TryParse(invoiceData.TotalTaxable, out var totalTaxable) ? totalTaxable : (decimal?)null,
+                        TotalTax = decimal.TryParse(invoiceData.TotalTax, out var totalTax) ? totalTax : (decimal?)null,
+                        TotalTotalAfterTax = decimal.TryParse(invoiceData.TotalTotalAfterTax, out var totalAfterTax) ? totalAfterTax : (decimal?)null,
+
+                        // Set audit fields
+                        CreatedOn = DateTime.UtcNow,
+                        StatusId = 0
+                    };
+                }
                 #endregion
 
                 #region Update processingLog
@@ -670,7 +759,7 @@ namespace Bpf.Application.ModuleServices
                                 body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
 
                             }
-                            
+
                             using (StreamReader streamReader = File.OpenText(pathToFile))
                             {
                                 bodyDefendant = await streamReader.ReadToEndAsync();
@@ -680,7 +769,7 @@ namespace Bpf.Application.ModuleServices
 
                             }
 
-                             await SendNotificationMS(body, msg, msg, litigationRequest, RequestType.LitigationRequest, "Litigation Request Accepted", true);
+                            await SendNotificationMS(body, msg, msg, litigationRequest, RequestType.LitigationRequest, "Litigation Request Accepted", true);
                             await SendNotificationForDefendant(bodyDefendant, msgDefendant, litigationRequest, RequestType.LitigationRequest, "Litigation Request Accepted", true);
                         }
                         catch (Exception)
@@ -1012,7 +1101,7 @@ namespace Bpf.Application.ModuleServices
                 };
 
                 var lstNotification = new List<SysNotificationDto>();
-            
+
                 lstNotification.Add(new SysNotificationDto()
                 {
                     ActorId = litigationRequest.Contract.SecondPartyCitizen.Id,
@@ -1024,13 +1113,106 @@ namespace Bpf.Application.ModuleServices
                     RequestTypeId = requestTypeId,
                     Message = msg,
                 });
-  
-            await _notificationService.SendNotifications(objEmail, objSms, lstNotification);
+
+                await _notificationService.SendNotifications(objEmail, objSms, lstNotification);
             }
 
 
         }
 
+        #region Invoice
+        public async Task<DataResponse<InvoiceDataDto>> CreateIntegratedInvoice(LitigationRequest litigation, string fees)
+        {
+            var accessToken = (await _gEELoginService.Login()).Data?.Access_token;
+            try
+            {
+                var apiUrl = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.CreateInvoice_URL).Result.Data?.Value;
+                var _httpClient = new HttpClient();
 
+                var requestBody = new CreateInvoiceRequest
+                {
+                    InvoiceMasterDto = new InvoiceMasterDto
+                    {
+                        SourceID = 1,
+                        InvDueDate = DateTime.Now.ToString("yyyy-MM-dd"),
+                        ClientNumber = 0,
+                        ProjectID = 0,
+                        Description = "المركز السعودى  للتحكيم العقارى"
+                    },
+                    InvoiceTransactionDto = new List<InvoiceTransactionDto>
+            {
+                new InvoiceTransactionDto
+                {
+                    ServiceID = 1969,
+                    Price = int.Parse(fees) ,
+                    Quantity = 1
+                },
+                new InvoiceTransactionDto
+                {
+                    ServiceID = 1970,
+                    Price = int.Parse(fees) ,
+                    Quantity = 0
+                }
+            },
+                    TypeOfInvoice = 3,
+                    ClientReferenceId = "A10002",
+                    ArName = litigation.ApplicantCitizen?.FullName,
+                    Type = "2",
+                    IdentityNumber = litigation.ApplicantCitizen?.IdentityNumber,
+                    MobileNumber = litigation.ApplicantCitizen?.Mobile,
+                    Email = litigation.ApplicantCitizen?.Email,
+                    CaseNumber = "CaseNu10XXX1",
+                    CaseDescription = "Case Description Test",
+                    RefIdPltfrm = litigation.RequestCode
+                };
+
+                var request = new HttpRequestMessage(HttpMethod.Post, apiUrl)
+                {
+                    Content = JsonContent.Create(requestBody)
+                };
+                request.Headers.Add("Authorization", $"Bearer {accessToken}");
+
+                var response = await _httpClient.SendAsync(request);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    return new DataResponse<InvoiceDataDto>() { Data = null, IsDone = false }
+                    ;
+                }
+
+                var resultJson = await response.Content.ReadAsStringAsync();
+                var invoiceResponse = JsonSerializer.Deserialize<CreateInvoiceResponseDto>(resultJson,
+                    new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
+
+                if (invoiceResponse == null || invoiceResponse.Data == null || string.IsNullOrEmpty(invoiceResponse.Data.Id))
+                {
+                    return new DataResponse<InvoiceDataDto>() { Data = null, IsDone = false };
+                }
+
+                // Check API status
+                if (invoiceResponse.ApiMessage?.StatusCode != 200)
+                {
+                    return new DataResponse<InvoiceDataDto>() { Data = null, IsDone = false };
+                }
+
+                // Return success response with invoice data
+                return new DataResponse<InvoiceDataDto>() { Data = invoiceResponse?.Data, IsDone = true };
+
+            }
+            catch (Exception ex)
+            {
+                _loggerManager.Log(Core.Log.Domain.Shared.Enums.LoggerType.Database,
+                     new LogDto()
+                     {
+                         Type = Core.Log.Domain.Shared.Enums.LogType.Exception,
+                         Message = $"CreateIntegratedInvoice Exception ====> {ex}"
+                     });
+                return new DataResponse<InvoiceDataDto>() { Data = null, IsDone = false };
+            }
+        }
+        #endregion
     }
 }

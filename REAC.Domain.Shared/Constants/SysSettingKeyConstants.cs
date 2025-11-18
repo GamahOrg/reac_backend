@@ -33,6 +33,10 @@
         public const string NafathCheck_Key = "NafathCheck";
 
         #endregion
+        #region Invoice Integration keys
+        public const string CreateInvoice_URL = "CreateInvoice_URL";
+
+        #endregion
 
         #region Login GEE Integration keys
 

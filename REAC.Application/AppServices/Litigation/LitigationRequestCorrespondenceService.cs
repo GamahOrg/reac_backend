@@ -830,7 +830,7 @@ namespace REAC.Application.AppServices.Litigation
 
             var entitiesQuerable = (await _repository.GetQueryable<LitigationRequestReformerAssigningRequest, Guid>())
                           .Include(x => x.ReformerCitizen)
-                         .Include(x => x.LitigationRequest.ReformerCitizen)
+                         .Include(x => x.LitigationRequest)
 
                          .Include(x => x.LitigationRequest.ApplicantCitizen)
                          .Include(x => x.LitigationRequest.DefendantCitizen)
@@ -851,7 +851,7 @@ namespace REAC.Application.AppServices.Litigation
                        & (x.LitigationRequest.LitigationRequestCategoryId == LitigationRequestCategory.Reconciliation
                        || x.LitigationRequest.LitigationRequestCategoryId == LitigationRequestCategory.ReconciliationAndArbitration)
                        )
-                          .OrderByDescending(x => x.LitigationRequest.SentOn)
+                          .OrderByDescending(x => x.LitigationRequest.CreatedOn)
                          .GroupBy(x => x.LitigationRequest.RequestCode)
                          .Select(x => x.First()).AsNoTracking();
 
@@ -874,7 +874,7 @@ namespace REAC.Application.AppServices.Litigation
                     litigationRequestMircoDto.SecondPartyName = (litigationRequest.LitigationRequest.DefendantCitizen == null) ? litigationRequest.LitigationRequest.DefendantFacility.ArabicFacilityName : litigationRequest.LitigationRequest.DefendantCitizen.FullName;
                     litigationRequestMircoDto.RequestTypeName = litigationRequest.LitigationRequest.Contract.LitigationRequestContractType.TypeName;
                     litigationRequestMircoDto.Response = litigationRequest.Response;
-                    litigationRequestMircoDto.ReformerName = litigationRequest.LitigationRequest.ReformerCitizen?.FullName;
+                    litigationRequestMircoDto.ReformerName = litigationRequest.ReformerCitizen?.FullName;
                     litigationRequestMircoDto.ResponseOn = litigationRequest.ResponseOn;
 
                     bool allowAdd = true;

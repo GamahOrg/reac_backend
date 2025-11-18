@@ -3,6 +3,7 @@ using REAC.Application.Contracts.Dtos.Delegator;
 using REAC.Application.Contracts.Dtos.Integration.Wafi;
 using REAC.Application.Contracts.Dtos.Litigation.Create.Litigation;
 using REAC.Application.Contracts.Dtos.Litigation.CreateUpdate.Litigation;
+using REAC.Application.Contracts.Dtos.Litigation.Invoice;
 using REAC.Application.Contracts.Dtos.Litigation.List;
 using REAC.Application.Contracts.Dtos.Wpf.Business;
 using REAC.Domain.Shared.Enum;
@@ -21,6 +22,7 @@ namespace REAC.Application.Contracts.IAppServices.Litigation
 
         Task<BaseResponse> Add(LitigationCreateUpdateDto model);
         Task<BaseResponse> SendLitigationFeesRequestPaid(Guid litigationId);
+        Task<BaseResponse> SendLitigationInvoiceRequestPaid(UpdateInvoiceDto model);
         Task<BaseResponse> SendReconciliationFeesRequestPaid(Guid litigationId);
 
         Task<BaseResponse> Assign(AssignReviewerRequestPayload assignRequestPayload, CancellationToken cancellationToken);
