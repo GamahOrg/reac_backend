@@ -1,4 +1,7 @@
-﻿using Azure.Core;
+﻿using System.Net.Http.Json;
+using System.Text;
+using System.Text.Json;
+using Azure.Core;
 using Core.Log.Application.Contracts.Dto;
 using Core.Shared.Responses;
 using Microsoft.EntityFrameworkCore;
@@ -17,8 +20,6 @@ using REAC.EntityFrameworkCore.Entities.Litigation;
 using REAC.EntityFrameworkCore.Entities.System;
 using REAC.EntityFrameworkCore.Entities.Wpf.Business;
 using REAC.EntityFrameworkCore.Entities.Wpf.System;
-using System.Net.Http.Json;
-using System.Text.Json;
 
 namespace Bpf.Application.ModuleServices
 {
@@ -176,6 +177,7 @@ namespace Bpf.Application.ModuleServices
                         CreatedOn = DateTime.UtcNow,
                         StatusId = 0
                     };
+                    await _repository.AddAsync<LitigationRequestInvoice, Guid>(litigationRequestInvoice);
                 }
                 #endregion
 
@@ -1147,12 +1149,12 @@ namespace Bpf.Application.ModuleServices
                     Price = int.Parse(fees) ,
                     Quantity = 1
                 },
-                new InvoiceTransactionDto
-                {
-                    ServiceID = 1970,
-                    Price = int.Parse(fees) ,
-                    Quantity = 0
-                }
+                //new InvoiceTransactionDto
+                //{
+                //    ServiceID = 1970,
+                //    Price = int.Parse(fees) ,
+                //    Quantity = 0
+                //}
             },
                     TypeOfInvoice = 3,
                     ClientReferenceId = "A10002",
@@ -1166,9 +1168,11 @@ namespace Bpf.Application.ModuleServices
                     RefIdPltfrm = litigation.RequestCode
                 };
 
+                
+                var jsonString = JsonSerializer.Serialize(requestBody);
                 var request = new HttpRequestMessage(HttpMethod.Post, apiUrl)
                 {
-                    Content = JsonContent.Create(requestBody)
+                    Content = new StringContent(jsonString, Encoding.UTF8, "application/json")
                 };
                 request.Headers.Add("Authorization", $"Bearer {accessToken}");
 

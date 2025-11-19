@@ -591,9 +591,9 @@ namespace REAC.Application.AppServices.Litigation
                 //Excute workflow
                 var returnValue = await SendLitigationFeesRequestPaid(litigationRequestInvoice.LitigationRequest.Id);
 
-                var saveResponse = _repository.SaveChangesAsync().Result;
-                if (!saveResponse.IsDone)
-                    return saveResponse;
+               //ar saveResponse = _repository.SaveChangesAsync().Result;
+              //if (!saveResponse.IsDone)
+                //  return saveResponse;
 
                 return new DataResponse<LitigationCreateUpdateDto>()
                 {
