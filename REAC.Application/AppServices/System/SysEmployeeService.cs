@@ -7,6 +7,7 @@ using Core.Shared.Constants;
 using Core.Shared.Responses;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Primitives;
 using REAC.Application.Contracts.Dtos.Citizen;
 using REAC.Application.Contracts.Dtos.Integration.GEE;
 using REAC.Application.Contracts.Dtos.Notification;
@@ -172,13 +173,22 @@ namespace REAC.Application.AppServices.System
                 };
 
                 User user = new User { UserName = sysEmployeeDto.IdentityNumber.Trim(), Email = sysEmployeeDto.Email.Trim(), EmailConfirmed = true, ReferenceId = newEmployee.Id };
-
+                
 
                 var identityUser = await _userManager.CreateAsync(user, "123456");
                 if (!identityUser.Succeeded || identityUser.Errors.Any())
                     return new BaseResponse() { IsDone = false, Message = "خطأ في تسجيل الحساب" };
 
                 newEmployee.UserId = user.Id;
+                if (sysEmployeeDto.DepartmentId == Guid.Parse("657004f4-57e1-4715-addc-0e5ff0b00938"))
+                {
+                    //var currentRoles = await _userManager.GetRolesAsync(user);
+                    if (user.SecurityStamp == null)
+                    {
+                        await _userManager.UpdateSecurityStampAsync(user);
+                    }
+                    await _userManager.AddToRoleAsync(user, "ReviewerAdmin");
+                }
 
                 var addNewEmployee = await _repository.AddAsync<SysEmployee, Guid>(newEmployee);
 
@@ -243,7 +253,15 @@ namespace REAC.Application.AppServices.System
                 if (isExistUser)
                     return new BaseResponse() { IsDone = false, Message = "رقم الهويه موجود مسبقا" };
 
-
+                // update user role for reviewers 
+                if (employee.Department.DepartmentName == "إدراة التدقيق")
+                {
+                     //var currentRoles = await _userManager.GetRolesAsync(user); 
+                    if (!await _userManager.IsInRoleAsync(user, "ReviewerAdmin"))
+                    {
+                        await _userManager.AddToRoleAsync(user, "ReviewerAdmin");
+                    }
+                }
                 employee.EmployeeName = sysEmployeeDto.EmployeeName;
                 employee.Mobile = sysEmployeeDto.Mobile;
                 employee.Email = sysEmployeeDto.Email;
@@ -347,8 +365,8 @@ namespace REAC.Application.AppServices.System
                         return new BaseResponse() { IsDone = false, Message = "لا يمكن تعطيل حساب المدير ,يوجد مدير واحد فقط  فى الأدارة" };
                     }
                 }
-                
-                    employee.IsActive = isActive;
+
+                employee.IsActive = isActive;
 
                 await _repository.SaveChangesAsync();
 

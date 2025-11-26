@@ -575,7 +575,7 @@ namespace REAC.Application.AppServices.Litigation
             try
             {
                 var litigationRequestInvoice = (await _repository.GetQueryable<LitigationRequestInvoice, Guid>())
-                                  .Include(x=>x.LitigationRequest)
+                                  .Include(x => x.LitigationRequest)
                           .Where(x => x.ReferenceId == model.InvoiceId).ToList().FirstOrDefault();
 
                 if (litigationRequestInvoice == null)
@@ -587,13 +587,11 @@ namespace REAC.Application.AppServices.Litigation
                 //update invoice
                 litigationRequestInvoice.UpdatedOn = DateTime.UtcNow;
                 litigationRequestInvoice.StatusId = model.InvoiceStatus;
-
-                //Excute workflow
-                var returnValue = await SendLitigationFeesRequestPaid(litigationRequestInvoice.LitigationRequest.Id);
-
-               //ar saveResponse = _repository.SaveChangesAsync().Result;
-              //if (!saveResponse.IsDone)
-                //  return saveResponse;
+                litigationRequestInvoice.SadadStatus = model.InvoiceStatus == 1 ? "مسدده" : "غير مسدده";
+                if (litigationRequestInvoice.StatusId == 1) //مسدده
+                {
+                    var returnValue = await SendLitigationFeesRequestPaid(litigationRequestInvoice.LitigationRequest.Id);
+                }
 
                 return new DataResponse<LitigationCreateUpdateDto>()
                 {

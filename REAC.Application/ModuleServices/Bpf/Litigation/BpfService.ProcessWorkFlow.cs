@@ -1129,6 +1129,8 @@ namespace Bpf.Application.ModuleServices
             try
             {
                 var apiUrl = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.CreateInvoice_URL).Result.Data?.Value;
+                var Administrative_ServiceId = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Administrative_Fees_Billing).Result.Data?.Value;
+
                 var _httpClient = new HttpClient();
 
                 var requestBody = new CreateInvoiceRequest
@@ -1145,7 +1147,7 @@ namespace Bpf.Application.ModuleServices
             {
                 new InvoiceTransactionDto
                 {
-                    ServiceID = 1969,
+                    ServiceID = int.Parse(Administrative_ServiceId),
                     Price = int.Parse(fees) ,
                     Quantity = 1
                 },

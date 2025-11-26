@@ -35,6 +35,8 @@
         #endregion
         #region Invoice Integration keys
         public const string CreateInvoice_URL = "CreateInvoice_URL";
+        public const string Administrative_Fees_Billing = "Administrative_Fees_Billing";
+
 
         #endregion
 

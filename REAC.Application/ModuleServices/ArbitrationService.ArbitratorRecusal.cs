@@ -555,8 +555,8 @@ namespace REAC.Application.ModuleServices
 
                     litigationRequestMircoDto.RequestCode = litigationRequestArbitratorRecusalRequest.LitigationRequest.RequestCode;
 
-                    litigationRequestMircoDto.FirstPartyName = (litigationRequestArbitratorRecusalRequest.LitigationRequest.Contract.FirstPartyCitizen == null) ? litigationRequestArbitratorRecusalRequest.LitigationRequest.Contract.FirstPartyFacility.ArabicFacilityName : litigationRequestArbitratorRecusalRequest.LitigationRequest.Contract.FirstPartyCitizen.FullName;
-                    litigationRequestMircoDto.SecondPartyName = (litigationRequestArbitratorRecusalRequest.LitigationRequest.DefendantCitizen == null) ? litigationRequestArbitratorRecusalRequest.LitigationRequest.DefendantFacility.ArabicFacilityName : litigationRequestArbitratorRecusalRequest.LitigationRequest.DefendantCitizen.FullName;
+                    litigationRequestMircoDto.FirstPartyName = (litigationRequestArbitratorRecusalRequest.LitigationRequest.Contract.FirstPartyCitizen == null) ? litigationRequestArbitratorRecusalRequest.LitigationRequest.Contract.FirstPartyFacility?.ArabicFacilityName : litigationRequestArbitratorRecusalRequest.LitigationRequest.Contract.FirstPartyCitizen?.FullName;
+                    litigationRequestMircoDto.SecondPartyName = (litigationRequestArbitratorRecusalRequest.LitigationRequest.DefendantCitizen == null) ? litigationRequestArbitratorRecusalRequest.LitigationRequest.DefendantFacility?.ArabicFacilityName : litigationRequestArbitratorRecusalRequest.LitigationRequest.DefendantCitizen?.FullName;
                     litigationRequestMircoDto.RequestTypeName = litigationRequestArbitratorRecusalRequest.LitigationRequest.Contract.LitigationRequestContractType.TypeName;
                     litigationRequestMircoDto.RequestParty = litigationRequestArbitratorRecusalRequest.RequestParty;
 

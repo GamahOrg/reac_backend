@@ -771,7 +771,7 @@ namespace REAC.Application.AppServices.Litigation
                     litigationRequestMircoDto.RequestCode = litigationRequest.LitigationRequest.RequestCode;
                     litigationRequestMircoDto.ArbitratorAssigningRequestType = litigationRequest.ArbitratorAssigningRequestTypeId;
                     litigationRequestMircoDto.FirstPartyName = (litigationRequest.LitigationRequest.Contract.FirstPartyCitizen == null) ? litigationRequest.LitigationRequest.Contract.FirstPartyFacility.ArabicFacilityName : litigationRequest.LitigationRequest.Contract.FirstPartyCitizen.FullName;
-                    litigationRequestMircoDto.SecondPartyName = (litigationRequest.LitigationRequest.DefendantCitizen == null) ? litigationRequest.LitigationRequest.DefendantFacility.ArabicFacilityName : litigationRequest.LitigationRequest.DefendantCitizen.FullName;
+                    litigationRequestMircoDto.SecondPartyName = (litigationRequest.LitigationRequest.DefendantCitizen == null) ? litigationRequest.LitigationRequest.DefendantFacility?.ArabicFacilityName : litigationRequest.LitigationRequest.DefendantCitizen?.FullName;
                     litigationRequestMircoDto.RequestTypeName = litigationRequest.LitigationRequest.Contract.LitigationRequestContractType.TypeName;
                     litigationRequestMircoDto.RequestTypeId = litigationRequest.LitigationRequest.Contract.LitigationRequestContractType.Id.GetHashCode();
                     litigationRequestMircoDto.Response = litigationRequest.Response;
