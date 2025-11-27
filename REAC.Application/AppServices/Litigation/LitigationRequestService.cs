@@ -575,8 +575,9 @@ namespace REAC.Application.AppServices.Litigation
             try
             {
                 var litigationRequestInvoice = (await _repository.GetQueryable<LitigationRequestInvoice, Guid>())
-                                  .Include(x => x.LitigationRequest)
-                          .Where(x => x.ReferenceId == model.InvoiceId).ToList().FirstOrDefault();
+                                             .Include(x => x.LitigationRequest)
+                                             .ThenInclude(x=>x.LitigationRequestInvoice)
+                                             .Where(x => x.ReferenceId == model.InvoiceId).ToList().FirstOrDefault();
 
                 if (litigationRequestInvoice == null)
                     return new ExceptionResponse()
@@ -584,13 +585,33 @@ namespace REAC.Application.AppServices.Litigation
                         Exception = "لم يتم العثور على الفاتوره",
                         IsDone = false,
                     };
+
+                var Litigation_ServiceId = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Administrative_Fees_Billing).Result.Data?.Value;
+                var Reconciliation_ServiceId = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reconciliation_Fees_Billing).Result.Data?.Value;
+                var SingleArbitration_ServiceId = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Arbitration_single_arbitrator_Fees_Billing).Result.Data?.Value;
+                var MultipleArbitration_ServiceId = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Arbitration_multiple_arbitrator_Fees_Billing).Result.Data?.Value;
+
+
                 //update invoice
                 litigationRequestInvoice.UpdatedOn = DateTime.UtcNow;
                 litigationRequestInvoice.StatusId = model.InvoiceStatus;
                 litigationRequestInvoice.SadadStatus = model.InvoiceStatus == 1 ? "مسدده" : "غير مسدده";
                 if (litigationRequestInvoice.StatusId == 1) //مسدده
                 {
-                    var returnValue = await SendLitigationFeesRequestPaid(litigationRequestInvoice.LitigationRequest.Id);
+                    if (litigationRequestInvoice.serviceId == Litigation_ServiceId)
+                    {
+                        var returnValue = await SendLitigationFeesRequestPaid(litigationRequestInvoice.LitigationRequest.Id);
+                    }
+                    else if (litigationRequestInvoice.serviceId == Reconciliation_ServiceId)
+                    {
+                        var returnValue = await SendReconciliationFeesRequestPaid(litigationRequestInvoice.LitigationRequest.Id);
+                    }
+                    else if (litigationRequestInvoice.serviceId == SingleArbitration_ServiceId || litigationRequestInvoice.serviceId == MultipleArbitration_ServiceId)
+                    {
+                        var _invoiceService = _serviceProvider.GetRequiredService<ISysInvoiceService>();
+                        var invoiceId= litigationRequestInvoice.LitigationRequest.LitigationRequestInvoice.Id;
+                        var returnValue = await _invoiceService.PayInvoice(invoiceId);
+                    }
                 }
 
                 return new DataResponse<LitigationCreateUpdateDto>()

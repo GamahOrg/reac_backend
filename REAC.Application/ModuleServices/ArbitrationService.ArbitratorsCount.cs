@@ -1,7 +1,10 @@
 ﻿using Core.GenericRepository.Shared.Pagging;
+using Core.Log.Application.Contracts.Dto;
 using Core.Shared.Responses;
 using Microsoft.EntityFrameworkCore;
 using REAC.Application.Contracts.Dtos.Arbitration;
+using REAC.Application.Contracts.Dtos.Integration.Invoice;
+using REAC.Application.Contracts.Dtos.Litigation.CreateUpdate.Litigation;
 using REAC.Application.Contracts.Dtos.Notification;
 using REAC.Application.Contracts.Dtos.Reconciliation.Process;
 using REAC.Application.Contracts.Dtos.System.Invoice;
@@ -10,6 +13,8 @@ using REAC.Domain.Shared.Enum;
 using REAC.EntityFrameworkCore.Entities.Litigation;
 using REAC.EntityFrameworkCore.Entities.System;
 using REAC.EntityFrameworkCore.Entities.Wpf.Business;
+using System.Text;
+using System.Text.Json;
 
 namespace REAC.Application.ModuleServices
 {
@@ -126,7 +131,7 @@ namespace REAC.Application.ModuleServices
                                 body = body?.Replace("{content}", _settingService.GetBySettingKey(SysSettingKeyConstants.Arbitrators_Count_Added).Result.Data?.Value);
                                 body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
                             }
-                            await SendNotification(litigationRequest, RequestType.LitigationRequest, arbitrationAdmin.Data, "عدد المحكمين النهائي", msg,body , true);
+                            await SendNotification(litigationRequest, RequestType.LitigationRequest, arbitrationAdmin.Data, "عدد المحكمين النهائي", msg, body, true);
                             #endregion
 
 
@@ -175,14 +180,29 @@ namespace REAC.Application.ModuleServices
 
         async Task<DataResponse<SavedInvoiceDto>> AddInvoice(LitigationRequest litigationRequest)
         {
-            #region اضافة فاتورة
             //رسوم التحكيم
             decimal arbitrationFees = default;
             if (litigationRequest.LitigationRequestAmount != null)
             {
                 arbitrationFees = await CalculateArbitrationFees(litigationRequest.ArbitratorsCount.Value, litigationRequest.LitigationRequestAmount);
             }
+            else
+            {
 
+
+                var LitigationRequestAmount = (await _repository.GetQueryable<SysLitigationRequestAmount, Guid>())
+                                                .Where(x => x.FromAmount == 0)
+                                                .FirstOrDefault();
+
+                if (LitigationRequestAmount != null)
+                {
+                    var litigationRequestFees = (await _repository.GetQueryable<LitigationRequestFees, Guid>())
+                                               .Where(x => x.AmountId == LitigationRequestAmount.Id && x.ArbitratorsCount == litigationRequest.ArbitratorsCount).FirstOrDefault();
+                    arbitrationFees = litigationRequestFees.ArbitrationFees;
+                }
+
+
+            }
             //الضريبة
             decimal taxPercentage = 0;
             var sysSetting = await _settingService.GetBySettingKey(SysSettingKeyConstants.Invoice_Taxes);
@@ -193,6 +213,8 @@ namespace REAC.Application.ModuleServices
             decimal arbitrationTaxes = arbitrationFees * taxPercentage;
 
             decimal TotalFees = arbitrationFees + arbitrationTaxes;
+            #region اضافة فاتورة
+
 
             await _repository.AddAsync<WorkFlowLog, Guid>(new WorkFlowLog()
             {
@@ -203,6 +225,71 @@ namespace REAC.Application.ModuleServices
                 LogMessage = "تم انشاء فاتورة لسداد رسوم التحكيم"
             });
 
+            
+            #endregion
+
+            #region Add APGI Integration Invoice 
+            var Arbitration_ServiceId = "";
+            if (litigationRequest.ArbitratorsCount == 1)
+            {
+                Arbitration_ServiceId = _settingService.GetBySettingKey(SysSettingKeyConstants.Arbitration_single_arbitrator_Fees_Billing).Result.Data?.Value;
+            }
+            else
+            {
+                Arbitration_ServiceId = _settingService.GetBySettingKey(SysSettingKeyConstants.Arbitration_multiple_arbitrator_Fees_Billing).Result.Data?.Value;
+            }
+
+            var invoiceResponse = await CreateIntegratedInvoice(litigationRequest, TotalFees.ToString(), Arbitration_ServiceId);
+
+            if (invoiceResponse.IsDone)
+            {
+                var invoiceData = invoiceResponse.Data;
+
+                var litigationRequestInvoice = new LitigationRequestInvoice
+                {
+                    Id = Guid.NewGuid(),
+                    ReferenceId = invoiceData.Id,
+                    LitigationRequestId = litigationRequest.Id,
+                    // Map date fields with appropriate parsing
+                    InvDateJ = DateTime.TryParse(invoiceData.InvDateJ, out var invDateJ) ? invDateJ : (DateTime?)null,
+                    InvDueDate = DateTime.TryParse(invoiceData.InvDueDate, out var invDueDate) ? invDueDate : (DateTime?)null,
+
+                    // Map string fields directly
+                    SadadNumber = invoiceData.SadadNumber,
+                    SadadStatus = invoiceData.SadadStatus,
+                    InvoiceType = invoiceData.InvoiceType,
+                    InvDateH = invoiceData.InvDateH,
+                    InvTime = invoiceData.InvTime,
+                    Description = invoiceData.Description,
+                    IsDeleted = invoiceData.IsDeleted,
+                    DeletedReason = invoiceData.DeletedReason,
+                    Reference = invoiceData.Reference,
+                    Source = invoiceData.Source,
+                    Project = invoiceData.Project,
+                    Client = invoiceData.Client,
+                    CreatedBy = invoiceData.CreatedBy,
+                    InvoicedNumber = invoiceData.InvoicedNumber,
+                    ProvinceName = invoiceData.ProvinceName,
+                    CityName = invoiceData.CityName,
+                    NeighborhoodName = invoiceData.NeighborhoodName,
+
+                    // Map numeric fields with appropriate parsing
+                    Price = decimal.TryParse(invoiceData.Price, out var price) ? price : (decimal?)null,
+                    TotalQuantity = int.TryParse(invoiceData.TotalQuantity, out var totalQty) ? totalQty : (int?)null,
+                    TotalPrice = decimal.TryParse(invoiceData.TotalPrice, out var totalPrice) ? totalPrice : (decimal?)null,
+                    TotalNonTaxable = decimal.TryParse(invoiceData.TotalNonTaxable, out var totalNonTaxable) ? totalNonTaxable : (decimal?)null,
+                    TotalTaxable = decimal.TryParse(invoiceData.TotalTaxable, out var totalTaxable) ? totalTaxable : (decimal?)null,
+                    TotalTax = decimal.TryParse(invoiceData.TotalTax, out var totalTax) ? totalTax : (decimal?)null,
+                    TotalTotalAfterTax = decimal.TryParse(invoiceData.TotalTotalAfterTax, out var totalAfterTax) ? totalAfterTax : (decimal?)null,
+
+                    // Set audit fields
+                    CreatedOn = DateTime.UtcNow,
+                    StatusId = 0,
+                    serviceId = Arbitration_ServiceId
+                };
+                await _repository.AddAsync<LitigationRequestInvoice, Guid>(litigationRequestInvoice);
+            }
+            #endregion
             return await _sysInvoiceService.AddInvoice(new CreateInvoiceDto
             {
                 Amount = arbitrationFees,
@@ -212,11 +299,142 @@ namespace REAC.Application.ModuleServices
                 RequestId = litigationRequest.Id,
                 ApplicantCitizenId = (Guid)litigationRequest.ApplicantCitizenId,
             });
-            #endregion
+
         }
 
 
-        async Task SendNotification(LitigationRequest litigationRequest, RequestType requestType, SysEmployee arbitrationAdmin, string subject, string message,string mailMsg, bool defendant)
+        #region Invoice
+        public async Task<DataResponse<InvoiceDataDto>> CreateIntegratedInvoice(LitigationRequest litigation, string fees, string serviceId)
+        {
+            var accessToken = (await _gEELoginService.Login()).Data?.Access_token;
+            try
+            {
+                var apiUrl = _settingService.GetBySettingKey(SysSettingKeyConstants.CreateInvoice_URL).Result.Data?.Value;
+                var Administrative_ServiceId = _settingService.GetBySettingKey(SysSettingKeyConstants.Administrative_Fees_Billing).Result.Data?.Value;
+
+                var _httpClient = new HttpClient();
+
+                var requestBody = new CreateInvoiceRequest
+                {
+                    InvoiceMasterDto = new InvoiceMasterDto
+                    {
+                        SourceID = 1,
+                        InvDueDate = DateTime.Now.ToString("yyyy-MM-dd"),
+                        ClientNumber = 0,
+                        ProjectID = 0,
+                        Description = "المركز السعودى  للتحكيم العقارى"
+                    },
+                    InvoiceTransactionDto = new List<InvoiceTransactionDto>
+                {
+                    new InvoiceTransactionDto
+                    {
+                        ServiceID = int.Parse(serviceId),
+                        Price = int.Parse(fees) ,
+                        Quantity = 1
+                    },
+                    //new InvoiceTransactionDto
+                    //{
+                    //    ServiceID = 1970,
+                    //    Price = int.Parse(fees) ,
+                    //    Quantity = 0
+                    //}
+                },
+                    TypeOfInvoice = 3,
+                    ClientReferenceId = "A10002",
+                    ArName = litigation.ApplicantCitizen?.FullName,
+                    Type = "2",
+                    IdentityNumber = litigation.ApplicantCitizen?.IdentityNumber,
+                    MobileNumber = litigation.ApplicantCitizen?.Mobile,
+                    Email = litigation.ApplicantCitizen?.Email,
+                    CaseNumber = "CaseNu10XXX1",
+                    CaseDescription = "Case Description Test",
+                    RefIdPltfrm = litigation.RequestCode
+                };
+
+
+                var jsonString = JsonSerializer.Serialize(requestBody);
+                var request = new HttpRequestMessage(HttpMethod.Post, apiUrl)
+                {
+                    Content = new StringContent(jsonString, Encoding.UTF8, "application/json")
+                };
+                request.Headers.Add("Authorization", $"Bearer {accessToken}");
+
+                var response = await _httpClient.SendAsync(request);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    return new DataResponse<InvoiceDataDto>() { Data = null, IsDone = false }
+                    ;
+                }
+
+                var resultJson = await response.Content.ReadAsStringAsync();
+                var invoiceResponse = JsonSerializer.Deserialize<CreateInvoiceResponseDto>(resultJson,
+                    new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
+
+                if (invoiceResponse == null || invoiceResponse.Data == null || string.IsNullOrEmpty(invoiceResponse.Data.Id))
+                {
+                    return new DataResponse<InvoiceDataDto>() { Data = null, IsDone = false };
+                }
+
+                // Check API status
+                if (invoiceResponse.ApiMessage?.StatusCode != 200)
+                {
+                    return new DataResponse<InvoiceDataDto>() { Data = null, IsDone = false };
+                }
+                //var Data = new InvoiceDataDto
+                //{
+                //    Id = "cd91a980-caa2-4a44-b4d1-06e2aabf7049",
+                //    InvDateJ = null,
+                //    SadadNumber = "0",
+                //    SadadStatus = "غير مسددة",
+                //    InvoiceType = "مركز تحكيم",
+                //    InvDateH = "1447-6-2",
+                //    InvTime = "16.52.51",
+                //    Description = "المركز السعودى  للتحكيم العقارى",
+                //    IsDeleted = "No",
+                //    DeletedReason = "",
+                //    Reference = "",
+                //    Source = "الهيئة العامة للعقار",
+                //    Project = "",
+                //    Client = "عبدالله حمد إبراهيم حمد",
+                //    CreatedBy = "Arbitration platform",
+                //    InvDueDate = "2025-11-23T00:00:00.0000000",
+                //    InvoicedNumber = "",
+                //    ProvinceName = "",
+                //    CityName = "",
+                //    NeighborhoodName = "",
+                //    Price = "400.00",
+                //    TotalQuantity = "1",
+                //    TotalPrice = "400.00",
+                //    TotalNonTaxable = "400.00",
+                //    TotalTaxable = "0.00",
+                //    TotalTax = "0.00",
+                //    TotalTotalAfterTax = "400.00"
+                //};
+                // Return success response with invoice data
+                return new DataResponse<InvoiceDataDto>() { Data = invoiceResponse.Data, IsDone = true };
+
+            }
+            catch (Exception ex)
+            {
+                _loggerManager.Log(Core.Log.Domain.Shared.Enums.LoggerType.Database,
+                     new LogDto()
+                     {
+                         Type = Core.Log.Domain.Shared.Enums.LogType.Exception,
+                         Message = $"CreateIntegratedInvoice Exception ====> {ex}"
+                     });
+                return new DataResponse<InvoiceDataDto>() { Data = null, IsDone = false };
+            }
+        }
+        #endregion
+
+
+
+
+        async Task SendNotification(LitigationRequest litigationRequest, RequestType requestType, SysEmployee arbitrationAdmin, string subject, string message, string mailMsg, bool defendant)
         {
             List<SysNotificationDto> notifications = new List<SysNotificationDto>()
             {
@@ -265,7 +483,8 @@ namespace REAC.Application.ModuleServices
                 recipients.Add(litigationRequest.Contract.FirstPartyCitizen.Mobile);
 
 
-            };
+            }
+            ;
 
             if (litigationRequest?.Contract?.FirstPartyFacility != null && litigationRequest?.Contract?.FirstPartyFacility.CitizenId != litigationRequest.ApplicantCitizenId)
             {
@@ -280,7 +499,8 @@ namespace REAC.Application.ModuleServices
                 });
                 emails.Add(litigationRequest.Contract.FirstPartyFacility.Citizen.Email);
                 recipients.Add(litigationRequest.Contract.FirstPartyFacility.Citizen.Mobile);
-            };
+            }
+            ;
 
             if (defendant)
             {
@@ -297,7 +517,8 @@ namespace REAC.Application.ModuleServices
                     });
                     emails.Add(litigationRequest.Contract.SecondPartyCitizen.Email);
                     recipients.Add(litigationRequest.Contract.SecondPartyCitizen.Mobile);
-                };
+                }
+                ;
 
                 if (litigationRequest?.Contract?.SecondPartyFacilityId != null)
                 {
@@ -312,7 +533,8 @@ namespace REAC.Application.ModuleServices
                     });
                     emails.Add(litigationRequest.Contract.SecondPartyFacility.Citizen.Email);
                     recipients.Add(litigationRequest.Contract.SecondPartyFacility.Citizen.Mobile);
-                };
+                }
+                ;
             }
             await _notificationService.SendNotifications(new Contracts.Dtos.Notification.SendEmailDto()
             {
@@ -349,6 +571,7 @@ namespace REAC.Application.ModuleServices
                 //    }
                 //}
             }
+            
 
             return amount;
         }
@@ -1015,14 +1238,14 @@ namespace REAC.Application.ModuleServices
                                 invoice_CreatedInvoiceMessage = invoice_CreatedInvoiceMessage?
                                     .Replace("{LitigationCode}", litigationRequest.RequestCode)
                                     .Replace("{InvoiceCode}", addInvoice.Data.InvoiceCode);
-                                 pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
                                 using (StreamReader streamReader = File.OpenText(pathToFile))
                                 {
                                     body = await streamReader.ReadToEndAsync();
                                     body = body?.Replace("{content}", _settingService.GetBySettingKey(SysSettingKeyConstants.Invoice_CreatedInvoiceMessage).Result.Data?.Value);
                                     body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode).Replace("{InvoiceCode}", addInvoice.Data.InvoiceCode);
                                 }
-                                await SendNotification(litigationRequest, RequestType.Invoices, arbitrationAdmin.Data, "فاتورة رسوم التحكيم", invoice_CreatedInvoiceMessage,body , false);
+                                await SendNotification(litigationRequest, RequestType.Invoices, arbitrationAdmin.Data, "فاتورة رسوم التحكيم", invoice_CreatedInvoiceMessage, body, false);
                             }
                             #endregion
 

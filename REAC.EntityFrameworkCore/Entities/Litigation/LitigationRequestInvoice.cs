@@ -127,6 +127,10 @@ namespace REAC.EntityFrameworkCore.Entities.Litigation
         [Column("createdOn")]
         public DateTime? CreatedOn { get; set; }
 
+        [Column("serviceId")]
+        [StringLength(50)]
+        public string? serviceId { get; set; }
+
         // Navigation property
         [ForeignKey("LitigationRequestId")]
         public virtual LitigationRequest LitigationRequest { get; set; } = null!;

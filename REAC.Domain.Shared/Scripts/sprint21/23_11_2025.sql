@@ -29,3 +29,6 @@ update [dbo].[AspNetUserRoles] set roleId='4422AD68-D49D-4769-B923-6457CFF50103'
 insert into [dbo].[AspNetRoleClaims] values ('B520BA17-8BDE-4868-A32D-08DD96F03296','Permission','Admin.View')
 update [dbo].[AspNetUserRoles] set roleId='B520BA17-8BDE-4868-A32D-08DD96F03296' where userid='C30016D7-556D-4A55-A4F0-EF9E5055A113'
 ----------------------------------------------------------------------------
+---- invoice table 
+alter table [LitigationRequestInvoice]
+add serviceId nvarchar(50) null
