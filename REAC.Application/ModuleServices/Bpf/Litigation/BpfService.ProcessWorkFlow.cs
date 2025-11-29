@@ -100,7 +100,7 @@ namespace Bpf.Application.ModuleServices
 
                 #region invoice APGI integration
                 //رسوم الدعوه
-                if (litigationRequest.InternalStatusId == REAC.Domain.Shared.Enum.RequestStatus.CollectionOfLitigationFeesRequestIsBeingSent)
+                if (litigationRequest.InternalStatusId == REAC.Domain.Shared.Enum.RequestStatus.New)
                 {
 
                     var litigationStageFees = (await _repository.GetQueryable<LitigationRequest, Guid>())?
