@@ -37,12 +37,13 @@ namespace REAC.Application.AppServices.System
         {
             return await base.GetListAsync<SysLitigationRequestContractTypeGetDto>(cancellationToken);
         }
-        public async Task<BaseResponse> GetTermsConditionsAsync(string contractNumber, CancellationToken cancellationToken)
+        public async Task<BaseResponse> GetTermsConditionsAsync(string contractNumber, string litigationId, CancellationToken cancellationToken)
         {
+            var LitigationId = Guid.Parse(litigationId);
             var litigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>())
                 .Include(x => x.Contract)
                           .Include(x => x.Contract.LitigationRequestContractType).Include(x => x.ApplicantCitizen).AsNoTracking()
-                          .Where(x => x.Contract.ContractKey == contractNumber).ToList().FirstOrDefault();
+                          .Where(x => x.Contract.ContractKey == contractNumber && x.Id  == LitigationId).ToList().FirstOrDefault();
 
             if (litigationRequest != null)
             {

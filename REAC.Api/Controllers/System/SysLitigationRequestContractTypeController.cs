@@ -39,11 +39,11 @@ public class SysLitigationRequestContractTypeController : BaseController<SysLiti
         return BadRequest();
     }
     [HttpGet("GetTermsConditions")]
-    public async Task<IActionResult> GetTermsConditions(string contractNumber,CancellationToken cancellationToken = default)
+    public async Task<IActionResult> GetTermsConditions(string contractNumber,string litigationId, CancellationToken cancellationToken = default)
     {
         if (ModelState.IsValid)
         {
-            var returnValue = await _typeService.GetTermsConditionsAsync(contractNumber,cancellationToken);
+            var returnValue = await _typeService.GetTermsConditionsAsync(contractNumber, litigationId, cancellationToken);
             return Ok(returnValue);
         }
 

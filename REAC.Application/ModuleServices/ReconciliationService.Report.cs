@@ -259,6 +259,7 @@ namespace REAC.Application.ModuleServices
                         ReconciliationSessionDetails = requestPayload.ReconciliationSessionDetails,
                         ModificationRequest = requestPayload.ModificationRequest,
                         LitigationRequestId = requestPayload.RequestId,
+                        ReconciliationRequestDecision =  (int)requestPayload.ReconciliationRequestDecisionStatus
                     };
 
                     if (requestPayload.LitigationRequestMeetingReconciliationItems != null)
@@ -442,6 +443,7 @@ namespace REAC.Application.ModuleServices
             }
 
             var reports = _mapper.Map<List<LitigationRequestReconciliationReportCreateUpdateDto>>(litigationRequest?.LitigationRequestReconciliationReports);
+
 
             bool isDone = false;
             bool allowAdd = true;

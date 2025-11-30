@@ -78,6 +78,7 @@ namespace REAC.Application.ModuleServices
                         litigationRequest.LitigationRequestSubStage = LitigationRequestSubStage.JudgmentDecisionIssued;
                         litigationRequest.InternalStatusId = RequestStatus.JudgmentDecisionIssued;
                         litigationRequest.ExternalStatusId = RequestStatus.JudgmentDecisionIssued;
+                        litigationRequest.IsFinished = true;
                         // adding publish 
                         litigationRequestReconciliationReport.IsPublished = true;
                         litigationRequestReconciliationReport.PublishedDate = DateTime.Now;

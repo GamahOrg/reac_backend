@@ -3572,6 +3572,8 @@ namespace REAC.Application.AppServices.Litigation
             Guid referenceId = Guid.Empty;
             _jwtReader.GetReferenceId(ref referenceId);
 
+            
+
             if (input.DelegationRelationshipTypeId == DelegationRelationshipType.Individual)
             {
                 var addDraftCitizen = await AddDraftCitizen(input);
@@ -3961,7 +3963,16 @@ namespace REAC.Application.AppServices.Litigation
                     };
                 }
 
+                // Check if delegator is same as plaintiff
+                if (litigationRequestDto?.litigationRequestDelegationDataDto?.IndividualIdentityNumber is not null)
+                {
+                    var delegatorCitizen = (await _repository.GetQueryable<Citizen, Guid>())
+                    .AsNoTracking()
+                    .FirstOrDefault(x => x.Id == referenceId);
 
+                    if (delegatorCitizen?.IdentityNumber == litigationRequestDto?.litigationRequestDelegationDataDto?.IndividualIdentityNumber)
+                        return new DataResponse<Citizen>() { IsDone = false, Message = "لا يمكن إضافة مدعي بنفس هوية المفوض عنه" };
+                }
 
 
 
@@ -4050,6 +4061,8 @@ namespace REAC.Application.AppServices.Litigation
                         IsDone = false,
                         Message = "لا يمكن ان يكون طرفى الدعوى لنفس الشخص"
                     };
+
+
 
                 TryGetFacilityAgian:
                 Facility? facility = null;
@@ -4195,6 +4208,18 @@ namespace REAC.Application.AppServices.Litigation
                         Message = "لابد من إدخال رقم الهوية"
                     };
                 }
+
+                // Check if delegator is same as plaintiff
+                if (litigationRequestDto?.litigationRequestDelegationDataDto?.IndividualIdentityNumber is not null)
+                {
+                    var delegatorCitizen = (await _repository.GetQueryable<Citizen, Guid>())
+                    .AsNoTracking()
+                    .FirstOrDefault(x => x.Id == referenceId);
+
+                    if (delegatorCitizen?.IdentityNumber == litigationRequestDto?.litigationRequestDelegationDataDto?.IndividualIdentityNumber)
+                        return new DataResponse<Citizen>() { IsDone = false, Message = "لا يمكن إضافة مدعي بنفس هوية المفوض عنه" };
+                }
+
 
                 if (litigationRequestDto.LitigationRequestOwnerType != LitigationRequestOwnerType.Personal && litigationRequestDto.litigationRequestDelegationDataDto is not null)
                 {
@@ -4435,6 +4460,17 @@ namespace REAC.Application.AppServices.Litigation
                 if (referenceId == Guid.Empty)
                     return new BaseResponse() { IsDone = false };
 
+                // Check if delegator is same as plaintiff
+                if (litigationRequestDto?.litigationRequestDelegationDataDto?.IndividualIdentityNumber is not null)
+                {
+                    var delegatorCitizen = (await _repository.GetQueryable<Citizen, Guid>())
+                    .AsNoTracking()
+                    .FirstOrDefault(x => x.Id == referenceId);
+
+                    if (delegatorCitizen?.IdentityNumber == litigationRequestDto?.litigationRequestDelegationDataDto?.IndividualIdentityNumber)
+                        return new DataResponse<Citizen>() { IsDone = false, Message = "لا يمكن إضافة مدعي بنفس هوية المفوض عنه" };
+                }
+
 
                 var contract = (await _repository.GetQueryable<LitigationRequestContract, Guid>())
                     .Include(x => x.LitigationRequests)
@@ -4552,6 +4588,7 @@ namespace REAC.Application.AppServices.Litigation
                         Message = "لا يمكن ان يكون طرفى الدعوى لنفس الشخص"
                     };
 
+                
 
                 TryGetFacilityAgian:
                 Facility? facility = null;
@@ -6563,7 +6600,7 @@ namespace REAC.Application.AppServices.Litigation
                 {
                     if (delegationRequest.Delegator.DelegationRelationshipTypeId == DelegationRelationshipType.Individual)
                     {
-                        delegationRequest.LitigationRequest.Contract.SecondPartyCitizenId = delegationRequest.Delegator.CitizenId;
+                        delegationRequest.LitigationRequest.Contract.SecondPartyCitizenId = delegationRequest.Delegator.DelegatorCitizenId;
                         delegationRequest.LitigationRequest.Contract.SecondPartyFacilityId = null;
                     }
                     else if (delegationRequest.Delegator.DelegationRelationshipTypeId == DelegationRelationshipType.Facility)
