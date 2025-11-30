@@ -1,0 +1,1194 @@
+﻿
+GO
+/****** Object:  StoredProcedure [dbo].[GetArbitratorsReport]    Script Date: 11/19/2025 4:22:31 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+ALTER PROCEDURE [dbo].[GetArbitratorsReport]
+    @EmployeeIds NVARCHAR(MAX) = NULL,              -- Filter by specific arbitrator employee IDs
+    @FromDate DATETIME = NULL,                      -- Start date for filtering
+    @ToDate DATETIME = NULL,                        -- End date for filtering
+    @ArbitratorName NVARCHAR(200) = NULL,           -- Filter by arbitrator name (partial match)
+    @ArbitratorStatus NVARCHAR(50) = NULL,          -- Filter by arbitrator status (Active/Inactive)
+    @ExperienceYears INT = NULL,                    -- Filter by years of experience
+    @Skip INT = 0,                                  -- Number of records to skip (for pagination)
+    @Take INT = NULL                                -- Number of records to take (NULL = all records)
+AS
+BEGIN
+    -- Prevent row count messages from being returned to improve performance
+    SET NOCOUNT ON;
+    
+    -- Validate pagination parameters
+    SET @Skip = ISNULL(@Skip, 0);
+    IF @Skip < 0 SET @Skip = 0;
+    
+    -- Set default date range if not provided
+    -- Default from date: earliest possible date to include all historical records
+    SET @FromDate = ISNULL(@FromDate, '1900-01-01');
+    -- Default to date: current date and time to include all records up to now
+    SET @ToDate = ISNULL(@ToDate, GETDATE());
+
+    -- =============================================
+    -- CTE 1: AllArbitrators
+    -- Purpose: Get ALL arbitrator citizens first, regardless of litigation assignment
+    -- This ensures we show all arbitrators even those with no cases
+    -- =============================================
+    ;WITH AllArbitrators AS (
+        SELECT DISTINCT
+            C.Id AS ArbitratorCitizenId,
+            C.FullName AS ArbitratorName,
+            -- Convert boolean ArbitratorStatusId to descriptive text
+            CASE WHEN C.ArbitratorStatusId = 1 THEN N'مفعل' ELSE N'غير مفعل' END AS ArbitratorStatus,
+            ISNULL(CR.ExperienceYears, 0) AS ExperienceYears
+        FROM Citizen C
+        LEFT JOIN CitizenRequest CR ON C.Id = CR.CitizenId
+        WHERE 
+            -- Get ALL citizens who are arbitrators (based on IsArbitrator flag)
+            C.IsArbitrator = 1
+            -- Apply arbitrator-specific filters
+            AND (@EmployeeIds IS NULL OR C.Id IN (
+                SELECT value FROM STRING_SPLIT(@EmployeeIds, ',')
+            ))
+            -- Filter by arbitrator name (partial match, case-insensitive)
+            AND (@ArbitratorName IS NULL OR C.FullName LIKE '%' + @ArbitratorName + '%')
+            -- Filter by arbitrator status with proper boolean conversion
+            AND (@ArbitratorStatus IS NULL OR 
+                 (@ArbitratorStatus = 1 AND C.ArbitratorStatusId = 1) OR 
+                 (@ArbitratorStatus = 2 AND C.ArbitratorStatusId = 2))
+            -- Filter by years of experience
+            AND (@ExperienceYears IS NULL OR ISNULL(CR.ExperienceYears, 0) = @ExperienceYears)
+            
+
+    ),
+    
+    -- =============================================
+    -- CTE 2: ChairmanLitigations
+    -- Purpose: Get litigation requests where arbitrator is the chairman/main arbitrator
+    -- =============================================
+    ChairmanLitigations AS (
+        SELECT 
+            A.ArbitratorCitizenId,
+            L.Id,
+            L.IsFinished,
+            L.LitigationRequestStage,
+            L.ArbitrationPeriod
+        FROM AllArbitrators A
+        -- LEFT JOIN to keep ALL arbitrators even those without litigation cases
+        LEFT JOIN (
+            SELECT
+                L2.*,
+                ROW_NUMBER() OVER (PARTITION BY L2.Id ORDER BY L2.CreatedOn DESC) AS rn
+            FROM LitigationRequest AS L2
+            WHERE
+                L2.ArbitratorCitizenId IS NOT NULL
+                AND L2.LitigationRequestStage = 3       -- Only arbitration stage cases
+                AND L2.SentOn >= @FromDate              -- Filter by date range
+                AND L2.SentOn <= @ToDate
+        ) AS L ON L.ArbitratorCitizenId = A.ArbitratorCitizenId AND L.rn = 1
+    ),
+    
+    -- =============================================
+    -- CTE 3: RegularArbitratorLitigations
+    -- Purpose: Get litigation requests where arbitrator is a regular arbitrator (panel member)
+    -- =============================================
+    RegularArbitratorLitigations AS (
+        SELECT 
+            A.ArbitratorCitizenId,
+            L.Id,
+            L.IsFinished,
+            L.LitigationRequestStage,
+            L.ArbitrationPeriod
+        FROM AllArbitrators A
+        -- Left join with litigation requests where this person is a regular arbitrator
+        LEFT JOIN LitigationRequestArbitrator LRA ON LRA.ArbitratorCitizenId = A.ArbitratorCitizenId
+        LEFT JOIN LitigationRequest L ON L.Id = LRA.LitigationRequestId 
+                                      AND L.LitigationRequestStage = 3    -- Only arbitration stage cases
+                                      AND L.SentOn >= @FromDate           -- Filter by date range
+                                      AND L.SentOn <= @ToDate
+    ),
+    
+    -- =============================================
+    -- CTE 4: CombinedLitigations
+    -- Purpose: Combine both chairman and regular arbitrator litigations
+    -- =============================================
+    CombinedLitigations AS (
+    SELECT DISTINCT 
+        ArbitratorCitizenId,
+        Id,
+        IsFinished,
+        LitigationRequestStage,
+        ArbitrationPeriod
+    FROM (
+        SELECT ArbitratorCitizenId, Id, IsFinished, LitigationRequestStage, ArbitrationPeriod
+        FROM ChairmanLitigations
+        UNION ALL
+        SELECT ArbitratorCitizenId, Id, IsFinished, LitigationRequestStage, ArbitrationPeriod
+        FROM RegularArbitratorLitigations
+    ) AS X
+),
+    
+    -- =============================================
+    -- CTE 5: BaseArbitratorLitigations
+    -- Purpose: Join all arbitrators with their combined litigation statistics
+    -- =============================================
+    BaseArbitratorLitigations AS (
+        SELECT 
+            A.ArbitratorCitizenId,
+            A.ArbitratorName,
+            A.ArbitratorStatus,
+            A.ExperienceYears,
+            CL.Id,
+            CL.IsFinished,
+            CL.LitigationRequestStage,
+            CL.ArbitrationPeriod
+        FROM AllArbitrators A
+        LEFT JOIN CombinedLitigations CL ON CL.ArbitratorCitizenId = A.ArbitratorCitizenId
+    )
+    
+    -- =============================================
+    -- MAIN QUERY: Generate aggregated report by arbitrator
+    -- Purpose: Group litigation data by arbitrator and calculate key statistics
+    -- Includes both chairman and regular arbitrator cases
+    -- =============================================
+    SELECT
+        -- Arbitrator identification
+        ArbitratorName,
+        ArbitratorStatus,
+        ExperienceYears,
+        
+        -- Core count metrics (counts ALL cases: chairman + regular arbitrator)
+        COUNT(Id) AS TotalLitigationCount,                          -- Total cases assigned to this arbitrator
+        
+        -- Completion status counts (following same pattern as reviewers/reformers)
+        SUM(CASE WHEN IsFinished = 0 THEN 1 ELSE 0 END) AS NotFinishedCount,    -- Cases not finished
+        SUM(CASE WHEN IsFinished = 1 THEN 1 ELSE 0 END) AS FinishedCount,       -- Cases finished
+        
+        -- Delayed cases (cases in stage 3 that have exceeded arbitration period)
+        SUM(CASE 
+            WHEN LitigationRequestStage = 3                 -- In arbitration stage
+                 AND ArbitrationPeriod = 0                  -- Period has expired
+            THEN 1 ELSE 0 
+        END) AS DueDateCount,                                       -- Overdue arbitration cases
+        
+        -- Performance ratios (percentages)
+        -- Calculate percentage of cases that are not finished
+        CAST(
+            SUM(CASE WHEN IsFinished = 0 THEN 1 ELSE 0 END) * 100.0 / 
+            NULLIF(COUNT(Id), 0)                                    -- Avoid division by zero
+            AS DECIMAL(5,2)
+        ) AS NotFinishedRatio,                                      -- Percentage of pending cases
+        
+        -- Calculate percentage of cases that are finished
+        CAST(
+            SUM(CASE WHEN IsFinished = 1 THEN 1 ELSE 0 END) * 100.0 / 
+            NULLIF(COUNT(Id), 0)                                    -- Avoid division by zero
+            AS DECIMAL(5,2)
+        ) AS FinishedRatio,                                         -- Percentage of completed cases
+        
+        -- Calculate percentage of delayed cases
+        CAST(
+            SUM(CASE 
+                WHEN LitigationRequestStage = 3 AND ArbitrationPeriod = 0 
+                THEN 1 ELSE 0 
+            END) * 100.0 / NULLIF(COUNT(Id), 0)                     -- Avoid division by zero
+            AS DECIMAL(5,2)
+        ) AS DueDateRatio,                                          -- Percentage of overdue arbitration cases
+        
+        -- Total count for pagination info (total records before pagination)
+        COUNT(*) OVER() AS TotalCount
+        
+    FROM BaseArbitratorLitigations
+    -- Group by arbitrator to get per-arbitrator statistics
+    -- Note: We group by ALL arbitrators, including those with zero cases
+    GROUP BY ArbitratorName, ArbitratorStatus, ExperienceYears
+    ORDER BY ArbitratorName                                         -- Sort results alphabetically by arbitrator name
+    
+    -- =============================================
+    -- PAGINATION: Apply OFFSET and FETCH NEXT for pagination
+    -- =============================================
+    OFFSET @Skip ROWS                                               -- Skip the specified number of rows
+    FETCH NEXT 
+        CASE 
+            WHEN @Take IS NULL THEN 2147483647                      -- If @Take is NULL, fetch maximum possible rows
+            ELSE @Take 
+        END ROWS ONLY                                               -- Fetch only the specified number of rows
+END
+
+----------------------------------------------------------------------------
+
+
+GO
+/****** Object:  StoredProcedure [dbo].[GetReformersReport]    Script Date: 11/19/2025 5:20:44 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+ALTER PROCEDURE [dbo].[GetReformersReport]
+    @FromDate DATETIME = NULL,                      -- Start date for filtering
+    @ToDate DATETIME = NULL,                        -- End date for filtering
+    @ReformerName NVARCHAR(200) = NULL,             -- Filter by reformer name (partial match)
+    @ReformerStatus INT = NULL,                     -- Filter by reformer status (Active/Inactive)
+    @ExperienceYears INT = NULL,                    -- Filter by years of experience
+    @Skip INT = 0,                                  -- Number of records to skip (for pagination)
+    @Take INT = NULL                                -- Number of records to take (NULL = all records)
+AS
+BEGIN
+    -- Prevent row count messages from being returned to improve performance
+    SET NOCOUNT ON;
+    
+    -- Validate pagination parameters
+    SET @Skip = ISNULL(@Skip, 0);
+    IF @Skip < 0 SET @Skip = 0;
+    
+    -- Set default date range if not provided
+    SET @FromDate = ISNULL(@FromDate, '1900-01-01');
+    SET @ToDate = ISNULL(@ToDate, GETDATE());
+
+    -- =============================================
+    -- CTE 1: AllReformers - Get ALL reformer citizens
+    -- Purpose: Start with ALL reformers first, regardless of litigation assignment
+    -- =============================================
+    WITH AllReformers AS (
+        SELECT DISTINCT
+            C.Id AS ReformerCitizenId,
+            C.FullName AS ReformerName,
+            CASE WHEN C.ReformerStatusId = 1 THEN N'مفعل' ELSE N'غير مفعل' END AS ReformerStatus,
+            ISNULL(CR.ExperienceYears, 0) AS ExperienceYears
+        FROM Citizen C
+        LEFT JOIN CitizenRequest CR ON C.Id = CR.CitizenId
+        WHERE 
+            -- Get ALL citizens who are reformers (based on IsReformer flag)
+            C.IsReformer = 1
+            
+            -- Apply reformer-specific filters
+            AND (@ReformerName IS NULL OR C.FullName LIKE '%' + @ReformerName + '%')
+            AND (@ReformerStatus IS NULL OR 
+                 (@ReformerStatus = 1 AND C.ReformerStatusId = 1) OR 
+                 (@ReformerStatus = 2 AND C.ReformerStatusId = 2))
+            AND (@ExperienceYears IS NULL OR ISNULL(CR.ExperienceYears, 0) = @ExperienceYears)
+    ),
+    
+    -- =============================================
+    -- CTE 2: ReformerLitigationStats - Get litigation statistics for each reformer
+    -- Purpose: Calculate statistics for litigation requests assigned to each reformer
+    -- =============================================
+    ReformerLitigationStats AS (
+        SELECT 
+            R.ReformerCitizenId,
+            R.ReformerName,
+            R.ReformerStatus,
+            R.ExperienceYears,
+            
+            -- Reformer litigation statistics
+            COUNT(L.Id) AS TotalLitigationCount,
+            SUM(CASE WHEN L.IsFinished = 0 THEN 1 ELSE 0 END) AS NotFinishedCount,
+            SUM(CASE WHEN L.IsFinished = 1 THEN 1 ELSE 0 END) AS FinishedCount,
+            SUM(CASE WHEN L.LitigationRequestStage = 2 AND L.ReconciliationPeriod = 0 THEN 1 ELSE 0 END) AS DueDateCount
+            
+        FROM AllReformers R
+        
+        -- Left join with litigation requests where this person is the reformer
+        LEFT JOIN (
+            SELECT L.*,
+                   ROW_NUMBER() OVER (PARTITION BY L.Id ORDER BY L.CreatedOn DESC) AS rn
+            FROM LitigationRequest L
+            WHERE L.ReformerCitizenId IS NOT NULL
+              AND L.LitigationRequestStage = 2
+              AND L.SentOn >= @FromDate 
+              AND L.SentOn <= @ToDate
+        ) L ON L.ReformerCitizenId = R.ReformerCitizenId AND L.rn = 1
+        
+        GROUP BY R.ReformerCitizenId, R.ReformerName, R.ReformerStatus, R.ExperienceYears
+    )
+    
+    -- =============================================
+    -- MAIN QUERY: Generate final reformer report with statistics
+    -- =============================================
+    SELECT
+        ReformerName,
+        ReformerStatus,
+        ExperienceYears,
+        
+        -- Core count metrics
+        ISNULL(TotalLitigationCount, 0) AS TotalLitigationCount,
+        ISNULL(NotFinishedCount, 0) AS NotFinishedCount,
+        ISNULL(FinishedCount, 0) AS FinishedCount,
+        ISNULL(DueDateCount, 0) AS DueDateCount,
+        
+        -- Performance ratios (percentages)
+        CAST(
+            ISNULL(NotFinishedCount, 0) * 100.0 / 
+            NULLIF(ISNULL(TotalLitigationCount, 0), 0)
+            AS DECIMAL(5,2)
+        ) AS NotFinishedRatio,
+        
+        CAST(
+            ISNULL(FinishedCount, 0) * 100.0 / 
+            NULLIF(ISNULL(TotalLitigationCount, 0), 0)
+            AS DECIMAL(5,2)
+        ) AS FinishedRatio,
+        
+        CAST(
+            ISNULL(DueDateCount, 0) * 100.0 / 
+            NULLIF(ISNULL(TotalLitigationCount, 0), 0)
+            AS DECIMAL(5,2)
+        ) AS DueDateRatio
+		,COUNT(*) OVER() AS TotalCount
+        
+    FROM ReformerLitigationStats
+    -- Show ALL reformers, even those with no litigation cases (they'll have zero statistics)
+    ORDER BY ReformerName
+    
+    -- =============================================
+    -- PAGINATION: Apply OFFSET and FETCH NEXT for pagination
+    -- =============================================
+    OFFSET @Skip ROWS
+    FETCH NEXT 
+        CASE 
+            WHEN @Take IS NULL THEN 2147483647
+            ELSE @Take 
+        END ROWS ONLY
+END
+
+
+---------------------------------------------------------------
+
+USE [REAC_Dev_Feb]
+GO
+/****** Object:  StoredProcedure [dbo].[GetReviewersReformersArbitratorsReport]    Script Date: 11/25/2025 12:03:53 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+-- تقرير المدقق والمصلح والمحكم
+ALTER PROCEDURE [dbo].[GetReviewersReformersArbitratorsReport]
+    @PersonnelTypeId NVARCHAR(MAX) = NULL,             -- Filter by type: 'Reviewer ==> 1', 'Reformer ==> 2', 'Arbitrator ==> 3', or NULL for all
+    @EmployeeIds NVARCHAR(MAX) = NULL,              -- Filter by specific employee/citizen IDs
+    @ReformersIds NVARCHAR(MAX) = NULL,              -- Filter by specific employee/citizen IDs
+    @ArbitratorsIds NVARCHAR(MAX) = NULL,              -- Filter by specific employee/citizen IDs
+    @PersonnelStatusId NVARCHAR(50) = NULL,           -- Filter by personnel status
+    @ExperienceYears INT = NULL,                    -- Filter by years of experience (Reformers/Arbitrators only)
+    @ArbitratorClassIds NVARCHAR(MAX) = NULL,                    -- Filter by @ArbitratorClass (Arbitrators only)
+    @Skip INT = 0,                                  -- Number of records to skip (for pagination)
+    @Take INT = NULL                                -- Number of records to take (NULL = all records)
+AS
+BEGIN
+    -- Prevent row count messages from being returned to improve performance
+    SET NOCOUNT ON;
+    
+    -- Validate pagination parameters
+    SET @Skip = ISNULL(@Skip, 0);
+    IF @Skip < 0 SET @Skip = 0;
+
+    -- =============================================
+    -- PRE-PROCESSING: Check if @ArbitratorClassIds is provided
+    -- =============================================
+    -- Note: If @ArbitratorClassIds is NOT NULL, it implies filtering must only apply to Arbitrators.
+    -- We'll check if the provided string is NOT NULL and is NOT empty.
+    
+    DECLARE @FilterArbitratorsOnly BIT = 0;
+    IF @ArbitratorClassIds IS NOT NULL AND TRIM(@ArbitratorClassIds) <> ''
+    BEGIN
+        SET @FilterArbitratorsOnly = 1;
+    END;
+   
+
+    -- =============================================
+    -- CTE 1: AllReviewers - Get ALL reviewer employees
+    -- =============================================
+    
+	WITH AllReviewers AS (
+        SELECT DISTINCT
+            E.Id AS PersonnelId,
+            E.EmployeeName AS PersonnelName,
+            N'مدقق' AS PersonnelType,
+			1 As PersonnelTypeId,
+            CASE WHEN E.IsActive = 1 THEN N'معتمد' ELSE N'موقوف' END AS PersonnelStatus,
+			0 AS ExperienceYears
+        FROM SysEmployee E
+        INNER JOIN SysDepartment D ON E.DepartmentId = D.Id
+        WHERE 
+            -- **START FIX: Filter out Reviewers if @ArbitratorClassIds is provided**
+            (@FilterArbitratorsOnly = 0)
+            AND
+            -- **END FIX**
+            
+            -- Get ALL employees from departments with DepartmentType = 1 (reviewer departments)
+            D.DepartmentType = 1
+            
+            -- Apply reviewer-specific filters
+            AND (@EmployeeIds IS NULL OR E.Id IN (SELECT value FROM STRING_SPLIT(@EmployeeIds, ',')))
+            AND (@PersonnelStatusId IS NULL OR E.IsActive IN  (SELECT value FROM STRING_SPLIT(@PersonnelStatusId, ',')))
+                 
+    ),
+
+
+    -- =============================================
+    -- CTE 2: AllReformers - Get ALL reformer citizens
+    -- =============================================
+   
+    
+	 AllReformers AS (
+        SELECT DISTINCT
+            C.Id AS PersonnelId,
+            C.FullName AS PersonnelName,
+            N'مصلح' AS PersonnelType,
+			2 As PersonnelTypeId,
+            CASE WHEN c.ReformerStatusId = 1 THEN N'معتمد' ELSE N'موقوف' END AS PersonnelStatus,
+			0 AS ExperienceYears
+        FROM Citizen C
+        LEFT JOIN CitizenRequest CR ON C.Id = CR.CitizenId
+        WHERE 
+            -- **START FIX: Filter out Reformers if @ArbitratorClassIds is provided**
+            (@FilterArbitratorsOnly = 0)
+            AND
+            -- **END FIX**
+            
+            -- Get ALL citizens who are reformers (based on IsReformer flag)
+            C.IsReformer = 1
+            
+            -- Apply reformer-specific filters
+            AND (@ReformersIds IS NULL OR C.Id IN (SELECT value FROM STRING_SPLIT(@ReformersIds, ',')))
+            AND (@PersonnelStatusId IS NULL OR C.ReformerStatusId IN  (SELECT value FROM STRING_SPLIT(@PersonnelStatusId, ',')))
+                 
+            AND (@ExperienceYears IS NULL OR ISNULL(CR.ExperienceYears, 0) >= @ExperienceYears)
+    ),
+
+
+    -- =============================================
+    -- CTE 3: AllArbitrators - Get ALL arbitrator citizens
+    -- =============================================
+   
+	 AllArbitrators AS (
+        SELECT DISTINCT
+            C.Id AS PersonnelId,
+            C.FullName AS PersonnelName,
+		    N'محكم' AS PersonnelType,
+			3 As PersonnelTypeId,
+            CASE WHEN C.ArbitratorStatusId = 1 THEN N'معتمد' ELSE N'موقوف' END AS PersonnelStatus, -- Changed ArbitratorStatus to PersonnelStatus for UNION
+            ISNULL(CR.ExperienceYears, 0) AS ExperienceYears
+
+        FROM Citizen C
+        LEFT JOIN CitizenRequest CR ON C.Id = CR.CitizenId
+		LEFT JOIN SysArbitratorClass AC ON CR.ArbitratorClassId = AC.Id
+        WHERE 
+            -- Get ALL citizens who are arbitrators (based on IsArbitrator flag)
+            C.IsArbitrator = 1
+            
+            -- Apply arbitrator-specific filters
+            AND (@ArbitratorsIds IS NULL OR C.Id IN (SELECT value FROM STRING_SPLIT(@ArbitratorsIds, ',')))
+            AND (@PersonnelStatusId IS NULL OR C.ArbitratorStatusId IN  (SELECT value FROM STRING_SPLIT(@PersonnelStatusId, ',')))
+            AND (@ArbitratorClassIds IS NULL OR AC.Id IN  (SELECT value FROM STRING_SPLIT(@ArbitratorClassIds, ',')))
+            AND (@ExperienceYears IS NULL OR ISNULL(CR.ExperienceYears, 0) >= @ExperienceYears)
+
+    ),
+    
+    -- =============================================
+    -- CTE 4: AllPersonnel - Union all personnel types
+    -- =============================================
+    AllPersonnel AS (
+        SELECT * FROM AllReviewers
+        UNION ALL
+        SELECT * FROM AllReformers
+        UNION ALL
+        SELECT * FROM AllArbitrators
+    ),
+   
+    -- **START FIX: New CTEs for accurate Arbitrator counting (from previous fix)**
+
+    -- CTE 7a: ArbitratorLitigations - Union all litigation IDs for an arbitrator (Chairman or Regular)
+    ArbitratorLitigations AS (
+
+        -- Chairman role from LitigationRequest
+        SELECT 
+            L.Id AS LitigationId,
+            L.IsFinished,
+            L.LitigationRequestStage,
+            L.ArbitrationPeriod,
+            A.PersonnelId,
+            1 AS IsChairman,
+            0 AS IsRegular
+        FROM AllArbitrators A
+        JOIN LitigationRequest L 
+            ON L.ArbitratorCitizenId = A.PersonnelId
+           AND L.LitigationRequestStage = 3
+
+        UNION
+
+        -- Regular arbitrator role from LitigationRequestArbitrator
+        SELECT 
+            L2.Id AS LitigationId,
+            L2.IsFinished,
+            L2.LitigationRequestStage,
+            L2.ArbitrationPeriod,
+            A.PersonnelId,
+            0 AS IsChairman,
+            1 AS IsRegular
+        FROM AllArbitrators A
+        JOIN LitigationRequestArbitrator LRA 
+            ON LRA.ArbitratorCitizenId = A.PersonnelId
+        JOIN LitigationRequest L2 
+            ON L2.Id = LRA.LitigationRequestId
+           AND L2.LitigationRequestStage = 3
+    ),
+
+    -- **END FIX: New CTEs for accurate Arbitrator counting**
+    
+    -- =============================================
+    -- CTE 5: ReviewerStats - Calculate litigation statistics for reviewers
+    -- (Unchanged for logic, but includes the new filter logic if needed)
+    -- =============================================
+    ReviewerStats AS (
+        SELECT 
+            R.PersonnelId,
+            R.PersonnelName,
+            R.PersonnelType,
+			R.PersonnelTypeId,
+            R.PersonnelStatus,
+            R.ExperienceYears,
+            
+            COUNT(L.Id) AS TotalLitigationCount,
+            SUM(CASE WHEN L.IsFinished = 0 THEN 1 ELSE 0 END) AS NotFinishedCount,
+            SUM(CASE WHEN L.IsFinished = 1 THEN 1 ELSE 0 END) AS FinishedCount,
+            SUM(CASE 
+                WHEN L.LitigationRequestStage = 1                     
+                     AND L.IsReminderForReviewerManagerSent = 1       
+                     AND L.IsReminderForReviewerSent = 1              
+                THEN 1 ELSE 0 
+            END) AS DueDateCount,
+            
+            -- Additional fields for arbitrators (will be 0 for reviewers)
+            0 AS ChairmanTotalCount,
+            0 AS ChairmanNotFinishedCount,
+            0 AS ChairmanFinishedCount,
+            0 AS ChairmanDueDateCount,
+            0 AS ArbitratorTotalCount,
+            0 AS ArbitratorNotFinishedCount,
+            0 AS ArbitratorFinishedCount,
+            0 AS ArbitratorDueDateCount
+            
+        FROM AllPersonnel R
+        LEFT JOIN (
+            SELECT WFP.*,
+                   ROW_NUMBER() OVER (PARTITION BY WFP.RequestId ORDER BY WFP.CreatedOn DESC) AS rn
+            FROM WorkFlowProcessingLog WFP
+            WHERE WFP.EmployeeId IS NOT NULL
+        ) W ON W.EmployeeId = R.PersonnelId AND W.rn = 1 AND R.PersonnelType = N'مدقق'
+        LEFT JOIN LitigationRequest L ON L.Id = W.RequestId
+                                      AND L.LitigationRequestStage = 1
+                                      AND R.PersonnelType = N'مدقق'
+        WHERE R.PersonnelType = N'مدقق'
+        GROUP BY R.PersonnelId, R.PersonnelName, R.PersonnelType, R.PersonnelStatus, R.ExperienceYears, R.PersonnelTypeId
+    ),
+    
+    -- =============================================
+    -- CTE 6: ReformerStats - Calculate litigation statistics for reformers
+    -- (Unchanged for logic, but includes the new filter logic if needed)
+    -- =============================================
+    ReformerStats AS (
+        SELECT 
+            R.PersonnelId,
+            R.PersonnelName,
+            R.PersonnelType,
+			R.PersonnelTypeId,
+            R.PersonnelStatus,
+            R.ExperienceYears,
+            
+            COUNT(L.Id) AS TotalLitigationCount,
+            SUM(CASE WHEN L.IsFinished = 0 THEN 1 ELSE 0 END) AS NotFinishedCount,
+            SUM(CASE WHEN L.IsFinished = 1 THEN 1 ELSE 0 END) AS FinishedCount,
+            SUM(CASE WHEN L.LitigationRequestStage = 2 AND L.ReconciliationPeriod = 0 THEN 1 ELSE 0 END) AS DueDateCount,
+            
+            -- Additional fields for arbitrators (will be 0 for reformers)
+            0 AS ChairmanTotalCount,
+            0 AS ChairmanNotFinishedCount,
+            0 AS ChairmanFinishedCount,
+            0 AS ChairmanDueDateCount,
+            0 AS ArbitratorTotalCount,
+            0 AS ArbitratorNotFinishedCount,
+            0 AS ArbitratorFinishedCount,
+            0 AS ArbitratorDueDateCount
+            
+        FROM AllPersonnel R
+        LEFT JOIN (
+            SELECT L.*,
+                   ROW_NUMBER() OVER (PARTITION BY L.Id ORDER BY L.CreatedOn DESC) AS rn
+            FROM LitigationRequest L
+            WHERE L.ReformerCitizenId IS NOT NULL
+              AND L.LitigationRequestStage = 2
+        ) L ON L.ReformerCitizenId = R.PersonnelId AND L.rn = 1 AND R.PersonnelType = N'مصلح'
+        WHERE R.PersonnelType = N'مصلح'
+        GROUP BY R.PersonnelId, R.PersonnelName, R.PersonnelType, R.PersonnelStatus, R.ExperienceYears , R.PersonnelTypeId
+    ),
+    
+    -- =============================================
+    -- CTE 7: ArbitratorStats - Calculate litigation statistics for arbitrators
+    -- =============================================
+    ArbitratorStats AS (
+
+    SELECT
+        A.PersonnelId,
+        A.PersonnelName,
+        A.PersonnelType,
+        A.PersonnelTypeId,
+        A.PersonnelStatus, -- Corrected from ArbitratorStatus
+        A.ExperienceYears,
+
+        -- unified counts (no double counting)
+        COUNT(DISTINCT AL.LitigationId) AS TotalLitigationCount,
+
+        COUNT(DISTINCT CASE WHEN AL.IsFinished = 0 THEN AL.LitigationId END) AS NotFinishedCount,
+        COUNT(DISTINCT CASE WHEN AL.IsFinished = 1 THEN AL.LitigationId END) AS FinishedCount,
+        COUNT(DISTINCT CASE WHEN AL.LitigationRequestStage = 3 AND AL.ArbitrationPeriod = 0 THEN AL.LitigationId END)
+            AS DueDateCount,
+
+        -- chairman-only counts (no duplication)
+        COUNT(DISTINCT CASE WHEN AL.IsChairman = 1 THEN AL.LitigationId END) AS ChairmanTotalCount,
+        COUNT(DISTINCT CASE WHEN AL.IsChairman = 1 AND AL.IsFinished = 0 THEN AL.LitigationId END) AS ChairmanNotFinishedCount,
+        COUNT(DISTINCT CASE WHEN AL.IsChairman = 1 AND AL.IsFinished = 1 THEN AL.LitigationId END) AS ChairmanFinishedCount,
+        COUNT(DISTINCT CASE WHEN AL.IsChairman = 1 AND AL.LitigationRequestStage = 3 AND AL.ArbitrationPeriod = 0 THEN AL.LitigationId END)
+            AS ChairmanDueDateCount,
+
+        -- regular arbitrator-only counts (no duplication)
+        COUNT(DISTINCT CASE WHEN AL.IsRegular = 1 THEN AL.LitigationId END) AS ArbitratorTotalCount,
+        COUNT(DISTINCT CASE WHEN AL.IsRegular = 1 AND AL.IsFinished = 0 THEN AL.LitigationId END) AS ArbitratorNotFinishedCount,
+        COUNT(DISTINCT CASE WHEN AL.IsRegular = 1 AND AL.IsFinished = 1 THEN AL.LitigationId END) AS ArbitratorFinishedCount,
+        COUNT(DISTINCT CASE WHEN AL.IsRegular = 1 AND AL.LitigationRequestStage = 3 AND AL.ArbitrationPeriod = 0 THEN AL.LitigationId END)
+            AS ArbitratorDueDateCount
+
+    FROM AllArbitrators A
+    LEFT JOIN ArbitratorLitigations AL ON AL.PersonnelId = A.PersonnelId
+    GROUP BY 
+        A.PersonnelId, A.PersonnelName, A.PersonnelType, A.PersonnelTypeId, 
+        A.PersonnelStatus, A.ExperienceYears
+),
+    -- =============================================
+    -- CTE 8: UnifiedStats - Union all statistics
+    -- =============================================
+    UnifiedStats AS (
+        SELECT * FROM ReviewerStats
+        UNION ALL
+        SELECT * FROM ReformerStats
+        UNION ALL
+        SELECT * FROM ArbitratorStats
+        UNION ALL
+        -- Include personnel with no statistics (zero counts)
+        SELECT 
+            AP.PersonnelId,
+            AP.PersonnelName,
+            AP.PersonnelType,
+			AP.PersonnelTypeId,
+            AP.PersonnelStatus,
+            AP.ExperienceYears,
+            0 AS TotalLitigationCount,
+            0 AS NotFinishedCount,
+            0 AS FinishedCount,
+            0 AS DueDateCount,
+            0 AS ChairmanTotalCount,
+            0 AS ChairmanNotFinishedCount,
+            0 AS ChairmanFinishedCount,
+            0 AS ChairmanDueDateCount,
+            0 AS ArbitratorTotalCount,
+            0 AS ArbitratorNotFinishedCount,
+            0 AS ArbitratorFinishedCount,
+            0 AS ArbitratorDueDateCount
+        FROM AllPersonnel AP
+        WHERE NOT EXISTS (
+            SELECT 1 FROM ReviewerStats RS WHERE RS.PersonnelId = AP.PersonnelId
+            UNION
+            SELECT 1 FROM ReformerStats RF WHERE RF.PersonnelId = AP.PersonnelId
+            UNION
+            SELECT 1 FROM ArbitratorStats AR WHERE AR.PersonnelId = AP.PersonnelId
+        )
+
+    )
+    
+    -- =============================================
+    -- MAIN QUERY: Generate final unified personnel report
+    -- =============================================
+    SELECT
+        PersonnelName,
+        PersonnelType,
+		PersonnelTypeId,
+        PersonnelStatus,
+        ExperienceYears,
+        
+        -- Core count metrics
+        ISNULL(TotalLitigationCount, 0) AS TotalLitigationCount,
+        ISNULL(NotFinishedCount, 0) AS NotFinishedCount,
+        ISNULL(FinishedCount, 0) AS FinishedCount,
+        ISNULL(DueDateCount, 0) AS DueDateCount,
+        
+        -- Arbitrator-specific metrics (will be 0 for non-arbitrators)
+        ISNULL(ChairmanTotalCount, 0) AS ChairmanTotalCount,
+        ISNULL(ChairmanNotFinishedCount, 0) AS ChairmanNotFinishedCount,
+        ISNULL(ChairmanFinishedCount, 0) AS ChairmanFinishedCount,
+        ISNULL(ChairmanDueDateCount, 0) AS ChairmanDueDateCount,
+        ISNULL(ArbitratorTotalCount, 0) AS ArbitratorTotalCount,
+        ISNULL(ArbitratorNotFinishedCount, 0) AS ArbitratorNotFinishedCount,
+        ISNULL(ArbitratorFinishedCount, 0) AS ArbitratorFinishedCount,
+        ISNULL(ArbitratorDueDateCount, 0) AS ArbitratorDueDateCount,
+        
+        -- Performance ratios (percentages)
+        CAST(
+            ISNULL(NotFinishedCount, 0) * 100.0 / 
+            NULLIF(ISNULL(TotalLitigationCount, 0), 0)
+            AS DECIMAL(18,2) -- Increased precision to avoid arithmetic overflow error (Error 8115)
+        ) AS NotFinishedRatio,
+        
+        CAST(
+            ISNULL(FinishedCount, 0) * 100.0 / 
+            NULLIF(ISNULL(TotalLitigationCount, 0), 0)
+            AS DECIMAL(18,2) -- Increased precision to avoid arithmetic overflow error (Error 8115)
+        ) AS FinishedRatio,
+        
+        CAST(
+            ISNULL(DueDateCount, 0) * 100.0 / 
+            NULLIF(ISNULL(TotalLitigationCount, 0), 0)
+            AS DECIMAL(18,2) -- Increased precision to avoid arithmetic overflow error (Error 8115)
+        ) AS DueDateRatio
+        ,
+		COUNT(*) OVER() AS TotalCount
+    FROM UnifiedStats
+	Where 
+	(@PersonnelTypeId IS NULL OR PersonnelTypeId in (SELECT value FROM STRING_SPLIT(@PersonnelTypeId, ',')))
+
+    ORDER BY PersonnelType, PersonnelName
+    
+    -- =============================================
+    -- PAGINATION: Apply OFFSET and FETCH NEXT for pagination
+    -- =============================================
+    OFFSET @Skip ROWS
+    FETCH NEXT 
+        CASE 
+            WHEN @Take IS NULL THEN 2147483647
+            ELSE @Take 
+        END ROWS ONLY
+END
+
+-------------------------------------------------------------------------------------------
+
+
+GO
+/****** Object:  StoredProcedure [dbo].[GetLitigationStatisticsForAllStages]    Script Date: 11/25/2025 12:07:53 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+             ALTER PROCEDURE [dbo].[GetLitigationStatisticsForAllStages] 
+            @FromDate DATETIME = NULL,
+            @ToDate DATETIME = NULL
+    AS
+    BEGIN
+	-- Handle default dates if @FromDate is NULL
+    SET @FromDate = ISNULL(@FromDate, '1970-01-01 00:00:00.000');
+
+    -- Handle default dates if @ToDate is NULL
+    SET @ToDate = ISNULL(@ToDate, GETDATE());
+															
+															-- مرحلة التدقيق
+			-- عدد الدعاوي الكلية
+			DECLARE @TotalReviewAllCount INT;
+			--عدد الدعاوى الغير منتهية
+			DECLARE @TotalReviewNotFinishedCount INT;
+			--عدد الدعاوى المنتهية
+			DECLARE @TotalReviewFinishedCount INT;
+			-- عدد الدعاوي المتأخرة
+			DECLARE @TotalReviewDueDateCount INT;
+			-- عدد الدعاوي وساطة عقارية
+			DECLARE @TotalReviewRealEstateBrokerageCount INT;
+			-- عدد الدعاوي وافي
+            DECLARE @TotalReviewWafiCount INT;
+			-- عدد الدعاوي أخري
+			DECLARE @TotalReviewOtherServicesCount INT;
+			-- عدد الدعاوي ملاك
+			DECLARE @TotalReviewPropertiesCount INT;
+			-- عدد الدعاوي ايجار
+			DECLARE @TotalReviewRentCount INT;
+------------------------------------------------------------------------------------------------
+														-- مرحلة الصلح
+			-- عدد الدعاوي الكلية
+			DECLARE @TotalReconciliationAllCount INT;
+			--عدد الدعاوى الغير منتهية
+			DECLARE @TotalReconciliationNotFinishedCount INT;
+			--عدد الدعاوى المنتهية
+			DECLARE @TotalReconciliationFinishedCount INT;
+			-- عدد الدعاوي المتأخرة
+			DECLARE @TotalReconciliationDueDateCount INT;
+			-- عدد الدعاوي وساطة عقارية
+			DECLARE @TotalReconciliationRealEstateBrokerageCount INT;
+			-- عدد الدعاوي وافي
+            DECLARE @TotalReconciliationWafiCount INT;
+			-- عدد الدعاوي أخري
+			DECLARE @TotalReconciliationOtherServicesCount INT;
+			-- عدد الدعاوي ملاك
+			DECLARE @TotalReconciliationPropertiesCount INT;
+			-- عدد الدعاوي ايجار
+			DECLARE @TotalReconciliationRentCount INT;
+
+			-- عدد الدعاوي المنتهيه في حالة تم الصلح
+			DECLARE @ReconciliationWasMadeCount INT;
+			--عدد الدعاوى المنتهيه في حالة تم التنازل عن الحق
+			DECLARE @WaiverOfRightCount INT;
+			--عدد الدعاوى المنتهيه في حالة تم التنازل عن الدعوي
+			DECLARE @WaiverOfTheLawSuitCount INT;
+			-- عدد الدعاوي المنتهيه في حالة لم تم الصلح
+			DECLARE @LackOfReconciliationCount INT;
+			-- عدد الدعاوي المنتهيه في حالة تم الصلح في منصة تراضي
+			DECLARE @TheReconciliationOnTradyPatformCount INT;
+
+---------------------------------------------------------------------------------------------------
+																	-- مرحلة التحكيم
+			-- عدد الدعاوي الكلية
+			DECLARE @TotalArbitrationAllCount INT;
+			--عدد الدعاوى الغير منتهية
+			DECLARE @TotalArbitrationNotFinishedCount INT;
+			--عدد الدعاوى المنتهية
+			DECLARE @TotalArbitrationFinishedCount INT;
+			-- عدد الدعاوي المتأخرة
+			DECLARE @TotalArbitrationDueDateCount INT;
+			-- عدد الدعاوي وساطة عقارية
+			DECLARE @TotalArbitrationRealEstateBrokerageCount INT;
+			-- عدد الدعاوي وافي
+            DECLARE @TotalArbitrationWafiCount INT;
+			-- عدد الدعاوي أخري
+			DECLARE @TotalArbitrationOtherServicesCount INT;
+			-- عدد الدعاوي ملاك
+			DECLARE @TotalArbitrationPropertiesCount INT;
+			-- عدد الدعاوي ايجار
+			DECLARE @TotalArbitrationRentCount INT;
+            SET @ToDate = ISNULL(@ToDate, GETDATE());
+------------------------------------------------------------------------------------------------------
+-- 
+
+
+
+-- Review Process
+    -- Calculate Total Review All Count
+		SELECT @TotalReviewAllCount = COUNT(*)  
+        FROM LitigationRequest L 
+        WHERE
+		 L.LitigationRequestStage = 1 and RequestCode is not null
+		AND (L.CreatedOn >= @FromDate)
+          AND (l.CreatedOn <= @ToDate)
+    -- Calculate not finished review count
+        SELECT @TotalReviewNotFinishedCount = COUNT(*)  
+        FROM LitigationRequest L
+		INNER JOIN (
+		    SELECT w2.*
+		    FROM WorkFlowProcessingLog w2
+		    INNER JOIN (
+		        SELECT RequestId, MAX(CreatedOn) AS LatestCreatedOn
+		        FROM WorkFlowProcessingLog
+		        GROUP BY RequestId
+		    ) AS latest ON w2.RequestId = latest.RequestId AND w2.CreatedOn = latest.LatestCreatedOn AND w2.IsFinished = 0
+		) AS w ON L.Id = w.RequestId
+        WHERE 
+           L.LitigationRequestStage = 1
+          AND (L.CreatedOn >= @FromDate)
+          AND (l.CreatedOn <= @ToDate)
+	-- Calculate finished review count
+        SELECT @TotalReviewFinishedCount = COUNT(*)  
+        FROM LitigationRequest L
+		--INNER JOIN (
+		--    SELECT w2.*
+		--    FROM WorkFlowProcessingLog w2
+		--    INNER JOIN (
+		--        SELECT RequestId, MAX(CreatedOn) AS LatestCreatedOn
+		--        FROM WorkFlowProcessingLog
+		--        GROUP BY RequestId
+		--    ) AS latest ON w2.RequestId = latest.RequestId AND w2.CreatedOn = latest.LatestCreatedOn AND w2.IsFinished = 1
+		--) AS w ON L.Id = w.RequestId
+        WHERE L.LitigationRequestStage != 1 
+          AND (L.CreatedOn >= @FromDate)
+          AND (l.CreatedOn <= @ToDate)
+	-- Calculate DueDate review count
+        SELECT @TotalReviewDueDateCount = COUNT(*)  
+        FROM LitigationRequest L
+        WHERE 
+           L.IsReminderForReviewerManagerSent = 1
+		  AND L.IsReminderForReviewerSent = 1
+          AND L.LitigationRequestStage = 1
+          AND (L.CreatedOn >= @FromDate)
+          AND (l.CreatedOn <= @ToDate)
+   -- Calculate RealEstateBrokerage review count
+        SELECT @TotalReviewRealEstateBrokerageCount = COUNT(*)  
+        FROM LitigationRequest L
+        INNER JOIN LitigationRequestContract c ON l.ContractId = c.Id
+        WHERE c.LitigationRequestContractTypeId = 66
+          AND L.LitigationRequestStage = 1
+          AND (L.CreatedOn >= @FromDate)
+          AND (l.CreatedOn <= @ToDate)
+	-- Calculate Wafi review count
+        SELECT @TotalReviewWafiCount = COUNT(*)  
+        FROM LitigationRequest L
+        INNER JOIN LitigationRequestContract c ON l.ContractId = c.Id
+        WHERE c.LitigationRequestContractTypeId = 87
+          AND L.LitigationRequestStage = 1
+          AND (L.CreatedOn >= @FromDate)
+          AND (l.CreatedOn <= @ToDate)
+	-- Calculate OtherServices review count
+        SELECT @TotalReviewOtherServicesCount = COUNT(*)  
+        FROM LitigationRequest L
+        INNER JOIN LitigationRequestContract c ON l.ContractId = c.Id
+        WHERE c.LitigationRequestContractTypeId = 78
+          AND L.LitigationRequestStage = 1
+          AND (L.CreatedOn >= @FromDate)
+          AND (l.CreatedOn <= @ToDate)
+	-- Calculate Properties review count
+        SELECT @TotalReviewPropertiesCount = COUNT(*)  
+        FROM LitigationRequest L
+        INNER JOIN LitigationRequestContract c ON l.ContractId = c.Id
+        WHERE c.LitigationRequestContractTypeId = 79
+          AND L.LitigationRequestStage = 1
+          AND (L.CreatedOn >= @FromDate)
+          AND (l.CreatedOn <= @ToDate)
+	-- Calculate Rent review count
+        SELECT @TotalReviewRentCount = COUNT(*)  
+        FROM LitigationRequest L
+        INNER JOIN LitigationRequestContract c ON l.ContractId = c.Id
+        WHERE c.LitigationRequestContractTypeId = 82
+          AND L.LitigationRequestStage = 1
+          AND (L.CreatedOn >= @FromDate)
+          AND (l.CreatedOn <= @ToDate)
+---------------------------------------------------------------------------------------------------------------
+-- Reconciliation Process
+    -- Calculate Total Review All Count
+		SELECT @TotalReconciliationAllCount = COUNT(*)  
+        FROM LitigationRequest L 
+        WHERE
+		 L.LitigationRequestStage = 2
+		AND (L.CreatedOn >= @FromDate)
+          AND (l.CreatedOn <= @ToDate)
+    -- Calculate not finished review count
+        SELECT @TotalReconciliationNotFinishedCount = COUNT(*)  
+        FROM LitigationRequest L
+		--INNER JOIN (
+		--    SELECT w2.*
+		--    FROM WorkFlowProcessingLog w2
+		--    INNER JOIN (
+		--        SELECT RequestId, MAX(CreatedOn) AS LatestCreatedOn
+		--        FROM WorkFlowProcessingLog
+		--        GROUP BY RequestId
+		--    ) AS latest ON w2.RequestId = latest.RequestId AND w2.CreatedOn = latest.LatestCreatedOn AND w2.IsFinished = 0
+		--) AS w ON L.Id = w.RequestId
+        WHERE 
+           L.LitigationRequestStage = 2 And L.IsFinished = 0
+          AND (L.CreatedOn >= @FromDate)
+          AND (l.CreatedOn <= @ToDate)
+	-- Calculate finished review count
+  
+       SELECT @TotalReconciliationFinishedCount =  Count(*)
+	   FROM LitigationRequest L
+	   where ((L.IsFinished = 1 And L.LitigationRequestCategoryId = 1) 
+	   or  (L.LitigationRequestCategoryId = 3 And L.LitigationRequestStage=3))
+	   AND (L.CreatedOn >= @FromDate)
+          AND (l.CreatedOn <= @ToDate)
+	   -- Calculate finished with ReconciliationWasMade count
+  
+       SELECT @ReconciliationWasMadeCount =  Count(*)
+	   FROM LitigationRequest L
+	   --where (L.IsFinished = 1 And L.LitigationRequestCategoryId = 1 AND L.InternalStatusId= 18)
+	   where L.InternalStatusId = 18
+	   AND (L.CreatedOn >= @FromDate)
+          AND (l.CreatedOn <= @ToDate)
+
+	   -- Calculate finished with ReconciliationWasMade count
+  
+       SELECT @WaiverOfRightCount =  Count(*)
+	   FROM LitigationRequest L
+	   --where (L.IsFinished = 1 And L.LitigationRequestCategoryId = 1 AND L.InternalStatusId= 7)
+	   where L.InternalStatusId = 7
+	   AND (L.CreatedOn >= @FromDate)
+          AND (l.CreatedOn <= @ToDate)
+	   -- Calculate finished with ReconciliationWasMade count
+  
+       SELECT @WaiverOfTheLawSuitCount =  Count(*)
+	   FROM LitigationRequest L
+	   --where (L.IsFinished = 1 And L.LitigationRequestCategoryId = 1 AND L.InternalStatusId= 8)
+	   where L.InternalStatusId = 8
+	   AND (L.CreatedOn >= @FromDate)
+          AND (l.CreatedOn <= @ToDate)
+	   -- Calculate finished with ReconciliationWasMade count
+  
+       SELECT @LackOfReconciliationCount =  Count(*)
+	   FROM LitigationRequest L
+	   --where (L.IsFinished = 1 And L.LitigationRequestCategoryId = 1 AND L.InternalStatusId= 9)
+	   where L.InternalStatusId = 9
+	   AND (L.CreatedOn >= @FromDate)
+          AND (l.CreatedOn <= @ToDate)
+	   -- Calculate finished with ReconciliationWasMade count
+  
+       SELECT @TheReconciliationOnTradyPatformCount =  Count(*)
+	   FROM LitigationRequest L
+	   --where (L.IsFinished = 1 And L.LitigationRequestCategoryId = 1 AND L.InternalStatusId= 25)
+	   where L.InternalStatusId = 25
+	   AND (L.CreatedOn >= @FromDate)
+          AND (l.CreatedOn <= @ToDate)
+	-- Calculate DueDate review count
+        SELECT @TotalReconciliationDueDateCount = COUNT(*)  
+        FROM LitigationRequest L
+        WHERE 
+           L.ReconciliationPeriod = 0
+          AND L.LitigationRequestStage = 2
+          AND (L.CreatedOn >= @FromDate)
+          AND (l.CreatedOn <= @ToDate)
+   -- Calculate RealEstateBrokerage review count
+        SELECT @TotalReconciliationRealEstateBrokerageCount = COUNT(*)  
+        FROM LitigationRequest L
+        INNER JOIN LitigationRequestContract c ON l.ContractId = c.Id
+        WHERE c.LitigationRequestContractTypeId = 66
+          AND L.LitigationRequestStage = 2
+          AND (L.CreatedOn >= @FromDate)
+          AND (l.CreatedOn <= @ToDate)
+	-- Calculate Wafi review count
+        SELECT @TotalReconciliationWafiCount = COUNT(*)  
+        FROM LitigationRequest L
+        INNER JOIN LitigationRequestContract c ON l.ContractId = c.Id
+        WHERE c.LitigationRequestContractTypeId = 87
+          AND L.LitigationRequestStage = 2
+          AND (L.CreatedOn >= @FromDate)
+          AND (l.CreatedOn <= @ToDate)
+	-- Calculate OtherServices review count
+        SELECT @TotalReconciliationOtherServicesCount = COUNT(*)  
+        FROM LitigationRequest L
+        INNER JOIN LitigationRequestContract c ON l.ContractId = c.Id
+        WHERE c.LitigationRequestContractTypeId = 78
+          AND L.LitigationRequestStage = 2
+          AND (L.CreatedOn >= @FromDate)
+          AND (l.CreatedOn <= @ToDate)
+	-- Calculate Properties review count
+        SELECT @TotalReconciliationPropertiesCount = COUNT(*)  
+        FROM LitigationRequest L
+        INNER JOIN LitigationRequestContract c ON l.ContractId = c.Id
+        WHERE c.LitigationRequestContractTypeId = 79
+          AND L.LitigationRequestStage = 2
+          AND (L.CreatedOn >= @FromDate)
+          AND (l.CreatedOn <= @ToDate)
+	-- Calculate Rent review count
+        SELECT @TotalReconciliationRentCount = COUNT(*)  
+        FROM LitigationRequest L
+        INNER JOIN LitigationRequestContract c ON l.ContractId = c.Id
+        WHERE c.LitigationRequestContractTypeId = 82
+          AND L.LitigationRequestStage = 2
+          AND (L.CreatedOn >= @FromDate)
+          AND (l.CreatedOn <= @ToDate)
+-----------------------------------------------------------------------------------------------------------
+-- Arbitration Process
+    -- Calculate Total Review All Count
+		SELECT @TotalArbitrationAllCount = COUNT(*)  
+        FROM LitigationRequest L 
+        WHERE
+		 L.LitigationRequestStage = 3
+		AND (L.CreatedOn >= @FromDate)
+          AND (l.CreatedOn <= @ToDate)
+    -- Calculate not finished  count
+        SELECT @TotalArbitrationNotFinishedCount = COUNT(*)  
+        FROM LitigationRequest L
+        WHERE 
+           L.IsFinished = 0 AND L.LitigationRequestStage = 3
+          AND (L.CreatedOn >= @FromDate)
+          AND (l.CreatedOn <= @ToDate)
+	-- Calculate finished review count
+  
+  SELECT @TotalArbitrationFinishedCount =  Count(*)
+	   FROM LitigationRequest L
+	   where L.IsFinished = 1 
+	   AND L.LitigationRequestStage = 3 AND
+	   (L.InternalStatusId = 20 or ExternalStatusId = 20)
+	   AND (L.CreatedOn >= @FromDate)
+          AND (l.CreatedOn <= @ToDate)
+	-- Calculate DueDate review count
+        SELECT @TotalArbitrationDueDateCount = COUNT(*)  
+        FROM LitigationRequest L
+        WHERE 
+           L.ArbitrationPeriod = 0
+          AND L.LitigationRequestStage = 3
+          AND (L.CreatedOn >= @FromDate)
+          AND (l.CreatedOn <= @ToDate)
+   -- Calculate RealEstateBrokerage review count
+        SELECT @TotalArbitrationRealEstateBrokerageCount = COUNT(*)  
+        FROM LitigationRequest L
+        INNER JOIN LitigationRequestContract c ON l.ContractId = c.Id
+        WHERE c.LitigationRequestContractTypeId = 66
+          AND L.LitigationRequestStage = 3
+          AND (L.CreatedOn >= @FromDate)
+          AND (l.CreatedOn <= @ToDate)
+	-- Calculate Wafi review count
+        SELECT @TotalArbitrationWafiCount = COUNT(*)  
+        FROM LitigationRequest L
+        INNER JOIN LitigationRequestContract c ON l.ContractId = c.Id
+        WHERE c.LitigationRequestContractTypeId = 87
+          AND L.LitigationRequestStage = 3
+          AND (L.CreatedOn >= @FromDate)
+          AND (l.CreatedOn <= @ToDate)
+	-- Calculate OtherServices review count
+        SELECT @TotalArbitrationOtherServicesCount = COUNT(*)  
+        FROM LitigationRequest L
+        INNER JOIN LitigationRequestContract c ON l.ContractId = c.Id
+        WHERE c.LitigationRequestContractTypeId = 78
+          AND L.LitigationRequestStage = 3
+          AND (L.CreatedOn >= @FromDate)
+          AND (l.CreatedOn <= @ToDate)
+	-- Calculate Properties review count
+        SELECT @TotalArbitrationPropertiesCount = COUNT(*)  
+        FROM LitigationRequest L
+        INNER JOIN LitigationRequestContract c ON l.ContractId = c.Id
+        WHERE c.LitigationRequestContractTypeId = 79
+          AND L.LitigationRequestStage = 3
+          AND (L.CreatedOn >= @FromDate)
+          AND (l.CreatedOn <= @ToDate)
+	-- Calculate Rent review count
+        SELECT @TotalArbitrationRentCount = COUNT(*)  
+        FROM LitigationRequest L
+        INNER JOIN LitigationRequestContract c ON l.ContractId = c.Id
+        WHERE c.LitigationRequestContractTypeId = 82
+          AND L.LitigationRequestStage = 3
+          AND (L.CreatedOn >= @FromDate)
+          AND (l.CreatedOn <= @ToDate)
+    -- Review Output counts 
+            SELECT 
+			@TotalReviewAllCount AS TotalReviewAllCount,
+			@TotalReviewNotFinishedCount AS TotalReviewNotFinishedCount,
+			@TotalReviewFinishedCount AS TotalReviewFinishedCount,
+			@TotalReviewDueDateCount AS TotalReviewDueDateCount,
+			@TotalReviewRealEstateBrokerageCount AS TotalReviewRealEstateBrokerageCount,
+            @TotalReviewWafiCount AS TotalReviewWafiCount,
+			@TotalReviewOtherServicesCount AS TotalReviewOtherServicesCount,
+			@TotalReviewPropertiesCount AS TotalReviewPropertiesCount,
+			@TotalReviewRentCount AS TotalReviewRentCount,
+			------------------------------------------------------
+			@TotalReconciliationAllCount AS TotalReconciliationAllCount,
+			@TotalReconciliationNotFinishedCount AS TotalReconciliationNotFinishedCount,
+			@TotalReconciliationFinishedCount AS TotalReconciliationFinishedCount,
+
+			@ReconciliationWasMadeCount AS ReconciliationWasMadeCount,
+			@WaiverOfRightCount AS WaiverOfRightCount,
+			@WaiverOfTheLawSuitCount AS WaiverOfTheLawSuitCount,
+			@LackOfReconciliationCount AS LackOfReconciliationCount,
+			@TheReconciliationOnTradyPatformCount AS TheReconciliationOnTradyPatformCount,
+
+
+			@TotalReconciliationDueDateCount AS TotalReconciliationDueDateCount,
+			@TotalReconciliationRealEstateBrokerageCount AS TotalReconciliationRealEstateBrokerageCount,
+            @TotalReconciliationWafiCount AS TotalReconciliationWafiCount,
+			@TotalReconciliationOtherServicesCount AS TotalReconciliationOtherServicesCount,
+			@TotalReconciliationPropertiesCount AS TotalReconciliationPropertiesCount,
+			@TotalReconciliationRentCount AS TotalReconciliationRentCount,
+			--------------------------------------------------------
+			@TotalArbitrationAllCount AS TotalArbitrationAllCount,
+			@TotalArbitrationNotFinishedCount AS TotalArbitrationNotFinishedCount,
+			@TotalArbitrationFinishedCount AS TotalArbitrationFinishedCount,
+			@TotalArbitrationDueDateCount AS TotalArbitrationDueDateCount,
+			@TotalArbitrationRealEstateBrokerageCount AS TotalArbitrationRealEstateBrokerageCount,
+            @TotalArbitrationWafiCount AS TotalArbitrationWafiCount,
+			@TotalArbitrationOtherServicesCount AS TotalArbitrationOtherServicesCount,
+			@TotalArbitrationPropertiesCount AS TotalArbitrationPropertiesCount,
+			@TotalArbitrationRentCount AS TotalArbitrationRentCount
+        END
+
+        -----------------------------------------------------------------------------
+
+        alter table dbo.LitigationRequestReconciliationReport 
+        add ReconciliationRequestDecision int null

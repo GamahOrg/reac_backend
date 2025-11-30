@@ -27,7 +27,7 @@ FOREIGN KEY ([DefendantFacilityId])
 REFERENCES [dbo].[Facility] ([Id]);
 
 
-USE [REAC_Dev_Feb]
+
 GO
 /****** Object:  StoredProcedure [dbo].[GetReviewersReport]    Script Date: 11/4/2025 1:26:48 PM ******/
 SET ANSI_NULLS ON
@@ -171,6 +171,24 @@ BEGIN
 END
 
 
+WITH RankedDelegators AS (
+    SELECT 
+        dr.LitigationRequestId,
+        d.CitizenId,
+        ROW_NUMBER() OVER (
+            PARTITION BY dr.LitigationRequestId 
+            ORDER BY dr.requestedon asc
+        ) AS RowNum
+    FROM DelegationRequest dr
+    INNER JOIN Delegator d ON dr.DelegatorId = d.Id
+    WHERE d.CitizenId IS NOT NULL and dr.DelegationParty = 2
+)
+UPDATE lr
+SET lr.DefendantCitizenid = rd.CitizenId
+FROM LitigationRequest lr
+INNER JOIN RankedDelegators rd ON lr.Id = rd.LitigationRequestId
+WHERE rd.RowNum = 1;
+
 
 UPDATE lr
 SET lr.DefendantCitizenId = lrc.SecondPartyCitizenId
@@ -178,3 +196,4 @@ FROM LitigationRequest AS lr
 INNER JOIN LitigationRequestContract AS lrc 
     ON lrc.Id = lr.ContractId
 WHERE lr.DefendantCitizenId IS NULL;
+

@@ -1236,9 +1236,9 @@ namespace Bpf.Application.ModuleServices
                     IdentityNumber = litigation.ApplicantCitizen?.IdentityNumber,
                     MobileNumber = litigation.ApplicantCitizen?.Mobile,
                     Email = litigation.ApplicantCitizen?.Email,
-                    CaseNumber = "CaseNu10XXX1",
-                    CaseDescription = "Case Description Test",
-                    RefIdPltfrm = litigation.RequestCode
+                    CaseNumber = Administrative_ServiceId == "1970" ? "RCaseNu10XXX1": "LCaseNu10XXX1",
+                    CaseDescription = Administrative_ServiceId == "1970" ?"Reconciliation Fees":"Litigation Fees",
+                    RefIdPltfrm = Administrative_ServiceId=="1970"? "R-"+litigation.RequestCode:"L-" + litigation.RequestCode
                 };
 
 

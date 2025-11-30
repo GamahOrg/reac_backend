@@ -13,6 +13,7 @@ using REAC.Domain.Shared.Enum;
 using REAC.EntityFrameworkCore.Entities.Litigation;
 using REAC.EntityFrameworkCore.Entities.System;
 using REAC.EntityFrameworkCore.Entities.Wpf.Business;
+using System.Globalization;
 using System.Text;
 using System.Text.Json;
 
@@ -308,7 +309,11 @@ namespace REAC.Application.ModuleServices
         {
             var accessToken = (await _gEELoginService.Login()).Data?.Access_token;
             try
+
             {
+                
+
+
                 var apiUrl = _settingService.GetBySettingKey(SysSettingKeyConstants.CreateInvoice_URL).Result.Data?.Value;
                 var Administrative_ServiceId = _settingService.GetBySettingKey(SysSettingKeyConstants.Administrative_Fees_Billing).Result.Data?.Value;
 
@@ -329,7 +334,7 @@ namespace REAC.Application.ModuleServices
                     new InvoiceTransactionDto
                     {
                         ServiceID = int.Parse(serviceId),
-                        Price = int.Parse(fees) ,
+                        Price = (int)decimal.Parse(fees.Replace('٫', ','), new CultureInfo("de-DE")),
                         Quantity = 1
                     },
                     //new InvoiceTransactionDto
@@ -346,9 +351,9 @@ namespace REAC.Application.ModuleServices
                     IdentityNumber = litigation.ApplicantCitizen?.IdentityNumber,
                     MobileNumber = litigation.ApplicantCitizen?.Mobile,
                     Email = litigation.ApplicantCitizen?.Email,
-                    CaseNumber = "CaseNu10XXX1",
-                    CaseDescription = "Case Description Test",
-                    RefIdPltfrm = litigation.RequestCode
+                    CaseNumber = "ACaseNu10XXX1",
+                    CaseDescription = "Arbitration Fees",
+                    RefIdPltfrm = "A-"+litigation.RequestCode
                 };
 
 
