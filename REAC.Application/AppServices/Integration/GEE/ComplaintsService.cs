@@ -384,10 +384,10 @@ namespace REAC.Application.AppServices.Integration.GEE
             if (casesData == null)
                 return new DataResponse<CasesByContactResponseDto>(null, false, "خطأ داخلي");
 
-            if (casesData != null && casesData.entry_list != null)
+            if (casesData != null && casesData.entry_list != null && casesData.entry_list.Count > 0)
             {
                 casesData.entry_list = casesData.entry_list
-                    .OrderByDescending(e => DateTime.TryParse(e.name_value_list?.date_entered?.value, out var dt) ? dt : DateTime.MinValue)
+                    .OrderByDescending(e => e.name_value_list?.date_entered?.value)
                     .ToList();
             }
             

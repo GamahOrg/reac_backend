@@ -4231,12 +4231,13 @@ namespace REAC.Application.AppServices.Litigation
                 }
 
                 // Properties Validation
-                var existLitigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>()).
-                    Include(x => x.Contract.SecondPartyCitizen)
+                var existLitigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>())
+                    .Include(x => x.Contract.SecondPartyCitizen)
                     .Include(x => x.Contract.SecondPartyFacility)
                     .FirstOrDefault(x => x.IsFinished != true
                     && ((x.ExternalStatusId != RequestStatus.Cancelled && x.InternalStatusId != RequestStatus.Cancelled) && (x.ExternalStatusId != RequestStatus.Rejected && x.InternalStatusId != RequestStatus.Rejected))
                     && x.Contract.ContractKey == litigationRequestDto.key
+                    && x.Contract.FirstPartyCitizenId == referenceId
                     && (x.Contract.SecondPartyCitizen.IdentityNumber == litigationRequestDto.SecondPartyNationalId || x.Contract.SecondPartyFacility.CommercialRegisterNumber == litigationRequestDto.SecondPartyFacilityCommercialRegistrationNo));
 
                 if (existLitigationRequest != null)
