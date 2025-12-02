@@ -1200,7 +1200,7 @@ namespace Bpf.Application.ModuleServices
             try
             {
                 var apiUrl = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.CreateInvoice_URL).Result.Data?.Value;
-                var Administrative_ServiceId = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Administrative_Fees_Billing).Result.Data?.Value;
+                //var Administrative_ServiceId = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reconciliation_Fees_Billing).Result.Data?.Value;
 
                 var _httpClient = new HttpClient();
 
@@ -1236,9 +1236,9 @@ namespace Bpf.Application.ModuleServices
                     IdentityNumber = litigation.ApplicantCitizen?.IdentityNumber,
                     MobileNumber = litigation.ApplicantCitizen?.Mobile,
                     Email = litigation.ApplicantCitizen?.Email,
-                    CaseNumber = Administrative_ServiceId == "1970" ? "RCaseNu10XXX1": "LCaseNu10XXX1",
-                    CaseDescription = Administrative_ServiceId == "1970" ?"Reconciliation Fees":"Litigation Fees",
-                    RefIdPltfrm = Administrative_ServiceId=="1970"? "R-"+litigation.RequestCode:"L-" + litigation.RequestCode
+                    CaseNumber = serviceId == "1970" ? "RCaseNu10XXX1": "LCaseNu10XXX1",
+                    CaseDescription = serviceId == "1970" ?"Reconciliation Fees":"Litigation Fees",
+                    RefIdPltfrm = serviceId == "1970"? "R-"+litigation.RequestCode:"L-" + litigation.RequestCode
                 };
 
 
