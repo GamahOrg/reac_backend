@@ -4169,6 +4169,10 @@ namespace REAC.Application.AppServices.Litigation
 
                     newlitigationRequest.ReconciliationPeriod = newlitigationRequest.Contract.LitigationRequestContractType.ReconciliationPeriod;
                     newlitigationRequest.PretenderRating = 10;
+                    int arbitrationPeriod = 0;
+                    int.TryParse(_sysSettingService.GetBySettingKey(SysSettingKeyConstants.Arbitration_Period).Result.Data?.Value, out arbitrationPeriod);
+                    newlitigationRequest.ArbitrationPeriod = arbitrationPeriod;
+
                     var newSaveResponse = await _repository.SaveChangesAsync();
                     if (saveResponse.IsDone)
                     {

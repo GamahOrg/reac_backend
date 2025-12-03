@@ -308,7 +308,7 @@ namespace REAC.Application.ModuleServices
                 {
                    
 
-                    litigationRequest.ArbitrationPeriod += litigationRequestExtendPeriodRequest.RequiredDays;
+                    litigationRequest.ArbitrationPeriod = litigationRequest.ArbitrationPeriod == null ? litigationRequestExtendPeriodRequest.RequiredDays : litigationRequest.ArbitrationPeriod + litigationRequestExtendPeriodRequest.RequiredDays;
 
                     savePeriodResponse = await _repository.SaveChangesAsync();
                     if (!savePeriodResponse.IsDone)

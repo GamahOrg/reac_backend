@@ -396,7 +396,6 @@ namespace REAC.Application.ModuleServices
                 .Include(x => x.LitigationDelegationRequests.Where(y => y.IsActive != null && (bool)y.IsActive))
                  .ThenInclude(x => x.Delegator)
                  .ThenInclude(x => x.EstablishmentLetterFile)
-                .AsSplitQuery()
                          .AsNoTracking()
                          .FirstOrDefault(x => x.Id == requestId
                          &&
