@@ -105,7 +105,7 @@ namespace REAC.Application.ModuleServices
                         return repositorySaveResponse;
 
                     // Send Notification
-                    // تم اضافة  الرد علي طلب مد مدة التحكيم 
+                    // تم اضافة  طلب مد مدة التحكيم 
                   
                     try
                     {
@@ -188,7 +188,7 @@ namespace REAC.Application.ModuleServices
 
 
                             };
-                            if (litigationRequest?.Contract?.FirstPartyFacility != null && litigationRequest?.Contract?.FirstPartyFacility.CitizenId != litigationRequest.ApplicantCitizenId)
+                            if (litigationRequest?.Contract?.FirstPartyFacility != null && litigationRequest?.Contract?.FirstPartyFacility?.CitizenId != litigationRequest.ApplicantCitizenId)
                             {
                                 notifications.Add(new SysNotificationDto
                                 {
@@ -230,7 +230,7 @@ namespace REAC.Application.ModuleServices
                                 emails.Add(litigationRequest.Contract.SecondPartyFacility.Citizen.Email);
                                 recipients.Add(litigationRequest.Contract.SecondPartyFacility.Citizen.Mobile);
                             };
-                            _notificationService.SendNotifications(new Contracts.Dtos.Notification.SendEmailDto()
+                           await _notificationService.SendNotifications(new Contracts.Dtos.Notification.SendEmailDto()
                             {
                                 To = emails,
                                 Subject = "اضافة  الرد علي طلب مد مدة التحكيم",
