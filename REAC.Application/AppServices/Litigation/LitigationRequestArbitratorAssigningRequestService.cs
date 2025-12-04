@@ -162,7 +162,7 @@ namespace REAC.Application.AppServices.Litigation
 
                                 if (litigationRequestPendingArbitratorAssigningRequest.Count == 1 &&
                                     (litigationRequestAcceptedArbitratorAssigningRequest.Count == litigationRequest.ArbitratorsCount - 2 || litigationRequest.ArbitratorsCount == 1) &&
-                                    (litigationRequest.LitigationRequestSubStage == LitigationRequestSubStage.LitigationRequestAddArbitratorListNominationDone) )
+                                    (litigationRequest.LitigationRequestSubStage == LitigationRequestSubStage.LitigationRequestAddArbitratorListNominationDone))
                                 {
                                     litigationRequest.LitigationRequestSubStage = LitigationRequestSubStage.LitigationRequestAddArbitratorChairmanListNomination;
 
@@ -211,9 +211,9 @@ namespace REAC.Application.AppServices.Litigation
                                                    ActorTypeId=NotificationActorType.Employee,
                                                    Message=msg
                                                    }
-                                                  
+
                                                    };
-                                         List<string> emails = new List<string>() {
+                                            List<string> emails = new List<string>() {
                                             deptAdminInfoArbitration.Data?.Email
                                            };
 
@@ -591,7 +591,7 @@ namespace REAC.Application.AppServices.Litigation
                                 var chairmanArbitratorsList = litigationRequest.LitigationRequestArbitratorsChairmanNominationLists.Where(x => x.IsSent != true).OrderBy(x => x.TotalPriority).ToList();
                                 if (chairmanArbitratorsList != null)
                                     await ProcessArbitratorChairmanSelectionForSingle(litigationRequest, chairmanArbitratorsList);
-                                
+
                                 //if (chairmanArbitratorsList != null)
                                 //{
                                 //    if (chairmanArbitratorsList.Count > 0)
@@ -853,16 +853,20 @@ namespace REAC.Application.AppServices.Litigation
                 foreach (var litigationRequest in result.Results)
                 {
                     foreach (var litigationRequestArbitratorAssigningRequest in litigationRequest.LitigationRequestArbitratorAssigningRequests
-                        .Where(x => x.CitizenId == referenceId).DistinctBy(x => new { x.LitigationRequestId,x.ArbitratorAssigningRequestTypeId}))
+                        .Where(x => x.CitizenId == referenceId).DistinctBy(x => new { x.LitigationRequestId, x.ArbitratorAssigningRequestTypeId }))
                     {
                         int arbitrationPeriod = 0;
                         int.TryParse(_sysSettingService.GetBySettingKey(SysSettingKeyConstants.Arbitration_Period).Result.Data?.Value, out arbitrationPeriod);
 
-
-
                         int daysPassed = (DateTime.Now - litigationRequestArbitratorAssigningRequest.RequestOn).Days;
-                        litigationRequestArbitratorAssigningRequest.LitigationRequest.ArbitrationPeriod = Math.Max(0, arbitrationPeriod - daysPassed);
-
+                        if (litigationRequest.ArbitrationPeriod != null)
+                        {
+                            litigationRequestArbitratorAssigningRequest.LitigationRequest.ArbitrationPeriod = Math.Max(0, (int)litigationRequest.ArbitrationPeriod - daysPassed);
+                        }
+                        else
+                        {
+                            litigationRequestArbitratorAssigningRequest.LitigationRequest.ArbitrationPeriod = Math.Max(0, arbitrationPeriod - daysPassed);
+                        }
 
                         CustomLitigationRequestMircoArbitratorDto litigationRequestMircoDto = new CustomLitigationRequestMircoArbitratorDto();
                         litigationRequestMircoDto.Id = litigationRequestArbitratorAssigningRequest.Id;
@@ -964,7 +968,14 @@ namespace REAC.Application.AppServices.Litigation
                 foreach (var litigationRequestArbitratorAssigningRequest in litigationRequestArbitratorAssigningRequests.Results)
                 {
                     int daysPassed = (DateTime.Now - litigationRequestArbitratorAssigningRequest.RequestOn).Days;
-                    litigationRequestArbitratorAssigningRequest.LitigationRequest.ArbitrationPeriod = Math.Max(0, arbitrationPeriod - daysPassed);
+                    if (litigationRequestArbitratorAssigningRequest.LitigationRequest.ArbitrationPeriod != null)
+                    {
+                        litigationRequestArbitratorAssigningRequest.LitigationRequest.ArbitrationPeriod = Math.Max(0, (int)litigationRequestArbitratorAssigningRequest.LitigationRequest.ArbitrationPeriod - daysPassed);
+                    }
+                    else
+                    {
+                        litigationRequestArbitratorAssigningRequest.LitigationRequest.ArbitrationPeriod = Math.Max(0, arbitrationPeriod - daysPassed);
+                    }
                 }
                 foreach (var litigationRequest in litigationRequestArbitratorAssigningRequests.Results)
                 {
