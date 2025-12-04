@@ -1,11 +1,13 @@
 ﻿using AutoMapper;
 using Core.GenericRepository.BaseRepository;
+using Core.Log.Application.Contracts.IAppServices;
 using Core.Shared.Responses;
 using Microsoft.EntityFrameworkCore;
 using REAC.Application.Contracts.Dtos.Wpf.Business.WorkFlowLog;
 using REAC.Application.Contracts.Dtos.Wpf.Business.WorkFlowProcessingLog;
 using REAC.Application.Contracts.Dtos.Wpf.System;
 using REAC.Application.Contracts.IAppServices;
+using REAC.Application.Contracts.IAppServices.Integration;
 using REAC.Application.Contracts.IAppServices.Litigation;
 using REAC.Application.Contracts.IAppServices.Notification;
 using REAC.Application.Contracts.IAppServices.System;
@@ -30,12 +32,14 @@ namespace Bpf.Application.ModuleServices
         private readonly INotificationService _notificationService;
         private readonly ISysSettingService _sysSettingService;
         private readonly ISysEmployeeService _employeeService;
+        private readonly IGEELoginService _gEELoginService;
+        private readonly ILoggerManager _loggerManager;
 
         public BpfService(IEntityRepository repository,
                           IWorkFlowProcessingLogService workFlowProcessingLogService,
                           IMapper mapper,
                           IJwtReader jwtReader,
-                          IWorkFlowLogService workFlowLogService, ILitigationWorkFlowService litigationWorkFlowServic, ISysSettingService sysSettingService, INotificationService notificationService, ISysEmployeeService employeeService)
+                          IWorkFlowLogService workFlowLogService, ILitigationWorkFlowService litigationWorkFlowServic, ISysSettingService sysSettingService, INotificationService notificationService, ISysEmployeeService employeeService, IGEELoginService gEELoginService, ILoggerManager loggerManager )
         {
             _mapper = mapper;
             _repository = repository;
@@ -46,6 +50,9 @@ namespace Bpf.Application.ModuleServices
             _sysSettingService = sysSettingService;
             _notificationService = notificationService;
             _employeeService = employeeService;
+            _gEELoginService = gEELoginService;
+            _loggerManager = loggerManager;
+
         }
 
 

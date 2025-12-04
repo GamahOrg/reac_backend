@@ -29,7 +29,7 @@ WITH RankedDelegators AS (
         ) AS RowNum
     FROM DelegationRequest dr
     INNER JOIN Delegator d ON dr.DelegatorId = d.Id
-    WHERE d.CitizenId IS NOT NULL 
+    WHERE d.CitizenId IS NOT NULL and dr.DelegationParty = 2
 )
 UPDATE lr
 SET lr.DefendantCitizenid = rd.CitizenId

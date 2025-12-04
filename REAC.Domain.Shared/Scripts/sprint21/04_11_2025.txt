@@ -4,11 +4,11 @@
         d.FacilityId,
         ROW_NUMBER() OVER (
             PARTITION BY dr.LitigationRequestId 
-            ORDER BY dr.requestedon asc
+            ORDER BY dr.requestedon asc 
         ) AS RowNum
     FROM DelegationRequest dr
     INNER JOIN Delegator d ON dr.DelegatorId = d.Id
-    WHERE d.FacilityId IS NOT NULL 
+    WHERE d.FacilityId IS NOT NULL and dr.DelegationParty = 2
 )
 UPDATE lr
 SET lr.defendantfacilityid = rd.FacilityId

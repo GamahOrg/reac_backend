@@ -97,6 +97,7 @@ namespace REAC.Application.AppServices.Litigation
                     litigationRequest.LitigationRequestSubStage = LitigationRequestSubStage.JudgmentDecisionIssued;
                     litigationRequest.InternalStatusId = RequestStatus.JudgmentDecisionIssued;
                     litigationRequest.ExternalStatusId = RequestStatus.JudgmentDecisionIssued;
+                    litigationRequest.IsFinished = true;
 
                     var LitigationReport = litigationRequest.LitigationRequestArbitrationReports.FirstOrDefault();
                     if (LitigationReport != null)

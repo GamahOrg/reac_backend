@@ -259,6 +259,7 @@ namespace REAC.Application.ModuleServices
                         ReconciliationSessionDetails = requestPayload.ReconciliationSessionDetails,
                         ModificationRequest = requestPayload.ModificationRequest,
                         LitigationRequestId = requestPayload.RequestId,
+                        ReconciliationRequestDecision =  (int)requestPayload.ReconciliationRequestDecisionStatus
                     };
 
                     if (requestPayload.LitigationRequestMeetingReconciliationItems != null)
@@ -395,6 +396,7 @@ namespace REAC.Application.ModuleServices
                 .Include(x => x.LitigationDelegationRequests.Where(y => y.IsActive != null && (bool)y.IsActive))
                  .ThenInclude(x => x.Delegator)
                  .ThenInclude(x => x.EstablishmentLetterFile)
+                         .AsSplitQuery()
                          .AsNoTracking()
                          .FirstOrDefault(x => x.Id == requestId
                          &&
@@ -442,6 +444,7 @@ namespace REAC.Application.ModuleServices
             }
 
             var reports = _mapper.Map<List<LitigationRequestReconciliationReportCreateUpdateDto>>(litigationRequest?.LitigationRequestReconciliationReports);
+
 
             bool isDone = false;
             bool allowAdd = true;

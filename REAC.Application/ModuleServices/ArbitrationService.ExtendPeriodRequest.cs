@@ -42,19 +42,19 @@ namespace REAC.Application.ModuleServices
                         IsDone = false,
                         Message = "طلب غير موجود"
                     };
-                var arbitirationPeriod = _settingService.GetBySettingKey(SysSettingKeyConstants.Arbitration_Period).Result.Data?.Value;
-                if (litigationRequest.StartArbitrationDate !=null && arbitirationPeriod != null)
-                {
-                    int daysRemaining = int.Parse(arbitirationPeriod) - (DateTime.Now - litigationRequest.StartArbitrationDate).Value.Days;
-                    if (requestPayload.RequiredDays >= daysRemaining)
-                    {
-                        return new BaseResponse()
-                        {
-                            IsDone = false,
-                            Message = "يجب ان يكون مدة طلب التمديد اقل من مدة مرحلة التحكيم"
-                        };
-                    }
-                }
+                //var arbitirationPeriod = _settingService.GetBySettingKey(SysSettingKeyConstants.Arbitration_Period).Result.Data?.Value;
+                //if (litigationRequest.StartArbitrationDate !=null && arbitirationPeriod != null)
+                //{
+                //    int daysRemaining = int.Parse(arbitirationPeriod) - (DateTime.Now - litigationRequest.StartArbitrationDate).Value.Days;
+                //    if (requestPayload.RequiredDays >= daysRemaining)
+                //    {
+                //        return new BaseResponse()
+                //        {
+                //            IsDone = false,
+                //            Message = "يجب ان يكون مدة طلب التمديد اقل من مدة مرحلة التحكيم"
+                //        };
+                //    }
+                //}
 
                
                 bool allowAdd = true;
@@ -105,7 +105,7 @@ namespace REAC.Application.ModuleServices
                         return repositorySaveResponse;
 
                     // Send Notification
-                    // تم اضافة  الرد علي طلب مد مدة التحكيم 
+                    // تم اضافة  طلب مد مدة التحكيم 
                   
                     try
                     {
@@ -188,7 +188,7 @@ namespace REAC.Application.ModuleServices
 
 
                             };
-                            if (litigationRequest?.Contract?.FirstPartyFacility != null && litigationRequest?.Contract?.FirstPartyFacility.CitizenId != litigationRequest.ApplicantCitizenId)
+                            if (litigationRequest?.Contract?.FirstPartyFacility != null && litigationRequest?.Contract?.FirstPartyFacility?.CitizenId != litigationRequest.ApplicantCitizenId)
                             {
                                 notifications.Add(new SysNotificationDto
                                 {
@@ -230,7 +230,7 @@ namespace REAC.Application.ModuleServices
                                 emails.Add(litigationRequest.Contract.SecondPartyFacility.Citizen.Email);
                                 recipients.Add(litigationRequest.Contract.SecondPartyFacility.Citizen.Mobile);
                             };
-                            _notificationService.SendNotifications(new Contracts.Dtos.Notification.SendEmailDto()
+                           await _notificationService.SendNotifications(new Contracts.Dtos.Notification.SendEmailDto()
                             {
                                 To = emails,
                                 Subject = "اضافة  الرد علي طلب مد مدة التحكيم",
@@ -308,7 +308,7 @@ namespace REAC.Application.ModuleServices
                 {
                    
 
-                    litigationRequest.ArbitrationPeriod += litigationRequestExtendPeriodRequest.RequiredDays;
+                    litigationRequest.ArbitrationPeriod = litigationRequest.ArbitrationPeriod == null ? litigationRequestExtendPeriodRequest.RequiredDays : litigationRequest.ArbitrationPeriod + litigationRequestExtendPeriodRequest.RequiredDays;
 
                     savePeriodResponse = await _repository.SaveChangesAsync();
                     if (!savePeriodResponse.IsDone)
@@ -577,12 +577,15 @@ namespace REAC.Application.ModuleServices
         public async Task<BaseResponse> GetLitigationRequestExtendPeriodForEmployee(Guid requestId, CancellationToken cancellationToken)
         {
             var litigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>())
+                         .Include(x => x.LitigationRequestCategory)
                          .Include(x => x.Area)
                          .Include(x => x.City)
                          .Include(x => x.LitigationRequestExtendPeriodRequests.Where(x => x.LitigationRequestExtendPeriodRequestTypeId == LitigationRequestExtendPeriodRequestType.Arbitration))
                          .ThenInclude(x => x.LitigationRequestExtendPeriodRequestFiles)
                          .ThenInclude(x => x.FileManager)
                          .Include(x => x.ApplicantCitizen)
+                         .Include(x => x.DefendantCitizen)
+                         .Include(x => x.DefendantFacility)
                          .Include(x => x.InternalStatus)
                          .Include(x => x.ExternalStatus)
                          .Include(x => x.LitigationRequestAmount)
@@ -700,8 +703,8 @@ namespace REAC.Application.ModuleServices
                     litigationRequestMircoDto.Id = litigationRequest.Id;
                     litigationRequestMircoDto.RequestDate = litigationRequest.CreatedOn;
                     litigationRequestMircoDto.RequestCode = litigationRequest.RequestCode;
-                    litigationRequestMircoDto.FirstPartyName = (litigationRequest.Contract.FirstPartyCitizen == null) ? litigationRequest.Contract.FirstPartyFacility.ArabicFacilityName : litigationRequest.Contract.FirstPartyCitizen.FullName;
-                    litigationRequestMircoDto.SecondPartyName = (litigationRequest.DefendantCitizen == null) ? litigationRequest.DefendantFacility.ArabicFacilityName : litigationRequest.DefendantCitizen.FullName;
+                    litigationRequestMircoDto.FirstPartyName = (litigationRequest.Contract.FirstPartyCitizen == null) ? litigationRequest.Contract.FirstPartyFacility?.ArabicFacilityName : litigationRequest.Contract.FirstPartyCitizen?.FullName;
+                    litigationRequestMircoDto.SecondPartyName = (litigationRequest.DefendantCitizen == null) ? litigationRequest.DefendantFacility?.ArabicFacilityName : litigationRequest.DefendantCitizen?.FullName;
                     litigationRequestMircoDto.RequestTypeName = litigationRequest.Contract.LitigationRequestContractType.TypeName;
                     bool allowAdd = true;
                     bool isDone = false;
@@ -801,7 +804,7 @@ namespace REAC.Application.ModuleServices
                     litigationRequestMircoDto.RequestDate = litigationRequest.CreatedOn;
                     litigationRequestMircoDto.RequestCode = litigationRequest.RequestCode;
                     litigationRequestMircoDto.FirstPartyName = (litigationRequest.Contract.FirstPartyCitizen == null) ? litigationRequest.Contract.FirstPartyFacility.ArabicFacilityName : litigationRequest.Contract.FirstPartyCitizen.FullName;
-                    litigationRequestMircoDto.SecondPartyName = (litigationRequest.DefendantCitizen == null) ? litigationRequest.DefendantFacility.ArabicFacilityName : litigationRequest.DefendantCitizen.FullName;
+                    litigationRequestMircoDto.SecondPartyName = (litigationRequest.DefendantCitizen == null) ? litigationRequest.DefendantFacility?.ArabicFacilityName : litigationRequest.DefendantCitizen?.FullName;
                     litigationRequestMircoDto.RequestTypeName = litigationRequest.Contract.LitigationRequestContractType.TypeName;
                     bool allowAdd = true;
                     bool isDone = false;

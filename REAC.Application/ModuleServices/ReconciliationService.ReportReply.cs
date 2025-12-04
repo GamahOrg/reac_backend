@@ -815,11 +815,11 @@ namespace REAC.Application.ModuleServices
                 litigationRequest.ApplicantCitizen.Id)
             {
                 objEmail.To.Add(litigationRequest?.Contract?.FirstPartyFacility.Email);
-                objSms.recipients.Add(litigationRequest.Contract.FirstPartyFacility?.Citizen.Mobile);
+                objSms.recipients.Add(litigationRequest.Contract.FirstPartyFacility?.Citizen?.Mobile);
 
                 lstNotification.Add(new Contracts.Dtos.Notification.SysNotificationDto()
                 {
-                    ActorId = (Guid)litigationRequest?.Contract?.FirstPartyFacility?.Citizen.Id,
+                    ActorId = (Guid)litigationRequest?.Contract?.FirstPartyFacility?.Citizen?.Id,
                     CreatedOn = DateTime.Now,
                     ActorTypeId = NotificationActorType.Plaintiff,
                     IsViewed = false,

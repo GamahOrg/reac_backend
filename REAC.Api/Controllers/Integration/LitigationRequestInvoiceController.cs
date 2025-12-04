@@ -20,9 +20,11 @@ namespace REAC.Api.Controllers.Integration
     [PermissionRequired(Modules.LitigationRequestInvoice)]
     public class LitigationRequestInvoiceController : ControllerBase
     {
-
-        public LitigationRequestInvoiceController()
+        private readonly ILitigationRequestService _litigationService;
+        public LitigationRequestInvoiceController(ILitigationRequestService litigationService)
         {
+            _litigationService = litigationService;
+
         }
         [HttpPost(nameof(SendInvoiceStatus))]
         public async Task<IActionResult> SendInvoiceStatus([FromBody] UpdateInvoiceDto model,
@@ -36,27 +38,28 @@ namespace REAC.Api.Controllers.Integration
                     Message = "Invalid request data"
                 });
             }
+            var returnValue = await _litigationService.SendLitigationInvoiceRequestPaid(model);
+            return Ok(returnValue);
+            //// Dummy logic to decide success or failure
+            //bool isSpecificTransaction = model.InvoiceId == "2511207200022004"
+            //                             || model.ReferecnceId == "0b4fe481-7130-42f4-af8e-65845faf6d49";
 
-            // Dummy logic to decide success or failure
-            bool isSpecificTransaction = model.InvoiceId == "2511207200022004"
-                                         || model.ReferecnceId == "0b4fe481-7130-42f4-af8e-65845faf6d49";
-
-            if (isSpecificTransaction)
-            {
-                return Ok(new BaseResponse
-                {
-                    IsDone = true,
-                    Message = "Invoice updated successfully"
-                });
-            }
-            else
-            {
-                return BadRequest(new BaseResponse
-                {
-                    IsDone = false,
-                    Message = "Failed to update invoice , this invoice is not exist"
-                });
-            }
+            //if (isSpecificTransaction)
+            //{
+            //    return Ok(new BaseResponse
+            //    {
+            //        IsDone = true,
+            //        Message = "Invoice updated successfully"
+            //    });
+            //}
+            //else
+            //{
+            //    return BadRequest(new BaseResponse
+            //    {
+            //        IsDone = false,
+            //        Message = "Failed to update invoice , this invoice is not exist"
+            //    });
+            //}
         }
 
 

@@ -31,6 +31,7 @@ namespace REAC.Application.Contracts.Dtos.Reconciliation.Process
         public bool AllowAdd { get; set; }
         public LitigationRequestShortDto? LitigationRequestShortDto { get; set; }
         public LitigationRequestArbitrationReportExplanationRequestGetDto? Report { get; set; }
+        public LitigationRequestArbitrationReportExplanationRequestGetDto? OtherReport { get; set; }
     }
 
     public class LitigationRequestForArbitratorRecusalRequestDto

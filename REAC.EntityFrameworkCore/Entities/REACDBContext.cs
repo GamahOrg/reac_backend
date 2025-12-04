@@ -195,6 +195,7 @@ public partial class REACDBContext : DbContext
     public virtual DbSet<SysLitigationRequestOwnerType> SysLitigationRequestOwnerTypes { get; set; }
 
     public virtual DbSet<SysLitigationRequestStatus> SysLitigationRequestStatuses { get; set; }
+    public virtual DbSet<LitigationRequestInvoice> LitigationRequestInvoices { get; set; }
 
     public virtual DbSet<SysRegistrationRequest> SysRegistrationRequests { get; set; }
 
@@ -1581,6 +1582,7 @@ public partial class REACDBContext : DbContext
                 .HasConstraintName("FKLitigation674990");
         });
 
+     
         modelBuilder.Entity<LitigationRequestRequestFile>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK__Litigati__3214EC076FBEF9E2");

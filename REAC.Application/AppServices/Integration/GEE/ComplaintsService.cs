@@ -111,7 +111,7 @@ namespace REAC.Application.AppServices.Integration.GEE
 
 
                 if (data == null || data.total_count == 0)
-                    return new DataResponse<ContactResponseDto>(null, false, "");
+                    return new DataResponse<ContactResponseDto>(null, true, "");
 
 
                 // Test Data
@@ -383,6 +383,14 @@ namespace REAC.Application.AppServices.Integration.GEE
 
             if (casesData == null)
                 return new DataResponse<CasesByContactResponseDto>(null, false, "خطأ داخلي");
+
+            if (casesData != null && casesData.entry_list != null && casesData.entry_list.Count > 0)
+            {
+                casesData.entry_list = casesData.entry_list
+                    .OrderByDescending(e => e.name_value_list?.date_entered?.value)
+                    .ToList();
+            }
+            
 
             return new DataResponse<CasesByContactResponseDto>(casesData, true, "");
 

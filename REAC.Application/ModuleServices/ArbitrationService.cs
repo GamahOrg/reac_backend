@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Core.GenericRepository.BaseRepository;
 using Core.GenericRepository.Shared.Pagging;
+using Core.Log.Application.Contracts.IAppServices;
 using Core.Security.Entities;
 using Core.Shared.Responses;
 using Microsoft.AspNetCore.Identity;
@@ -139,12 +140,14 @@ namespace REAC.Application.ModuleServices
         private readonly IZoomService _zoomService;
         private readonly INafathService _nafathService;
         private UserManager<User> _userManager;
+        private readonly IGEELoginService _gEELoginService;
+        private readonly ILoggerManager _loggerManager;
 
         protected readonly IHubContext<NotificationHub, INotificationClient> _notificationHub;
         public ArbitrationService(IEntityRepository repository, ISysSettingService settingService,
                           IWorkFlowProcessingLogService workFlowProcessingLogService,
                           IMapper mapper, ISysInvoiceService sysInvoiceService,
-                          IJwtReader jwtReader, ISysEmployeeService sysEmployeeService, INotificationService notificationService, IZoomService zoomService, INafathService nafathService, UserManager<User> userManager)
+                          IJwtReader jwtReader, ISysEmployeeService sysEmployeeService, INotificationService notificationService, IZoomService zoomService, INafathService nafathService, UserManager<User> userManager, IGEELoginService gEELoginService, ILoggerManager loggerManager)
         {
             _mapper = mapper;
             _sysInvoiceService = sysInvoiceService;
@@ -156,6 +159,8 @@ namespace REAC.Application.ModuleServices
             _zoomService = zoomService;
             _nafathService = nafathService;
             _userManager = userManager;
+            _gEELoginService = gEELoginService;
+            _loggerManager = loggerManager;
         }
 
         public async Task<BaseResponse> GetLitigationRequestForFullAllArbitrator(int pageIndex, int pageSize, CancellationToken cancellationToken)
@@ -372,8 +377,8 @@ namespace REAC.Application.ModuleServices
                         litigationRequestMircoDto.Id = litigationRequest.Id;
                         litigationRequestMircoDto.RequestDate = litigationRequest.CreatedOn;
                         litigationRequestMircoDto.RequestCode = litigationRequest.RequestCode;
-                        litigationRequestMircoDto.FirstPartyName = (litigationRequest.Contract.FirstPartyCitizen == null) ? litigationRequest.Contract.FirstPartyFacility.ArabicFacilityName : litigationRequest.Contract.FirstPartyCitizen.FullName;
-                        litigationRequestMircoDto.SecondPartyName = (litigationRequest.DefendantCitizen == null) ? litigationRequest.DefendantFacility.ArabicFacilityName : litigationRequest.DefendantCitizen.FullName;
+                        litigationRequestMircoDto.FirstPartyName = (litigationRequest.Contract.FirstPartyCitizen == null) ? litigationRequest.Contract.FirstPartyFacility?.ArabicFacilityName : litigationRequest.Contract.FirstPartyCitizen.FullName;
+                        litigationRequestMircoDto.SecondPartyName = (litigationRequest.DefendantCitizen == null) ? litigationRequest.DefendantFacility?.ArabicFacilityName : litigationRequest.DefendantCitizen.FullName;
                         litigationRequestMircoDto.RequestTypeName = litigationRequest.Contract.LitigationRequestContractType.TypeName;
                         litigationRequestMircoDto.ArbitratorName = litigationRequest.ArbitratorCitizen?.FullName;
                         litigationRequestMircoDto.ArbitratoId = litigationRequest.ArbitratorCitizen?.Id;

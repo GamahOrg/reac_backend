@@ -10,7 +10,7 @@ namespace REAC.Application.Contracts.Dtos.Litigation.Invoice
    public  class UpdateInvoiceDto
     {
         [Required(ErrorMessage = "ReferenceId is required")]
-        public string? ReferecnceId { get; set; }
+        public string? ReferenceId { get; set; }
         [Required(ErrorMessage = "InvoiceId is required")]
         public string? InvoiceId { get; set; }
         [Required(ErrorMessage = "InvoiceStatus is required")]

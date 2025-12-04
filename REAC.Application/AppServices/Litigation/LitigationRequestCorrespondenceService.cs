@@ -309,7 +309,7 @@ namespace REAC.Application.AppServices.Litigation
                                                // x.Contract.FirstPartyCitizenId == citizenId & x.LitigationRequestStage == LitigationRequestStage.Reconciliation & x.LitigationRequestCorrespondences.Any(l => l.LitigationRequestCorrespondenceDestinationId == LitigationRequestCorrespondenceDestination.Plaintiff | l.LitigationRequestCorrespondenceDestinationId == LitigationRequestCorrespondenceDestination.BothOfThem)
                                                //| 
                                                x.Contract.SecondPartyCitizenId == citizenId & x.LitigationRequestStage == LitigationRequestStage.Reconciliation
-                                               | x.ApplicantCitizenId == citizenId & x.LitigationRequestStage == LitigationRequestStage.Reconciliation 
+                                               | x.ApplicantCitizenId == citizenId & x.LitigationRequestStage == LitigationRequestStage.Reconciliation
 
                                                //|x.Contract.FirstPartyCitizenId == citizenId & x.LitigationRequestStage == LitigationRequestStage.Arbitration
                                                | x.Contract.SecondPartyCitizenId == citizenId & x.LitigationRequestStage == LitigationRequestStage.Arbitration
@@ -352,7 +352,7 @@ namespace REAC.Application.AppServices.Litigation
                 var litigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>())
                           .Include(x => x.LitigationRequestCorrespondences
                           .Where(l =>
-                          (l.LitigationRequestCategoryId == LitigationRequestCategory.Reconciliation )
+                          (l.LitigationRequestCategoryId == LitigationRequestCategory.Reconciliation)
                           || (l.LitigationRequestCategoryId == LitigationRequestCategory.Arbitration)
                           ))
                           .ThenInclude(x => x.LitigationRequestCorrespondenceReply)
@@ -360,7 +360,7 @@ namespace REAC.Application.AppServices.Litigation
                           .ThenInclude(x => x.FileManager)
                           .Include(x => x.LitigationRequestCorrespondences
                           .Where(l =>
-                          (l.LitigationRequestCategoryId == LitigationRequestCategory.Reconciliation )
+                          (l.LitigationRequestCategoryId == LitigationRequestCategory.Reconciliation)
                           || (l.LitigationRequestCategoryId == LitigationRequestCategory.Arbitration)
                           ))
                           .ThenInclude(x => x.Citizen)
@@ -409,16 +409,16 @@ namespace REAC.Application.AppServices.Litigation
 
                 foreach (var correspondence in correspondences)
                 {
-                    if (correspondence.LitigationRequestCategoryId == LitigationRequestCategory.Arbitration & correspondence.LitigationRequestCorrespondenceDestinationId == LitigationRequestCorrespondenceDestination.Plaintiff & (litigationRequest?.ApplicantCitizenId == referenceId || litigationRequest?.Contract?.FirstPartyFacilityId == referenceId|| litigationRequest?.ApplicantCitizenId == referenceId))
+                    if (correspondence.LitigationRequestCategoryId == LitigationRequestCategory.Arbitration & correspondence.LitigationRequestCorrespondenceDestinationId == LitigationRequestCorrespondenceDestination.Plaintiff & (litigationRequest?.ApplicantCitizenId == referenceId || litigationRequest?.Contract?.FirstPartyFacilityId == referenceId || litigationRequest?.ApplicantCitizenId == referenceId))
                         correspondence.AllowAddReply = true;
 
-                    if (correspondence.LitigationRequestCategoryId == LitigationRequestCategory.Arbitration & correspondence.LitigationRequestCorrespondenceDestinationId == LitigationRequestCorrespondenceDestination.Defendant & (litigationRequest?.Contract?.SecondPartyCitizenId == referenceId || litigationRequest?.Contract?.SecondPartyFacilityId == referenceId ))
+                    if (correspondence.LitigationRequestCategoryId == LitigationRequestCategory.Arbitration & correspondence.LitigationRequestCorrespondenceDestinationId == LitigationRequestCorrespondenceDestination.Defendant & (litigationRequest?.Contract?.SecondPartyCitizenId == referenceId || litigationRequest?.Contract?.SecondPartyFacilityId == referenceId))
                         correspondence.AllowAddReply = true;
 
                     if (correspondence.LitigationRequestCategoryId == LitigationRequestCategory.Arbitration & correspondence.LitigationRequestCorrespondenceDestinationId == LitigationRequestCorrespondenceDestination.BothOfThem)
                         correspondence.AllowAddReply = true;
 
-                    if (correspondence.LitigationRequestCategoryId == LitigationRequestCategory.Reconciliation & correspondence.LitigationRequestCorrespondenceDestinationId == LitigationRequestCorrespondenceDestination.Plaintiff & (litigationRequest?.Contract?.FirstPartyCitizenId == referenceId || litigationRequest?.Contract?.FirstPartyFacilityId == referenceId|| litigationRequest?.ApplicantCitizenId == referenceId))
+                    if (correspondence.LitigationRequestCategoryId == LitigationRequestCategory.Reconciliation & correspondence.LitigationRequestCorrespondenceDestinationId == LitigationRequestCorrespondenceDestination.Plaintiff & (litigationRequest?.Contract?.FirstPartyCitizenId == referenceId || litigationRequest?.Contract?.FirstPartyFacilityId == referenceId || litigationRequest?.ApplicantCitizenId == referenceId))
                         correspondence.AllowAddReply = true;
 
                     if (correspondence.LitigationRequestCategoryId == LitigationRequestCategory.Reconciliation & correspondence.LitigationRequestCorrespondenceDestinationId == LitigationRequestCorrespondenceDestination.Defendant & (litigationRequest?.Contract?.SecondPartyCitizenId == referenceId || litigationRequest?.Contract?.SecondPartyCitizenId == referenceId))
@@ -465,7 +465,7 @@ namespace REAC.Application.AppServices.Litigation
                         LitigationRequestShortDto = request,
                         AllowAdd = allowAdd,
                         //Correspondences = (correspondences.Count > 0) ? correspondences?.OrderByDescending(s => s.CreatedOn).ThenByDescending(s => s.LitigationRequestCorrespondenceReply.OrderByDescending(r => r.CreatedOn)). ToList() : null,
-                    Correspondences = correspondences
+                        Correspondences = correspondences
                     },
                     IsDone = true,
                 };
@@ -644,7 +644,7 @@ namespace REAC.Application.AppServices.Litigation
                 //          .Include(x => x.Contract.SecondPartyCitizen)
                 //          .AsNoTracking()
                 //          .FirstOrDefault(x => x.Id == litigationRequestId);
-                
+
                 var litigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>())
                           .Include(x => x.LitigationRequestCorrespondences.Where(l =>
                           (l.LitigationRequestCategoryId == LitigationRequestCategory.Reconciliation && l.LitigationRequestCorrespondenceDestinationId == LitigationRequestCorrespondenceDestination.BothOfThem || l.LitigationRequestCorrespondenceDestinationId == (LitigationRequestCorrespondenceDestination)destination.Result)
@@ -725,34 +725,67 @@ namespace REAC.Application.AppServices.Litigation
 
             PagedResult<LitigationRequestArbitratorAssigningRequest> litigationRequests = null;
 
-            var entitiesQuerable = (await _repository.GetQueryable<LitigationRequestArbitratorAssigningRequest, Guid>())
-                         .Include(x => x.ArbitratorCitizen)
-                         .Include(x => x.LitigationRequest)
-                         .Include(x => x.LitigationRequest.DefendantCitizen)
-                         .Include(x => x.LitigationRequest.DefendantFacility)
-                         .Include(x => x.LitigationRequest.InternalStatus)
-                         .Include(x => x.LitigationRequest.ExternalStatus)
-                         .Include(x => x.LitigationRequest.LitigationRequestCategory)
-                         .Include(x => x.LitigationRequest.Contract)
-                         .Include(x => x.LitigationRequest.Contract.ContractFile)
-                         .Include(x => x.LitigationRequest.Contract.AssociationRegistrationCertificateFile)
-                         .Include(x => x.LitigationRequest.Contract.FoundingLetterFile)
-                         .Include(x => x.LitigationRequest.Contract.InternalRegulationsFile)
-                         .Include(x => x.LitigationRequest.Contract.FirstPartyFacility)
-                         .Include(x => x.LitigationRequest.Contract.FirstPartyCitizen)
-                         .Include(x => x.LitigationRequest.Contract.SecondPartyFacility)
-                         .Include(x => x.LitigationRequest.Contract.SecondPartyCitizen)
-                         .Include(x => x.LitigationRequest.Contract.LitigationRequestContractType)
-                         .Include(x => x.LitigationRequest)
-                         .ThenInclude(x => x.LitigationRequestCorrespondences.OrderByDescending(x => x.CreatedOn))
-                         .Where(x => x.LitigationRequest.LitigationRequestCorrespondences.Any() & x.LitigationRequest.LitigationRequestStage == LitigationRequestStage.Arbitration)
-                          .OrderByDescending(x => x.LitigationRequest.CreatedOn)
-                         .GroupBy(x => x.LitigationRequest.RequestCode)
-                         .Select(x => x.First()).AsNoTracking();
+            //var entitiesQuerable = (await _repository.GetQueryable<LitigationRequestArbitratorAssigningRequest, Guid>())
+            //             .Include(x => x.ArbitratorCitizen)
+            //             .Include(x => x.LitigationRequest)
+            //             .Include(x => x.LitigationRequest.DefendantCitizen)
+            //             .Include(x => x.LitigationRequest.DefendantFacility)
+            //             .Include(x => x.LitigationRequest.InternalStatus)
+            //             .Include(x => x.LitigationRequest.ExternalStatus)
+            //             .Include(x => x.LitigationRequest.LitigationRequestCategory)
+            //             .Include(x => x.LitigationRequest.Contract)
+            //             .Include(x => x.LitigationRequest.Contract.ContractFile)
+            //             .Include(x => x.LitigationRequest.Contract.AssociationRegistrationCertificateFile)
+            //             .Include(x => x.LitigationRequest.Contract.FoundingLetterFile)
+            //             .Include(x => x.LitigationRequest.Contract.InternalRegulationsFile)
+            //             .Include(x => x.LitigationRequest.Contract.FirstPartyFacility)
+            //             .Include(x => x.LitigationRequest.Contract.FirstPartyCitizen)
+            //             .Include(x => x.LitigationRequest.Contract.SecondPartyFacility)
+            //             .Include(x => x.LitigationRequest.Contract.SecondPartyCitizen)
+            //             .Include(x => x.LitigationRequest.Contract.LitigationRequestContractType)
+            //             .Include(x => x.LitigationRequest)
+            //             .ThenInclude(x => x.LitigationRequestCorrespondences.OrderByDescending(x => x.CreatedOn))
+            //             .Where(x => x.LitigationRequest.LitigationRequestCorrespondences.Any() & x.LitigationRequest.LitigationRequestStage == LitigationRequestStage.Arbitration)
+            //             .GroupBy(x => x.LitigationRequest.RequestCode)
+            //             .Select(x => x.First())
+            //              .OrderByDescending(x => x.LitigationRequest.SentOn)
+            //             .AsNoTracking();
 
+            var ids =
+    (await _repository.GetQueryable<LitigationRequestArbitratorAssigningRequest, Guid>())
+        .Where(x =>
+            x.LitigationRequest.LitigationRequestCorrespondences.Any() &&
+            x.LitigationRequest.LitigationRequestStage == LitigationRequestStage.Arbitration
+        )
+        .GroupBy(x => x.LitigationRequest.RequestCode)
+        .Select(g => g.First().Id)
+        .ToList();
 
-
-
+            var entitiesQuerable =
+    (await _repository.GetQueryable<LitigationRequestArbitratorAssigningRequest, Guid>())
+        .Where(x => ids.Contains(x.Id))
+        .Include(x => x.ArbitratorCitizen)
+        .Include(x => x.LitigationRequest)
+        .Include(x => x.LitigationRequest.DefendantCitizen)
+        .Include(x => x.LitigationRequest.DefendantFacility)
+        .Include(x => x.LitigationRequest.InternalStatus)
+        .Include(x => x.LitigationRequest.ExternalStatus)
+        .Include(x => x.LitigationRequest.LitigationRequestCategory)
+        .Include(x => x.LitigationRequest.Contract)
+        .Include(x => x.LitigationRequest.Contract.ContractFile)
+        .Include(x => x.LitigationRequest.Contract.AssociationRegistrationCertificateFile)
+        .Include(x => x.LitigationRequest.Contract.FoundingLetterFile)
+        .Include(x => x.LitigationRequest.Contract.InternalRegulationsFile)
+        .Include(x => x.LitigationRequest.Contract.FirstPartyFacility)
+        .Include(x => x.LitigationRequest.Contract.FirstPartyCitizen)
+        .Include(x => x.LitigationRequest.Contract.SecondPartyFacility)
+        .Include(x => x.LitigationRequest.Contract.SecondPartyCitizen)
+        .Include(x => x.LitigationRequest.Contract.LitigationRequestContractType)
+        .Include(x => x.LitigationRequest)
+            .ThenInclude(lr => lr.LitigationRequestCorrespondences
+                .OrderByDescending(c => c.CreatedOn))
+        .OrderByDescending(x => x.LitigationRequest.SentOn)
+        .AsNoTracking();
 
             litigationRequests = entitiesQuerable
                                        .GetPaged(pageIndex, pageSize);
@@ -771,10 +804,10 @@ namespace REAC.Application.AppServices.Litigation
                     litigationRequestMircoDto.RequestCode = litigationRequest.LitigationRequest.RequestCode;
                     litigationRequestMircoDto.ArbitratorAssigningRequestType = litigationRequest.ArbitratorAssigningRequestTypeId;
                     litigationRequestMircoDto.FirstPartyName = (litigationRequest.LitigationRequest.Contract.FirstPartyCitizen == null) ? litigationRequest.LitigationRequest.Contract.FirstPartyFacility.ArabicFacilityName : litigationRequest.LitigationRequest.Contract.FirstPartyCitizen.FullName;
-                    litigationRequestMircoDto.SecondPartyName = (litigationRequest.LitigationRequest.DefendantCitizen == null) ? litigationRequest.LitigationRequest.DefendantFacility.ArabicFacilityName : litigationRequest.LitigationRequest.DefendantCitizen.FullName;
+                    litigationRequestMircoDto.SecondPartyName = (litigationRequest.LitigationRequest.DefendantCitizen == null) ? litigationRequest.LitigationRequest.DefendantFacility?.ArabicFacilityName : litigationRequest.LitigationRequest.DefendantCitizen?.FullName;
                     litigationRequestMircoDto.RequestTypeName = litigationRequest.LitigationRequest.Contract.LitigationRequestContractType.TypeName;
                     litigationRequestMircoDto.RequestTypeId = litigationRequest.LitigationRequest.Contract.LitigationRequestContractType.Id.GetHashCode();
-                    litigationRequestMircoDto.Response = litigationRequest.Response;
+                    litigationRequestMircoDto.Response = LitigationRequestArbitratorAssigningRequestStatus.Approve;
                     litigationRequestMircoDto.ResponseOn = litigationRequest.ResponseOn;
                     litigationRequestMircoDto.ArbitratorName =
                         (litigationRequest.ArbitratorAssigningRequestTypeId ==
@@ -828,33 +861,69 @@ namespace REAC.Application.AppServices.Litigation
 
             PagedResult<LitigationRequestReformerAssigningRequest> litigationRequests = null;
 
-            var entitiesQuerable = (await _repository.GetQueryable<LitigationRequestReformerAssigningRequest, Guid>())
-                          .Include(x => x.ReformerCitizen)
-                         .Include(x => x.LitigationRequest.ReformerCitizen)
+            //var entitiesQuerable = (await _repository.GetQueryable<LitigationRequestReformerAssigningRequest, Guid>())
+            //              .Include(x => x.ReformerCitizen)
+            //             .Include(x => x.LitigationRequest.ReformerCitizen)
 
-                         .Include(x => x.LitigationRequest.ApplicantCitizen)
-                         .Include(x => x.LitigationRequest.DefendantCitizen)
-                         .Include(x => x.LitigationRequest.DefendantFacility)
-                         .Include(x => x.LitigationRequest.InternalStatus)
-                         .Include(x => x.LitigationRequest.ExternalStatus)
+            //             .Include(x => x.LitigationRequest.ApplicantCitizen)
+            //             .Include(x => x.LitigationRequest.DefendantCitizen)
+            //             .Include(x => x.LitigationRequest.DefendantFacility)
+            //             .Include(x => x.LitigationRequest.InternalStatus)
+            //             .Include(x => x.LitigationRequest.ExternalStatus)
 
-                         .Include(x => x.LitigationRequest.LitigationRequestCategory)
-                          .Include(x => x.LitigationRequest.Contract)
-                          .Include(x => x.LitigationRequest.Contract.FirstPartyFacility)
-                         .Include(x => x.LitigationRequest.Contract.FirstPartyCitizen)
-                         .Include(x => x.LitigationRequest.Contract.SecondPartyFacility)
-                         .Include(x => x.LitigationRequest.Contract.SecondPartyCitizen)
-                         .Include(x => x.LitigationRequest.Contract.LitigationRequestContractType)
-                         .Include(x => x.LitigationRequest)
-                         .ThenInclude(x => x.LitigationRequestCorrespondences.OrderByDescending(x => x.CreatedBy))
-                         .Where(x => x.LitigationRequest.LitigationRequestCorrespondences.Any()
-                       & (x.LitigationRequest.LitigationRequestCategoryId == LitigationRequestCategory.Reconciliation
-                       || x.LitigationRequest.LitigationRequestCategoryId == LitigationRequestCategory.ReconciliationAndArbitration)
-                       )
-                          .OrderByDescending(x => x.LitigationRequest.SentOn)
-                         .GroupBy(x => x.LitigationRequest.RequestCode)
-                         .Select(x => x.First()).AsNoTracking();
+            //             .Include(x => x.LitigationRequest.LitigationRequestCategory)
+            //              .Include(x => x.LitigationRequest.Contract)
+            //              .Include(x => x.LitigationRequest.Contract.FirstPartyFacility)
+            //             .Include(x => x.LitigationRequest.Contract.FirstPartyCitizen)
+            //             .Include(x => x.LitigationRequest.Contract.SecondPartyFacility)
+            //             .Include(x => x.LitigationRequest.Contract.SecondPartyCitizen)
+            //             .Include(x => x.LitigationRequest.Contract.LitigationRequestContractType)
+            //             .Include(x => x.LitigationRequest)
+            //             .ThenInclude(x => x.LitigationRequestCorrespondences.OrderByDescending(x => x.CreatedBy))
+            //             .Where(x => x.LitigationRequest.LitigationRequestCorrespondences.Any()
+            //           && (x.LitigationRequest.LitigationRequestCategoryId == LitigationRequestCategory.Reconciliation
+            //           || x.LitigationRequest.LitigationRequestCategoryId == LitigationRequestCategory.ReconciliationAndArbitration)
+            //           )
+            //             .GroupBy(x => x.LitigationRequest.RequestCode)
+            //             .Select(x => x.First())
+            //              .OrderByDescending(x => x.LitigationRequest.SentOn)
+            //              .AsNoTracking();
 
+            var ids =
+    (await _repository.GetQueryable<LitigationRequestReformerAssigningRequest, Guid>())
+        .Where(x =>
+            x.LitigationRequest.LitigationRequestCorrespondences.Any() &&
+            (
+                x.LitigationRequest.LitigationRequestCategoryId == LitigationRequestCategory.Reconciliation ||
+                x.LitigationRequest.LitigationRequestCategoryId == LitigationRequestCategory.ReconciliationAndArbitration
+            )
+        )
+        .GroupBy(x => x.LitigationRequest.RequestCode)
+        .Select(g => g.First().Id)   // Only return PK to use in next query
+        .ToList();
+
+            var entitiesQuerable =
+    (await _repository.GetQueryable<LitigationRequestReformerAssigningRequest, Guid>())
+        .Where(x => ids.Contains(x.Id))
+        .Include(x => x.ReformerCitizen)
+        .Include(x => x.LitigationRequest.ReformerCitizen)
+        .Include(x => x.LitigationRequest.ApplicantCitizen)
+        .Include(x => x.LitigationRequest.DefendantCitizen)
+        .Include(x => x.LitigationRequest.DefendantFacility)
+        .Include(x => x.LitigationRequest.InternalStatus)
+        .Include(x => x.LitigationRequest.ExternalStatus)
+        .Include(x => x.LitigationRequest.LitigationRequestCategory)
+        .Include(x => x.LitigationRequest.Contract)
+        .Include(x => x.LitigationRequest.Contract.FirstPartyFacility)
+        .Include(x => x.LitigationRequest.Contract.FirstPartyCitizen)
+        .Include(x => x.LitigationRequest.Contract.SecondPartyFacility)
+        .Include(x => x.LitigationRequest.Contract.SecondPartyCitizen)
+        .Include(x => x.LitigationRequest.Contract.LitigationRequestContractType)
+        .Include(x => x.LitigationRequest)
+            .ThenInclude(x => x.LitigationRequestCorrespondences
+                .OrderByDescending(c => c.CreatedBy))
+        .OrderByDescending(x => x.LitigationRequest.SentOn)
+        .AsNoTracking();
 
             litigationRequests = entitiesQuerable
                                        .GetPaged(pageIndex, pageSize);
@@ -873,7 +942,7 @@ namespace REAC.Application.AppServices.Litigation
                     litigationRequestMircoDto.FirstPartyName = (litigationRequest.LitigationRequest.Contract.FirstPartyCitizen == null) ? litigationRequest.LitigationRequest.Contract.FirstPartyFacility.ArabicFacilityName : litigationRequest.LitigationRequest.Contract.FirstPartyCitizen.FullName;
                     litigationRequestMircoDto.SecondPartyName = (litigationRequest.LitigationRequest.DefendantCitizen == null) ? litigationRequest.LitigationRequest.DefendantFacility.ArabicFacilityName : litigationRequest.LitigationRequest.DefendantCitizen.FullName;
                     litigationRequestMircoDto.RequestTypeName = litigationRequest.LitigationRequest.Contract.LitigationRequestContractType.TypeName;
-                    litigationRequestMircoDto.Response = litigationRequest.Response;
+                    litigationRequestMircoDto.Response = LitigationRequestReformerAssigningRequestStatus.Approve;
                     litigationRequestMircoDto.ReformerName = litigationRequest.LitigationRequest.ReformerCitizen?.FullName;
                     litigationRequestMircoDto.ResponseOn = litigationRequest.ResponseOn;
 

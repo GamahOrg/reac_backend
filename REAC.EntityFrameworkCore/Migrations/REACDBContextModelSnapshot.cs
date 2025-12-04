@@ -2192,6 +2192,163 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.ToTable("LitigationRequestGroundFile", (string)null);
                 });
 
+            modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Litigation.LitigationRequestInvoice", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("CityName")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("cityName");
+
+                    b.Property<string>("Client")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)")
+                        .HasColumnName("client");
+
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)")
+                        .HasColumnName("createdBy");
+
+                    b.Property<DateTime?>("CreatedOn")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("createdOn");
+
+                    b.Property<string>("DeletedReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)")
+                        .HasColumnName("deletedReason");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)")
+                        .HasColumnName("description");
+
+                    b.Property<string>("InvDateH")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)")
+                        .HasColumnName("invDateH");
+
+                    b.Property<DateTime?>("InvDateJ")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("invDateJ");
+
+                    b.Property<DateTime?>("InvDueDate")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("invDueDate");
+
+                    b.Property<string>("InvTime")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)")
+                        .HasColumnName("invTime");
+
+                    b.Property<string>("InvoiceType")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("invoiceType");
+
+                    b.Property<string>("InvoicedNumber")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("invoicedNumber");
+
+                    b.Property<string>("IsDeleted")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)")
+                        .HasColumnName("isDeleted");
+
+                    b.Property<Guid?>("LitigationRequestId")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("litigationRequestId");
+
+                    b.Property<string>("NeighborhoodName")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("neighborhoodName");
+
+                    b.Property<decimal?>("Price")
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("price");
+
+                    b.Property<string>("Project")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)")
+                        .HasColumnName("project");
+
+                    b.Property<string>("ProvinceName")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("provinceName");
+
+                    b.Property<string>("Reference")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("reference");
+
+                    b.Property<string>("ReferenceId")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("ReferenceId");
+
+                    b.Property<string>("SadadNumber")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("sadadNumber");
+
+                    b.Property<string>("SadadStatus")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("sadadStatus");
+
+                    b.Property<string>("Source")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)")
+                        .HasColumnName("source");
+
+                    b.Property<int?>("StatusId")
+                        .HasColumnType("int")
+                        .HasColumnName("statusId");
+
+                    b.Property<decimal?>("TotalNonTaxable")
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("totalNonTaxable");
+
+                    b.Property<decimal?>("TotalPrice")
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("totalPrice");
+
+                    b.Property<int?>("TotalQuantity")
+                        .HasColumnType("int")
+                        .HasColumnName("totalQuantity");
+
+                    b.Property<decimal?>("TotalTax")
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("totalTax");
+
+                    b.Property<decimal?>("TotalTaxable")
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("totalTaxable");
+
+                    b.Property<decimal?>("TotalTotalAfterTax")
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("totalTotalAfterTax");
+
+                    b.Property<DateTime?>("UpdatedOn")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("updatedOn");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LitigationRequestId");
+
+                    b.ToTable("LitigationRequestInvoice");
+                });
+
             modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Litigation.LitigationRequestNote", b =>
                 {
                     b.Property<Guid>("Id")
@@ -7329,6 +7486,17 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Navigation("FileManager");
 
                     b.Navigation("LitigationRequestGround");
+                });
+
+            modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Litigation.LitigationRequestInvoice", b =>
+                {
+                    b.HasOne("REAC.EntityFrameworkCore.Entities.Litigation.LitigationRequest", "LitigationRequest")
+                        .WithMany()
+                        .HasForeignKey("LitigationRequestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("LitigationRequest");
                 });
 
             modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Litigation.LitigationRequestNote", b =>

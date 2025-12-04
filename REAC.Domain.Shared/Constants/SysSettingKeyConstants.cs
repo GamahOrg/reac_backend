@@ -33,6 +33,13 @@
         public const string NafathCheck_Key = "NafathCheck";
 
         #endregion
+        #region Invoice Integration keys
+        public const string CreateInvoice_URL = "CreateInvoice_URL";
+        public const string Administrative_Fees_Billing = "Administrative_Fees_Billing";
+        public const string Reconciliation_Fees_Billing = "Reconciliation_Fees_Billing";
+        public const string Arbitration_single_arbitrator_Fees_Billing = "Arbitration_single_arbitrator_Fees_Billing";
+        public const string Arbitration_multiple_arbitrator_Fees_Billing ="Arbitration_multiple_arbitrator_Fees_Billing";
+        #endregion
 
         #region Login GEE Integration keys
 

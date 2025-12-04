@@ -17,7 +17,9 @@ using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using REAC.Application.Contracts.Dtos.Citizen;
 using REAC.Application.Contracts.Dtos.Delegator;
+using REAC.Application.Contracts.Dtos.Integration;
 using REAC.Application.Contracts.Dtos.Integration.GEE;
+using REAC.Application.Contracts.Dtos.Integration.Invoice;
 using REAC.Application.Contracts.Dtos.Integration.Party;
 using REAC.Application.Contracts.Dtos.Integration.Rent;
 using REAC.Application.Contracts.Dtos.Integration.Wafi;
@@ -25,6 +27,7 @@ using REAC.Application.Contracts.Dtos.Litigation;
 using REAC.Application.Contracts.Dtos.Litigation.Create.Litigation;
 using REAC.Application.Contracts.Dtos.Litigation.CreateUpdate.Litigation;
 using REAC.Application.Contracts.Dtos.Litigation.Get;
+using REAC.Application.Contracts.Dtos.Litigation.Invoice;
 using REAC.Application.Contracts.Dtos.Litigation.List;
 using REAC.Application.Contracts.Dtos.Notification;
 using REAC.Application.Contracts.Dtos.Reconciliation.Process;
@@ -49,7 +52,10 @@ using System;
 using System.Globalization;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Net.Http.Json;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -562,6 +568,68 @@ namespace REAC.Application.AppServices.Litigation
 
             }
 
+        }
+
+        public async Task<BaseResponse> SendLitigationInvoiceRequestPaid(UpdateInvoiceDto model)
+        {
+            try
+            {
+                var litigationRequestInvoice = (await _repository.GetQueryable<LitigationRequestInvoice, Guid>())
+                                             .Include(x => x.LitigationRequest)
+                                             .ThenInclude(x=>x.LitigationRequestInvoice)
+                                             .Where(x => x.ReferenceId == model.InvoiceId).ToList().FirstOrDefault();
+
+                if (litigationRequestInvoice == null)
+                    return new ExceptionResponse()
+                    {
+                        Exception = "لم يتم العثور على الفاتوره",
+                        IsDone = false,
+                    };
+
+                var Litigation_ServiceId = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Administrative_Fees_Billing).Result.Data?.Value;
+                var Reconciliation_ServiceId = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reconciliation_Fees_Billing).Result.Data?.Value;
+                var SingleArbitration_ServiceId = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Arbitration_single_arbitrator_Fees_Billing).Result.Data?.Value;
+                var MultipleArbitration_ServiceId = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Arbitration_multiple_arbitrator_Fees_Billing).Result.Data?.Value;
+
+
+                //update invoice
+                litigationRequestInvoice.UpdatedOn = DateTime.UtcNow;
+                litigationRequestInvoice.StatusId = model.InvoiceStatus;
+                litigationRequestInvoice.SadadStatus = model.InvoiceStatus == 1 ? "مسدده" : "غير مسدده";
+                if (litigationRequestInvoice.StatusId == 1) //مسدده
+                {
+                    if (litigationRequestInvoice.serviceId == Litigation_ServiceId)
+                    {
+                        var returnValue = await SendLitigationFeesRequestPaid(litigationRequestInvoice.LitigationRequest.Id);
+                    }
+                    else if (litigationRequestInvoice.serviceId == Reconciliation_ServiceId)
+                    {
+                        var returnValue = await SendReconciliationFeesRequestPaid(litigationRequestInvoice.LitigationRequest.Id);
+                    }
+                    else if (litigationRequestInvoice.serviceId == SingleArbitration_ServiceId || litigationRequestInvoice.serviceId == MultipleArbitration_ServiceId)
+                    {
+                        var _invoiceService = _serviceProvider.GetRequiredService<ISysInvoiceService>();
+                        var invoiceId= litigationRequestInvoice.LitigationRequest.LitigationRequestInvoice.Id;
+                        var returnValue = await _invoiceService.PayInvoice(invoiceId);
+                    }
+                }
+
+                return new DataResponse<LitigationCreateUpdateDto>()
+                {
+                    IsDone = true,
+                    Message = "Invoice updated successfully"
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ExceptionResponse()
+                {
+                    Exception = ex.Message + "\n" + ex.ToString(),
+                    IsDone = false,
+
+                };
+
+            }
         }
 
         public async Task<BaseResponse> SendReconciliationFeesRequestPaid(Guid litigationId)
@@ -1512,21 +1580,21 @@ namespace REAC.Application.AppServices.Litigation
                  .ThenInclude(x => x.EstablishmentLetterFile)
 
 
-                .Include(x => x.LitigationDelegationRequests.Where(y =>  y.IsActive != null && (bool)y.IsActive))
+                .Include(x => x.LitigationDelegationRequests.Where(y => y.IsActive != null && (bool)y.IsActive))
                  .ThenInclude(x => x.Delegator)
                  .ThenInclude(x => x.Citizen)
                  .ThenInclude(x => x.Nationality)
 
-                .Include(x => x.LitigationDelegationRequests.Where(y =>  y.IsActive != null && (bool)y.IsActive))
+                .Include(x => x.LitigationDelegationRequests.Where(y => y.IsActive != null && (bool)y.IsActive))
                  .ThenInclude(x => x.Delegator)
                  .ThenInclude(x => x.DelegatorCitizen)
                  .ThenInclude(x => x.Nationality)
 
-                .Include(x => x.LitigationDelegationRequests.Where(y =>  y.IsActive != null && (bool)y.IsActive))
+                .Include(x => x.LitigationDelegationRequests.Where(y => y.IsActive != null && (bool)y.IsActive))
                  .ThenInclude(x => x.Delegator)
                  .ThenInclude(x => x.Facility)
 
-                .Include(x => x.LitigationDelegationRequests.Where(y =>  y.IsActive != null && (bool)y.IsActive))
+                .Include(x => x.LitigationDelegationRequests.Where(y => y.IsActive != null && (bool)y.IsActive))
                  .ThenInclude(x => x.Delegator)
                  .ThenInclude(x => x.DelegationFile)
 
@@ -1534,23 +1602,23 @@ namespace REAC.Application.AppServices.Litigation
                  .ThenInclude(x => x.Delegator)
                  .ThenInclude(x => x.DecisionFile)
 
-                .Include(x => x.LitigationDelegationRequests.Where(y =>  y.IsActive != null && (bool)y.IsActive))
+                .Include(x => x.LitigationDelegationRequests.Where(y => y.IsActive != null && (bool)y.IsActive))
                  .ThenInclude(x => x.Delegator)
                  .ThenInclude(x => x.CommercialRegisterationFile)
 
-                .Include(x => x.LitigationDelegationRequests.Where(y =>  y.IsActive != null && (bool)y.IsActive))
+                .Include(x => x.LitigationDelegationRequests.Where(y => y.IsActive != null && (bool)y.IsActive))
                  .ThenInclude(x => x.Delegator)
                  .ThenInclude(x => x.CustodyFile)
 
-                .Include(x => x.LitigationDelegationRequests.Where(y =>  y.IsActive != null && (bool)y.IsActive))
+                .Include(x => x.LitigationDelegationRequests.Where(y => y.IsActive != null && (bool)y.IsActive))
                  .ThenInclude(x => x.Delegator)
                  .ThenInclude(x => x.RepresentationFile)
 
-                .Include(x => x.LitigationDelegationRequests.Where(y =>  y.IsActive != null && (bool)y.IsActive))
+                .Include(x => x.LitigationDelegationRequests.Where(y => y.IsActive != null && (bool)y.IsActive))
                  .ThenInclude(x => x.Delegator)
                  .ThenInclude(x => x.EstablishmentFile)
 
-                .Include(x => x.LitigationDelegationRequests.Where(y =>  y.IsActive != null && (bool)y.IsActive))
+                .Include(x => x.LitigationDelegationRequests.Where(y => y.IsActive != null && (bool)y.IsActive))
                  .ThenInclude(x => x.Delegator)
                  .ThenInclude(x => x.EstablishmentLetterFile)
                 .FirstOrDefault(x => x.Id == litigationId);
@@ -1748,12 +1816,12 @@ namespace REAC.Application.AppServices.Litigation
                  .ThenInclude(x => x.EstablishmentLetterFile)
 
 
-                .Include(x => x.LitigationDelegationRequests.Where(y =>  y.IsActive != null && (bool)y.IsActive))
+                .Include(x => x.LitigationDelegationRequests.Where(y => y.IsActive != null && (bool)y.IsActive))
                  .ThenInclude(x => x.Delegator)
                  .ThenInclude(x => x.Citizen)
                  .ThenInclude(x => x.Nationality)
 
-                .Include(x => x.LitigationDelegationRequests.Where(y =>  y.IsActive != null && (bool)y.IsActive))
+                .Include(x => x.LitigationDelegationRequests.Where(y => y.IsActive != null && (bool)y.IsActive))
                  .ThenInclude(x => x.Delegator)
                  .ThenInclude(x => x.DelegatorCitizen)
                  .ThenInclude(x => x.Nationality)
@@ -1762,31 +1830,31 @@ namespace REAC.Application.AppServices.Litigation
                  .ThenInclude(x => x.Delegator)
                  .ThenInclude(x => x.Facility)
 
-                .Include(x => x.LitigationDelegationRequests.Where(y =>  y.IsActive != null && (bool)y.IsActive))
+                .Include(x => x.LitigationDelegationRequests.Where(y => y.IsActive != null && (bool)y.IsActive))
                  .ThenInclude(x => x.Delegator)
                  .ThenInclude(x => x.DelegationFile)
 
-                .Include(x => x.LitigationDelegationRequests.Where(y =>  y.IsActive != null && (bool)y.IsActive))
+                .Include(x => x.LitigationDelegationRequests.Where(y => y.IsActive != null && (bool)y.IsActive))
                  .ThenInclude(x => x.Delegator)
                  .ThenInclude(x => x.DecisionFile)
 
-                .Include(x => x.LitigationDelegationRequests.Where(y =>  y.IsActive != null && (bool)y.IsActive))
+                .Include(x => x.LitigationDelegationRequests.Where(y => y.IsActive != null && (bool)y.IsActive))
                  .ThenInclude(x => x.Delegator)
                  .ThenInclude(x => x.CommercialRegisterationFile)
 
-                .Include(x => x.LitigationDelegationRequests.Where(y =>  y.IsActive != null && (bool)y.IsActive))
+                .Include(x => x.LitigationDelegationRequests.Where(y => y.IsActive != null && (bool)y.IsActive))
                  .ThenInclude(x => x.Delegator)
                  .ThenInclude(x => x.CustodyFile)
 
-                .Include(x => x.LitigationDelegationRequests.Where(y =>  y.IsActive != null && (bool)y.IsActive))
+                .Include(x => x.LitigationDelegationRequests.Where(y => y.IsActive != null && (bool)y.IsActive))
                  .ThenInclude(x => x.Delegator)
                  .ThenInclude(x => x.RepresentationFile)
 
-                .Include(x => x.LitigationDelegationRequests.Where(y =>  y.IsActive != null && (bool)y.IsActive))
+                .Include(x => x.LitigationDelegationRequests.Where(y => y.IsActive != null && (bool)y.IsActive))
                  .ThenInclude(x => x.Delegator)
                  .ThenInclude(x => x.EstablishmentFile)
 
-                .Include(x => x.LitigationDelegationRequests.Where(y =>  y.IsActive != null && (bool)y.IsActive))
+                .Include(x => x.LitigationDelegationRequests.Where(y => y.IsActive != null && (bool)y.IsActive))
                  .ThenInclude(x => x.Delegator)
                  .ThenInclude(x => x.EstablishmentLetterFile)
                 .FirstOrDefault(x => x.Id == litigationId);
@@ -3504,6 +3572,8 @@ namespace REAC.Application.AppServices.Litigation
             Guid referenceId = Guid.Empty;
             _jwtReader.GetReferenceId(ref referenceId);
 
+            
+
             if (input.DelegationRelationshipTypeId == DelegationRelationshipType.Individual)
             {
                 var addDraftCitizen = await AddDraftCitizen(input);
@@ -3893,7 +3963,16 @@ namespace REAC.Application.AppServices.Litigation
                     };
                 }
 
+                // Check if delegator is same as plaintiff
+                if (litigationRequestDto?.litigationRequestDelegationDataDto?.IndividualIdentityNumber is not null)
+                {
+                    var delegatorCitizen = (await _repository.GetQueryable<Citizen, Guid>())
+                    .AsNoTracking()
+                    .FirstOrDefault(x => x.Id == referenceId);
 
+                    if (delegatorCitizen?.IdentityNumber == litigationRequestDto?.litigationRequestDelegationDataDto?.IndividualIdentityNumber)
+                        return new DataResponse<Citizen>() { IsDone = false, Message = "لا يمكن إضافة مدعي بنفس هوية المفوض عنه" };
+                }
 
 
 
@@ -3982,6 +4061,8 @@ namespace REAC.Application.AppServices.Litigation
                         IsDone = false,
                         Message = "لا يمكن ان يكون طرفى الدعوى لنفس الشخص"
                     };
+
+
 
                 TryGetFacilityAgian:
                 Facility? facility = null;
@@ -4088,6 +4169,10 @@ namespace REAC.Application.AppServices.Litigation
 
                     newlitigationRequest.ReconciliationPeriod = newlitigationRequest.Contract.LitigationRequestContractType.ReconciliationPeriod;
                     newlitigationRequest.PretenderRating = 10;
+                    int arbitrationPeriod = 0;
+                    int.TryParse(_sysSettingService.GetBySettingKey(SysSettingKeyConstants.Arbitration_Period).Result.Data?.Value, out arbitrationPeriod);
+                    newlitigationRequest.ArbitrationPeriod = arbitrationPeriod;
+
                     var newSaveResponse = await _repository.SaveChangesAsync();
                     if (saveResponse.IsDone)
                     {
@@ -4128,6 +4213,18 @@ namespace REAC.Application.AppServices.Litigation
                     };
                 }
 
+                // Check if delegator is same as plaintiff
+                if (litigationRequestDto?.litigationRequestDelegationDataDto?.IndividualIdentityNumber is not null)
+                {
+                    var delegatorCitizen = (await _repository.GetQueryable<Citizen, Guid>())
+                    .AsNoTracking()
+                    .FirstOrDefault(x => x.Id == referenceId);
+
+                    if (delegatorCitizen?.IdentityNumber == litigationRequestDto?.litigationRequestDelegationDataDto?.IndividualIdentityNumber)
+                        return new DataResponse<Citizen>() { IsDone = false, Message = "لا يمكن إضافة مدعي بنفس هوية المفوض عنه" };
+                }
+
+
                 if (litigationRequestDto.LitigationRequestOwnerType != LitigationRequestOwnerType.Personal && litigationRequestDto.litigationRequestDelegationDataDto is not null)
                 {
 
@@ -4138,12 +4235,13 @@ namespace REAC.Application.AppServices.Litigation
                 }
 
                 // Properties Validation
-                var existLitigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>()).
-                    Include(x => x.Contract.SecondPartyCitizen)
+                var existLitigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>())
+                    .Include(x => x.Contract.SecondPartyCitizen)
                     .Include(x => x.Contract.SecondPartyFacility)
                     .FirstOrDefault(x => x.IsFinished != true
                     && ((x.ExternalStatusId != RequestStatus.Cancelled && x.InternalStatusId != RequestStatus.Cancelled) && (x.ExternalStatusId != RequestStatus.Rejected && x.InternalStatusId != RequestStatus.Rejected))
                     && x.Contract.ContractKey == litigationRequestDto.key
+                    && x.Contract.FirstPartyCitizenId == referenceId
                     && (x.Contract.SecondPartyCitizen.IdentityNumber == litigationRequestDto.SecondPartyNationalId || x.Contract.SecondPartyFacility.CommercialRegisterNumber == litigationRequestDto.SecondPartyFacilityCommercialRegistrationNo));
 
                 if (existLitigationRequest != null)
@@ -4367,6 +4465,17 @@ namespace REAC.Application.AppServices.Litigation
                 if (referenceId == Guid.Empty)
                     return new BaseResponse() { IsDone = false };
 
+                // Check if delegator is same as plaintiff
+                if (litigationRequestDto?.litigationRequestDelegationDataDto?.IndividualIdentityNumber is not null)
+                {
+                    var delegatorCitizen = (await _repository.GetQueryable<Citizen, Guid>())
+                    .AsNoTracking()
+                    .FirstOrDefault(x => x.Id == referenceId);
+
+                    if (delegatorCitizen?.IdentityNumber == litigationRequestDto?.litigationRequestDelegationDataDto?.IndividualIdentityNumber)
+                        return new DataResponse<Citizen>() { IsDone = false, Message = "لا يمكن إضافة مدعي بنفس هوية المفوض عنه" };
+                }
+
 
                 var contract = (await _repository.GetQueryable<LitigationRequestContract, Guid>())
                     .Include(x => x.LitigationRequests)
@@ -4484,6 +4593,7 @@ namespace REAC.Application.AppServices.Litigation
                         Message = "لا يمكن ان يكون طرفى الدعوى لنفس الشخص"
                     };
 
+                
 
                 TryGetFacilityAgian:
                 Facility? facility = null;
@@ -6495,7 +6605,7 @@ namespace REAC.Application.AppServices.Litigation
                 {
                     if (delegationRequest.Delegator.DelegationRelationshipTypeId == DelegationRelationshipType.Individual)
                     {
-                        delegationRequest.LitigationRequest.Contract.SecondPartyCitizenId = delegationRequest.Delegator.CitizenId;
+                        delegationRequest.LitigationRequest.Contract.SecondPartyCitizenId = delegationRequest.Delegator.DelegatorCitizenId;
                         delegationRequest.LitigationRequest.Contract.SecondPartyFacilityId = null;
                     }
                     else if (delegationRequest.Delegator.DelegationRelationshipTypeId == DelegationRelationshipType.Facility)

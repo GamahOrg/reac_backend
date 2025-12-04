@@ -363,15 +363,18 @@ namespace REAC.Application.ModuleServices
             _jwtReader.GetReferenceId(ref referenceId);
 
             var litigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>())
+                         .Include(x => x.LitigationRequestCategory)
                          .Include(x => x.Area)
                          .Include(x => x.City)
                          .Include(x => x.LitigationRequestArbitrationReports)
                          .ThenInclude(x => x.LitigationRequestArbitrationReportExplanationRequests)
-                                                  .ThenInclude(x => x.LitigationRequestArbitrationReportExplanationRequestFiles)
-                                                                           .ThenInclude(x => x.ExplanationRequestFile)
+                         .ThenInclude(x => x.LitigationRequestArbitrationReportExplanationRequestFiles)
+                         .ThenInclude(x => x.ExplanationRequestFile)
 
 
                          .Include(x => x.ApplicantCitizen)
+                         .Include(x => x.DefendantCitizen)
+                         .Include(x => x.DefendantFacility)
                          .Include(x => x.Contract)
                          .Include(x => x.Contract.ContractFile)
                          .Include(x => x.Contract.AssociationRegistrationCertificateFile)
@@ -426,18 +429,24 @@ namespace REAC.Application.ModuleServices
                 }
             }
 
-            if (litigationRequest.IsFinished.HasValue)
-            {
-                if (litigationRequest.IsFinished.Value)
-                {
-                    allowAdd = false;
-                    isDone = true;
-                }
-            }
+            //if (litigationRequest.IsFinished.HasValue)
+            //{
+            //    if (litigationRequest.IsFinished.Value)
+            //    {
+            //        allowAdd = false;
+            //        isDone = true;
+            //    }
+            //}
 
             var requestArbitrationReportExplanationRequest = litigationRequest?.LitigationRequestArbitrationReports.FirstOrDefault()?
                 .LitigationRequestArbitrationReportExplanationRequests
                 .Where(x => x.RequestArbitrationReportExplanationRequestParty == litigationRequestArbitrationReportExplanationRequestParty).FirstOrDefault();
+
+
+            var requestArbitrationReportOtherExplanationRequest = litigationRequest?.LitigationRequestArbitrationReports.FirstOrDefault()?
+                .LitigationRequestArbitrationReportExplanationRequests
+                .Where(x => x.RequestArbitrationReportExplanationRequestParty != litigationRequestArbitrationReportExplanationRequestParty).FirstOrDefault();
+
 
             if (!isDone)
             {
@@ -455,6 +464,7 @@ namespace REAC.Application.ModuleServices
                 }
             }
             var reportExplanationRequest = _mapper.Map<LitigationRequestArbitrationReportExplanationRequestGetDto>(requestArbitrationReportExplanationRequest);
+            var reportOtherExplanationRequest = _mapper.Map<LitigationRequestArbitrationReportExplanationRequestGetDto>(requestArbitrationReportOtherExplanationRequest);
 
             return new DataResponse<LitigationRequestForArbitrationReportExplanationRequestDto>()
             {
@@ -462,7 +472,8 @@ namespace REAC.Application.ModuleServices
                 {
                     LitigationRequestShortDto = request,
                     AllowAdd = allowAdd,
-                    Report = reportExplanationRequest
+                    Report = reportExplanationRequest,
+                    OtherReport = reportOtherExplanationRequest
                 },
                 IsDone = true,
             };
@@ -653,6 +664,8 @@ namespace REAC.Application.ModuleServices
                          .Include(x => x.LitigationRequestArbitrationReport.LitigationRequest.City)
                          .Include(x => x.LitigationRequestArbitrationReport)
                          .Include(x => x.LitigationRequestArbitrationReport.LitigationRequest.ApplicantCitizen)
+                         .Include(x => x.LitigationRequestArbitrationReport.LitigationRequest.DefendantCitizen)
+                         .Include(x => x.LitigationRequestArbitrationReport.LitigationRequest.DefendantFacility)
                          .Include(x => x.LitigationRequestArbitrationReport.LitigationRequest.Contract)
                          .Include(x => x.LitigationRequestArbitrationReport.LitigationRequest.Contract.ContractFile)
                          .Include(x => x.LitigationRequestArbitrationReport.LitigationRequest.Contract.AssociationRegistrationCertificateFile)
@@ -662,7 +675,9 @@ namespace REAC.Application.ModuleServices
                          .Include(x => x.LitigationRequestArbitrationReport.LitigationRequest.Contract.FirstPartyCitizen)
                          .Include(x => x.LitigationRequestArbitrationReport.LitigationRequest.Contract.SecondPartyFacility)
                          .Include(x => x.LitigationRequestArbitrationReport.LitigationRequest.Contract.SecondPartyCitizen)
-                         .Include(x => x.LitigationRequestArbitrationReport.LitigationRequest.Contract.LitigationRequestContractType);
+                         .Include(x => x.LitigationRequestArbitrationReport.LitigationRequest.Contract.LitigationRequestContractType)
+                         .Where(x => x.LitigationRequestArbitrationReport.LitigationRequest.ArbitratorCitizenId == referenceId);
+                         
 
             litigationRequestArbitrationReportExplanationRequests = entitiesQuerable
                                         .OrderByDescending(x => x.LitigationRequestArbitrationReport.LitigationRequest.CreatedOn)
@@ -681,7 +696,7 @@ namespace REAC.Application.ModuleServices
                     litigationRequestMircoDto.RequestDate = litigationRequestArbitrationReportExplanationRequest.LitigationRequestArbitrationReport.LitigationRequest.CreatedOn;
                     litigationRequestMircoDto.RequestCode = litigationRequestArbitrationReportExplanationRequest.LitigationRequestArbitrationReport.LitigationRequest.RequestCode;
                     litigationRequestMircoDto.FirstPartyName = (litigationRequestArbitrationReportExplanationRequest.LitigationRequestArbitrationReport.LitigationRequest.Contract.FirstPartyCitizen == null) ? litigationRequestArbitrationReportExplanationRequest.LitigationRequestArbitrationReport.LitigationRequest.Contract.FirstPartyFacility.ArabicFacilityName : litigationRequestArbitrationReportExplanationRequest.LitigationRequestArbitrationReport.LitigationRequest.Contract.FirstPartyCitizen.FullName;
-                    litigationRequestMircoDto.SecondPartyName = (litigationRequestArbitrationReportExplanationRequest.LitigationRequestArbitrationReport.LitigationRequest.Contract.SecondPartyCitizen == null) ? litigationRequestArbitrationReportExplanationRequest.LitigationRequestArbitrationReport.LitigationRequest.Contract.SecondPartyFacility.ArabicFacilityName : litigationRequestArbitrationReportExplanationRequest.LitigationRequestArbitrationReport.LitigationRequest.Contract.SecondPartyCitizen.FullName;
+                    litigationRequestMircoDto.SecondPartyName = (litigationRequestArbitrationReportExplanationRequest.LitigationRequestArbitrationReport.LitigationRequest.DefendantCitizen == null) ? litigationRequestArbitrationReportExplanationRequest.LitigationRequestArbitrationReport.LitigationRequest.DefendantFacility.ArabicFacilityName : litigationRequestArbitrationReportExplanationRequest.LitigationRequestArbitrationReport.LitigationRequest.DefendantCitizen.FullName;
                     litigationRequestMircoDto.RequestTypeName = litigationRequestArbitrationReportExplanationRequest.LitigationRequestArbitrationReport.LitigationRequest.Contract.LitigationRequestContractType.TypeName;
                     litigationRequestMircoDto.RequestParty = litigationRequestArbitrationReportExplanationRequest.RequestArbitrationReportExplanationRequestParty;
 
@@ -717,10 +732,13 @@ namespace REAC.Application.ModuleServices
             var litigationRequestArbitrationReportExplanationRequest = (await _repository.GetQueryable<LitigationRequestArbitrationReportExplanationRequest, Guid>())
                          .Include(x => x.LitigationRequestArbitrationReportExplanationRequestFiles)
                          .ThenInclude(x => x.ExplanationRequestFile)
+                         .Include(x => x.LitigationRequestArbitrationReport.LitigationRequest.LitigationRequestCategory)
                          .Include(x => x.LitigationRequestArbitrationReport.LitigationRequest.Area)
                          .Include(x => x.LitigationRequestArbitrationReport.LitigationRequest.City)
                          .Include(x => x.LitigationRequestArbitrationReport)
                          .Include(x => x.LitigationRequestArbitrationReport.LitigationRequest.ApplicantCitizen)
+                         .Include(x => x.LitigationRequestArbitrationReport.LitigationRequest.DefendantCitizen)
+                         .Include(x => x.LitigationRequestArbitrationReport.LitigationRequest.DefendantFacility)
                          .Include(x => x.LitigationRequestArbitrationReport.LitigationRequest.Contract)
                          .Include(x => x.LitigationRequestArbitrationReport.LitigationRequest.Contract.ContractFile)
                          .Include(x => x.LitigationRequestArbitrationReport.LitigationRequest.Contract.AssociationRegistrationCertificateFile)
