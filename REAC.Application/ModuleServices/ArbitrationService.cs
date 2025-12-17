@@ -91,10 +91,13 @@ namespace REAC.Application.ModuleServices
         Task<BaseResponse> AddLitigationRequestArbitratorsNominationList(ArbitratorNominationListRequestPayload arbitratorNominationListRequestPayload, CancellationToken cancellationToken);
         Task<BaseResponse> GetLitigationRequestForAddArbitratorsNominationList(Guid requestId, CancellationToken cancellationToken);
         Task<BaseResponse> GetLitigationRequestForAddArbitratorsNominationList(int pageIndex, int pageSize, CancellationToken cancellationToken);
+        Task<BaseResponse> GetDueDateLitigationRequestForAssignArbitrators(int pageIndex, int pageSize, CancellationToken cancellationToken);
 
         Task<BaseResponse> GetCitizenLitigationRequestForArbitratorsNominationListReply(int pageIndex, int pageSize, CancellationToken cancellationToken);
         Task<BaseResponse> GetCitizenLitigationRequestForArbitratorsNominationListReply(Guid requestId, CancellationToken cancellationToken);
+        Task<BaseResponse> GetCitizenLitigationRequestForArbitratorsNominationListReplyForCoAdmin(Guid requestId, CancellationToken cancellationToken);
         Task<BaseResponse> AddCitizenLitigationRequestForReportArbitratorsNominationListReply(ArbitratorNominationListRequestReplyPayload arbitratorNominationListRequestReplyPayload, CancellationToken cancellationToken);
+        Task<BaseResponse> AddCitizenLitigationRequestForReportArbitratorsNominationListReplyForCoAdmin(ArbitratorNominationListRequestReplyPayload arbitratorNominationListRequestReplyPayload, CancellationToken cancellationToken);
         Task<BaseResponse> AddLitigationRequestArbitratorsdecision(Guid requestId, Guid arbitratorId);
         #endregion
 
@@ -126,6 +129,7 @@ namespace REAC.Application.ModuleServices
         Task<BaseResponse> AssignAfterRecusal(AssignArbitratorRequestPayload assignRequestPayload);
         Task<BaseResponse> GetAllArbitrationLitigationRequest(int pageIndex, int pageSize, CancellationToken cancellationToken);
 
+        Task<BaseResponse> ReNotifyPartiesToSelectArbitrators(Guid litigationRequestId);
     }
 
     public partial class ArbitrationService : IArbitrationService
@@ -142,12 +146,13 @@ namespace REAC.Application.ModuleServices
         private UserManager<User> _userManager;
         private readonly IGEELoginService _gEELoginService;
         private readonly ILoggerManager _loggerManager;
+        private readonly ISysEmployeeService _employeeService;
 
         protected readonly IHubContext<NotificationHub, INotificationClient> _notificationHub;
         public ArbitrationService(IEntityRepository repository, ISysSettingService settingService,
                           IWorkFlowProcessingLogService workFlowProcessingLogService,
                           IMapper mapper, ISysInvoiceService sysInvoiceService,
-                          IJwtReader jwtReader, ISysEmployeeService sysEmployeeService, INotificationService notificationService, IZoomService zoomService, INafathService nafathService, UserManager<User> userManager, IGEELoginService gEELoginService, ILoggerManager loggerManager)
+                          IJwtReader jwtReader, ISysEmployeeService sysEmployeeService, INotificationService notificationService, IZoomService zoomService, INafathService nafathService, UserManager<User> userManager, IGEELoginService gEELoginService, ILoggerManager loggerManager, ISysEmployeeService employeeService)
         {
             _mapper = mapper;
             _sysInvoiceService = sysInvoiceService;
@@ -161,6 +166,7 @@ namespace REAC.Application.ModuleServices
             _userManager = userManager;
             _gEELoginService = gEELoginService;
             _loggerManager = loggerManager;
+            _employeeService = employeeService;
         }
 
         public async Task<BaseResponse> GetLitigationRequestForFullAllArbitrator(int pageIndex, int pageSize, CancellationToken cancellationToken)

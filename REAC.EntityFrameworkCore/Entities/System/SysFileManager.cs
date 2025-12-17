@@ -6,6 +6,7 @@ using REAC.EntityFrameworkCore.Entities.Reconciliation;
 using REAC.EntityFrameworkCore.Entities.Wpf.Business;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using REAC.EntityFrameworkCore.Entities.Integration;
 
 namespace REAC.EntityFrameworkCore.Entities.System;
 
@@ -73,6 +74,9 @@ public partial class SysFileManager : CreationBaseEntity<Guid>
     public virtual ICollection<CitizenRequestCVFile> CitizenRequestCVFiles { get; set; } = new List<CitizenRequestCVFile>();
     public virtual ICollection<CitizenRequestReconciliationCenterDegreeFile> CitizenRequestReconciliationCenterDegreeFiles { get; set; } = new List<CitizenRequestReconciliationCenterDegreeFile>();
     public virtual ICollection<CitizenRequestProgramRealEstateInstituteFile> CitizenRequestProgramRealEstateInstituteFiles { get; set; } = new List<CitizenRequestProgramRealEstateInstituteFile>();
+    
+    [InverseProperty(nameof(ComplaintFile.FileManager))]
+    public virtual ICollection<ComplaintFile> ComplaintFiles { get; set; } = new List<ComplaintFile>();
 
 }
 

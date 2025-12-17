@@ -8,6 +8,15 @@ using Core.Shared.Responses;
 using REAC.Application.Contracts.IAppServices.System;
 using REAC.Domain.Shared.Constants;
 using static iText.IO.Util.IntHashtable;
+using Core.Log.Application.Contracts.IAppServices;
+using Core.Log.Application.Contracts.Dto;
+using Core.GenericRepository.BaseRepository;
+using REAC.EntityFrameworkCore.Entities.Integration;
+using REAC.Application.Contracts.IAppServices;
+using REAC.EntityFrameworkCore.Entities.Actor;
+using AutoMapper;
+using REAC.EntityFrameworkCore.Entities.System;
+using Microsoft.EntityFrameworkCore;
 
 namespace REAC.Application.AppServices.Integration.GEE
 {
@@ -16,12 +25,23 @@ namespace REAC.Application.AppServices.Integration.GEE
         private readonly HttpClient _httpClient;
         private readonly ISysSettingService _settingService;
         private readonly IGEELoginService _gEELoginService;
+        private readonly ISysFileManagerService _sysFileManagerService;
+        private readonly ILoggerManager _loggerManager;
+        private IEntityRepository _repository;
+        private readonly IJwtReader _jwtReader;
+        private IMapper _mapper;
 
-        public ComplaintsService(ISysSettingService settingService, IGEELoginService gEELoginService)
+
+        public ComplaintsService(ISysSettingService settingService, IGEELoginService gEELoginService, ISysFileManagerService sysFileManagerService, ILoggerManager loggerManager, IEntityRepository repository, IJwtReader jwtReader, IMapper mapper)
         {
             _httpClient = new HttpClient();
             _settingService = settingService;
             _gEELoginService = gEELoginService;
+            _sysFileManagerService = sysFileManagerService;
+            _loggerManager = loggerManager;
+            _repository = repository;
+            _jwtReader = jwtReader;
+            _mapper = mapper;
         }
 
         public async Task<DataResponse<RegionListResponseDto>> GetRegionListAsync()
@@ -29,7 +49,7 @@ namespace REAC.Application.AppServices.Integration.GEE
             var url = _settingService.GetBySettingKey(SysSettingKeyConstants.GetRegionList).Result.Data?.Value;
             var token = (await _gEELoginService.Login()).Data?.Access_token;
 
-            if(string.IsNullOrEmpty(token) || string.IsNullOrEmpty(url))
+            if (string.IsNullOrEmpty(token) || string.IsNullOrEmpty(url))
                 return new DataResponse<RegionListResponseDto>(null, false, "حدث خطأ اثناء التكامل");
 
             var request = new HttpRequestMessage(HttpMethod.Get, url);
@@ -143,9 +163,9 @@ namespace REAC.Application.AppServices.Integration.GEE
 
                 return new DataResponse<ContactResponseDto>(data, true, "تم اضافة الشكوي بنجاح");
             }
-            catch(Exception e)
+            catch (Exception e)
             {
-                return new DataResponse<ContactResponseDto>(null, false,"خطأ داخلي");
+                return new DataResponse<ContactResponseDto>(null, false, "خطأ داخلي");
 
             }
 
@@ -154,6 +174,10 @@ namespace REAC.Application.AppServices.Integration.GEE
 
         public async Task<BaseResponse> UploadComplaintFileAsync(UploadComplaintFileNoteDto input)
         {
+            Guid referenceId = Guid.Empty;
+            _jwtReader.GetReferenceId(ref referenceId);
+
+
             var token = (await _gEELoginService.Login()).Data?.Access_token;
 
             //Step 1: Create Note
@@ -199,7 +223,42 @@ namespace REAC.Application.AppServices.Integration.GEE
                 return new BaseResponse(false, "خطأ أثناء رفع الملف");
 
 
-            var result = new UploadComplaintFileNoteResponseDto() { filename = input.filename, noteId = noteData.id };
+            // Step 3: Save File In Databsae
+            var fileSaveResponse = await _sysFileManagerService.UploadComplaintFileAsync(input.file, input.filename);
+
+            if (!fileSaveResponse.IsDone)
+                _loggerManager.Log(Core.Log.Domain.Shared.Enums.LoggerType.Database
+                      , new LogDto()
+                      {
+                          Type = Core.Log.Domain.Shared.Enums.LogType.Error,
+                          Message = $"Error Saving Complaints File {input.filename} in SysFileManager Table , Errors ===> {fileSaveResponse.Message}",
+                      });
+
+            if (fileSaveResponse.IsDone && fileSaveResponse is not null && fileSaveResponse.Data is not null)
+            {
+
+                var saveComplaintsFile = await _repository.AddAsync<ComplaintFile, Guid>(new ComplaintFile()
+                {
+                    FileManagerId = fileSaveResponse.Data.Id,
+                    IsDeleted = false,
+                    CreatedBy = referenceId,
+                    CreatedOn = DateTime.Now,
+                    //NoteId = Guid.Parse(noteData.id),
+                    NoteId = Guid.NewGuid(),
+                });
+
+                var saveFile = await _repository.SaveChangesAsync();
+
+                if (!saveFile.IsDone)
+                    _loggerManager.Log(Core.Log.Domain.Shared.Enums.LoggerType.Database
+                          , new LogDto()
+                          {
+                              Type = Core.Log.Domain.Shared.Enums.LogType.Error,
+                              Message = $"Error Saving Complaints File {input.filename} in ComplaintFile Table",
+                          });
+            }
+
+            var result = new UploadComplaintFileNoteResponseDto() { filename = input.filename, noteId = noteData.id  };
 
             // Test data
             //var resultTest = new UploadComplaintFileNoteResponseDto() { filename = "fileName.pdf", noteId = "be5d0956-e367-422d-ae98-8e53ad400ad6" };
@@ -211,8 +270,8 @@ namespace REAC.Application.AppServices.Integration.GEE
         {
             var token = (await _gEELoginService.Login()).Data?.Access_token;
 
-            if(token is null)
-                return new BaseResponse(false,"حدث خطأ اثناء التكامل");
+            if (token is null)
+                return new BaseResponse(false, "حدث خطأ اثناء التكامل");
 
             // Step 1: Create Contact if contact_id is null
             string contactId = string.Empty;
@@ -344,6 +403,18 @@ namespace REAC.Application.AppServices.Integration.GEE
             if (linkNoteData == null || linkNoteData.created != 1)
                 return new BaseResponse(false, "فشل ربط الملاحظة بالشكوى");
 
+            // Link NoteIds to Case Ids in ComplaintFiles Table
+            foreach (var noteId in request.notesIds)
+            {
+
+                var updateComplaintFiles = await _repository.ExecuteUpdateAsync<ComplaintFile, Guid>(
+                    filter: x => x.NoteId == Guid.Parse(noteId),
+                    updateExpression: s => s
+                        .SetProperty(c => c.CaseId, Guid.Parse(caseId))
+                );
+            }
+
+
             return new BaseResponse(true, "تمت إضافة الشكوى بنجاح");
         }
 
@@ -390,7 +461,7 @@ namespace REAC.Application.AppServices.Integration.GEE
                     .OrderByDescending(e => e.name_value_list?.date_entered?.value)
                     .ToList();
             }
-            
+
 
             return new DataResponse<CasesByContactResponseDto>(casesData, true, "");
 
@@ -407,7 +478,7 @@ namespace REAC.Application.AppServices.Integration.GEE
             //        name = new NameValue() { name = "name", value = "شكوى على خدمة المياه" },
             //        case_number = new NameValue() { name = "case_number", value = "12345" },
             //        status = new NameValue() { name = "status", value = "Open_New" },
-                   
+
             //        date_entered = new NameValue() { name = "date_entered", value = "2023-10-01 10:00:00" }
 
             //    }
@@ -423,7 +494,7 @@ namespace REAC.Application.AppServices.Integration.GEE
             //        name = new NameValue() { name = "name", value = "شكوى على خدمة المياه" },
             //        case_number = new NameValue() { name = "case_number", value = "12345" },
             //        status = new NameValue() { name = "status", value = "Open_New" },
-            //        description = new NameValue() { name = "description", value = "تفاصيل الشكوى هنا" },
+            //        description = new NameValue() { name = "description", value = "تفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هنا" },
             //        rejon_c = new NameValue() { name = "rejon_c", value = "1" },
             //        requestclassification_c = new NameValue() { name = "requestclassification_c", value = "نوع الشكوى" },
             //        date_entered = new NameValue() { name = "date_entered", value = "2023-10-01 10:00:00" }
@@ -463,6 +534,16 @@ namespace REAC.Application.AppServices.Integration.GEE
             if (data == null)
                 return new DataResponse<CaseByIdResponseDto>(null, false, "خطأ داخلي ");
 
+            // Get Complaint Files from ComplaintFiles Table
+            var complaintFiles = (await _repository.GetQueryable<ComplaintFile, Guid>())
+                .Include(x => x.FileManager)
+                .Where(x => x.CaseId == Guid.Parse(caseId) && x.IsDeleted != true)
+                .AsNoTracking()
+                .ToList();
+
+            if (complaintFiles is not null && complaintFiles.Count > 0)
+                data.ComplaintFiles = _mapper.Map<List<SysFileManagerCreateUpdateDto>>(complaintFiles.Select(x => x.FileManager));
+
             return new DataResponse<CaseByIdResponseDto>(data, true, "Success");
 
             // Test Data
@@ -474,10 +555,10 @@ namespace REAC.Application.AppServices.Integration.GEE
             //    name_value_list = new CaseNameValueList()
             //    {
             //        id = new NameValue() { name = "id", value = caseId },
-            //        name = new NameValue() { name = "name", value = "شكوى على خدمة المياه" },
+            //        name = new NameValue() { name = "name", value = "شكوى على خدمة المياهشكوى على خدمة المياهشكوى على خدمة المياهشكوى على خدمة المياهشكوى على خدمة المياهشكوى على خدمة المياهشكوى على خدمة المياهشكوى على خدمة المياهشكوى على خدمة المياهشكوى على خدمة المياهشكوى على خدمة المياهشكوى على خدمة المياهشكوى على خدمة المياهشكوى على خدمة المياهشكوى على خدمة المياهشكوى على خدمة المياهشكوى على خدمة المياه" },
             //        case_number = new NameValue() { name = "case_number", value = "12345" },
             //        status = new NameValue() { name = "status", value = "Open_New" },
-            //        description = new NameValue() { name = "description", value = "تفاصيل الشكوى هنا" },
+            //        description = new NameValue() { name = "description", value = "تفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هناتفاصيل الشكوى هنا" },
             //        rejon_c = new NameValue() { name = "rejon_c", value = "1" },
             //        requestclassification_c = new NameValue() { name = "requestclassification_c", value = "نوع الشكوى" },
             //        date_entered = new NameValue() { name = "date_entered", value = "2023-10-01 10:00:00" }
@@ -494,11 +575,33 @@ namespace REAC.Application.AppServices.Integration.GEE
             //    result_count = entryList.Count,
             //    next_offset = 0,
             //    total_count = entryList.Count.ToString(),
-            //    relationship_list = new List<object>()
+            //    relationship_list = new List<object>(),
+            //    ComplaintFiles = new List<SysFileManagerCreateUpdateDto>()
+            //    {
+            //        new SysFileManagerCreateUpdateDto()
+            //        {
+            //            Id = Guid.NewGuid(),
+            //            FileDescription = "file1.pdf",
+            //            FilePath = "/files/file1.pdf",
+            //            FileType = "application/pdf",
+
+            //        },
+            //        new SysFileManagerCreateUpdateDto()
+            //        {
+            //            Id = Guid.NewGuid(),
+            //            FileDescription = "file1.pdf",
+            //            FilePath = "/files/file1.pdf",
+            //            FileType = "application/pdf",
+
+            //        },
+            //    }
             //};
 
             //return new DataResponse<CaseByIdResponseDto>(testData, true, "Success");
 
         }
+
+
+
     }
 }
