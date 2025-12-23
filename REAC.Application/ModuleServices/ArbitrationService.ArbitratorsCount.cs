@@ -559,7 +559,6 @@ namespace REAC.Application.ModuleServices
         public async Task<decimal> CalculateArbitrationFees(int arbitratorsCount,decimal disputeAmount, SysLitigationRequestAmount litigationRequestAmount)
         {
             decimal amount = 0;
-
             var litigationRequestFees = (await _repository.GetQueryable<LitigationRequestFees, Guid>())
                .FirstOrDefault(x => x.ArbitratorsCount == arbitratorsCount &&
                x.AmountId == litigationRequestAmount.Id);
