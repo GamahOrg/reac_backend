@@ -183,9 +183,9 @@ namespace REAC.Application.ModuleServices
         {
             //رسوم التحكيم
             decimal arbitrationFees = default;
-            if (litigationRequest.LitigationRequestAmount != null)
+            if (litigationRequest.LitigationRequestAmount != null && litigationRequest.DisputeAmount != null)
             {
-                arbitrationFees = await CalculateArbitrationFees(litigationRequest.ArbitratorsCount.Value, litigationRequest.LitigationRequestAmount);
+                arbitrationFees = await CalculateArbitrationFees(litigationRequest.ArbitratorsCount.Value,litigationRequest.DisputeAmount.Value, litigationRequest.LitigationRequestAmount);
             }
             else
             {
@@ -556,7 +556,7 @@ namespace REAC.Application.ModuleServices
         }
 
 
-        public async Task<decimal> CalculateArbitrationFees(int arbitratorsCount, SysLitigationRequestAmount litigationRequestAmount)
+        public async Task<decimal> CalculateArbitrationFees(int arbitratorsCount,decimal disputeAmount, SysLitigationRequestAmount litigationRequestAmount)
         {
             decimal amount = 0;
 
@@ -567,14 +567,14 @@ namespace REAC.Application.ModuleServices
             if (litigationRequestFees != null)
             {
                 amount = litigationRequestFees.ArbitrationFees;
-                //if (litigationRequestFees.PercentageExtraAmount.HasValue)
-                //{
-                //    decimal exteraAmount = disputeAmount - litigationRequestFees.ExtraAmount;
-                //    if (exteraAmount > 0)
-                //    {
-                //        amount += exteraAmount * litigationRequestFees.PercentageExtraAmount.Value;
-                //    }
-                //}
+                if (litigationRequestFees.PercentageExtraAmount.HasValue && litigationRequestFees.ExtraAmount.HasValue && disputeAmount > litigationRequestFees.ExtraAmount)
+                {
+                    decimal exteraAmount = disputeAmount - (decimal)litigationRequestFees.ExtraAmount;
+                    if (exteraAmount > 0)
+                    {
+                        amount += exteraAmount * litigationRequestFees.PercentageExtraAmount.Value;
+                    }
+                }
             }
             
 
