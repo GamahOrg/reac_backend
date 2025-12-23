@@ -572,7 +572,7 @@ namespace REAC.Application.ModuleServices
                     decimal exteraAmount = disputeAmount - (decimal)litigationRequestFees.ExtraAmount;
                     if (exteraAmount > 0)
                     {
-                        amount += exteraAmount * litigationRequestFees.PercentageExtraAmount.Value;
+                        amount += exteraAmount * (litigationRequestFees.PercentageExtraAmount.Value/100);
                     }
                 }
             }
