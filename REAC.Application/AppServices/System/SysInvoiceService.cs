@@ -159,7 +159,7 @@ namespace REAC.Application.AppServices.System
 
                     litigationRequest.ExternalStatusId = RequestStatus.ArbitrationFeesHaveBeenCollected;
                     litigationRequest.InternalStatusId = RequestStatus.ArbitrationFeesHaveBeenCollected;
-                    //litigationRequest.IsArbitrationFeesHaveBeenCollected = true;
+                    litigationRequest.IsArbitrationFeesHaveBeenCollected = true;
 
                     _repository.Update<LitigationRequest, Guid>(litigationRequest);
 

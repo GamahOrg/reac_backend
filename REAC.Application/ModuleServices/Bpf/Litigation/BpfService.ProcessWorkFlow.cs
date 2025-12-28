@@ -186,7 +186,7 @@ namespace Bpf.Application.ModuleServices
                     }
                 }
                 //رسوم الصلح
-                if (litigationRequest.InternalStatusId == REAC.Domain.Shared.Enum.RequestStatus.LitigationFeesHaveBeenCollected)
+                if (litigationRequest.InternalStatusId == REAC.Domain.Shared.Enum.RequestStatus.LitigationFeesHaveBeenCollected && litigationRequest.LitigationRequestCategoryId != LitigationRequestCategory.Arbitration)
                 {
                     var reconciliationFees = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reconciliation_Fees).Result.Data?.Value;
                     var Administrative_ServiceId = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reconciliation_Fees_Billing).Result.Data?.Value;
