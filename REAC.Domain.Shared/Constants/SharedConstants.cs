@@ -10,6 +10,7 @@ namespace REAC.Domain.Shared.Constants
     {
         public const string ArabicLanguage = "ar";
         public const string RootFolder = "reac";
+        public const string ComplaintFilesFolder = "complaints";
         public const string EnglishLanguage = "en";
         public static readonly List<string> Languages = new()
     {

@@ -31,6 +31,7 @@ namespace REAC.Application.Contracts.Dtos.Integration
         public NameValue date_entered { get; set; }
         public NameValue case_number { get; set; }
         public NameValue status { get; set; }
+        public NameValue resolution { get; set; }
     }
 
     public class NameValue

@@ -361,8 +361,11 @@ namespace REAC.Application.AppServices.Litigation
                                         //send notification to him for reselect 
                                         //update arbitrator response
                                         var arbitratorsAssigned = litigationRequest.LitigationRequestArbitratorNominationLists.FirstOrDefault(s => s.ArbitratorCitizenId == referenceId);
+                                        var arbitratorsAssignedByArbitratorAdmin = litigationRequest.LitigationRequestArbitratorNominationLists.FirstOrDefault(s => s.ArbitratorCitizenId == referenceId && s.IsArbitratorAdminSelected != false);
+
                                         if (arbitratorsAssigned != null)
                                             arbitratorsAssigned.IsResponse = true;
+
                                         //update litigation request for plaintiff or deffendant to reassign
                                         if (arbitratorsAssigned?.IsPlaintiffSelected == true)
                                         {
@@ -371,6 +374,25 @@ namespace REAC.Application.AppServices.Litigation
                                         else if (arbitratorsAssigned?.IsDefendantSelected == true)
                                         {
                                             litigationRequest.IsDefendantArbitratorNominationListDone = false;
+                                        }
+
+                                        // Case Admin Selected For Plaintiff/Defendant
+                                        if (arbitratorsAssignedByArbitratorAdmin != null)
+                                        {
+                                            arbitratorsAssignedByArbitratorAdmin.IsResponse = true;
+
+                                            if (arbitratorsAssignedByArbitratorAdmin.IsPlaintiffSelected == true)
+                                            {
+                                                arbitratorsAssignedByArbitratorAdmin.IsPlaintiffSelected = null;
+                                                arbitratorsAssignedByArbitratorAdmin.TotalPriority = null;
+                                                litigationRequest.IsPlaintiffArbitratorNominationListDone = false;
+                                            }
+                                            else if (arbitratorsAssignedByArbitratorAdmin.IsDefendantSelected == true)
+                                            {
+                                                arbitratorsAssignedByArbitratorAdmin.IsDefendantSelected = null;
+                                                arbitratorsAssignedByArbitratorAdmin.TotalPriority = null;
+                                                litigationRequest.IsDefendantArbitratorNominationListDone = false;
+                                            }
                                         }
 
                                         var ContractCitizen = litigationRequest.IsPlaintiffArbitratorNominationListDone == false ? litigationRequest.Contract.FirstPartyCitizen
@@ -1794,5 +1816,7 @@ namespace REAC.Application.AppServices.Litigation
         }
 
         #endregion
+
+
     }
 }

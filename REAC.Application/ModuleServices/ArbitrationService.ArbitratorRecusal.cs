@@ -513,6 +513,83 @@ namespace REAC.Application.ModuleServices
 
 
         // BackOffice
+
+        public async Task<BaseResponse> ReNotifyPartiesToSelectArbitrators(Guid litigationRequestId)
+        {
+            Guid referenceId = Guid.Empty;
+            _jwtReader.GetReferenceId(ref referenceId);
+            var litigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>())
+                                      .Include(x => x.LitigationRequestArbitratorNominationLists)
+                                      .Include(x => x.ApplicantCitizen)
+                                      .Include(x => x.Contract)
+                                      .Include(x => x.Contract.FirstPartyCitizen)
+                                      .Include(x => x.Contract.SecondPartyCitizen)
+                                      .Include(x => x.Contract.FirstPartyFacility).ThenInclude(x => x.Citizen)
+                                      .Include(x => x.Contract.SecondPartyFacility).ThenInclude(x => x.Citizen)
+                                      .AsNoTracking()
+                                      .AsSplitQuery()
+                                      .FirstOrDefault(x => x.Id == litigationRequestId);
+
+            if (litigationRequest == null)
+                return new BaseResponse()
+                {
+                    IsDone = false,
+                    Message = "طلب غير موجود"
+                };
+
+            if (litigationRequest.LitigationRequestArbitratorNominationLists.All(x => x.IsPlaintiffSelected != true))
+            {
+                //Send Notification for Plaintiff 
+                // Mail - Sms - Application Notification
+                // يرجى سرعة اتمام عملية إختيار هيئة التحكيم على الدعوى رقم ......
+                try
+                {
+                    var msg = _settingService.GetBySettingKey(SysSettingKeyConstants.SLA_ArbitratorsSelect_FirstWarning).Result.Data?.Value;
+                    msg = msg?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                    var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                    string body;
+                    using (StreamReader streamReader = File.OpenText(pathToFile))
+                    {
+                        body = await streamReader.ReadToEndAsync();
+                        body = body?.Replace("{content}", _settingService.GetBySettingKey(SysSettingKeyConstants.SLA_ArbitratorsSelect_FirstWarning).Result.Data?.Value);
+                        body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                    }
+                    await SendNotificationMS(body, msg, litigationRequest, "سرعة اتمام عملية إختيار هيئة التحكيم", NotificationActorType.Plaintiff, RequestType.ArbitratorNominationList
+                      , notifyApplicant: true, notifyFirstParty: true);
+                }
+                catch (Exception ex) { }
+
+            }
+            if (litigationRequest.LitigationRequestArbitratorNominationLists.All(x => x.DefendantPriority.HasValue != true))
+            {
+                //Send Notification for Defendant
+                // Mail - Sms - Application Notification
+                // يرجى سرعة اتمام عملية إختيار هيئة التحكيم على الدعوى رقم ......
+                try
+                {
+                    var msg = _settingService.GetBySettingKey(SysSettingKeyConstants.SLA_ArbitratorsSelect_FirstWarning).Result.Data?.Value;
+                    msg = msg?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                    var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                    string body;
+                    using (StreamReader streamReader = File.OpenText(pathToFile))
+                    {
+                        body = await streamReader.ReadToEndAsync();
+                        body = body?.Replace("{content}", _settingService.GetBySettingKey(SysSettingKeyConstants.SLA_ArbitratorsSelect_FirstWarning).Result.Data?.Value);
+                        body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                    }
+                    await SendNotificationMS(body, msg, litigationRequest, "سرعة اتمام عملية إختيار هيئة التحكيم", NotificationActorType.Defendant, RequestType.ArbitratorNominationList
+                      , notifySecondParty: true);
+                }
+                catch (Exception ex) { }
+
+            }
+            return new BaseResponse()
+            {
+                IsDone = true,
+                Message = "تم إعادة الإشعار للاطراف التي لم تقوم باختيار المحكمين"
+            };
+        }
+
         public async Task<BaseResponse> GetLitigationRequestForArbitratorRecusalRequestForArbitrator(int pageIndex, int pageSize)
         {
             Guid referenceId = Guid.Empty;
@@ -697,7 +774,7 @@ namespace REAC.Application.ModuleServices
                         Message = "طلب غير موجود"
                     };
 
-                
+
 
                 // In Case of Accept, Re Assign the next highest periority Arbitrator
                 if (requestPayload.Response == ApproveRejectStatus.Approve)
@@ -809,7 +886,8 @@ namespace REAC.Application.ModuleServices
                             emails.Add(litigationRequest.Contract.FirstPartyCitizen.Email);
 
 
-                        };
+                        }
+                        ;
                         if (litigationRequest?.Contract?.FirstPartyFacility != null && litigationRequest?.Contract?.FirstPartyFacility.CitizenId != litigationRequest.ApplicantCitizenId)
                         {
                             notifications.Add(new SysNotificationDto
@@ -822,7 +900,8 @@ namespace REAC.Application.ModuleServices
                                 Message = msg
                             });
                             emails.Add(litigationRequest.Contract.FirstPartyFacility.Citizen.Email);
-                        };
+                        }
+                        ;
                         if (litigationRequest?.Contract?.SecondPartyCitizenId != null)
                         {
                             notifications.Add(new SysNotificationDto
@@ -835,7 +914,8 @@ namespace REAC.Application.ModuleServices
                                 Message = msg
                             });
                             emails.Add(litigationRequest.Contract.SecondPartyCitizen.Email);
-                        };
+                        }
+                        ;
                         if (litigationRequest?.Contract?.SecondPartyFacilityId != null)
                         {
                             notifications.Add(new SysNotificationDto
@@ -848,7 +928,8 @@ namespace REAC.Application.ModuleServices
                                 Message = msg
                             });
                             emails.Add(litigationRequest.Contract.SecondPartyFacility.Citizen.Email);
-                        };
+                        }
+                        ;
                         await _notificationService.SendNotifications(new Contracts.Dtos.Notification.SendEmailDto()
                         {
                             To = emails,
@@ -917,5 +998,171 @@ namespace REAC.Application.ModuleServices
             return await GetLitigationRequestForArbitratorRecusalRequestForArbitratorByRequestId(requestPayload.LitigationRequestId);
         }
         #endregion
+
+        private async Task SendNotificationMS(string mailMsg, string msg, LitigationRequest litigationRequest, string subject, NotificationActorType notificationActorType, RequestType requestType, LitigationRequestArbitratorList? arbitrator = null, bool notifyApplicant = false, bool notifyArbitrators = false, bool notifyDeptAdmin = false, bool notifyFirstParty = false, bool notifySecondParty = false, bool notifyArbitratorChairman = false)
+        {
+            var deptAdminInfoArbitration = await _employeeService.GetAdminsByDepartmentType(DepartmentType.Arbitration);
+            var objEmail = new SendEmailDto()
+            {
+                Body = mailMsg,
+                Subject = subject,
+                To = new List<string>()
+            };
+
+            var objSms = new Contracts.Dtos.Integration.GEE.SMSRequestDto()
+            {
+                message_text = msg,
+                recipients = new List<string>(),
+                notification_type = "SMS",
+            };
+
+            var lstNotification = new List<SysNotificationDto>();
+
+            // Notify Applicant Citizen
+            if (notifyApplicant && litigationRequest.ApplicantCitizen != null)
+            {
+                objEmail.To.Add(litigationRequest.ApplicantCitizen.Email);
+                objSms.recipients.Add(litigationRequest.ApplicantCitizen.Mobile);
+                lstNotification.Add(new Contracts.Dtos.Notification.SysNotificationDto()
+                {
+                    ActorId = litigationRequest.ApplicantCitizen.Id,
+                    CreatedOn = DateTime.Now,
+                    ActorTypeId = notificationActorType,
+                    IsViewed = false,
+                    ViewedOn = null,
+                    RequestId = litigationRequest.Id,
+                    RequestTypeId = requestType,
+                    Message = msg,
+                });
+            }
+
+            // Notify Arbitrator Citizen
+            if (notifyArbitrators && arbitrator?.ArbitratorCitizen is not null)
+            {
+                objEmail.To.Add(arbitrator.ArbitratorCitizen.Email);
+                objSms.recipients.Add(arbitrator.ArbitratorCitizen.Mobile);
+                lstNotification.Add(new Contracts.Dtos.Notification.SysNotificationDto()
+                {
+                    ActorId = arbitrator.ArbitratorCitizenId,
+                    CreatedOn = DateTime.Now,
+                    ActorTypeId = notificationActorType,
+                    IsViewed = false,
+                    ViewedOn = null,
+                    RequestId = litigationRequest.Id,
+                    RequestTypeId = requestType,
+                    Message = msg,
+                });
+            }
+
+            // Notify Department Admin
+            if (notifyDeptAdmin && deptAdminInfoArbitration != null)
+            {
+                objEmail.To.Add(deptAdminInfoArbitration.Data.Email);
+                objSms.recipients.Add(deptAdminInfoArbitration.Data.Mobile);
+                lstNotification.Add(new Contracts.Dtos.Notification.SysNotificationDto()
+                {
+                    ActorId = deptAdminInfoArbitration.Data.Id,
+                    CreatedOn = DateTime.Now,
+                    ActorTypeId = notificationActorType,
+                    IsViewed = false,
+                    ViewedOn = null,
+                    RequestId = litigationRequest.Id,
+                    RequestTypeId = requestType,
+                    Message = msg,
+                });
+            }
+
+            // Notify Chairman 
+            if (notifyArbitratorChairman && litigationRequest.ArbitratorCitizen != null)
+            {
+                objEmail.To.Add(litigationRequest.ArbitratorCitizen.Email);
+                objSms.recipients.Add(litigationRequest.ArbitratorCitizen.Mobile);
+                lstNotification.Add(new Contracts.Dtos.Notification.SysNotificationDto()
+                {
+                    ActorId = litigationRequest.ArbitratorCitizen.Id,
+                    CreatedOn = DateTime.Now,
+                    ActorTypeId = notificationActorType,
+                    IsViewed = false,
+                    ViewedOn = null,
+                    RequestId = litigationRequest.Id,
+                    RequestTypeId = requestType,
+                    Message = msg,
+                });
+            }
+
+            // Notify First Party Citizen
+            if (notifyFirstParty && litigationRequest.Contract?.FirstPartyCitizen != null && litigationRequest.Contract.FirstPartyCitizen.Id != litigationRequest.ApplicantCitizen.Id)
+            {
+                objEmail.To.Add(litigationRequest.Contract.FirstPartyCitizen.Email);
+                objSms.recipients.Add(litigationRequest.Contract.FirstPartyCitizen.Mobile);
+                lstNotification.Add(new Contracts.Dtos.Notification.SysNotificationDto()
+                {
+                    ActorId = litigationRequest.Contract.FirstPartyCitizen.Id,
+                    CreatedOn = DateTime.Now,
+                    ActorTypeId = notificationActorType,
+                    IsViewed = false,
+                    ViewedOn = null,
+                    RequestId = litigationRequest.Id,
+                    RequestTypeId = requestType,
+                    Message = msg,
+                });
+            }
+            // Notify First Party Facility
+            //if (notifyFirstParty && litigationRequest.Contract?.FirstPartyFacility != null && litigationRequest.Contract.FirstPartyFacility.Citizen.Id != litigationRequest.ApplicantCitizen.Id)
+            //{
+            //    objEmail.To.Add(litigationRequest.Contract.FirstPartyFacility.Email);
+            //    objSms.recipients.Add(litigationRequest.Contract.FirstPartyFacility.Citizen.Mobile);
+            //    lstNotification.Add(new Contracts.Dtos.Notification.SysNotificationDto()
+            //    {
+            //        ActorId = (Guid)litigationRequest.Contract.FirstPartyFacility.Citizen.Id,
+            //        CreatedOn = DateTime.Now,
+            //        ActorTypeId = notificationActorType,
+            //        IsViewed = false,
+            //        ViewedOn = null,
+            //        RequestId = litigationRequest.Id,
+            //        RequestTypeId = requestType,
+            //        Message = msg,
+            //    });
+            //}
+
+
+
+            // Notify Second Party Citizen
+            if (notifySecondParty && litigationRequest.Contract?.SecondPartyCitizen != null)
+            {
+                objEmail.To.Add(litigationRequest.Contract.SecondPartyCitizen.Email);
+                objSms.recipients.Add(litigationRequest.Contract.SecondPartyCitizen.Mobile);
+                lstNotification.Add(new Contracts.Dtos.Notification.SysNotificationDto()
+                {
+                    ActorId = litigationRequest.Contract.SecondPartyCitizen.Id,
+                    CreatedOn = DateTime.Now,
+                    ActorTypeId = notificationActorType,
+                    IsViewed = false,
+                    ViewedOn = null,
+                    RequestId = litigationRequest.Id,
+                    RequestTypeId = requestType,
+                    Message = msg,
+                });
+            }
+            // Notify Second Party Facility
+            //if (notifySecondParty && litigationRequest.Contract?.SecondPartyFacility != null)
+            //{
+            //    objEmail.To.Add(litigationRequest.Contract.SecondPartyFacility.Email);
+            //    objSms.recipients.Add(litigationRequest.Contract.SecondPartyFacility.Citizen.Mobile);
+            //    lstNotification.Add(new Contracts.Dtos.Notification.SysNotificationDto()
+            //    {
+            //        ActorId = (Guid)litigationRequest.Contract.SecondPartyFacility.Citizen.Id,
+            //        CreatedOn = DateTime.Now,
+            //        ActorTypeId = notificationActorType,
+            //        IsViewed = false,
+            //        ViewedOn = null,
+            //        RequestId = litigationRequest.Id,
+            //        RequestTypeId = requestType,
+            //        Message = msg,
+            //    });
+            //}
+
+            await _notificationService.SendNotificationsWithoutDuplicationChecking(objEmail, objSms, lstNotification);
+        }
     }
 }

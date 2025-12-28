@@ -80,7 +80,10 @@ namespace Bpf.Application.ModuleServices
                 {
                     WorkFlowStepEventForActorShortDtos.Fees = litigationStageFees.LitigationRequestStage == REAC.Domain.Shared.Enum.LitigationRequestStage.Review && !litigationStageFees.IsLitigationFeesHaveBeenCollected ? minFees.ToString("0.#") : null;
                 }
-
+                if (processinglog.Count > 0 && processinglog.FirstOrDefault()?.LitigationRequest.IsExemptionReduction == true && processinglog.FirstOrDefault()?.WorkFlowStep.Order==2)
+                {
+                    WorkFlowStepEventForActorShortDtos.Fees = null;
+                }
 
 
                 processinglog?.ForEach(x =>

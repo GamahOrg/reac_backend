@@ -10,6 +10,7 @@ namespace REAC.Application.Contracts.IAppServices.System
         Task<BaseResponse> AddFile(SysFileManagerCreateUpdateDto model);
         Task<Guid> GetLatestFile();
         Task<DataResponse<List<FileDto>>> UploadAsync(IFormFileCollection files);
+        Task<DataResponse<FileDto>> UploadComplaintFileAsync(string base64File, string fileName);
         Task<List<SysFileManager>> GetAsync(List<Guid>? ids);
         Task RemoveAsync(Guid id);
     }

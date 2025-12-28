@@ -100,7 +100,7 @@ namespace Bpf.Application.ModuleServices
 
                 #region invoice APGI integration
                 //رسوم الدعوه
-                if (litigationRequest.InternalStatusId == REAC.Domain.Shared.Enum.RequestStatus.New)
+                if (litigationRequest.InternalStatusId == REAC.Domain.Shared.Enum.RequestStatus.New && litigationRequest.IsExemptionReduction == false)
                 {
 
                     var litigationStageFees = (await _repository.GetQueryable<LitigationRequest, Guid>())?
@@ -186,7 +186,7 @@ namespace Bpf.Application.ModuleServices
                     }
                 }
                 //رسوم الصلح
-                if (litigationRequest.InternalStatusId == REAC.Domain.Shared.Enum.RequestStatus.LitigationApprovedCollectionOfReconciliationFeesRequestIsBeingSend)
+                if (litigationRequest.InternalStatusId == REAC.Domain.Shared.Enum.RequestStatus.LitigationFeesHaveBeenCollected)
                 {
                     var reconciliationFees = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reconciliation_Fees).Result.Data?.Value;
                     var Administrative_ServiceId = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reconciliation_Fees_Billing).Result.Data?.Value;
@@ -1236,9 +1236,9 @@ namespace Bpf.Application.ModuleServices
                     IdentityNumber = litigation.ApplicantCitizen?.IdentityNumber,
                     MobileNumber = litigation.ApplicantCitizen?.Mobile,
                     Email = litigation.ApplicantCitizen?.Email,
-                    CaseNumber = serviceId == "1970" ? "RCaseNu10XXX1": "LCaseNu10XXX1",
-                    CaseDescription = serviceId == "1970" ?"Reconciliation Fees":"Litigation Fees",
-                    RefIdPltfrm = serviceId == "1970"? "R-"+litigation.RequestCode:"L-" + litigation.RequestCode
+                    CaseNumber = serviceId == "1970" ? "RCaseNu10XXX1" : "LCaseNu10XXX1",
+                    CaseDescription = serviceId == "1970" ? "Reconciliation Fees" : "Litigation Fees",
+                    RefIdPltfrm = serviceId == "1970" ? "R-" + litigation.RequestCode : "L-" + litigation.RequestCode
                 };
 
 
@@ -1274,9 +1274,10 @@ namespace Bpf.Application.ModuleServices
                 {
                     return new DataResponse<InvoiceDataDto>() { Data = null, IsDone = false };
                 }
-                //var Data = new InvoiceDataDto
+                //var invoiceResponse = new CreateInvoiceResponseDto();
+                //invoiceResponse.Data = new InvoiceDataDto
                 //{
-                //    Id = "cd91a980-caa2-4a44-b4d1-06e2aabf7049",
+                //    Id = new Guid().ToString(),
                 //    InvDateJ = null,
                 //    SadadNumber = "0",
                 //    SadadStatus = "غير مسددة",
@@ -1291,8 +1292,8 @@ namespace Bpf.Application.ModuleServices
                 //    Project = "",
                 //    Client = "عبدالله حمد إبراهيم حمد",
                 //    CreatedBy = "Arbitration platform",
-                //    InvDueDate = "2025-11-23T00:00:00.0000000",
-                //    InvoicedNumber = "",
+                //    InvDueDate = DateTime.Now.ToString(),
+                //    InvoicedNumber = serviceId == "1970" ? "R-" + litigation.RequestCode : "L-" + litigation.RequestCode,
                 //    ProvinceName = "",
                 //    CityName = "",
                 //    NeighborhoodName = "",
@@ -1302,7 +1303,8 @@ namespace Bpf.Application.ModuleServices
                 //    TotalNonTaxable = "400.00",
                 //    TotalTaxable = "0.00",
                 //    TotalTax = "0.00",
-                //    TotalTotalAfterTax = "400.00"
+                //    TotalTotalAfterTax = "400.00",
+
                 //};
                 // Return success response with invoice data
                 return new DataResponse<InvoiceDataDto>() { Data = invoiceResponse.Data, IsDone = true };
