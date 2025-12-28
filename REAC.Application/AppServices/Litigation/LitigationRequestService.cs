@@ -556,34 +556,34 @@ namespace REAC.Application.AppServices.Litigation
                 if (!saveResponse.IsDone)
                     return saveResponse;
 
-                var _bpfService = _serviceProvider.GetRequiredService<IBpfService>();
-                var _stepService = _serviceProvider.GetRequiredService<IWorkFlowStepService>();
+                //var _bpfService = _serviceProvider.GetRequiredService<IBpfService>();
+                //var _stepService = _serviceProvider.GetRequiredService<IWorkFlowStepService>();
 
-                var processingLog = (await _repository.GetQueryable<WorkFlowProcessingLog, Guid>())
-                    .Include(t => t.WorkFlowStep)
-                    .Include(t => t.WorkFlowStep.WorkFlowStepEvents)
-                    .AsNoTracking()
-                    .Where(x => x.RequestId == litigationRequest.Id).ToList();
+                //var processingLog = (await _repository.GetQueryable<WorkFlowProcessingLog, Guid>())
+                //    .Include(t => t.WorkFlowStep)
+                //    .Include(t => t.WorkFlowStep.WorkFlowStepEvents)
+                //    .AsNoTracking()
+                //    .Where(x => x.RequestId == litigationRequest.Id).ToList();
 
-                if (processingLog.Count > 0)
-                {
-                    var currentProcessingLog = processingLog.Where(t => t.IsFinished == false).OrderBy(t => t.CreatedOn).ToList();
-                    if (processingLog.Count > 0)
-                    {
-                        ProcessRequestPayload processRequestPayload = new ProcessRequestPayload();
-                        processRequestPayload.RequestId = litigationRequest.Id;
-                        processRequestPayload.ProcessingLogId = currentProcessingLog.LastOrDefault().Id;
-                        processRequestPayload.WorkflowStepEventId = currentProcessingLog.LastOrDefault().WorkFlowStep.WorkFlowStepEvents.FirstOrDefault().Id;
-                        processRequestPayload.Notes = "";
-                        processRequestPayload.UploadedFilesIds = new List<Guid>();
-                        await _bpfService.ProcessWorkFlow(processRequestPayload, default);
-                        return new DataResponse<LitigationCreateUpdateDto>()
-                        {
-                            IsDone = true,
-                            Message = ""
-                        };
-                    }
-                }
+                //if (processingLog.Count > 0)
+                //{
+                //    var currentProcessingLog = processingLog.Where(t => t.IsFinished == false).OrderBy(t => t.CreatedOn).ToList();
+                //    if (processingLog.Count > 0)
+                //    {
+                //        ProcessRequestPayload processRequestPayload = new ProcessRequestPayload();
+                //        processRequestPayload.RequestId = litigationRequest.Id;
+                //        processRequestPayload.ProcessingLogId = currentProcessingLog.LastOrDefault().Id;
+                //        processRequestPayload.WorkflowStepEventId = currentProcessingLog.LastOrDefault().WorkFlowStep.WorkFlowStepEvents.FirstOrDefault().Id;
+                //        processRequestPayload.Notes = "";
+                //        processRequestPayload.UploadedFilesIds = new List<Guid>();
+                //        await _bpfService.ProcessWorkFlow(processRequestPayload, default);
+                //        return new DataResponse<LitigationCreateUpdateDto>()
+                //        {
+                //            IsDone = true,
+                //            Message = ""
+                //        };
+                //    }
+                //}
                 return new DataResponse<LitigationCreateUpdateDto>()
                 {
                     IsDone = true,

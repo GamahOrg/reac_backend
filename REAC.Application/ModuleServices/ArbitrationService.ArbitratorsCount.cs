@@ -183,9 +183,9 @@ namespace REAC.Application.ModuleServices
         {
             //رسوم التحكيم
             decimal arbitrationFees = default;
-            if (litigationRequest.LitigationRequestAmount != null && litigationRequest.DisputeAmount != null)
+            if (litigationRequest.LitigationRequestAmount != null)
             {
-                arbitrationFees = await CalculateArbitrationFees(litigationRequest.ArbitratorsCount.Value,litigationRequest.DisputeAmount.Value, litigationRequest.LitigationRequestAmount);
+                arbitrationFees = await CalculateArbitrationFees(litigationRequest.ArbitratorsCount.Value, litigationRequest.LitigationRequestAmount);
             }
             else
             {
@@ -556,9 +556,10 @@ namespace REAC.Application.ModuleServices
         }
 
 
-        public async Task<decimal> CalculateArbitrationFees(int arbitratorsCount,decimal disputeAmount, SysLitigationRequestAmount litigationRequestAmount)
+        public async Task<decimal> CalculateArbitrationFees(int arbitratorsCount, SysLitigationRequestAmount litigationRequestAmount)
         {
             decimal amount = 0;
+
             var litigationRequestFees = (await _repository.GetQueryable<LitigationRequestFees, Guid>())
                .FirstOrDefault(x => x.ArbitratorsCount == arbitratorsCount &&
                x.AmountId == litigationRequestAmount.Id);
@@ -566,14 +567,14 @@ namespace REAC.Application.ModuleServices
             if (litigationRequestFees != null)
             {
                 amount = litigationRequestFees.ArbitrationFees;
-                if (litigationRequestFees.PercentageExtraAmount.HasValue && litigationRequestFees.ExtraAmount.HasValue && disputeAmount > litigationRequestFees.ExtraAmount)
-                {
-                    decimal exteraAmount = disputeAmount - (decimal)litigationRequestFees.ExtraAmount;
-                    if (exteraAmount > 0)
-                    {
-                        amount += exteraAmount * (litigationRequestFees.PercentageExtraAmount.Value/100);
-                    }
-                }
+                //if (litigationRequestFees.PercentageExtraAmount.HasValue)
+                //{
+                //    decimal exteraAmount = disputeAmount - litigationRequestFees.ExtraAmount;
+                //    if (exteraAmount > 0)
+                //    {
+                //        amount += exteraAmount * litigationRequestFees.PercentageExtraAmount.Value;
+                //    }
+                //}
             }
             
 
