@@ -560,7 +560,7 @@ namespace REAC.Application.ModuleServices
                 catch (Exception ex) { }
 
             }
-            if (litigationRequest.LitigationRequestArbitratorNominationLists.All(x => x.DefendantPriority.HasValue != true))
+            if (litigationRequest.LitigationRequestArbitratorNominationLists.All(x => x.IsDefendantSelected != true))
             {
                 //Send Notification for Defendant
                 // Mail - Sms - Application Notification

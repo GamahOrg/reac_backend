@@ -386,7 +386,7 @@ namespace REAC.Application.AppServices.Litigation
 
                         if (model.ExemptionReductionCategory.IsExemptionReductionCategory == true)
                         {
-                            await _bpfService.ExcuteWorkFlow(litigationRequest.Id, default,2);
+                            await _bpfService.ExcuteWorkFlow(litigationRequest.Id, default, 2);
 
                         }
                         else
@@ -435,7 +435,7 @@ namespace REAC.Application.AppServices.Litigation
                         await _repository.AddAsync<LitigationRequestAmountLog, Guid>(newAmountLog);
                         var Response = await _repository.SaveChangesAsync();
                     }
-                    
+
                     #endregion
                     return new DataResponse<LitigationCreateUpdateDto>()
                     {
@@ -548,7 +548,7 @@ namespace REAC.Application.AppServices.Litigation
                         IsDone = false,
                     };
 
-                litigationRequest.IsLitigationFeesHaveBeenCollected = true;
+                //litigationRequest.IsLitigationFeesHaveBeenCollected = true;
                 litigationRequest.InternalStatusId = RequestStatus.LitigationFeesHaveBeenCollected;
                 litigationRequest.ExternalStatusId = RequestStatus.LitigationFeesHaveBeenCollected;
 
@@ -584,6 +584,13 @@ namespace REAC.Application.AppServices.Litigation
                             Message = ""
                         };
                     }
+                }
+                else
+                {
+                    litigationRequest.IsLitigationFeesHaveBeenCollected = true;
+                    var Response = _repository.SaveChangesAsync().Result;
+                    if (!Response.IsDone)
+                        return saveResponse;
                 }
 
                 return new DataResponse<LitigationCreateUpdateDto>()
