@@ -59,6 +59,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using System.Threading;
 using static REAC.Application.Contracts.IAppServices.Litigation.ILitigationRequestService;
 
 
@@ -289,10 +290,10 @@ namespace REAC.Application.AppServices.Litigation
                 var saveResponse = _repository.SaveChangesAsync().Result;
                 if (!saveResponse.IsDone)
                     return saveResponse;
+                var _bpfService = _serviceProvider.GetRequiredService<IBpfService>();
+                var _stepService = _serviceProvider.GetRequiredService<IWorkFlowStepService>();
                 if (model.IsSent)
                 {
-                    var _bpfService = _serviceProvider.GetRequiredService<IBpfService>();
-                    var _stepService = _serviceProvider.GetRequiredService<IWorkFlowStepService>();
 
                     var processingLog = (await _repository.GetQueryable<WorkFlowProcessingLog, Guid>())
                         .Include(t => t.WorkFlowStep)
@@ -381,8 +382,41 @@ namespace REAC.Application.AppServices.Litigation
 
                     }
                     else
-                        await _bpfService.ExcuteWorkFlow(litigationRequest.Id, default, null);
+                    {
 
+                        if (model.ExemptionReductionCategory.IsExemptionReductionCategory == true)
+                        {
+                            await _bpfService.ExcuteWorkFlow(litigationRequest.Id, default, 2);
+
+                        }
+                        else
+                        {
+                            await _bpfService.ExcuteWorkFlow(litigationRequest.Id, default, null);
+                            var currentProcessingLog = (await _repository.GetQueryable<WorkFlowProcessingLog, Guid>())
+                                                     .Include(t => t.WorkFlowStep)
+                                                     .Include(t => t.WorkFlowStep.WorkFlowStepEvents)
+                                                     .AsNoTracking()
+                                                     .Where(x => x.RequestId == litigationRequest.Id).ToList();
+
+                            if (currentProcessingLog.Count > 0)
+                            {
+
+                                ProcessRequestPayload processRequestPayload = new ProcessRequestPayload();
+                                processRequestPayload.RequestId = litigationRequest.Id;
+                                processRequestPayload.ProcessingLogId = currentProcessingLog.LastOrDefault().Id;
+                                processRequestPayload.WorkflowStepEventId = currentProcessingLog.LastOrDefault().WorkFlowStep.WorkFlowStepEvents.FirstOrDefault().Id;
+                                processRequestPayload.Notes = "";
+                                processRequestPayload.UploadedFilesIds = new List<Guid>();
+                                if (lastCategoryId != model.LitigationRequestCategoryId)
+                                {
+                                    processRequestPayload.CategoryTypeChanged = true;
+                                    processRequestPayload.CategoryType = model.LitigationRequestCategoryId == LitigationRequestCategory.Arbitration ? "دعوة تحكيم" : "دعوة صلح";
+                                }
+                                await _bpfService.ProcessWorkFlow(processRequestPayload, default);
+                            }
+
+                        }
+                    }
 
 
                     #region billing 
@@ -514,7 +548,7 @@ namespace REAC.Application.AppServices.Litigation
                         IsDone = false,
                     };
 
-                litigationRequest.IsLitigationFeesHaveBeenCollected = true;
+                //litigationRequest.IsLitigationFeesHaveBeenCollected = true;
                 litigationRequest.InternalStatusId = RequestStatus.LitigationFeesHaveBeenCollected;
                 litigationRequest.ExternalStatusId = RequestStatus.LitigationFeesHaveBeenCollected;
 
@@ -524,6 +558,7 @@ namespace REAC.Application.AppServices.Litigation
 
                 var _bpfService = _serviceProvider.GetRequiredService<IBpfService>();
                 var _stepService = _serviceProvider.GetRequiredService<IWorkFlowStepService>();
+
 
                 var processingLog = (await _repository.GetQueryable<WorkFlowProcessingLog, Guid>())
                     .Include(t => t.WorkFlowStep)
@@ -550,6 +585,14 @@ namespace REAC.Application.AppServices.Litigation
                         };
                     }
                 }
+                else
+                {
+                    litigationRequest.IsLitigationFeesHaveBeenCollected = true;
+                    var Response = _repository.SaveChangesAsync().Result;
+                    if (!Response.IsDone)
+                        return saveResponse;
+                }
+
                 return new DataResponse<LitigationCreateUpdateDto>()
                 {
                     IsDone = true,
@@ -576,7 +619,7 @@ namespace REAC.Application.AppServices.Litigation
             {
                 var litigationRequestInvoice = (await _repository.GetQueryable<LitigationRequestInvoice, Guid>())
                                              .Include(x => x.LitigationRequest)
-                                             .ThenInclude(x=>x.LitigationRequestInvoice)
+                                             .ThenInclude(x => x.LitigationRequestInvoice)
                                              .Where(x => x.ReferenceId == model.InvoiceId).ToList().FirstOrDefault();
 
                 if (litigationRequestInvoice == null)
@@ -609,7 +652,7 @@ namespace REAC.Application.AppServices.Litigation
                     else if (litigationRequestInvoice.serviceId == SingleArbitration_ServiceId || litigationRequestInvoice.serviceId == MultipleArbitration_ServiceId)
                     {
                         var _invoiceService = _serviceProvider.GetRequiredService<ISysInvoiceService>();
-                        var invoiceId= litigationRequestInvoice.LitigationRequest.LitigationRequestInvoice.Id;
+                        var invoiceId = litigationRequestInvoice.LitigationRequest.LitigationRequestInvoice.Id;
                         var returnValue = await _invoiceService.PayInvoice(invoiceId);
                     }
                 }
@@ -3572,7 +3615,7 @@ namespace REAC.Application.AppServices.Litigation
             Guid referenceId = Guid.Empty;
             _jwtReader.GetReferenceId(ref referenceId);
 
-            
+
 
             if (input.DelegationRelationshipTypeId == DelegationRelationshipType.Individual)
             {
@@ -4593,7 +4636,7 @@ namespace REAC.Application.AppServices.Litigation
                         Message = "لا يمكن ان يكون طرفى الدعوى لنفس الشخص"
                     };
 
-                
+
 
                 TryGetFacilityAgian:
                 Facility? facility = null;

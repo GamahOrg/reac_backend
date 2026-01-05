@@ -1,0 +1,42 @@
+﻿
+GO
+
+/****** Object:  Table [dbo].[LitigationRequestNoteFile]    Script Date: 12/14/2025 11:40:58 AM ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE [dbo].[ComplaintFile](
+	[Id] [uniqueidentifier] NOT NULL,
+	[NoteId] [uniqueidentifier] NOT NULL,
+	[CaseId] [uniqueidentifier] NOT NULL,
+	[FileManagerId] [uniqueidentifier] NULL,
+	[CreatedBy] [uniqueidentifier] NULL,
+	[CreatedOn] [datetime2](7) NOT NULL,
+	[IsDeleted] [bit] NULL,
+	
+ CONSTRAINT [PK__Litigati__3214EC070E49794D] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
+
+ALTER TABLE [dbo].[ComplaintFile]  WITH CHECK ADD  CONSTRAINT [FKLitigation910437] FOREIGN KEY([FileManagerId])
+REFERENCES [dbo].[SysFileManager] ([Id])
+GO
+
+ALTER TABLE [dbo].[ComplaintFile] CHECK CONSTRAINT [FKLitigation910437]
+GO
+
+
+alter table dbo.[LitigationRequestArbitratorNominationList]
+add IsArbitratorAdminSelected bit null
+
+
+update dbo.syssetting set value = N'https://api.rega.gov.sa/v1/rega/crm/entry/list?ModuleName=Cases&QueryField=cases.id&QueryFieldValue={caseId}&SelectFields=id,rejon_c,requestclassification_c,program_c,reference_number_c,request_number_c,name,description,date_entered,case_number,status,resolution'
+where [key] = 'GetCaseById'
+

@@ -77,6 +77,8 @@ namespace REAC.Application.Contracts.Dtos.Citizen
         public string? IdentityNumber { get; set; }
         public bool? IsPlaintiffSelected { get; set; }
         public bool? IsDefendantSelected { get; set; }
+        public bool? IsArbitratorAdminSelected { get; set; }
+        public bool? IsSent { get; set; }
 
         public int? Value { get; set; }
     }

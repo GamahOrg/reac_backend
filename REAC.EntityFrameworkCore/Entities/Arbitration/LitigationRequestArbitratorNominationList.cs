@@ -29,6 +29,7 @@ namespace REAC.EntityFrameworkCore.Entities.Arbitration
         public bool? IsPlaintiffSelected { get; set; }
         [Comment("Indicates whether this arbitrator was selected by the defendant")]
         public bool? IsDefendantSelected { get; set; }
+        public bool? IsArbitratorAdminSelected { get; set; }
         [Comment("Indicates whether a response has been received for this nomination")]
         public bool? IsResponse { get; set; }
           

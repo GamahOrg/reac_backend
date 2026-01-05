@@ -344,6 +344,20 @@ public class ArbitrationController : ControllerBase
 
         return BadRequest();
     }
+    
+    [HttpGet(nameof(GetDueDateLitigationRequestForAssignArbitrators))]
+    public async Task<IActionResult> GetDueDateLitigationRequestForAssignArbitrators(int pageIndex, int pageSize, CancellationToken cancellationToken)
+    {
+        if (ModelState.IsValid)
+        {
+            var returnValue = await _arbitrationService.GetDueDateLitigationRequestForAssignArbitrators(pageIndex, pageSize, cancellationToken);
+            return Ok(returnValue);
+        }
+
+        return BadRequest();
+    }
+
+
     [HttpGet(nameof(GetLitigationRequestForAddArbitratorsNominationListByRequestId))]
     public async Task<IActionResult> GetLitigationRequestForAddArbitratorsNominationListByRequestId(Guid litigationRequestId, CancellationToken cancellationToken)
       {
@@ -389,12 +403,36 @@ public class ArbitrationController : ControllerBase
 
         return BadRequest();
     }
+    
+    [HttpGet(nameof(GetCitizenLitigationRequestForArbitratorsNominationListReplyForCoAdmin))]
+    public async Task<IActionResult> GetCitizenLitigationRequestForArbitratorsNominationListReplyForCoAdmin(Guid litigationRequestId, CancellationToken cancellationToken)
+    {
+        if (ModelState.IsValid)
+        {
+            var returnValue = await _arbitrationService.GetCitizenLitigationRequestForArbitratorsNominationListReplyForCoAdmin(litigationRequestId, cancellationToken);
+            return Ok(returnValue);
+        }
+
+        return BadRequest();
+    }
     [HttpPost(nameof(AddCitizenLitigationRequestForReportArbitratorsNominationListReply))]
     public async Task<IActionResult> AddCitizenLitigationRequestForReportArbitratorsNominationListReply([FromBody] ArbitratorNominationListRequestReplyPayload arbitratorNominationListRequestReplyPayload, CancellationToken cancellationToken)
     {
         if (ModelState.IsValid)
         {
             var returnValue = await _arbitrationService.AddCitizenLitigationRequestForReportArbitratorsNominationListReply(arbitratorNominationListRequestReplyPayload, cancellationToken);
+            return Ok(returnValue);
+        }
+
+        return BadRequest();
+    }
+    
+    [HttpPost(nameof(AddCitizenLitigationRequestForReportArbitratorsNominationListReplyForCoAdmin))]
+    public async Task<IActionResult> AddCitizenLitigationRequestForReportArbitratorsNominationListReplyForCoAdmin([FromBody] ArbitratorNominationListRequestReplyPayload arbitratorNominationListRequestReplyPayload, CancellationToken cancellationToken)
+    {
+        if (ModelState.IsValid)
+        {
+            var returnValue = await _arbitrationService.AddCitizenLitigationRequestForReportArbitratorsNominationListReplyForCoAdmin(arbitratorNominationListRequestReplyPayload, cancellationToken);
             return Ok(returnValue);
         }
 
@@ -554,6 +592,18 @@ public class ArbitrationController : ControllerBase
         if (ModelState.IsValid)
         {
             var returnValue = await _arbitrationService.GetLitigationRequestForArbitratorRecusalRequestForArbitratorByRequestId(litigationRequestId);
+            return Ok(returnValue);
+        }
+
+        return BadRequest();
+    }
+    
+    [HttpGet(nameof(ReNotifyPartiesToSelectArbitrators))]
+    public async Task<IActionResult> ReNotifyPartiesToSelectArbitrators(Guid litigationRequestId)
+    {
+        if (ModelState.IsValid)
+        {
+            var returnValue = await _arbitrationService.ReNotifyPartiesToSelectArbitrators(litigationRequestId);
             return Ok(returnValue);
         }
 

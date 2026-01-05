@@ -37,3 +37,6 @@ add serviceId nvarchar(50) null
 --------- update user id 
 insert into [dbo].[AspNetRoleClaims] values ('4C443A60-DB4A-4657-D368-08DD4C38B65E','Permission','Admin.View')
 update [dbo].[AspNetUserRoles] set roleId='4C443A60-DB4A-4657-D368-08DD4C38B65E' where userid='C30016D7-556D-4A55-A4F0-EF9E5055A113'
+
+------------------------------------------------------
+INSERT [dbo].[AspNetUsers] ([Id], [RefreshToken], [ReferenceId], [RefreshTokenExpiryTime], [UserName], [NormalizedUserName], [Email], [NormalizedEmail], [EmailConfirmed], [PasswordHash], [SecurityStamp], [ConcurrencyStamp], [PhoneNumber], [PhoneNumberConfirmed], [TwoFactorEnabled], [LockoutEnd], [LockoutEnabled], [AccessFailedCount]) VALUES (N'f2ae37bd-b87f-4e73-8aa4-07dc99fe35f3', N'eLi97GkYIOl6iVM5XrDRwjZk+NzkCvWzvvWF+366aACVu+DHh+3nxk33IQF/XvVNhF8QrjCtn22T9ZpSSrnc2g==', N'7f14c6d6-8b17-4749-9c60-a07e191bc4f1', CAST(N'2025-12-16T16:30:23.9498453' AS DateTime2), N'integration', N'INTEGRATION', N'integration@domain.com', N'INTEGRATION@DOMAIN.COM', 1, N'AQAAAAIAAYagAAAAEF2wKb3hyA4C4UL3qY2clY72vs0TDPR9Z6VCMj47BAA2GPuMdXGjahP7IUZClHFCcA==', N'FE7ZSIB3O7HCPZTMCYBZEQLBXJWRXWU5', N'52a601f0-a7a1-4eac-b9a7-0e6e2b50b6af', NULL, 0, 0, NULL, 1, 0)
