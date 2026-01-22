@@ -1232,7 +1232,7 @@ namespace Bpf.Application.ModuleServices
                     TypeOfInvoice = 3,
                     ClientReferenceId = "A10002",
                     ArName = litigation.ApplicantCitizen?.FullName,
-                    Type = "2",
+                    Type = litigation.ApplicantCitizen?.IdentityNumber?.ToString()?.StartsWith("1") == true ? "1" : "2",
                     IdentityNumber = litigation.ApplicantCitizen?.IdentityNumber,
                     MobileNumber = litigation.ApplicantCitizen?.Mobile,
                     Email = litigation.ApplicantCitizen?.Email,
