@@ -240,7 +240,7 @@ namespace REAC.Application.ModuleServices
                 Arbitration_ServiceId = _settingService.GetBySettingKey(SysSettingKeyConstants.Arbitration_multiple_arbitrator_Fees_Billing).Result.Data?.Value;
             }
 
-            var invoiceResponse = await CreateIntegratedInvoice(litigationRequest, TotalFees.ToString(), Arbitration_ServiceId);
+            var invoiceResponse = await CreateIntegratedInvoice(litigationRequest, TotalFees, Arbitration_ServiceId);
 
             if (invoiceResponse.IsDone)
             {
@@ -305,7 +305,7 @@ namespace REAC.Application.ModuleServices
 
 
         #region Invoice
-        public async Task<DataResponse<InvoiceDataDto>> CreateIntegratedInvoice(LitigationRequest litigation, string fees, string serviceId)
+        public async Task<DataResponse<InvoiceDataDto>> CreateIntegratedInvoice(LitigationRequest litigation, decimal fees, string serviceId)
         {
             var accessToken = (await _gEELoginService.Login()).Data?.Access_token;
             try
@@ -334,7 +334,8 @@ namespace REAC.Application.ModuleServices
                     new InvoiceTransactionDto
                     {
                         ServiceID = int.Parse(serviceId),
-                        Price = (int)decimal.Parse(fees.Replace('٫', ','), new CultureInfo("de-DE")),
+                        //Price = (int)decimal.Parse(fees.Replace('٫', ','), new CultureInfo("de-DE")),
+                        Price = fees ,
                         Quantity = 1
                     },
                     //new InvoiceTransactionDto
@@ -347,7 +348,7 @@ namespace REAC.Application.ModuleServices
                     TypeOfInvoice = 3,
                     ClientReferenceId = "A10002",
                     ArName = litigation.ApplicantCitizen?.FullName,
-                    Type = "2",
+                    Type = litigation.ApplicantCitizen?.IdentityNumber?.ToString()?.StartsWith("1") == true ? "1" : "2",
                     IdentityNumber = litigation.ApplicantCitizen?.IdentityNumber,
                     MobileNumber = litigation.ApplicantCitizen?.Mobile,
                     Email = litigation.ApplicantCitizen?.Email,
