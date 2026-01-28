@@ -1,4 +1,4 @@
-﻿using Core.GenericRepository.Shared.Pagging;
+using Core.GenericRepository.Shared.Pagging;
 using Core.Shared.Responses;
 using Microsoft.EntityFrameworkCore;
 using REAC.Application.Contracts.Dtos.Litigation;
@@ -758,7 +758,8 @@ namespace REAC.Application.ModuleServices
                                       .Include(x => x.Contract.FirstPartyCitizen)
                                       .Include(x => x.Contract.SecondPartyFacility)
                                       .Include(x => x.Contract.SecondPartyCitizen)
-                                      .Include(x => x.Contract.LitigationRequestContractType);
+                                      .Include(x => x.Contract.LitigationRequestContractType).Include(x => x.LitigationDelegationRequests)
+ .ThenInclude(x => x.Delegator);
             litigationRequests = entitiesQuerable
                 .Where(x =>
 
@@ -768,12 +769,9 @@ namespace REAC.Application.ModuleServices
                 & x.ApplicantCitizenId == referenceId
                 & x.LitigationRequestCategoryId != LitigationRequestCategory.Arbitration & x.ReformerCitizenId.HasValue
 
-                //|
-                //x.RequestCode != null & x.InternalStatusId != RequestStatus.Rejected
-                //& x.LitigationRequestSessions.Count(x => x.LitigationRequestSessionRequestTypeId == LitigationRequestSessionRequestType.Reconciliation) > 0 & x.RequestCode != null
-                //& x.Contract.FirstPartyCitizenId == referenceId
-                //& x.LitigationRequestCategoryId != LitigationRequestCategory.Arbitration & x.ReformerCitizenId.HasValue
-
+                |
+x.InternalStatusId != RequestStatus.Cancelled && x.IsFinished != true && x.LitigationDelegationRequests.Any(x => x.IsActive != true && x.IsApproved == true)
+&& x.LitigationDelegationRequests.Any(x => x.Delegator.CitizenId == referenceId)
                 |
                 x.RequestCode != null & x.InternalStatusId != RequestStatus.Rejected
                 & x.LitigationRequestSessions.Count(x => x.LitigationRequestSessionRequestTypeId == LitigationRequestSessionRequestType.Reconciliation) > 0
