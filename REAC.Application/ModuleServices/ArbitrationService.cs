@@ -463,605 +463,405 @@ namespace REAC.Application.ModuleServices
         {
             try
             {
+                // 1. Validate Employee
                 Guid referenceId = Guid.Empty;
                 _jwtReader.GetReferenceId(ref referenceId);
 
                 if (referenceId == Guid.Empty)
-                    return new BaseResponse()
-                    {
-                        IsDone = false,
-                        Message = "موظف غير معروف"
-                    };
-                var employee = (await _repository.GetQueryable<SysEmployee, Guid>())?
-                        .Where(x => x.Id == referenceId).Single();
+                    return new BaseResponse { IsDone = false, Message = "موظف غير معروف" };
+
+                var employee = (await _repository.GetQueryable<SysEmployee, Guid>())
+                    .FirstOrDefault(x => x.Id == referenceId);
 
                 if (employee == null)
-                    return new BaseResponse()
-                    {
-                        IsDone = false,
-                        Message = "موظف غير معروف"
-                    };
+                    return new BaseResponse { IsDone = false, Message = "موظف غير معروف" };
 
                 if (!employee.AllowAssign)
-                    return new BaseResponse()
-                    {
-                        IsDone = false,
-                        Message = "موظف غير مسموح له"
-                    };
+                    return new BaseResponse { IsDone = false, Message = "موظف غير مسموح له" };
 
-                var litigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>())?
-                       .Include(x => x.ArbitratorCitizen)
-                       .Include(x => x.LitigationRequestArbitratorLists)
-                       .Include(x => x.ArbitratorCitizen)
-                       .Where(x => x.Id == assignRequestPayload.RequestId).SingleOrDefault();
-
+                // 2. Get and Validate Litigation Request
+                var litigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>())
+                    .Include(x => x.ArbitratorCitizen)
+                    .Include(x => x.LitigationRequestArbitratorLists)
+                    .FirstOrDefault(x => x.Id == assignRequestPayload.RequestId);
 
                 if (litigationRequest == null)
-                    return new BaseResponse()
+                    return new BaseResponse { IsDone = false, Message = "طلب غير موجود" };
+
+                if (litigationRequest.IsFinished.HasValue && litigationRequest.IsFinished.Value)
+                    return new BaseResponse { IsDone = false, Message = "دعوى مغلقة" };
+
+                if (litigationRequest.ArbitratorCitizenId.HasValue && !employee.AllowReAssign)
+                    return new BaseResponse { IsDone = false, Message = "موظف غير مسموح له" };
+
+                // 3. Check if arbitrator already assigned
+                if (litigationRequest.LitigationRequestArbitratorLists.Any(x => x.ArbitratorCitizenId == assignRequestPayload.ArbitratorId))
+                {
+                    return new BaseResponse
                     {
                         IsDone = false,
-                        Message = "طلب غير موجود"
+                        Message = "المحكم بالفعل عضو بهيئة المحكمين بالدعوى"
                     };
-
-                if (litigationRequest.IsFinished.HasValue)
-                {
-                    if (litigationRequest.IsFinished.Value)
-                        return new BaseResponse()
-                        {
-                            IsDone = false,
-                            Message = "دعوى مغلقة"
-                        };
                 }
 
-                if (litigationRequest.ArbitratorCitizenId.HasValue)
-                {
-                    if (!employee.AllowReAssign)
-                        return new BaseResponse()
-                        {
-                            IsDone = false,
-                            Message = "موظف غير مسموح له"
-                        };
-                }
+                // 4. Check for pending assignment requests
+                var hasPendingRequest = (await _repository.GetQueryable<LitigationRequestArbitratorAssigningRequest, Guid>())
+                    .Any(x => x.LitigationRequestId == assignRequestPayload.RequestId
+                        && x.CitizenId == assignRequestPayload.ArbitratorId
+                        && x.Response == LitigationRequestArbitratorAssigningRequestStatus.None);
 
-                if (litigationRequest.LitigationRequestArbitratorLists.Any())
+                if (hasPendingRequest)
                 {
-                    if (litigationRequest.LitigationRequestArbitratorLists.Where(x => x.ArbitratorCitizenId == assignRequestPayload.ArbitratorId).Any())
-                    {
-                        return new BaseResponse()
-                        {
-                            IsDone = false,
-                            Message = "المحكم بالفعل عضو بهيئة المحكمين بالدعوى"
-                        };
-                    }
-                }
-
-                var litigationRequestArbitratorAssigningRequests = (await _repository.GetQueryable<LitigationRequestArbitratorAssigningRequest, Guid>())?
-                     .Where(x => x.LitigationRequestId == assignRequestPayload.RequestId & x.CitizenId == assignRequestPayload.ArbitratorId & x.Response == LitigationRequestArbitratorAssigningRequestStatus.None);
-
-                if (litigationRequestArbitratorAssigningRequests.Any())
-                {
-                    return new BaseResponse()
+                    return new BaseResponse
                     {
                         IsDone = false,
                         Message = "يوجد طلب مهمه سابق لم يتم الرد عليه حتى الان من قبل المحكم"
                     };
                 }
-                var litigationRequestArbitratorList = (await _repository.GetQueryable<LitigationRequestArbitratorList, Guid>())?
-                           .Include(x => x.ArbitratorCitizen)
-                            .Where(x => x.LitigationRequestId == assignRequestPayload.RequestId && x.ArbitratorCitizenId == assignRequestPayload.LitigationRequestArbitratorListId).SingleOrDefault();
-                try
-                {
 
-                    if (litigationRequestArbitratorList != null)
+                // 5. Handle Removal of Existing Arbitrator (if LitigationRequestArbitratorListId is provided)
+                if (assignRequestPayload.LitigationRequestArbitratorListId != Guid.Empty)
+                {
+                    // Check in arbitrator list first
+                    var arbitratorInList = (await _repository.GetQueryable<LitigationRequestArbitratorList, Guid>())
+                        .Include(x => x.ArbitratorCitizen)
+                        .FirstOrDefault(x => x.LitigationRequestId == assignRequestPayload.RequestId
+                            && x.ArbitratorCitizenId == assignRequestPayload.LitigationRequestArbitratorListId);
+
+                    if (arbitratorInList != null)
                     {
-                        switch (assignRequestPayload.ArbitratorAssigningRequestTypeId)
+                        // Get pending requests
+                        var pendingRequests =( await _repository.GetQueryable<LitigationRequestArbitratorAssigningRequest, Guid>())
+                            .Where(x => x.CitizenId == arbitratorInList.ArbitratorCitizenId)
+                            .ToList();
+
+                        // Update each request
+                        foreach (var request in pendingRequests)
                         {
-                            case ArbitratorAssigningRequestType.Arbitrator:
-
-                                var updateAssigingRequest = (await _repository.GetQueryable<LitigationRequestArbitratorAssigningRequest, Guid>())
-                                    .Where(x => x.CitizenId == litigationRequestArbitratorList.ArbitratorCitizenId)
-                                    .ExecuteUpdateAsync(upd => upd.SetProperty(cr => cr.Response, LitigationRequestArbitratorAssigningRequestStatus.Cancelled));
-
-                                _repository.Remove<LitigationRequestArbitratorList, Guid>(litigationRequestArbitratorList);
-
-
-                                // Send Notification
-                                // تم إلغاء تعيينك كمحكم على الدعوى رقم كذا
-
-                                var msg = "";
-                                msg = _settingService.GetBySettingKey(SysSettingKeyConstants.ArbitraorRecusal_InformArbitrator_Reject).Result.Data?.Value;
-                                msg = msg?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
-                                var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
-                                string body;
-                                using (StreamReader streamReader = File.OpenText(pathToFile))
-                                {
-                                    body = await streamReader.ReadToEndAsync();
-                                    body = body?.Replace("{content}", _settingService.GetBySettingKey(SysSettingKeyConstants.ArbitraorRecusal_InformArbitrator_Reject).Result.Data?.Value);
-                                    body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
-                                }
-
-                                var arbitrationAdmin = await _sysEmployeeService.GetAdminsByDepartmentType(DepartmentType.Arbitration);
-
-
-                                if (arbitrationAdmin.IsDone)
-                                {
-                                    List<SysNotificationDto> notifications = new List<SysNotificationDto>() {
-                           new SysNotificationDto{
-                        ActorId = (Guid)arbitrationAdmin.Data?.Id,
-                        RequestId=litigationRequest.Id,
-                        CreatedOn= DateTime.Now,
-                        RequestTypeId=RequestType.LitigationRequest,
-                        ActorTypeId=NotificationActorType.Employee,
-                        Message=msg
-                        },
-                           new SysNotificationDto{
-                        ActorId = (Guid)litigationRequestArbitratorList.ArbitratorCitizenId,
-                        RequestId=litigationRequest.Id,
-                        CreatedOn= DateTime.Now,
-                        RequestTypeId=RequestType.LitigationRequest,
-                        ActorTypeId=NotificationActorType.Arbitrator,
-                        Message=msg
+                            request.Response = LitigationRequestArbitratorAssigningRequestStatus.Cancelled;
+                            _repository.Update<LitigationRequestArbitratorAssigningRequest, Guid>(request);
                         }
 
-                        };
-                                    List<string> emails = new List<string>() {
-                                  arbitrationAdmin.Data?.Email,
-                                  litigationRequestArbitratorList.ArbitratorCitizen.Email
-                                };
-                                    List<string> recipients = new List<string>() {
-                                  arbitrationAdmin.Data?.Mobile,
-                                  litigationRequestArbitratorList.ArbitratorCitizen.Mobile
-                                };
+                        _repository.Remove<LitigationRequestArbitratorList, Guid>(arbitratorInList);
 
-                                    await _notificationService.SendNotifications(new Contracts.Dtos.Notification.SendEmailDto()
-                                    {
-                                        To = emails,
-                                        Subject = "إلغاء مهمتك كمحكم على الدعوى",
-                                        Body = body
-                                    }, new Contracts.Dtos.Integration.GEE.SMSRequestDto()
-                                    {
-                                        message_text = msg,
-                                        recipients = recipients,
-                                        notification_type = "SMS",
+                        // Send removal notification
+                        var removalMsg = assignRequestPayload.ArbitratorAssigningRequestTypeId == ArbitratorAssigningRequestType.Arbitrator
+                            ? _settingService.GetBySettingKey(SysSettingKeyConstants.ArbitraorRecusal_InformArbitrator_Reject).Result.Data?.Value
+                            : _settingService.GetBySettingKey(SysSettingKeyConstants.ArbitraorRecusal_InformArbitratorChairman_Rejected).Result.Data?.Value;
 
-                                    }, notifications);
+                        removalMsg = removalMsg?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
 
-                                }
-
-                                await _repository.AddAsync<WorkFlowLog, Guid>(new WorkFlowLog()
-                                {
-                                    Id = Guid.NewGuid(),
-                                    CreatedOn = DateTime.Now,
-                                    RequestId = litigationRequest.Id,
-                                    ShowForApplicant = false,
-                                    LogMessage = "تم إلغاء تعيين المحكم " + litigationRequestArbitratorList.ArbitratorCitizen.FullName
-                                });
-                                break;
-                            case ArbitratorAssigningRequestType.ArbitratorsChairman:
-                                litigationRequest.ArbitratorCitizenId = null;
-                                // Send Notification
-                                // تم إلغاء تعيينك كرئيس هيئة تحكيم على الدعوى رقم كذا
-
-                                var boosMsg = "";
-                                boosMsg = _settingService.GetBySettingKey(SysSettingKeyConstants.ArbitraorRecusal_InformArbitratorChairman_Rejected).Result.Data?.Value;
-                                boosMsg = boosMsg?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
-                                pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
-                                using (StreamReader streamReader = File.OpenText(pathToFile))
-                                {
-                                    body = await streamReader.ReadToEndAsync();
-                                    body = body?.Replace("{content}", _settingService.GetBySettingKey(SysSettingKeyConstants.ArbitraorRecusal_InformArbitratorChairman_Rejected).Result.Data?.Value);
-                                    body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
-                                }
-
-                                var admin = await _sysEmployeeService.GetAdminsByDepartmentType(DepartmentType.Arbitration);
-
-
-                                if (admin.IsDone)
-                                {
-                                    List<SysNotificationDto> notifications = new List<SysNotificationDto>() {
-                           new SysNotificationDto{
-                        ActorId = (Guid)admin.Data?.Id,
-                        RequestId=litigationRequest.Id,
-                        CreatedOn= DateTime.Now,
-                        RequestTypeId=RequestType.LitigationRequest,
-                        ActorTypeId=NotificationActorType.Employee,
-                        Message=boosMsg
-                        },
-                           new SysNotificationDto{
-                        ActorId = (Guid)litigationRequest.ArbitratorCitizen.Id,
-                        RequestId=litigationRequest.Id,
-                        CreatedOn= DateTime.Now,
-                        RequestTypeId=RequestType.LitigationRequest,
-                        ActorTypeId=NotificationActorType.Arbitrator,
-                        Message=boosMsg
+                        var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                        string removalBody;
+                        using (StreamReader streamReader = File.OpenText(pathToFile))
+                        {
+                            removalBody = await streamReader.ReadToEndAsync();
+                            var settingKey = assignRequestPayload.ArbitratorAssigningRequestTypeId == ArbitratorAssigningRequestType.Arbitrator
+                                ? SysSettingKeyConstants.ArbitraorRecusal_InformArbitrator_Reject
+                                : SysSettingKeyConstants.ArbitraorRecusal_InformArbitratorChairman_Rejected;
+                            removalBody = removalBody?.Replace("{content}", _settingService.GetBySettingKey(settingKey).Result.Data?.Value);
+                            removalBody = removalBody?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
                         }
 
-                        };
-                                    List<string> emails = new List<string>() {
-                                  admin.Data?.Email,
-                                  litigationRequest.ArbitratorCitizen.Email
-                                };
-                                    List<string> recipients = new List<string>() {
-                                  admin.Data?.Mobile,
-                                  litigationRequest.ArbitratorCitizen.Mobile
-                                };
+                        var admin = await _sysEmployeeService.GetAdminsByDepartmentType(DepartmentType.Arbitration);
 
-                                    await _notificationService.SendNotifications(new Contracts.Dtos.Notification.SendEmailDto()
-                                    {
-                                        To = emails,
-                                        Subject = "إلغاء مهمتك كرأيس محكمين على الدعوى",
-                                        Body = body
-                                    }, new Contracts.Dtos.Integration.GEE.SMSRequestDto()
-                                    {
-                                        message_text = boosMsg,
-                                        recipients = recipients,
-                                        notification_type = "SMS",
-
-                                    }, notifications);
-
-                                }
-
-
-
-                                await _repository.AddAsync<WorkFlowLog, Guid>(new WorkFlowLog()
-                                {
-                                    Id = Guid.NewGuid(),
-                                    CreatedOn = DateTime.Now,
-                                    RequestId = litigationRequest.Id,
-                                    ShowForApplicant = false,
-                                    LogMessage = "تم إلغاء تعيين كرئيس هيئة المحكمين  للمحكم " + litigationRequest?.ArbitratorCitizen?.FullName
-                                });
-                                break;
-                        }
-
-                    }
-                }
-                catch (Exception e)
-                {
-
-
-                }
-
-                var litigationRequestAssigningRequest = (await _repository.GetQueryable<LitigationRequestArbitratorAssigningRequest, Guid>())?
-                           .Include(x => x.ArbitratorCitizen)
-                            .Where(x => x.LitigationRequestId == assignRequestPayload.RequestId && x.CitizenId == assignRequestPayload.LitigationRequestArbitratorListId && x.Response == LitigationRequestArbitratorAssigningRequestStatus.None).FirstOrDefault();
-
-                if (litigationRequestAssigningRequest != null)
-                {
-
-                    switch (assignRequestPayload.ArbitratorAssigningRequestTypeId)
+                        if (admin.IsDone)
+                        {
+                            var removalNotifications = new List<SysNotificationDto>
                     {
-                        case ArbitratorAssigningRequestType.Arbitrator:
-
-                            // Send Notification
-                            // تم إلغاء تعيينك كمحكم على الدعوى رقم كذا
-
-                            var msg = "";
-                            msg = _settingService.GetBySettingKey(SysSettingKeyConstants.ArbitraorRecusal_InformArbitrator_Reject).Result.Data?.Value;
-                            msg = msg?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
-                            var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
-                            string body;
-                            using (StreamReader streamReader = File.OpenText(pathToFile))
-                            {
-                                body = await streamReader.ReadToEndAsync();
-                                body = body?.Replace("{content}", _settingService.GetBySettingKey(SysSettingKeyConstants.ArbitraorRecusal_InformArbitrator_Reject).Result.Data?.Value);
-                                body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
-                            }
-
-                            var arbitrationAdmin = await _sysEmployeeService.GetAdminsByDepartmentType(DepartmentType.Arbitration);
-
-
-                            if (arbitrationAdmin.IsDone)
-                            {
-                                List<SysNotificationDto> notifications = new List<SysNotificationDto>() {
-                           new SysNotificationDto{
-                        ActorId = (Guid)arbitrationAdmin.Data?.Id,
-                        RequestId=litigationRequest.Id,
-                        CreatedOn= DateTime.Now,
-                        RequestTypeId=RequestType.LitigationRequest,
-                        ActorTypeId=NotificationActorType.Employee,
-                        Message=msg
+                        new SysNotificationDto
+                        {
+                            ActorId = admin.Data.Id,
+                            RequestId = litigationRequest.Id,
+                            CreatedOn = DateTime.Now,
+                            RequestTypeId = RequestType.LitigationRequest,
+                            ActorTypeId = NotificationActorType.Employee,
+                            Message = removalMsg
                         },
-                           new SysNotificationDto{
-                        ActorId = (Guid)litigationRequestAssigningRequest.ArbitratorCitizen?.Id,
-                        RequestId=litigationRequest.Id,
-                        CreatedOn= DateTime.Now,
-                        RequestTypeId=RequestType.LitigationRequest,
-                        ActorTypeId=NotificationActorType.Arbitrator,
-                        Message=msg
+                        new SysNotificationDto
+                        {
+                            ActorId = arbitratorInList.ArbitratorCitizenId,
+                            RequestId = litigationRequest.Id,
+                            CreatedOn = DateTime.Now,
+                            RequestTypeId = RequestType.LitigationRequest,
+                            ActorTypeId = NotificationActorType.Arbitrator,
+                            Message = removalMsg
+                        }
+                    };
+
+                            await _notificationService.SendNotifications(
+                                new Contracts.Dtos.Notification.SendEmailDto
+                                {
+                                    To = new List<string> { admin.Data.Email, arbitratorInList.ArbitratorCitizen.Email },
+                                    Subject = assignRequestPayload.ArbitratorAssigningRequestTypeId == ArbitratorAssigningRequestType.Arbitrator
+                                        ? "إلغاء مهمتك كمحكم على الدعوى"
+                                        : "إلغاء مهمتك كرأيس محكمين على الدعوى",
+                                    Body = removalBody
+                                },
+                                new Contracts.Dtos.Integration.GEE.SMSRequestDto
+                                {
+                                    message_text = removalMsg,
+                                    recipients = new List<string> { admin.Data.Mobile, arbitratorInList.ArbitratorCitizen.Mobile },
+                                    notification_type = "SMS"
+                                },
+                                removalNotifications);
                         }
 
-                        };
-                                List<string> emails = new List<string>() {
-                                  arbitrationAdmin.Data?.Email,
-                                  litigationRequestAssigningRequest.ArbitratorCitizen.Email
-                                };
-                                List<string> recipients = new List<string>() {
-                                  arbitrationAdmin.Data?.Mobile,
-                                  litigationRequestAssigningRequest.ArbitratorCitizen.Mobile
-                                };
+                        // Log removal
+                        var removalLogMsg = assignRequestPayload.ArbitratorAssigningRequestTypeId == ArbitratorAssigningRequestType.Arbitrator
+                            ? $"تم إلغاء تعيين المحكم {arbitratorInList.ArbitratorCitizen.FullName}"
+                            : $"تم إلغاء تعيين كرئيس هيئة المحكمين للمحكم {arbitratorInList.ArbitratorCitizen.FullName}";
 
-                                await _notificationService.SendNotifications(new Contracts.Dtos.Notification.SendEmailDto()
-                                {
-                                    To = emails,
-                                    Subject = "إلغاء مهمتك كمحكم على الدعوى",
-                                    Body = body
-                                }, new Contracts.Dtos.Integration.GEE.SMSRequestDto()
-                                {
-                                    message_text = msg,
-                                    recipients = recipients,
-                                    notification_type = "SMS",
+                        await _repository.AddAsync<WorkFlowLog, Guid>(new WorkFlowLog
+                        {
+                            Id = Guid.NewGuid(),
+                            CreatedOn = DateTime.Now,
+                            RequestId = litigationRequest.Id,
+                            ShowForApplicant = false,
+                            LogMessage = removalLogMsg
+                        });
 
-                                }, notifications);
-
-                            }
-
-                            await _repository.AddAsync<WorkFlowLog, Guid>(new WorkFlowLog()
-                            {
-                                Id = Guid.NewGuid(),
-                                CreatedOn = DateTime.Now,
-                                RequestId = litigationRequest.Id,
-                                ShowForApplicant = false,
-                                LogMessage = "تم إلغاء تعيين المحكم " + litigationRequestAssigningRequest.ArbitratorCitizen.FullName
-                            });
-                            break;
-
-                        case ArbitratorAssigningRequestType.ArbitratorsChairman:
+                        if (assignRequestPayload.ArbitratorAssigningRequestTypeId == ArbitratorAssigningRequestType.ArbitratorsChairman)
+                        {
                             litigationRequest.ArbitratorCitizenId = null;
-                            // Send Notification
-                            // تم إلغاء تعيينك كرئيس هيئة تحكيم على الدعوى رقم كذا
+                        }
+                    }
+                    else
+                    {
+                        // Check in pending assignment requests
+                        var pendingAssignmentRequest =( await _repository.GetQueryable<LitigationRequestArbitratorAssigningRequest, Guid>())
+                            .Include(x => x.ArbitratorCitizen)
+                            .FirstOrDefault(x => x.LitigationRequestId == assignRequestPayload.RequestId
+                                && x.CitizenId == assignRequestPayload.LitigationRequestArbitratorListId
+                                && x.Response == LitigationRequestArbitratorAssigningRequestStatus.None);
 
-                            var boosMsg = "";
-                            boosMsg = _settingService.GetBySettingKey(SysSettingKeyConstants.ArbitraorRecusal_InformArbitratorChairman_Rejected).Result.Data?.Value;
-                            boosMsg = boosMsg?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
-                            pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                        if (pendingAssignmentRequest != null)
+                        {
+                            // Send removal notification
+                            var removalMsg = assignRequestPayload.ArbitratorAssigningRequestTypeId == ArbitratorAssigningRequestType.Arbitrator
+                                ? _settingService.GetBySettingKey(SysSettingKeyConstants.ArbitraorRecusal_InformArbitrator_Reject).Result.Data?.Value
+                                : _settingService.GetBySettingKey(SysSettingKeyConstants.ArbitraorRecusal_InformArbitratorChairman_Rejected).Result.Data?.Value;
+
+                            removalMsg = removalMsg?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+
+                            var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                            string removalBody;
                             using (StreamReader streamReader = File.OpenText(pathToFile))
                             {
-                                body = await streamReader.ReadToEndAsync();
-                                body = body?.Replace("{content}", _settingService.GetBySettingKey(SysSettingKeyConstants.ArbitraorRecusal_InformArbitratorChairman_Rejected).Result.Data?.Value);
-                                body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                                removalBody = await streamReader.ReadToEndAsync();
+                                var settingKey = assignRequestPayload.ArbitratorAssigningRequestTypeId == ArbitratorAssigningRequestType.Arbitrator
+                                    ? SysSettingKeyConstants.ArbitraorRecusal_InformArbitrator_Reject
+                                    : SysSettingKeyConstants.ArbitraorRecusal_InformArbitratorChairman_Rejected;
+                                removalBody = removalBody?.Replace("{content}", _settingService.GetBySettingKey(settingKey).Result.Data?.Value);
+                                removalBody = removalBody?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
                             }
 
                             var admin = await _sysEmployeeService.GetAdminsByDepartmentType(DepartmentType.Arbitration);
 
-
                             if (admin.IsDone)
                             {
-                                List<SysNotificationDto> notifications = new List<SysNotificationDto>() {
-                           new SysNotificationDto{
-                        ActorId = (Guid)admin.Data?.Id,
-                        RequestId=litigationRequest.Id,
-                        CreatedOn= DateTime.Now,
-                        RequestTypeId=RequestType.LitigationRequest,
-                        ActorTypeId=NotificationActorType.Employee,
-                        Message=boosMsg
-                        },
-                           new SysNotificationDto{
-                        ActorId = (Guid)litigationRequestAssigningRequest.ArbitratorCitizen?.Id,
-                        RequestId=litigationRequest.Id,
-                        CreatedOn= DateTime.Now,
-                        RequestTypeId=RequestType.LitigationRequest,
-                        ActorTypeId=NotificationActorType.Arbitrator,
-                        Message=boosMsg
-                        }
-
+                                var removalNotifications = new List<SysNotificationDto>
+                        {
+                            new SysNotificationDto
+                            {
+                                ActorId = admin.Data.Id,
+                                RequestId = litigationRequest.Id,
+                                CreatedOn = DateTime.Now,
+                                RequestTypeId = RequestType.LitigationRequest,
+                                ActorTypeId = NotificationActorType.Employee,
+                                Message = removalMsg
+                            },
+                            new SysNotificationDto
+                            {
+                                ActorId = pendingAssignmentRequest.CitizenId,
+                                RequestId = litigationRequest.Id,
+                                CreatedOn = DateTime.Now,
+                                RequestTypeId = RequestType.LitigationRequest,
+                                ActorTypeId = NotificationActorType.Arbitrator,
+                                Message = removalMsg
+                            }
                         };
-                                List<string> emails = new List<string>() {
-                                  admin.Data?.Email,
-                                  litigationRequestAssigningRequest.ArbitratorCitizen.Email
-                                };
-                                List<string> recipients = new List<string>() {
-                                  admin.Data?.Mobile,
-                                  litigationRequestAssigningRequest.ArbitratorCitizen.Mobile
-                                };
 
-                                await _notificationService.SendNotifications(new Contracts.Dtos.Notification.SendEmailDto()
-                                {
-                                    To = emails,
-                                    Subject = "إلغاء مهمتك كرأيس محكمين على الدعوى",
-                                    Body = body
-                                }, new Contracts.Dtos.Integration.GEE.SMSRequestDto()
-                                {
-                                    message_text = boosMsg,
-                                    recipients = recipients,
-                                    notification_type = "SMS",
-
-                                }, notifications);
-
+                                await _notificationService.SendNotifications(
+                                    new Contracts.Dtos.Notification.SendEmailDto
+                                    {
+                                        To = new List<string> { admin.Data.Email, pendingAssignmentRequest.ArbitratorCitizen.Email },
+                                        Subject = assignRequestPayload.ArbitratorAssigningRequestTypeId == ArbitratorAssigningRequestType.Arbitrator
+                                            ? "إلغاء مهمتك كمحكم على الدعوى"
+                                            : "إلغاء مهمتك كرأيس محكمين على الدعوى",
+                                        Body = removalBody
+                                    },
+                                    new Contracts.Dtos.Integration.GEE.SMSRequestDto
+                                    {
+                                        message_text = removalMsg,
+                                        recipients = new List<string> { admin.Data.Mobile, pendingAssignmentRequest.ArbitratorCitizen.Mobile },
+                                        notification_type = "SMS"
+                                    },
+                                    removalNotifications);
                             }
 
+                            // Log removal
+                            var removalLogMsg = assignRequestPayload.ArbitratorAssigningRequestTypeId == ArbitratorAssigningRequestType.Arbitrator
+                                ? $"تم إلغاء تعيين المحكم {pendingAssignmentRequest.ArbitratorCitizen.FullName}"
+                                : $"تم إلغاء تعيين كرئيس هيئة المحكمين للمحكم {pendingAssignmentRequest.ArbitratorCitizen?.FullName}";
 
-
-                            await _repository.AddAsync<WorkFlowLog, Guid>(new WorkFlowLog()
+                            await _repository.AddAsync<WorkFlowLog, Guid>(new WorkFlowLog
                             {
                                 Id = Guid.NewGuid(),
                                 CreatedOn = DateTime.Now,
                                 RequestId = litigationRequest.Id,
                                 ShowForApplicant = false,
-                                LogMessage = "تم إلغاء تعيين كرئيس هيئة المحكمين  للمحكم " + litigationRequest?.ArbitratorCitizen?.FullName
+                                LogMessage = removalLogMsg
                             });
-                            break;
 
-                    }
+                            if (assignRequestPayload.ArbitratorAssigningRequestTypeId == ArbitratorAssigningRequestType.ArbitratorsChairman)
+                            {
+                                litigationRequest.ArbitratorCitizenId = null;
+                            }
 
-                     _repository.Remove<LitigationRequestArbitratorAssigningRequest, Guid>(litigationRequestAssigningRequest);
-
-
-
-                    var newArbitrator = (await _repository.GetQueryable<Citizen, Guid>())?
-                                .Where(x => x.Id == assignRequestPayload.ArbitratorId).SingleOrDefault();
-
-
-                    LitigationRequestArbitratorAssigningRequest litigationRequestArbitratorAssigningRequest = new LitigationRequestArbitratorAssigningRequest();
-                    litigationRequestArbitratorAssigningRequest.RequestOn = DateTime.Now;
-                    litigationRequestArbitratorAssigningRequest.CitizenId = assignRequestPayload.ArbitratorId;
-                    litigationRequestArbitratorAssigningRequest.LitigationRequestId = litigationRequest.Id;
-                    litigationRequestArbitratorAssigningRequest.ArbitratorAssigningRequestTypeId = assignRequestPayload.ArbitratorAssigningRequestTypeId;
-                    litigationRequestArbitratorAssigningRequest.Response = LitigationRequestArbitratorAssigningRequestStatus.None;
-                    await _repository.AddAsync<LitigationRequestArbitratorAssigningRequest, Guid>(litigationRequestArbitratorAssigningRequest);
-
-                    var arbitratorInfo = (await _repository.GetQueryable<Citizen, Guid>()).FirstOrDefault(c => c.Id == litigationRequestArbitratorAssigningRequest.CitizenId);
-                    try
-                    {
-                        switch (assignRequestPayload.ArbitratorAssigningRequestTypeId)
-                        {
-
-
-                            case ArbitratorAssigningRequestType.Arbitrator:
-                                // Send Notification
-                                // يوجد طلب مهمه جديد كمحكم على الدعوى رقم {LitigationCode}
-
-                                var msg = "";
-                                msg = _settingService.GetBySettingKey(SysSettingKeyConstants.Arbitration_Arbitraor_Assigned).Result.Data?.Value;
-                                msg = msg?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
-                                var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
-                                string body;
-                                using (StreamReader streamReader = File.OpenText(pathToFile))
-                                {
-                                    body = await streamReader.ReadToEndAsync();
-                                    body = body?.Replace("{content}", _settingService.GetBySettingKey(SysSettingKeyConstants.Arbitration_Arbitraor_Assigned).Result.Data?.Value);
-                                    body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
-                                }
-
-
-                                List<SysNotificationDto> notifications = new List<SysNotificationDto>() {
-
-                           new SysNotificationDto{
-                        ActorId = (Guid)arbitratorInfo.Id,
-                        RequestId=litigationRequest.Id,
-                        CreatedOn= DateTime.Now,
-                        RequestTypeId=RequestType.LitigationRequest,
-                        ActorTypeId=NotificationActorType.Arbitrator,
-                        Message=msg
-                        }
-
-                        };
-                                List<string> emails = new List<string>() {
-
-                                  arbitratorInfo.Email
-                                };
-                                List<string> recipients = new List<string>() {
-
-                                  arbitratorInfo.Mobile
-                                };
-
-                                await _notificationService.SendNotifications(new Contracts.Dtos.Notification.SendEmailDto()
-                                {
-                                    To = emails,
-                                    Subject = " طلب مهمه جديد كمحكم على الدعوي",
-                                    Body = body
-                                }, new Contracts.Dtos.Integration.GEE.SMSRequestDto()
-                                {
-                                    message_text = msg,
-                                    recipients = recipients,
-                                    notification_type = "SMS",
-
-                                }, notifications);
-
-
-
-
-
-
-                                await _repository.AddAsync<WorkFlowLog, Guid>(new WorkFlowLog()
-                                {
-                                    Id = Guid.NewGuid(),
-                                    CreatedOn = DateTime.Now,
-                                    RequestId = litigationRequest.Id,
-                                    ShowForApplicant = false,
-                                    LogMessage = "تم إرسال طلب مهمة كمحكم للمحكم " + litigationRequestArbitratorList?.ArbitratorCitizen.FullName
-                                });
-                                break;
-                            case ArbitratorAssigningRequestType.ArbitratorsChairman:
-
-                                var updateOldLitigationRequestArbitratorAssigningRequests = await _repository.ExecuteUpdateAsync<LitigationRequestArbitratorAssigningRequest, Guid>(
-                                    x => x.ArbitratorAssigningRequestTypeId == ArbitratorAssigningRequestType.ArbitratorsChairman
-                                  , y => y.SetProperty(z => z.Response, LitigationRequestArbitratorAssigningRequestStatus.Cancelled)
-                                  , default);
-
-                                if (!updateOldLitigationRequestArbitratorAssigningRequests.IsDone)
-                                {
-                                    return new BaseResponse()
-                                    {
-                                        IsDone = false,
-                                        Message = "خطأ داخلي"
-                                    };
-                                }
-                                // Send Notification
-                                // تم ارسال طلب مهمة كرئيس هيئة تحكيم على الدعوى رقم كذا
-
-                                var bossMsg = "";
-                                bossMsg = _settingService.GetBySettingKey(SysSettingKeyConstants.ArbitratorsChairmanNominationList_TaskSubmitedToArbitrator).Result.Data?.Value;
-                                bossMsg = bossMsg?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
-                                pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
-                                using (StreamReader streamReader = File.OpenText(pathToFile))
-                                {
-                                    body = await streamReader.ReadToEndAsync();
-                                    body = body?.Replace("{content}", _settingService.GetBySettingKey(SysSettingKeyConstants.Arbitration_ArbitraorChairman_Assigned).Result.Data?.Value);
-                                    body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
-                                }
-
-                                List<SysNotificationDto> notificationList = new List<SysNotificationDto>() {
-
-                           new SysNotificationDto{
-                        ActorId = assignRequestPayload.ArbitratorId,
-                        RequestId=litigationRequest.Id,
-                        CreatedOn= DateTime.Now,
-                        RequestTypeId=RequestType.LitigationRequest,
-                        ActorTypeId=NotificationActorType.Arbitrator,
-                        Message=bossMsg
-                        }
-
-                        };
-                                List<string> emailList = new List<string>() {
-
-                                  newArbitrator.Email
-                                };
-                                List<string> recipientList = new List<string>() {
-
-                                  newArbitrator.Mobile
-                                };
-
-                                await _notificationService.SendNotifications(new Contracts.Dtos.Notification.SendEmailDto()
-                                {
-                                    To = emailList,
-                                    Subject = " طلب مهمه جديد كرأيس هيئة محكمين على الدعوي",
-                                    Body = body
-                                }, new Contracts.Dtos.Integration.GEE.SMSRequestDto()
-                                {
-                                    message_text = bossMsg,
-                                    recipients = recipientList,
-                                    notification_type = "SMS",
-
-                                }, notificationList);
-
-                                await _repository.AddAsync<WorkFlowLog, Guid>(new WorkFlowLog()
-                                {
-                                    Id = Guid.NewGuid(),
-                                    CreatedOn = DateTime.Now,
-                                    RequestId = litigationRequest.Id,
-                                    ShowForApplicant = false,
-                                    LogMessage = "تم إرسال طلب مهمة كرئيس هيئة المحكمين للمحكم " + newArbitrator.FullName
-                                });
-                                break;
+                            _repository.Remove<LitigationRequestArbitratorAssigningRequest, Guid>(pendingAssignmentRequest);
                         }
                     }
-                    catch (Exception e)
-                    {
-
-
-                    }
-
-
                 }
-                var repositorySaveResponse = await _repository.SaveChangesAsync(new CancellationToken());
-                return repositorySaveResponse;
+
+                // 6. Assign New Arbitrator
+                var newArbitrator = (await _repository.GetQueryable<Citizen, Guid>())
+                                   .FirstOrDefault(x => x.Id == assignRequestPayload.ArbitratorId);
+
+                if (newArbitrator == null)
+                    return new BaseResponse { IsDone = false, Message = "المحكم الجديد غير موجود" };
+
+                // Create new assignment request
+                var newAssignmentRequest = new LitigationRequestArbitratorAssigningRequest
+                {
+                    RequestOn = DateTime.Now,
+                    CitizenId = assignRequestPayload.ArbitratorId,
+                    LitigationRequestId = litigationRequest.Id,
+                    ArbitratorAssigningRequestTypeId = assignRequestPayload.ArbitratorAssigningRequestTypeId,
+                    Response = LitigationRequestArbitratorAssigningRequestStatus.None
+                };
+
+                await _repository.AddAsync<LitigationRequestArbitratorAssigningRequest, Guid>(newAssignmentRequest);
+
+                // Send assignment notification
+                if (assignRequestPayload.ArbitratorAssigningRequestTypeId == ArbitratorAssigningRequestType.Arbitrator)
+                {
+                    var msg = _settingService.GetBySettingKey(SysSettingKeyConstants.Arbitration_Arbitraor_Assigned).Result.Data?.Value;
+                    msg = msg?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+
+                    var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                    string body;
+                    using (StreamReader streamReader = File.OpenText(pathToFile))
+                    {
+                        body = await streamReader.ReadToEndAsync();
+                        body = body?.Replace("{content}", _settingService.GetBySettingKey(SysSettingKeyConstants.Arbitration_Arbitraor_Assigned).Result.Data?.Value);
+                        body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                    }
+
+                    var notifications = new List<SysNotificationDto>
+            {
+                new SysNotificationDto
+                {
+                    ActorId = newArbitrator.Id,
+                    RequestId = litigationRequest.Id,
+                    CreatedOn = DateTime.Now,
+                    RequestTypeId = RequestType.LitigationRequest,
+                    ActorTypeId = NotificationActorType.Arbitrator,
+                    Message = msg
+                }
+            };
+
+                    await _notificationService.SendNotifications(
+                        new Contracts.Dtos.Notification.SendEmailDto
+                        {
+                            To = new List<string> { newArbitrator.Email },
+                            Subject = "طلب مهمه جديد كمحكم على الدعوي",
+                            Body = body
+                        },
+                        new Contracts.Dtos.Integration.GEE.SMSRequestDto
+                        {
+                            message_text = msg,
+                            recipients = new List<string> { newArbitrator.Mobile },
+                            notification_type = "SMS"
+                        },
+                        notifications);
+
+                    await _repository.AddAsync<WorkFlowLog, Guid>(new WorkFlowLog
+                    {
+                        Id = Guid.NewGuid(),
+                        CreatedOn = DateTime.Now,
+                        RequestId = litigationRequest.Id,
+                        ShowForApplicant = false,
+                        LogMessage = $"تم إرسال طلب مهمة كمحكم للمحكم {newArbitrator.FullName}"
+                    });
+                }
+                else if (assignRequestPayload.ArbitratorAssigningRequestTypeId == ArbitratorAssigningRequestType.ArbitratorsChairman)
+                {
+                    // Cancel old chairman requests
+                    await _repository.ExecuteUpdateAsync<LitigationRequestArbitratorAssigningRequest, Guid>(
+                        x => x.ArbitratorAssigningRequestTypeId == ArbitratorAssigningRequestType.ArbitratorsChairman,
+                        y => y.SetProperty(z => z.Response, LitigationRequestArbitratorAssigningRequestStatus.Cancelled),
+                        default);
+
+                    var msg = _settingService.GetBySettingKey(SysSettingKeyConstants.ArbitratorsChairmanNominationList_TaskSubmitedToArbitrator).Result.Data?.Value;
+                    msg = msg?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+
+                    var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                    string body;
+                    using (StreamReader streamReader = File.OpenText(pathToFile))
+                    {
+                        body = await streamReader.ReadToEndAsync();
+                        body = body?.Replace("{content}", _settingService.GetBySettingKey(SysSettingKeyConstants.Arbitration_ArbitraorChairman_Assigned).Result.Data?.Value);
+                        body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                    }
+
+                    var notifications = new List<SysNotificationDto>
+            {
+                new SysNotificationDto
+                {
+                    ActorId = assignRequestPayload.ArbitratorId,
+                    RequestId = litigationRequest.Id,
+                    CreatedOn = DateTime.Now,
+                    RequestTypeId = RequestType.LitigationRequest,
+                    ActorTypeId = NotificationActorType.Arbitrator,
+                    Message = msg
+                }
+            };
+
+                    await _notificationService.SendNotifications(
+                        new Contracts.Dtos.Notification.SendEmailDto
+                        {
+                            To = new List<string> { newArbitrator.Email },
+                            Subject = "طلب مهمه جديد كرئيس هيئة محكمين على الدعوي",
+                            Body = body
+                        },
+                        new Contracts.Dtos.Integration.GEE.SMSRequestDto
+                        {
+                            message_text = msg,
+                            recipients = new List<string> { newArbitrator.Mobile },
+                            notification_type = "SMS"
+                        },
+                        notifications);
+
+                    await _repository.AddAsync<WorkFlowLog, Guid>(new WorkFlowLog
+                    {
+                        Id = Guid.NewGuid(),
+                        CreatedOn = DateTime.Now,
+                        RequestId = litigationRequest.Id,
+                        ShowForApplicant = false,
+                        LogMessage = $"تم إرسال طلب مهمة كرئيس هيئة المحكمين للمحكم {newArbitrator.FullName}"
+                    });
+                }
+
+                // 7. Save changes
+                var saveResponse = await _repository.SaveChangesAsync(new CancellationToken());
+                return saveResponse;
             }
             catch (Exception ex)
             {
-                return new ExceptionResponse()
+                return new ExceptionResponse
                 {
-                    Exception = ex.Message + "\n" + ex.ToString(),
+                    Exception = ex.Message + "\n" + ex.ToString()
                 };
             }
         }
