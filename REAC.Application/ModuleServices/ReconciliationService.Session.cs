@@ -1,4 +1,4 @@
-﻿using Core.GenericRepository.Shared.Pagging;
+using Core.GenericRepository.Shared.Pagging;
 using Core.Shared.Responses;
 using Microsoft.EntityFrameworkCore;
 using REAC.Application.Contracts.Dtos.Litigation;
