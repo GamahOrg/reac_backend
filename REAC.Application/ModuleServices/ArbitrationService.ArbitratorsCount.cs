@@ -240,7 +240,7 @@ namespace REAC.Application.ModuleServices
                 Arbitration_ServiceId = _settingService.GetBySettingKey(SysSettingKeyConstants.Arbitration_multiple_arbitrator_Fees_Billing).Result.Data?.Value;
             }
 
-            var invoiceResponse = await CreateIntegratedInvoice(litigationRequest, TotalFees, Arbitration_ServiceId);
+            var invoiceResponse = await CreateIntegratedInvoice(litigationRequest, TotalFees.ToString(), Arbitration_ServiceId);
 
             if (invoiceResponse.IsDone)
             {
@@ -305,7 +305,7 @@ namespace REAC.Application.ModuleServices
 
 
         #region Invoice
-        public async Task<DataResponse<InvoiceDataDto>> CreateIntegratedInvoice(LitigationRequest litigation, decimal fees, string serviceId)
+        public async Task<DataResponse<InvoiceDataDto>> CreateIntegratedInvoice(LitigationRequest litigation, string fees, string serviceId)
         {
             var accessToken = (await _gEELoginService.Login()).Data?.Access_token;
             try
@@ -335,7 +335,7 @@ namespace REAC.Application.ModuleServices
                     {
                         ServiceID = int.Parse(serviceId),
                         //Price = (int)decimal.Parse(fees.Replace('٫', ','), new CultureInfo("de-DE")),
-                        Price = fees ,
+                        Price = int.Parse(fees) ,
                         Quantity = 1
                     },
                     //new InvoiceTransactionDto
