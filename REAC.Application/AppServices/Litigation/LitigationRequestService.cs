@@ -156,11 +156,11 @@ namespace REAC.Application.AppServices.Litigation
                 if (model.ExemptionReductionCategory != null)
                     litigationRequest.IsExemptionReduction = model.ExemptionReductionCategory.IsExemptionReductionCategory;
 
-                if (model.ExemptionReductionCategory.AttachmentId != Guid.Empty)
+                if (model.ExemptionReductionCategory.AttachmentId != Guid.Empty && model.ExemptionReductionCategory.IsExemptionReductionCategory == true)
                     litigationRequest.ExemptionReductionFileId = model.ExemptionReductionCategory.AttachmentId;
 
 
-                if (model.ExemptionReductionCategory.Id != Guid.Empty)
+                if (model.ExemptionReductionCategory.Id != Guid.Empty && model.ExemptionReductionCategory.IsExemptionReductionCategory == true)
                     litigationRequest.ExemptionReductionCategoryId = model.ExemptionReductionCategory.Id;
 
                 var lastCategoryId = litigationRequest.LitigationRequestCategoryId;

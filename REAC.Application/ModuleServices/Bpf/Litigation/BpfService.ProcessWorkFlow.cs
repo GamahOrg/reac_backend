@@ -186,7 +186,7 @@ namespace Bpf.Application.ModuleServices
                     }
                 }
                 //رسوم الصلح
-                if (litigationRequest.InternalStatusId == REAC.Domain.Shared.Enum.RequestStatus.LitigationFeesHaveBeenCollected && litigationRequest.LitigationRequestCategoryId != LitigationRequestCategory.Arbitration && litigationRequest.IsLitigationFeesHaveBeenCollected == true)
+                if (litigationRequest.InternalStatusId == REAC.Domain.Shared.Enum.RequestStatus.LitigationFeesHaveBeenCollected && litigationRequest.LitigationRequestCategoryId != LitigationRequestCategory.Arbitration && litigationRequest.IsLitigationFeesHaveBeenCollected == true && litigationRequest.IsExemptionReduction == false && processingLog.WorkFlowStep.WorkFlowStepEvents.Any(a=>a.EventName=="قبول"))
                 {
                     var reconciliationFees = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reconciliation_Fees).Result.Data?.Value;
                     var Administrative_ServiceId = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reconciliation_Fees_Billing).Result.Data?.Value;
@@ -323,7 +323,7 @@ namespace Bpf.Application.ModuleServices
                         LogMessage = processingLog.WorkFlowStep.WorkFlowStepEvents.Single().LogMessage + ((requestPayload.Notes != null) ? " - " + requestPayload.Notes : ""),
                         RequestId = requestPayload.RequestId
                     };
-                    processingLog.WorkFlowStep.WorkFlowStepEvents.Single().Translations?.ToList().ForEach(x =>
+                     processingLog.WorkFlowStep.WorkFlowStepEvents.Single().Translations?.ToList().ForEach(x =>
                     {
                         workFlowLog.Translations.Add(new WorkFlowLogTranslation()
                         {

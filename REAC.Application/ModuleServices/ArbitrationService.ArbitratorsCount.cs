@@ -102,11 +102,14 @@ namespace REAC.Application.ModuleServices
                         LogMessage = "تم تحديد عدد هيئة التحكيم النهائى" + arbitratorCountRequestPayload.ArbitratorCount + " محكم"
                     });
 
-                    #region اضافة فاتورة              
-                    var addInvoice = await AddInvoice(litigationRequest);
+                    #region اضافة فاتورة 
+                    if (litigationRequest.IsExemptionReduction == false)
+                    {
+                        var addInvoice = await AddInvoice(litigationRequest);
 
-                    if (!addInvoice.IsDone)
-                        return addInvoice;
+                        if (!addInvoice.IsDone)
+                            return addInvoice;
+                    }
                     #endregion
 
 
@@ -185,7 +188,7 @@ namespace REAC.Application.ModuleServices
             decimal arbitrationFees = default;
             if (litigationRequest.LitigationRequestAmount != null && litigationRequest.DisputeAmount != null)
             {
-                arbitrationFees = await CalculateArbitrationFees(litigationRequest.ArbitratorsCount.Value,litigationRequest.DisputeAmount.Value, litigationRequest.LitigationRequestAmount);
+                arbitrationFees = await CalculateArbitrationFees(litigationRequest.ArbitratorsCount.Value, litigationRequest.DisputeAmount.Value, litigationRequest.LitigationRequestAmount);
             }
             else
             {
@@ -226,7 +229,7 @@ namespace REAC.Application.ModuleServices
                 LogMessage = "تم انشاء فاتورة لسداد رسوم التحكيم"
             });
 
-            
+
             #endregion
 
             #region Add APGI Integration Invoice 
@@ -311,7 +314,7 @@ namespace REAC.Application.ModuleServices
             try
 
             {
-                
+
 
 
                 var apiUrl = _settingService.GetBySettingKey(SysSettingKeyConstants.CreateInvoice_URL).Result.Data?.Value;
@@ -354,7 +357,7 @@ namespace REAC.Application.ModuleServices
                     Email = litigation.ApplicantCitizen?.Email,
                     CaseNumber = "ACaseNu10XXX1",
                     CaseDescription = "Arbitration Fees",
-                    RefIdPltfrm = "A-"+litigation.RequestCode
+                    RefIdPltfrm = "A-" + litigation.RequestCode
                 };
 
 
@@ -557,7 +560,7 @@ namespace REAC.Application.ModuleServices
         }
 
 
-        public async Task<decimal> CalculateArbitrationFees(int arbitratorsCount,decimal disputeAmount, SysLitigationRequestAmount litigationRequestAmount)
+        public async Task<decimal> CalculateArbitrationFees(int arbitratorsCount, decimal disputeAmount, SysLitigationRequestAmount litigationRequestAmount)
         {
             decimal amount = 0;
 
@@ -573,11 +576,11 @@ namespace REAC.Application.ModuleServices
                     decimal exteraAmount = disputeAmount - (decimal)litigationRequestFees.ExtraAmount;
                     if (exteraAmount > 0)
                     {
-                        amount += exteraAmount * (litigationRequestFees.PercentageExtraAmount.Value/100);
+                        amount += exteraAmount * (litigationRequestFees.PercentageExtraAmount.Value / 100);
                     }
                 }
             }
-            
+
 
             return amount;
         }
