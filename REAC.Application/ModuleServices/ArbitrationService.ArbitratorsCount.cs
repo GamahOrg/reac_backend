@@ -109,59 +109,60 @@ namespace REAC.Application.ModuleServices
 
                         if (!addInvoice.IsDone)
                             return addInvoice;
-                    }
-                    #endregion
 
-
-
-                    var repositorySaveResponse = await _repository.SaveChangesAsync(new CancellationToken());
-                    if (!repositorySaveResponse.IsDone)
-                        return repositorySaveResponse;
-                    try
-                    {
-                        // Send Notification
-                        var arbitrationAdmin = await _sysEmployeeService.GetAdminsByDepartmentType(DepartmentType.Arbitration);
-                        if (arbitrationAdmin.IsDone && arbitrationAdmin.Data != null)
+                        try
                         {
-
-                            #region تم الإنتهاء من تحديد عدد المحكمين النهائي
-                            var msg = _settingService.GetBySettingKey(SysSettingKeyConstants.Arbitrators_Count_Added).Result.Data?.Value;
-                            msg = msg?.Replace("{LitigationCode}", litigationRequest.RequestCode);
-                            var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
-                            string body;
-                            using (StreamReader streamReader = File.OpenText(pathToFile))
+                            // Send Notification
+                            var arbitrationAdmin = await _sysEmployeeService.GetAdminsByDepartmentType(DepartmentType.Arbitration);
+                            if (arbitrationAdmin.IsDone && arbitrationAdmin.Data != null)
                             {
-                                body = await streamReader.ReadToEndAsync();
-                                body = body?.Replace("{content}", _settingService.GetBySettingKey(SysSettingKeyConstants.Arbitrators_Count_Added).Result.Data?.Value);
-                                body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
-                            }
-                            await SendNotification(litigationRequest, RequestType.LitigationRequest, arbitrationAdmin.Data, "عدد المحكمين النهائي", msg, body, true);
-                            #endregion
 
-
-                            #region ارسال اشعار بالفاتورة لسدادها
-                            var invoice_CreatedInvoiceMessage = _settingService.GetBySettingKey(SysSettingKeyConstants.Invoice_CreatedInvoiceMessage).Result.Data?.Value;
-                            if (!string.IsNullOrWhiteSpace(invoice_CreatedInvoiceMessage))
-                            {
-                                invoice_CreatedInvoiceMessage = invoice_CreatedInvoiceMessage?
-                                    .Replace("{LitigationCode}", litigationRequest.RequestCode)
-                                    .Replace("{InvoiceCode}", addInvoice.Data.InvoiceCode);
+                                #region تم الإنتهاء من تحديد عدد المحكمين النهائي
+                                var msg = _settingService.GetBySettingKey(SysSettingKeyConstants.Arbitrators_Count_Added).Result.Data?.Value;
+                                msg = msg?.Replace("{LitigationCode}", litigationRequest.RequestCode);
+                                var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                string body;
                                 using (StreamReader streamReader = File.OpenText(pathToFile))
                                 {
                                     body = await streamReader.ReadToEndAsync();
-                                    body = body?.Replace("{content}", _settingService.GetBySettingKey(SysSettingKeyConstants.Invoice_CreatedInvoiceMessage).Result.Data?.Value);
-                                    body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode).Replace("{InvoiceCode}", addInvoice.Data.InvoiceCode); ;
+                                    body = body?.Replace("{content}", _settingService.GetBySettingKey(SysSettingKeyConstants.Arbitrators_Count_Added).Result.Data?.Value);
+                                    body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
                                 }
-                                await SendNotification(litigationRequest, RequestType.Invoices, arbitrationAdmin.Data, "فاتورة رسوم التحكيم", invoice_CreatedInvoiceMessage, body, false);
+                                await SendNotification(litigationRequest, RequestType.LitigationRequest, arbitrationAdmin.Data, "عدد المحكمين النهائي", msg, body, true);
+                                #endregion
+
+
+                                #region ارسال اشعار بالفاتورة لسدادها
+                                var invoice_CreatedInvoiceMessage = _settingService.GetBySettingKey(SysSettingKeyConstants.Invoice_CreatedInvoiceMessage).Result.Data?.Value;
+                                if (!string.IsNullOrWhiteSpace(invoice_CreatedInvoiceMessage))
+                                {
+                                    invoice_CreatedInvoiceMessage = invoice_CreatedInvoiceMessage?
+                                        .Replace("{LitigationCode}", litigationRequest.RequestCode)
+                                        .Replace("{InvoiceCode}", addInvoice.Data.InvoiceCode);
+                                    using (StreamReader streamReader = File.OpenText(pathToFile))
+                                    {
+                                        body = await streamReader.ReadToEndAsync();
+                                        body = body?.Replace("{content}", _settingService.GetBySettingKey(SysSettingKeyConstants.Invoice_CreatedInvoiceMessage).Result.Data?.Value);
+                                        body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode).Replace("{InvoiceCode}", addInvoice.Data.InvoiceCode); ;
+                                    }
+                                    await SendNotification(litigationRequest, RequestType.Invoices, arbitrationAdmin.Data, "فاتورة رسوم التحكيم", invoice_CreatedInvoiceMessage, body, false);
+                                }
+                                #endregion
                             }
-                            #endregion
+                        }
+                        catch (Exception ex)
+                        {
+
                         }
                     }
-                    catch (Exception ex)
-                    {
-
-                    }
                 }
+                #endregion
+
+
+
+                var repositorySaveResponse = await _repository.SaveChangesAsync(new CancellationToken());
+                if (!repositorySaveResponse.IsDone)
+                    return repositorySaveResponse;
                 else
                 {
                     return new BaseResponse()
