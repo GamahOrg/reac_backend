@@ -13,6 +13,7 @@ using REAC.Domain.Shared.Enum;
 using REAC.EntityFrameworkCore.Entities.Litigation;
 using REAC.EntityFrameworkCore.Entities.System;
 using REAC.EntityFrameworkCore.Entities.Wpf.Business;
+using REAC.EntityFrameworkCore.Migrations;
 using System.Globalization;
 using System.Text;
 using System.Text.Json;
@@ -117,22 +118,9 @@ namespace REAC.Application.ModuleServices
                             if (arbitrationAdmin.IsDone && arbitrationAdmin.Data != null)
                             {
 
-                                #region تم الإنتهاء من تحديد عدد المحكمين النهائي
-                                var msg = _settingService.GetBySettingKey(SysSettingKeyConstants.Arbitrators_Count_Added).Result.Data?.Value;
-                                msg = msg?.Replace("{LitigationCode}", litigationRequest.RequestCode);
-                                var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
-                                string body;
-                                using (StreamReader streamReader = File.OpenText(pathToFile))
-                                {
-                                    body = await streamReader.ReadToEndAsync();
-                                    body = body?.Replace("{content}", _settingService.GetBySettingKey(SysSettingKeyConstants.Arbitrators_Count_Added).Result.Data?.Value);
-                                    body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
-                                }
-                                await SendNotification(litigationRequest, RequestType.LitigationRequest, arbitrationAdmin.Data, "عدد المحكمين النهائي", msg, body, true);
-                                #endregion
-
-
                                 #region ارسال اشعار بالفاتورة لسدادها
+                                string body;
+                                var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
                                 var invoice_CreatedInvoiceMessage = _settingService.GetBySettingKey(SysSettingKeyConstants.Invoice_CreatedInvoiceMessage).Result.Data?.Value;
                                 if (!string.IsNullOrWhiteSpace(invoice_CreatedInvoiceMessage))
                                 {
@@ -155,14 +143,39 @@ namespace REAC.Application.ModuleServices
 
                         }
                     }
+
+                    #endregion
+
+                    var repositorySaveResponse = await _repository.SaveChangesAsync(new CancellationToken());
+                    if (!repositorySaveResponse.IsDone)
+                        return repositorySaveResponse;
+                    try
+                    {
+                        // Send Notification
+                        var arbitrationAdmin = await _sysEmployeeService.GetAdminsByDepartmentType(DepartmentType.Arbitration);
+                        if (arbitrationAdmin.IsDone && arbitrationAdmin.Data != null)
+                        {
+
+                            #region تم الإنتهاء من تحديد عدد المحكمين النهائي
+                            var msg = _settingService.GetBySettingKey(SysSettingKeyConstants.Arbitrators_Count_Added).Result.Data?.Value;
+                            msg = msg?.Replace("{LitigationCode}", litigationRequest.RequestCode);
+                            var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                            string body;
+                            using (StreamReader streamReader = File.OpenText(pathToFile))
+                            {
+                                body = await streamReader.ReadToEndAsync();
+                                body = body?.Replace("{content}", _settingService.GetBySettingKey(SysSettingKeyConstants.Arbitrators_Count_Added).Result.Data?.Value);
+                                body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                            }
+                            await SendNotification(litigationRequest, RequestType.LitigationRequest, arbitrationAdmin.Data, "عدد المحكمين النهائي", msg, body, true);
+                            #endregion
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+
+                    }
                 }
-                #endregion
-
-
-
-                var repositorySaveResponse = await _repository.SaveChangesAsync(new CancellationToken());
-                if (!repositorySaveResponse.IsDone)
-                    return repositorySaveResponse;
                 else
                 {
                     return new BaseResponse()
@@ -171,6 +184,7 @@ namespace REAC.Application.ModuleServices
                         Message = "لا يمكن إضافة عدد المحكمين"
                     };
                 }
+                
             }
             catch (Exception ex)
             {
