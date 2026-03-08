@@ -184,7 +184,7 @@ namespace REAC.Application.ModuleServices
                         Message = "لا يمكن إضافة عدد المحكمين"
                     };
                 }
-                
+
             }
             catch (Exception ex)
             {
@@ -1210,16 +1210,14 @@ namespace REAC.Application.ModuleServices
 
             if (litigationRequest.FirstPartyArbitratorsCount.HasValue & litigationRequest.SecondPartyArbitratorsCount.HasValue)
             {
+                litigationRequest.ArbitratorsCount = litigationRequest.FirstPartyArbitratorsCount;
+                litigationRequest.LitigationRequestSubStage = LitigationRequestSubStage.LitigationRequestAddArbitratorListNomination;
+                litigationRequest.ArbitratorsCountDateTime = DateTime.Now;
 
-                if (litigationRequest.FirstPartyArbitratorsCount.Value == litigationRequest.SecondPartyArbitratorsCount.Value)
+                if (litigationRequest.FirstPartyArbitratorsCount.Value == litigationRequest.SecondPartyArbitratorsCount.Value && litigationRequest.IsExemptionReduction == false)
                 {
-                    litigationRequest.ArbitratorsCount = litigationRequest.FirstPartyArbitratorsCount;
-                    litigationRequest.LitigationRequestSubStage = LitigationRequestSubStage.LitigationRequestAddArbitratorListNomination;
-                    litigationRequest.ArbitratorsCountDateTime = DateTime.Now;
-
                     litigationRequest.ExternalStatusId = RequestStatus.CollectionOfArbitrationFeesRequestIsBeingSent;
                     litigationRequest.InternalStatusId = RequestStatus.CollectionOfArbitrationFeesRequestIsBeingSent;
-
 
                     #region اضافة فاتورة              
                     var addInvoice = await AddInvoice(litigationRequest);

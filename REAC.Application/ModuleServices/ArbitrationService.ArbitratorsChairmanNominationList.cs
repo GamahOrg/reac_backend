@@ -828,9 +828,9 @@ namespace REAC.Application.ModuleServices
                     litigationRequestMircoDto.RequestCode = litigationRequest.RequestCode;
                     litigationRequestMircoDto.Status = litigationRequest.ExternalStatus.RequestStatus;
 
-                    litigationRequestMircoDto.FirstPartyName = (litigationRequest.Contract.FirstPartyCitizen == null) ? litigationRequest.Contract.FirstPartyFacility.ArabicFacilityName : litigationRequest.Contract.FirstPartyCitizen.FullName;
-                    litigationRequestMircoDto.SecondPartyName = (litigationRequest.DefendantCitizen == null) ? litigationRequest.DefendantFacility.ArabicFacilityName : litigationRequest.DefendantCitizen.FullName;
-                    litigationRequestMircoDto.RequestTypeName = litigationRequest.Contract.LitigationRequestContractType.TypeName;
+                    litigationRequestMircoDto.FirstPartyName = (litigationRequest.Contract?.FirstPartyCitizen == null) ? litigationRequest.Contract?.FirstPartyFacility?.ArabicFacilityName : litigationRequest.Contract?.FirstPartyCitizen?.FullName;
+                    litigationRequestMircoDto.SecondPartyName = (litigationRequest.DefendantCitizen == null) ? litigationRequest.DefendantFacility?.ArabicFacilityName : litigationRequest.DefendantCitizen?.FullName;
+                    litigationRequestMircoDto.RequestTypeName = litigationRequest.Contract?.LitigationRequestContractType.TypeName;
 
                     if (litigationRequest.LitigationRequestArbitratorsChairmanNominationLists
                         .Where(x => x.LitigationRequestArbitratorsChairmanNominationListValues.Count(x => x.ArbitratorCitizenId == referenceId) > 0).Count() > 0)
