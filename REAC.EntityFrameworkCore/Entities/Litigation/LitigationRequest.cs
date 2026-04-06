@@ -314,6 +314,8 @@ public partial class LitigationRequest : BaseEntity<Guid>
     public virtual ICollection<LitigationRequestExtendPeriodRequest> LitigationRequestExtendPeriodRequests { get; set; } = new List<LitigationRequestExtendPeriodRequest>();
     public virtual ICollection<LitigationRequestArbitrationReport> LitigationRequestArbitrationReports { get; set; } = new List<LitigationRequestArbitrationReport>();
     public virtual ICollection<LitigationRequestArbitratorRecusalRequest> LitigationRequestArbitratorRecusalRequests { get; set; } = new List<LitigationRequestArbitratorRecusalRequest>();
+    public virtual ICollection<LitigationRequestArbitrationCorrectionRequest> LitigationRequestArbitrationCorrectionRequests { get; set; } = new List<LitigationRequestArbitrationCorrectionRequest>();
+    public virtual ICollection<LitigationRequestReopenLog> LitigationRequestReopenLogs { get; set; } = new List<LitigationRequestReopenLog>();
 
     public virtual ICollection<LitigationRequestGround> LitigationRequestGrounds { get; set; } = new List<LitigationRequestGround>();
 

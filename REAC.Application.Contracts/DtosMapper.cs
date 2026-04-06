@@ -7,6 +7,7 @@ using REAC.Application.Contracts.Dtos.Delegator;
 using REAC.Application.Contracts.Dtos.Facility;
 using REAC.Application.Contracts.Dtos.Integration.Nafath;
 using REAC.Application.Contracts.Dtos.Litigation;
+using REAC.Application.Contracts.Dtos.Litigation.Rating;
 using REAC.Application.Contracts.Dtos.Notification;
 using REAC.Application.Contracts.Dtos.Reconciliation;
 using REAC.Application.Contracts.Dtos.Session;
@@ -206,6 +207,7 @@ namespace REAC.Application.Contracts
                     .ForMember(dest => dest.AreaName, opt => opt.MapFrom(src => src.Area.AreaName))
                     .ForMember(dest => dest.CityName, opt => opt.MapFrom(src => src.City.CityName))
                 .ReverseMap();
+            CreateMap<BeneficiarySatisfactionSurvey, BeneficiarySatisfactionSurveyDto>().ReverseMap();
             CreateMap<CitizenBankAccount, CitizenBankAccountCreateUpdateDto>().ReverseMap();
             CreateMap<LitigationRequestContract, LitigationRequestContractShortDto>().ReverseMap();
             CreateMap<SysNotification, SysNotificationCreateUpdateDto>().ReverseMap();

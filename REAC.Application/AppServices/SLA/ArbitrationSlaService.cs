@@ -54,6 +54,7 @@ namespace REAC.Application.AppServices.SLA
                              .ThenInclude(x => x.WorkFlowStep)
                              .Include(x => x.WorkFlowProcessingLogs)
                              .ThenInclude(x => x.Employee)
+                             .Include(x => x.LitigationRequestReopenLogs)
                              .Include(x => x.Contract)
                              .Include(x => x.Contract.FirstPartyFacility).ThenInclude(x => x.Citizen)
                              .Include(x => x.Contract.FirstPartyCitizen)
@@ -136,7 +137,7 @@ namespace REAC.Application.AppServices.SLA
                                     double totalReviewHours = 0;
                                     totalReviewHours = (DateTime.Now - (DateTime)litigationRequest.ArbitratorsCountDateTime).TotalHours;
 
-                                    if (totalReviewHours >= secondReminderForApplicantToPayLitigationRequestArbitrationFeesPeriod)
+                                    if (totalReviewHours >= secondReminderForApplicantToPayLitigationRequestArbitrationFeesPeriod && !litigationRequest.LitigationRequestReopenLogs.Any())
                                     {
 
                                         litigationRequest.InternalStatusId = RequestStatus.Cancelled;

@@ -473,7 +473,7 @@ namespace REAC.Application.ModuleServices
                             emails.Add(litigationRequest.Contract.SecondPartyFacility.Citizen.Email);
                             recipients.Add(litigationRequest.Contract.SecondPartyFacility.Citizen.Mobile);
                         };
-                        _notificationService.SendNotifications(new Contracts.Dtos.Notification.SendEmailDto()
+                        await _notificationService.SendNotifications(new Contracts.Dtos.Notification.SendEmailDto()
                         {
                             To = emails,
                             Subject = "الرد علي طلب مد مدة التحكيم",
@@ -601,8 +601,8 @@ namespace REAC.Application.ModuleServices
                          .Include(x => x.Contract.FirstPartyCitizen)
                          .Include(x => x.Contract.SecondPartyFacility)
                          .Include(x => x.Contract.SecondPartyCitizen)
-                         .Include(x => x.Contract.LitigationRequestContractType).AsNoTracking()
-                         .Where(x => x.Id == requestId).ToList().FirstOrDefault();
+                         .Include(x => x.Contract.LitigationRequestContractType) .AsSplitQuery().AsNoTracking()
+                         .Where(x => x.Id == requestId).FirstOrDefault();
 
             var request = _mapper.Map<LitigationRequestShortDto>(litigationRequest);
 

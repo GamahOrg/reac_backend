@@ -75,6 +75,7 @@ namespace REAC.Application.ModuleServices
         Task<BaseResponse> AddArbitrationReport(WritingArbitrationReportRequestPayload requestPayload, CancellationToken cancellationToken);
         Task<BaseResponse> GetLitigationRequestForReport(Guid requestId, CancellationToken cancellationToken);
         Task<BaseResponse> GetLitigationRequestForReport(int pageIndex, int pageSize, CancellationToken cancellationToken);
+        Task<BaseResponse> GetLitigationRequestForReportForAdmin(LitigationRequestReportAdminFilterDto filter, CancellationToken cancellationToken);
         Task<BaseResponse> CallNafathForArbitrationReport(Guid requestId, ApproveRejectStatus agreementRequestStatus);
         #endregion
 
@@ -130,6 +131,14 @@ namespace REAC.Application.ModuleServices
         Task<BaseResponse> GetAllArbitrationLitigationRequest(int pageIndex, int pageSize, CancellationToken cancellationToken);
 
         Task<BaseResponse> ReNotifyPartiesToSelectArbitrators(Guid litigationRequestId);
+
+        #region CorrectionRequest
+        Task<BaseResponse> AddArbitrationCorrectionRequest(LitigationRequestArbitrationCorrectionRequestCreateDto requestPayload, CancellationToken cancellationToken);
+        Task<BaseResponse> GetArbitrationCorrectionRequestsForCitizen(int pageIndex, int pageSize, CancellationToken cancellationToken);
+        Task<BaseResponse> GetArbitrationCorrectionRequestById(Guid litigationRequestId, CancellationToken cancellationToken);
+        Task<BaseResponse> AddArbitrationCorrectionRequestResponse(LitigationRequestArbitrationCorrectionRequestResponseDto requestPayload, CancellationToken cancellationToken);
+        Task<BaseResponse> GetArbitrationCorrectionRequestsForArbitrator(int pageIndex, int pageSize, CancellationToken cancellationToken);
+        #endregion
     }
 
     public partial class ArbitrationService : IArbitrationService

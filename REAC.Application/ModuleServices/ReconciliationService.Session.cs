@@ -331,6 +331,7 @@ namespace REAC.Application.ModuleServices
                         LitigationRequestSessionRequestTypeId = LitigationRequestSessionRequestType.Reconciliation,
                         SessionUrl = sessionUrl,
                         MeetingId = _zoomMeeting?.id,
+                        SessionTypeId = requestPayload.SessionTypeId,
                     };
 
 

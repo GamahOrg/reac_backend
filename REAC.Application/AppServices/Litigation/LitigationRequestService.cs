@@ -283,15 +283,14 @@ namespace REAC.Application.AppServices.Litigation
                     }
                 }
 
-
-
-
-
                 var saveResponse = _repository.SaveChangesAsync().Result;
                 if (!saveResponse.IsDone)
                     return saveResponse;
                 var _bpfService = _serviceProvider.GetRequiredService<IBpfService>();
                 var _stepService = _serviceProvider.GetRequiredService<IWorkFlowStepService>();
+                model.Id = (await _repository.GetQueryable<LitigationRequest, Guid>())
+                          .Include(x => x.Contract)
+                          .FirstOrDefault(x => x.Contract.Id == model.ContractId)?.Id ?? new Guid();
                 if (model.IsSent)
                 {
 
@@ -444,7 +443,9 @@ namespace REAC.Application.AppServices.Litigation
                         Message = "0844444444"
                     };
                 }
-
+                model.Id = (await _repository.GetQueryable<LitigationRequest, Guid>())
+                          .Include(x => x.Contract)
+                          .FirstOrDefault(x => x.Contract.Id == model.ContractId)?.Id??new Guid();
                 return new DataResponse<LitigationCreateUpdateDto>()
                 {
                     Data = model,
@@ -571,10 +572,24 @@ namespace REAC.Application.AppServices.Litigation
                     var currentProcessingLog = processingLog.Where(t => t.IsFinished == false).OrderBy(t => t.CreatedOn).ToList();
                     if (processingLog.Count > 0)
                     {
+                        var lastLog = currentProcessingLog.LastOrDefault();
+                        var stepEvent = lastLog?.WorkFlowStep?.WorkFlowStepEvents?.FirstOrDefault();
+
                         ProcessRequestPayload processRequestPayload = new ProcessRequestPayload();
+                        if (lastLog != null || stepEvent != null)  // Fix 2: null check
+                        {
+                            //return new ExceptionResponse()
+                            //{
+                            //    Exception = "لا توجد بيانات خطوات سير العمل المطلوبة",
+                            //    IsDone = false,
+                            //};
+                            processRequestPayload.ProcessingLogId = lastLog.Id;
+                            processRequestPayload.WorkflowStepEventId = stepEvent.Id;
+                        }
+
                         processRequestPayload.RequestId = litigationRequest.Id;
-                        processRequestPayload.ProcessingLogId = currentProcessingLog.LastOrDefault().Id;
-                        processRequestPayload.WorkflowStepEventId = currentProcessingLog.LastOrDefault().WorkFlowStep.WorkFlowStepEvents.FirstOrDefault().Id;
+                        processRequestPayload.ProcessingLogId = lastLog.Id;
+                        processRequestPayload.WorkflowStepEventId = stepEvent.Id;
                         processRequestPayload.Notes = "";
                         processRequestPayload.UploadedFilesIds = new List<Guid>();
                         await _bpfService.ProcessWorkFlow(processRequestPayload, default);
@@ -991,11 +1006,11 @@ namespace REAC.Application.AppServices.Litigation
                     litigationRequestMircoDto.Id = litigationRequest.Id;
                     litigationRequestMircoDto.RequestDate = litigationRequest.CreatedOn;
                     litigationRequestMircoDto.RequestCode = litigationRequest.RequestCode;
-                    litigationRequestMircoDto.FirstPartyName = (litigationRequest.Contract.FirstPartyCitizen == null) ? litigationRequest.Contract.FirstPartyFacility.ArabicFacilityName : litigationRequest.Contract.FirstPartyCitizen.FullName;
-                    litigationRequestMircoDto.SecondPartyName = (litigationRequest.Contract.SecondPartyCitizen == null) ? litigationRequest.Contract.SecondPartyFacility.ArabicFacilityName : litigationRequest.Contract.SecondPartyCitizen.FullName;
-                    litigationRequestMircoDto.RequestTypeName = litigationRequest.Contract.LitigationRequestContractType.TypeName;
-                    litigationRequestMircoDto.EmployeeId = litigationRequest.WorkFlowProcessingLogs.First(z => z.EmployeeId != null).EmployeeId;
-                    litigationRequestMircoDto.EmployeeName = litigationRequest.WorkFlowProcessingLogs.First(z => z.EmployeeId != null).Employee.EmployeeName;
+                    litigationRequestMircoDto.FirstPartyName = (litigationRequest.Contract.FirstPartyCitizen == null) ? litigationRequest.Contract.FirstPartyFacility.ArabicFacilityName : litigationRequest.Contract.FirstPartyCitizen?.FullName;
+                    litigationRequestMircoDto.SecondPartyName = (litigationRequest.Contract.SecondPartyCitizen == null) ? litigationRequest.Contract.SecondPartyFacility.ArabicFacilityName : litigationRequest.Contract.SecondPartyCitizen?.FullName;
+                    litigationRequestMircoDto.RequestTypeName = litigationRequest.Contract.LitigationRequestContractType?.TypeName;
+                    litigationRequestMircoDto.EmployeeId = litigationRequest.WorkFlowProcessingLogs?.FirstOrDefault(z => z.EmployeeId != null)?.EmployeeId;
+                    litigationRequestMircoDto.EmployeeName = litigationRequest.WorkFlowProcessingLogs?.FirstOrDefault(z => z.EmployeeId != null)?.Employee?.EmployeeName;
                     litigationRequestMircoDtos.Add(litigationRequestMircoDto);
                 }
             }
@@ -1065,14 +1080,7 @@ namespace REAC.Application.AppServices.Litigation
                           .Include(x => x.WorkFlowProcessingLogs.Where(z => z.RequestId == assignRequestPayload.RequestId && !z.IsFinished))
                           .FirstOrDefault(x => x.Id == assignRequestPayload.RequestId);
             var deptAdminInfoReview = await _employeeService.GetAdminsByDepartmentType(DepartmentType.Review);
-            var deptEmployeeInfoReview = (await _repository.GetQueryable<SysEmployee, Guid>())
-                             .Include(e => e.Department)
-                             .Where(x => x.Department.DepartmentType == DepartmentType.Review & x.IsAdmin == false && x.Id == litigationRequest.WorkFlowProcessingLogs.First().EmployeeId)
-                             .FirstOrDefault();
-            var deptNewEmployeeInfoReview = (await _repository.GetQueryable<SysEmployee, Guid>())
-                             .Include(e => e.Department)
-                             .Where(x => x.Department.DepartmentType == DepartmentType.Review & x.IsAdmin == false & x.Id == assignRequestPayload.EmployeeId)
-                             .FirstOrDefault();
+           
             try
             {
                 Guid referenceId = Guid.Empty;
@@ -1102,7 +1110,7 @@ namespace REAC.Application.AppServices.Litigation
                     };
 
                 litigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>())?
-                      .Where(x => x.Id == assignRequestPayload.RequestId).Single();
+                      .Where(x => x.Id == assignRequestPayload.RequestId).SingleOrDefault();
 
                 if (litigationRequest == null)
                     return new BaseResponse()
@@ -1164,6 +1172,14 @@ namespace REAC.Application.AppServices.Litigation
                         if (!saveResponse.IsDone)
                             return saveResponse;
 
+                        var deptEmployeeInfoReview = (await _repository.GetQueryable<SysEmployee, Guid>())
+                            .Include(e => e.Department)
+                            .Where(x => x.Department.DepartmentType == DepartmentType.Review & x.IsAdmin == false && x.Id == litigationRequest.WorkFlowProcessingLogs.First().EmployeeId)
+                            .FirstOrDefault();
+                        var deptNewEmployeeInfoReview = (await _repository.GetQueryable<SysEmployee, Guid>())
+                                         .Include(e => e.Department)
+                                         .Where(x => x.Department.DepartmentType == DepartmentType.Review & x.IsAdmin == false & x.Id == assignRequestPayload.EmployeeId)
+                                         .FirstOrDefault();
                         // Send Notification
                         // تم إلغاء المهمة (دعوى تدقيق)
                         if (deptEmployeeInfoReview is not null)
