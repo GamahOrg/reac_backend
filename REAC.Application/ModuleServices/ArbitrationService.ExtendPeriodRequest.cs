@@ -156,7 +156,7 @@ namespace REAC.Application.ModuleServices
                         ActorId = (Guid)arbitrationAdmin.Data?.Id,
                         RequestId=litigationRequest.Id,
                         CreatedOn= DateTime.Now,
-                        RequestTypeId=RequestType.LitigationRequest,
+                        RequestTypeId=RequestType.ArbitratorTaskrequests,
                         ActorTypeId=NotificationActorType.Employee,
                         Message=msg
                         }
@@ -172,6 +172,24 @@ namespace REAC.Application.ModuleServices
                                 litigationRequest.ApplicantCitizen.Mobile,
                                   arbitrationAdmin.Data?.Mobile
                             };
+                            //مدير ادارة 
+                            if (arbitrationAdmin is not null)
+                            {
+                                emails.Add(arbitrationAdmin?.Data?.Email);
+                                recipients.Add(arbitrationAdmin?.Data?.Mobile);
+
+                                notifications.Add(new Contracts.Dtos.Notification.SysNotificationDto()
+                                {
+                                    ActorId = arbitrationAdmin.Data.Id,
+                                    CreatedOn = DateTime.Now,
+                                    ActorTypeId = NotificationActorType.Employee,
+                                    IsViewed = false,
+                                    ViewedOn = null,
+                                    RequestId = litigationRequest.Id,
+                                    RequestTypeId = RequestType.ArbitratorTaskrequests,
+                                    Message = msg,
+                                });
+                            }
                             if (litigationRequest?.Contract?.FirstPartyCitizenId != null && litigationRequest?.Contract?.FirstPartyCitizenId != litigationRequest.ApplicantCitizenId)
                             {
                                 notifications.Add(new SysNotificationDto
@@ -601,6 +619,7 @@ namespace REAC.Application.ModuleServices
                          .Include(x => x.Contract.FirstPartyCitizen)
                          .Include(x => x.Contract.SecondPartyFacility)
                          .Include(x => x.Contract.SecondPartyCitizen)
+                         .Where(x => x.LitigationRequestExtendPeriodRequests.Any(s => s.LitigationRequestExtendPeriodRequestTypeId == LitigationRequestExtendPeriodRequestType.Arbitration))
                          .Include(x => x.Contract.LitigationRequestContractType) .AsSplitQuery().AsNoTracking()
                          .Where(x => x.Id == requestId).FirstOrDefault();
 
@@ -733,8 +752,20 @@ namespace REAC.Application.ModuleServices
                     if (allowAdd)
                         litigationRequestMircoDto.IsDone = "--";
                     else
+                    {
                         litigationRequestMircoDto.IsDone = "تم";
+                        var extendPeriodRequest = litigationRequest?.LitigationRequestExtendPeriodRequests
+                       ?.FirstOrDefault(x => x.LitigationRequestExtendPeriodRequestTypeId == LitigationRequestExtendPeriodRequestType.Arbitration);
 
+                        if (extendPeriodRequest == null)
+                            litigationRequestMircoDto.IsDone = "";
+                        else if (extendPeriodRequest.LitigationRequestExtendPeriodRequestStatusId == null)
+                            litigationRequestMircoDto.IsDone = "تحت المراجعة";
+                        else if (extendPeriodRequest.LitigationRequestExtendPeriodRequestStatusId == LitigationRequestExtendPeriodRequestStatus.Approve)
+                            litigationRequestMircoDto.IsDone = "مقبول";
+                        else if (extendPeriodRequest.LitigationRequestExtendPeriodRequestStatusId == LitigationRequestExtendPeriodRequestStatus.Reject)
+                            litigationRequestMircoDto.IsDone = "مرفوض";
+                    }
                     litigationRequestMircoDto.Status = litigationRequest.InternalStatus.RequestStatus;
                     litigationRequestMircoDtos.Add(litigationRequestMircoDto);
 
@@ -844,7 +875,20 @@ namespace REAC.Application.ModuleServices
                     if (allowAdd)
                         litigationRequestMircoDto.IsDone = "--";
                     else
+                    {
                         litigationRequestMircoDto.IsDone = "تم";
+                        var extendPeriodRequest = litigationRequest?.LitigationRequestExtendPeriodRequests
+                       ?.FirstOrDefault(x => x.LitigationRequestExtendPeriodRequestTypeId == LitigationRequestExtendPeriodRequestType.Arbitration);
+
+                        if (extendPeriodRequest == null)
+                            litigationRequestMircoDto.IsDone = "";
+                        else if (extendPeriodRequest.LitigationRequestExtendPeriodRequestStatusId == null)
+                            litigationRequestMircoDto.IsDone = "تحت المراجعة";
+                        else if (extendPeriodRequest.LitigationRequestExtendPeriodRequestStatusId == LitigationRequestExtendPeriodRequestStatus.Approve)
+                            litigationRequestMircoDto.IsDone = "مقبول";
+                        else if (extendPeriodRequest.LitigationRequestExtendPeriodRequestStatusId == LitigationRequestExtendPeriodRequestStatus.Reject)
+                            litigationRequestMircoDto.IsDone = "مرفوض";
+                    }
 
                     litigationRequestMircoDto.Status = litigationRequest?.InternalStatus?.RequestStatus;
                     litigationRequestMircoDtos.Add(litigationRequestMircoDto);

@@ -500,9 +500,10 @@ namespace REAC.Application.AppServices.Litigation
                         {
                             int reconciliationPeriod = 0;
                             int.TryParse(_sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reconciliation_Period).Result.Data?.Value, out reconciliationPeriod);
-
+                            int ExtendDays = item.LitigationRequest.LitigationRequestExtendPeriodRequests.LastOrDefault()?.RequiredDays ?? 0;
                             int daysPassed = (DateTime.Now - (DateTime)item.RequestOn).Days;
-                            item.LitigationRequest.ReconciliationPeriod = Math.Max(0, reconciliationPeriod - daysPassed);
+                            int calculatedPeriod = ((reconciliationPeriod + ExtendDays) - daysPassed);
+                            item.LitigationRequest.ReconciliationPeriod = Math.Max(0, calculatedPeriod);
 
                             CustomLitigationRequestMircoDto litigationRequestMircoDto = new CustomLitigationRequestMircoDto
                             {

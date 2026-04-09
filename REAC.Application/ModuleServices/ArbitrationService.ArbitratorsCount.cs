@@ -353,7 +353,7 @@ namespace REAC.Application.ModuleServices
                     {
                         ServiceID = int.Parse(serviceId),
                         //Price = (int)decimal.Parse(fees.Replace('٫', ','), new CultureInfo("de-DE")),
-                        Price = int.Parse(fees) ,
+                        Price = ParseFees(fees) ,
                         Quantity = 1
                     },
                     //new InvoiceTransactionDto
@@ -452,6 +452,35 @@ namespace REAC.Application.ModuleServices
                      });
                 return new DataResponse<InvoiceDataDto>() { Data = null, IsDone = false };
             }
+        }
+        private static int ParseFees(string fees)
+        {
+            if (string.IsNullOrWhiteSpace(fees))
+                return 0;
+
+            // Remove currency symbols, spaces, and Arabic/Persian characters
+            var cleaned = fees
+                .Replace(" ", "")
+                .Replace("ر.س", "")
+                .Replace("SAR", "")
+                .Replace("٫", ".")   // Arabic decimal separator
+                .Replace("،", "")    // Arabic comma
+                .Replace(",", ".");   // Normalize all to dot
+
+            // Handle cases like "800.000.00" (thousand separator + decimal)
+            var dotCount = cleaned.Count(c => c == '.');
+            if (dotCount > 1)
+            {
+                // Last dot is decimal, rest are thousand separators
+                var lastDot = cleaned.LastIndexOf('.');
+                cleaned = cleaned.Substring(0, lastDot).Replace(".", "")
+                        + cleaned.Substring(lastDot);
+            }
+
+            if (decimal.TryParse(cleaned, NumberStyles.Any, CultureInfo.InvariantCulture, out var result))
+                return (int)result;
+
+            throw new ArgumentException($"Cannot parse fees value: '{fees}'");
         }
         #endregion
 

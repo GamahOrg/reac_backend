@@ -32,7 +32,7 @@ namespace REAC.Application.ModuleServices
                 var litigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>())?
                         .Include(x => x.LitigationRequestArbitrationReports)
                         .Include(x => x.LitigationRequestArbitratorAssigningRequests)
-                        .ThenInclude(x=>x.ArbitratorCitizen)
+                        .ThenInclude(x => x.ArbitratorCitizen)
                         .Include(x => x.ArbitratorCitizen)
                         .Include(x => x.ApplicantCitizen)
                     .Include(x => x.Contract)
@@ -251,7 +251,7 @@ namespace REAC.Application.ModuleServices
                                     recipients.Add(arbitrator.ArbitratorCitizen.Mobile);
                                 }
                                 emails = emails.Where(e => e != null).ToList();
-                                recipients= recipients.Where(r => r != null).ToList();
+                                recipients = recipients.Where(r => r != null).ToList();
                                 await _notificationService.SendNotifications(new Contracts.Dtos.Notification.SendEmailDto()
                                 {
                                     To = emails,
@@ -392,17 +392,17 @@ namespace REAC.Application.ModuleServices
                          .Include(x => x.Contract.LitigationRequestContractType)
                          .Include(x => x.LitigationRequestInvoice)
                          .Where(x => x.Id == requestId
-                      //   & x.ArbitratorCitizenId == referenceId
-                      //   | arbitrationAdmin.Data.Id == referenceId
-                      //   | x.ApplicantCitizenId == referenceId & x.Id == requestId
-                      //|
-                      //x.Contract.FirstPartyCitizenId == referenceId & x.Id == requestId
-                      //|
-                      //  x.Contract.SecondPartyCitizenId == referenceId & x.Id == requestId
-                      //|
-                      // x.Contract.FirstPartyFacility.CitizenId == referenceId & x.Id == requestId
-                      //|
-                      //x.Contract.SecondPartyFacility.CitizenId == referenceId & x.Id == requestId
+                         //   & x.ArbitratorCitizenId == referenceId
+                         //   | arbitrationAdmin.Data.Id == referenceId
+                         //   | x.ApplicantCitizenId == referenceId & x.Id == requestId
+                         //|
+                         //x.Contract.FirstPartyCitizenId == referenceId & x.Id == requestId
+                         //|
+                         //  x.Contract.SecondPartyCitizenId == referenceId & x.Id == requestId
+                         //|
+                         // x.Contract.FirstPartyFacility.CitizenId == referenceId & x.Id == requestId
+                         //|
+                         //x.Contract.SecondPartyFacility.CitizenId == referenceId & x.Id == requestId
                          ).AsNoTracking().ToList().FirstOrDefault();
 
             if (litigationRequest == null)
@@ -426,15 +426,18 @@ namespace REAC.Application.ModuleServices
                 request.LitigationRequestAmount = new SysLitigationRequestAmountCreateUpdateDto()
                 {
                     Fees = MinRequestAmount.LitigationRequestFees.FirstOrDefault().ArbitrationFees,
-                    
+
                 };
             }
             if (!string.IsNullOrEmpty(litigationRequest.ArbitratorCitizen?.SigntureFile?.FilePath))
             {
                 string inputFilePath = Path.Combine(Directory.GetCurrentDirectory(), litigationRequest.ArbitratorCitizen?.SigntureFile?.FilePath);
                 // Read file and convert to Base64
-                byte[] fileBytes = File.ReadAllBytes(inputFilePath);
-                base64String = Convert.ToBase64String(fileBytes);
+                if (!string.IsNullOrEmpty(inputFilePath))
+                {
+                    byte[] fileBytes = File.ReadAllBytes(inputFilePath);
+                    base64String = Convert.ToBase64String(fileBytes);
+                }
             }
             if (request != null && !string.IsNullOrEmpty(base64String))
             {
@@ -641,7 +644,7 @@ namespace REAC.Application.ModuleServices
             var query = entitiesQuerable.Where(x =>
                 x.RequestCode != null
                 & x.LitigationRequestStage == LitigationRequestStage.Arbitration
-                &( x.InternalStatusId == RequestStatus.JudgmentDecisionIssued || x.InternalStatusId == RequestStatus.WaitingForArbitratorsApproval)
+                & (x.InternalStatusId == RequestStatus.JudgmentDecisionIssued || x.InternalStatusId == RequestStatus.WaitingForArbitratorsApproval)
                 & x.LitigationRequestCategoryId != LitigationRequestCategory.Reconciliation);
 
             // البحث برقم الدعوى

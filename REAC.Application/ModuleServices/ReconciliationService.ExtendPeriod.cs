@@ -364,7 +364,7 @@ namespace REAC.Application.ModuleServices
                          .Include(x => x.Area)
                          .Include(x => x.LitigationRequestCategory)
                          .Include(x => x.City)
-                         .Include(x => x.LitigationRequestExtendPeriodRequests)
+                         .Include(x => x.LitigationRequestExtendPeriodRequests.Where(x => x.LitigationRequestExtendPeriodRequestTypeId == LitigationRequestExtendPeriodRequestType.Reconciliation))
                          .ThenInclude(x => x.LitigationRequestExtendPeriodRequestFiles)
                          .ThenInclude(x => x.FileManager)
                          .Include(x => x.ApplicantCitizen)
@@ -386,6 +386,7 @@ namespace REAC.Application.ModuleServices
                          .Include(x => x.Contract.SecondPartyFacility)
                          .Include(x => x.Contract.SecondPartyCitizen)
                          .Include(x => x.Contract.LitigationRequestContractType)
+                         .Where(x => x.LitigationRequestExtendPeriodRequests.Any(s=>s.LitigationRequestExtendPeriodRequestTypeId == LitigationRequestExtendPeriodRequestType.Reconciliation))
                          .Where(x => x.Id == requestId).ToList().FirstOrDefault();
 
             var request = _mapper.Map<LitigationRequestShortDto>(litigationRequest);
@@ -527,7 +528,7 @@ namespace REAC.Application.ModuleServices
             PagedResult<LitigationRequest> litigationRequests = null;
 
             var entitiesQuerable = (await _repository.GetQueryable<LitigationRequest, Guid>())
-                                  .Include(x => x.LitigationRequestExtendPeriodRequests)
+                                  .Include(x => x.LitigationRequestExtendPeriodRequests.Where(x => x.LitigationRequestExtendPeriodRequestTypeId == LitigationRequestExtendPeriodRequestType.Reconciliation))
                                       .ThenInclude(x => x.LitigationRequestExtendPeriodRequestFiles)
                                       .ThenInclude(x => x.FileManager)
                                       .Include(x => x.ApplicantCitizen)
@@ -548,7 +549,8 @@ namespace REAC.Application.ModuleServices
                                       .Include(x => x.Contract.FirstPartyFacility)
                                       .Include(x => x.Contract.FirstPartyCitizen)
                                       .Include(x => x.Contract.SecondPartyFacility)
-                                      .Include(x => x.Contract.SecondPartyCitizen).Include(x => x.Contract.LitigationRequestContractType);
+                                      .Include(x => x.Contract.SecondPartyCitizen).Include(x => x.Contract.LitigationRequestContractType)
+                                      .Where(x => x.LitigationRequestExtendPeriodRequests.Any(s => s.LitigationRequestExtendPeriodRequestTypeId == LitigationRequestExtendPeriodRequestType.Reconciliation));
 
 
             litigationRequests = entitiesQuerable.Where(x => x.RequestCode != null & x.InternalStatusId != RequestStatus.Rejected & x.LitigationRequestExtendPeriodRequests.Count() > 0)
@@ -725,7 +727,20 @@ namespace REAC.Application.ModuleServices
                     if (allowAdd)
                         litigationRequestMircoDto.IsDone = "--";
                     else
+                    {
                         litigationRequestMircoDto.IsDone = "تم";
+                        var extendPeriodRequest = litigationRequest?.LitigationRequestExtendPeriodRequests
+                       ?.FirstOrDefault(x => x.LitigationRequestExtendPeriodRequestTypeId == LitigationRequestExtendPeriodRequestType.Reconciliation);
+
+                        if (extendPeriodRequest == null)
+                            litigationRequestMircoDto.IsDone = "";
+                        else if (extendPeriodRequest.LitigationRequestExtendPeriodRequestStatusId == null)
+                            litigationRequestMircoDto.IsDone = "تحت المراجعة";
+                        else if (extendPeriodRequest.LitigationRequestExtendPeriodRequestStatusId == LitigationRequestExtendPeriodRequestStatus.Approve)
+                            litigationRequestMircoDto.IsDone = "مقبول";
+                        else if (extendPeriodRequest.LitigationRequestExtendPeriodRequestStatusId == LitigationRequestExtendPeriodRequestStatus.Reject)
+                            litigationRequestMircoDto.IsDone = "مرفوض";
+                    }
 
                     litigationRequestMircoDto.Status = litigationRequest?.InternalStatus?.RequestStatus;
                     litigationRequestMircoDtos.Add(litigationRequestMircoDto);
