@@ -1,4 +1,4 @@
-﻿using Core.GenericRepository.Shared.Pagging;
+using Core.GenericRepository.Shared.Pagging;
 using Core.Shared.Responses;
 using Microsoft.EntityFrameworkCore;
 using REAC.Application.Contracts.Dtos.Arbitration;
@@ -863,148 +863,153 @@ namespace REAC.Application.ModuleServices
                 IsDone = true
             };
         }
-        public async Task<BaseResponse> GetCitizenLitigationRequestForArbitratorsChairmanNominationListReply(Guid requestId)
+           public async Task<BaseResponse> GetCitizenLitigationRequestForArbitratorsChairmanNominationListReply(Guid requestId)
+    {
+        Guid referenceId = Guid.Empty;
+        _jwtReader.GetReferenceId(ref referenceId);
+
+        var litigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>())
+// Filter FIRST before loading related data
+.Where(x => x.Id == requestId
+    && x.LitigationRequestArbitratorLists.Any(l => l.ArbitratorCitizenId == referenceId))
+
+// Basic lookups
+.Include(x => x.Area)
+.Include(x => x.City)
+.Include(x => x.InternalStatus)
+.Include(x => x.ExternalStatus)
+
+// Arbitrator
+.Include(x => x.ArbitratorCitizen)
+    .ThenInclude(x => x.CitizenRequests)
+        .ThenInclude(x => x.SysArbitratorClass)
+
+// Arbitrator Lists
+.Include(x => x.LitigationRequestArbitratorLists)
+
+// Chairman Nomination Lists (one Include chain per ThenInclude path)
+.Include(x => x.LitigationRequestArbitratorsChairmanNominationLists)
+    .ThenInclude(x => x.ArbitratorChairmanCitizen)
+        .ThenInclude(x => x.LitigationRequestArbitratorAssigningRequests)
+.Include(x => x.LitigationRequestArbitratorsChairmanNominationLists)
+    .ThenInclude(x => x.LitigationRequestArbitratorsChairmanNominationListValues)
+
+// Arbitrator Nomination Lists
+.Include(x => x.LitigationRequestArbitratorNominationLists)
+    .ThenInclude(x => x.ArbitratorCitizen)
+        .ThenInclude(x => x.CitizenRequests)
+            .ThenInclude(x => x.SysArbitratorClass)
+.Include(x => x.LitigationRequestArbitratorNominationLists)
+    .ThenInclude(x => x.ArbitratorCitizen)
+        .ThenInclude(x => x.LitigationRequestArbitratorLists)
+
+// Contract
+.Include(x => x.Contract)
+    .ThenInclude(x => x.LitigationRequestContractType)
+.Include(x => x.Contract)
+    .ThenInclude(x => x.FirstPartyFacility)
+.Include(x => x.Contract)
+    .ThenInclude(x => x.FirstPartyCitizen)
+.Include(x => x.Contract)
+    .ThenInclude(x => x.SecondPartyFacility)
+.Include(x => x.Contract)
+    .ThenInclude(x => x.SecondPartyCitizen)
+
+.AsSplitQuery()     // Split to avoid cartesian explosion
+.AsNoTracking()
+.FirstOrDefault();
+
+        if (litigationRequest == null)
+            return new BaseResponse() { IsDone = false, Message = "طلب غير موجود" };
+
+        var request = _mapper.Map<LitigationRequestShortDto>(litigationRequest);
+
+        bool isDone = false;
+        bool allowAdd = true;
+
+        if (litigationRequest.IsFinished.HasValue)
         {
-            Guid referenceId = Guid.Empty;
-            _jwtReader.GetReferenceId(ref referenceId);
-
-            var litigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>())
-                            .Include(x => x.Area).Include(x => x.City)
-                            .Include(x => x.InternalStatus)
-                            .Include(x => x.ExternalStatus)
-                            .Include(x => x.LitigationRequestArbitratorLists)
-                            .Include(x => x.ArbitratorCitizen)
-                            .ThenInclude(x => x.ArbitratorLitigationRequests)
-                            .Include(x => x.ArbitratorCitizen)
-                            .ThenInclude(x => x.CitizenRequests)
-                            .ThenInclude(x => x.SysArbitratorClass)
-
-                            .Include(x => x.LitigationRequestArbitratorsChairmanNominationLists)
-                            .ThenInclude(x => x.ArbitratorChairmanCitizen)
-                            .ThenInclude(x => x.ArbitratorLitigationRequests)
-
-                            .Include(x => x.LitigationRequestArbitratorsChairmanNominationLists)
-                            .ThenInclude(x => x.ArbitratorChairmanCitizen)
-                            .ThenInclude(x => x.LitigationRequestArbitratorAssigningRequests)
-
-                            .Include(x => x.LitigationRequestArbitratorsChairmanNominationLists)
-                            .ThenInclude(x => x.LitigationRequestArbitratorsChairmanNominationListValues)
-
-                            .Include(x => x.LitigationRequestArbitratorNominationLists)
-                            .ThenInclude(x => x.ArbitratorCitizen)
-                            .ThenInclude(x => x.CitizenRequests)
-                            .ThenInclude(x => x.SysArbitratorClass)
-
-                            .Include(x => x.LitigationRequestArbitratorNominationLists)
-                            .ThenInclude(x => x.ArbitratorCitizen)
-                            .ThenInclude(x => x.LitigationRequestArbitratorLists)
-
-
-                            .Include(x => x.LitigationRequestArbitratorLists)
-                            .Include(x => x.Contract)
-
-                            .Include(x => x.Contract.LitigationRequestContractType)
-                            .Include(x => x.Contract.FirstPartyFacility)
-                            .Include(x => x.Contract.FirstPartyCitizen)
-                            .Include(x => x.Contract.SecondPartyFacility)
-                            .Include(x => x.Contract.SecondPartyCitizen)
-                            .Include(x => x.Contract.LitigationRequestContractType)
-                            .Where(x => x.Id == requestId
-                            & x.LitigationRequestArbitratorLists.Any(l => l.ArbitratorCitizenId == referenceId)
-                            )
-                            .FirstOrDefault();
-
-            if (litigationRequest == null)
-                return new BaseResponse() { IsDone = false, Message = "طلب غير موجود" };
-
-            var request = _mapper.Map<LitigationRequestShortDto>(litigationRequest);
-
-            bool isDone = false;
-            bool allowAdd = true;
-
-            if (litigationRequest.IsFinished.HasValue)
+            if (litigationRequest.IsFinished.Value)
             {
-                if (litigationRequest.IsFinished.Value)
-                {
-                    allowAdd = false;
-                    isDone = true;
-                }
-            }
-            if (!isDone)
-            {
-                if (litigationRequest?.LitigationRequestStage != LitigationRequestStage.Arbitration)
-                {
-                    allowAdd = false;
-                }
-                else
-                {
-                    if (litigationRequest?.LitigationRequestSubStage != LitigationRequestSubStage.LitigationRequestAddArbitratorChairmanListNominationDone)
-                        allowAdd = false;
-                }
-
-            }
-            if (litigationRequest.LitigationRequestArbitratorsChairmanNominationLists.Where(x => x.LitigationRequestArbitratorsChairmanNominationListValues
-                                                     .Where(x => x.ArbitratorCitizenId == referenceId).Count() > 0).Count() > 0)
                 allowAdd = false;
-
-            LitigationRequestForAllArbitratorNominationListWithPartiesValueDto litigationRequestForAllArbitratorNominationListDto = new LitigationRequestForAllArbitratorNominationListWithPartiesValueDto();
-            litigationRequestForAllArbitratorNominationListDto.LitigationRequestShortDto = request;
-            litigationRequestForAllArbitratorNominationListDto.CitizenArbitratorShortStatusDtos = new List<CitizenArbitratorShortStatusWithValueDto>();
-            if (litigationRequest.LitigationRequestArbitratorsChairmanNominationLists.Any())
+                isDone = true;
+            }
+        }
+        if (!isDone)
+        {
+            if (litigationRequest?.LitigationRequestStage != LitigationRequestStage.Arbitration)
             {
-                foreach (var chairmanNominationList in litigationRequest.LitigationRequestArbitratorsChairmanNominationLists)
-                {
-                    CitizenArbitratorShortStatusWithValueDto citizenArbitratorShortStatusDto = new CitizenArbitratorShortStatusWithValueDto();
-                    citizenArbitratorShortStatusDto.Id = chairmanNominationList.Id;
-                    citizenArbitratorShortStatusDto.CitizenId = chairmanNominationList.ArbitratorChairmanCitizenId;
-                    citizenArbitratorShortStatusDto.FullName = chairmanNominationList.ArbitratorChairmanCitizen.FullName;
-                    citizenArbitratorShortStatusDto.Brief =
-                        chairmanNominationList.ArbitratorChairmanCitizen?.CitizenRequests?
-                        .Where(x => x.CitizenRequestTypeId == CitizenRequestType.Arbitrator & x.StatusId == CitizenRequestStatus.Certified)?
-                        .OrderBy(x => x.RequestOn).LastOrDefault()?.Brief;
+                allowAdd = false;
+            }
+            else
+            {
+                if (litigationRequest?.LitigationRequestSubStage != LitigationRequestSubStage.LitigationRequestAddArbitratorChairmanListNominationDone)
+                    allowAdd = false;
+            }
 
-                    citizenArbitratorShortStatusDto.Value = chairmanNominationList.LitigationRequestArbitratorsChairmanNominationListValues.Where(x => x.ArbitratorCitizenId == referenceId).FirstOrDefault()?.Priority;
-                    litigationRequestForAllArbitratorNominationListDto.CitizenArbitratorShortStatusDtos.Add(citizenArbitratorShortStatusDto);
-                }
-                litigationRequestForAllArbitratorNominationListDto.AllowAdd = allowAdd;
+        }
+        if (litigationRequest.LitigationRequestArbitratorsChairmanNominationLists.Where(x => x.LitigationRequestArbitratorsChairmanNominationListValues
+                                                 .Where(x => x.ArbitratorCitizenId == referenceId).Count() > 0).Count() > 0)
+            allowAdd = false;
+
+        LitigationRequestForAllArbitratorNominationListWithPartiesValueDto litigationRequestForAllArbitratorNominationListDto = new LitigationRequestForAllArbitratorNominationListWithPartiesValueDto();
+        litigationRequestForAllArbitratorNominationListDto.LitigationRequestShortDto = request;
+        litigationRequestForAllArbitratorNominationListDto.CitizenArbitratorShortStatusDtos = new List<CitizenArbitratorShortStatusWithValueDto>();
+        if (litigationRequest.LitigationRequestArbitratorsChairmanNominationLists.Any())
+        {
+            foreach (var chairmanNominationList in litigationRequest.LitigationRequestArbitratorsChairmanNominationLists)
+            {
+                CitizenArbitratorShortStatusWithValueDto citizenArbitratorShortStatusDto = new CitizenArbitratorShortStatusWithValueDto();
+                citizenArbitratorShortStatusDto.Id = chairmanNominationList.Id;
+                citizenArbitratorShortStatusDto.CitizenId = chairmanNominationList.ArbitratorChairmanCitizenId;
+                citizenArbitratorShortStatusDto.FullName = chairmanNominationList.ArbitratorChairmanCitizen.FullName;
+                citizenArbitratorShortStatusDto.Brief =
+                    chairmanNominationList.ArbitratorChairmanCitizen?.CitizenRequests?
+                    .Where(x => x.CitizenRequestTypeId == CitizenRequestType.Arbitrator & x.StatusId == CitizenRequestStatus.Certified)?
+                    .OrderBy(x => x.RequestOn).LastOrDefault()?.Brief;
+
+                citizenArbitratorShortStatusDto.Value = chairmanNominationList.LitigationRequestArbitratorsChairmanNominationListValues.Where(x => x.ArbitratorCitizenId == referenceId).FirstOrDefault()?.Priority;
+                litigationRequestForAllArbitratorNominationListDto.CitizenArbitratorShortStatusDtos.Add(citizenArbitratorShortStatusDto);
+            }
+            litigationRequestForAllArbitratorNominationListDto.AllowAdd = allowAdd;
+            return new DataResponse<LitigationRequestForAllArbitratorNominationListWithPartiesValueDto>()
+            {
+                Data = litigationRequestForAllArbitratorNominationListDto,
+                IsDone = true,
+            };
+        }
+        else
+        {
+            if (litigationRequest.ArbitratorCitizenId.HasValue)
+            {
+                allowAdd = false;
+                CitizenArbitratorShortStatusWithValueDto citizenArbitratorShortStatusChairmanDto = new CitizenArbitratorShortStatusWithValueDto();
+                citizenArbitratorShortStatusChairmanDto.FullName = litigationRequest.ArbitratorCitizen?.FullName;
+                citizenArbitratorShortStatusChairmanDto.Brief =
+                    litigationRequest.ArbitratorCitizen?.CitizenRequests?
+                    .Where(x => x.CitizenRequestTypeId == CitizenRequestType.Arbitrator & x.StatusId == CitizenRequestStatus.Certified)?
+                    .OrderBy(x => x.RequestOn).LastOrDefault()?.Brief;
+
+                litigationRequestForAllArbitratorNominationListDto.CitizenArbitratorShortStatusDtos.Add(citizenArbitratorShortStatusChairmanDto);
+
                 return new DataResponse<LitigationRequestForAllArbitratorNominationListWithPartiesValueDto>()
                 {
                     Data = litigationRequestForAllArbitratorNominationListDto,
-                    IsDone = true,
+                    IsDone = true
                 };
             }
             else
             {
-                if (litigationRequest.ArbitratorCitizenId.HasValue)
-                {
-                    allowAdd = false;
-                    CitizenArbitratorShortStatusWithValueDto citizenArbitratorShortStatusChairmanDto = new CitizenArbitratorShortStatusWithValueDto();
-                    citizenArbitratorShortStatusChairmanDto.FullName = litigationRequest.ArbitratorCitizen?.FullName;
-                    citizenArbitratorShortStatusChairmanDto.Brief =
-                        litigationRequest.ArbitratorCitizen?.CitizenRequests?
-                        .Where(x => x.CitizenRequestTypeId == CitizenRequestType.Arbitrator & x.StatusId == CitizenRequestStatus.Certified)?
-                        .OrderBy(x => x.RequestOn).LastOrDefault()?.Brief;
 
-                    litigationRequestForAllArbitratorNominationListDto.CitizenArbitratorShortStatusDtos.Add(citizenArbitratorShortStatusChairmanDto);
-
-                    return new DataResponse<LitigationRequestForAllArbitratorNominationListWithPartiesValueDto>()
-                    {
-                        Data = litigationRequestForAllArbitratorNominationListDto,
-                        IsDone = true
-                    };
-                }
-                else
-                {
-
-                }
             }
-            return new BaseResponse()
-            {
-                IsDone = false,
-                Message = "خطأ ما يرجى الرجوع لمدير النظام"
-            };
-
         }
+        return new BaseResponse()
+        {
+            IsDone = false,
+            Message = "خطأ ما يرجى الرجوع لمدير النظام"
+        };
+
+    }
         public async Task<BaseResponse> AddCitizenLitigationRequestForReportArbitratorsChairmanNominationListReply(ArbitratorNominationListRequestReplyPayload arbitratorNominationListRequestReplyPayload)
         {
             Guid referenceId = Guid.Empty;
