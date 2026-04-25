@@ -39,3 +39,7 @@
 /REAC.Domain.Shared/bin/Debug/net8.0
 /REAC.EntityFrameworkCore/bin/Debug/net8.0
 /REAC.Mobile/bin/Debug/net8.0
+/Core/Integration/Integration.Api/obj
+/Core/Integration/UnifiedNationalAccess/Nafath/Nafath/obj
+/Core/Integration/Yakeen/obj
+/REAC.Domain/obj
