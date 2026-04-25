@@ -1,0 +1,4 @@
+﻿INSERT INTO [dbo].[SysSetting] ([Id], [Key], [Value])
+VALUES
+    (NEWID(), N'SLA.VerdictSessionReminderHoursBefore', N'24'),
+    (NEWID(), N'SLA.VerdictSessionReminderMessage', N'تذكير: موعد جلسة النطق بالحكم للدعوى رقم {LitigationCode} بعد 24 ساعة');

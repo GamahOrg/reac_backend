@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -81,7 +81,9 @@ namespace REAC.Domain.Shared.Constants
             "Arbitrators.Count.FromBothSides",
             "Arbitrators.Count.Added",
             "ArbitratorsNominationList.Added",
-            "SLA.LitigationRequestArbitrationFeesNotPaidReminderFirstPeriod"
+            "SLA.LitigationRequestArbitrationFeesNotPaidReminderFirstPeriod",
+            "SLA.VerdictSessionReminderHoursBefore",
+            "SLA.VerdictSessionReminderMessage"
 
         };
 

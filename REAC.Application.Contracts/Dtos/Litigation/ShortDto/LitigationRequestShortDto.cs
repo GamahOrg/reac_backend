@@ -1,4 +1,4 @@
-﻿using Core.GenericRepository.Shared.BaseEntities;
+using Core.GenericRepository.Shared.BaseEntities;
 using REAC.Application.Contracts.Dtos.Citizen;
 using REAC.Application.Contracts.Dtos.Litigation;
 using REAC.Application.Contracts.Dtos.System.LitigationRequestCategoryDtos;
@@ -7,7 +7,7 @@ using REAC.Application.Contracts.Dtos.System.LitigationRequestStatusDtos;
 using REAC.Domain.Shared.Enum;
 using REAC.EntityFrameworkCore.Entities.System;
 
-namespace REAC.EntityFrameworkCore.Entities.Litigation;
+namespace REAC.Application.Contracts.Dtos.Litigation;
 
 public partial class LitigationRequestShortDto : BaseEntity<Guid>
 {

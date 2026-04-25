@@ -1,4 +1,4 @@
-﻿using Core.Shared.Responses;
+using Core.Shared.Responses;
 using Microsoft.EntityFrameworkCore;
 using REAC.Application.Contracts.Dtos.Litigation.CreateUpdate.Litigation;
 using REAC.Application.Contracts.Dtos.Integration.GEE;
@@ -746,9 +746,9 @@ namespace REAC.Application.ModuleServices
                         Status = litigationRequest.InternalStatus?.RequestStatus,
                         IsDone = isDone ? "تم" : "--",
                         SubmissionDate = litigationRequest.SentOn,
-                        ReconciliationFeesPaidDate = litigationRequest.PaidOn,
+                        FeeConfirmationDate = litigationRequest.PaidOn ?? (litigationRequest.IsExemptionReduction == true || litigationRequest.ExemptionReductionCategoryId.HasValue ? litigationRequest.SentOn : null),
                         ReformerAcceptanceDate = litigationRequest.StartReconciliationDate,
-                        ReportIssuanceDate = litigationRequest.LitigationRequestReconciliationReports.FirstOrDefault()?.ReportDate,
+                        ReportDate = litigationRequest.LitigationRequestReconciliationReports.FirstOrDefault()?.ReportDate,
                     });
                 }
             }

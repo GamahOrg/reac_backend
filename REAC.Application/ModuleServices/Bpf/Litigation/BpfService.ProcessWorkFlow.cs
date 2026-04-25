@@ -1,4 +1,4 @@
-﻿using System.Net.Http.Json;
+using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using Azure.Core;
@@ -420,6 +420,15 @@ namespace Bpf.Application.ModuleServices
 
                         litigationRequest.IsCollectionOfLitigationFeesRequestIsBeingSent = true;
 
+                        if (litigationRequest.IsExemptionReduction == true)
+                        {
+                            litigationRequest.PaidOn = DateTime.Now;
+                            litigationRequest.IsLitigationFeesHaveBeenCollected = true;
+                            litigationRequest.InternalStatusId = RequestStatus.LitigationFeesHaveBeenCollected;
+                            litigationRequest.ExternalStatusId = RequestStatus.LitigationFeesHaveBeenCollected;
+                            break;
+                        }
+
                         // Send Notification
                         // تم إرسال طلب  دفع رسوم الدعوي رقم ....... لمقدم الطلب - موظف التدقيق - مدير ادارة التدقيق
                         try
@@ -465,8 +474,39 @@ namespace Bpf.Application.ModuleServices
                         }
                         break;
                     case RequestStatus.CollectionOfReconciliationFeesRequestIsBeingSent:
-
                         litigationRequest.IsCollectionOfReconciliationFeesRequestIsBeingSent = true;
+                        if (litigationRequest.IsExemptionReduction == true)
+                        {
+                            litigationRequest.PaidOn = DateTime.Now;
+                            litigationRequest.IsReconciliationFeesHaveBeenCollected = true;
+                            var department = (await _repository.GetQueryable<SysDepartment, Guid>())?
+                                               .Where(x => x.DepartmentType == DepartmentType.Reconciliation)
+                                               .SingleOrDefault();
+
+                            if (department != null && department.DistributionMode == DepartmentDistributionMode.AutoDistribution)
+                            {
+                                litigationRequest.InternalStatusId = RequestStatus.Received;
+                                litigationRequest.ExternalStatusId = RequestStatus.Received;
+                            }
+                            else
+                            {
+                                litigationRequest.InternalStatusId = RequestStatus.ReconciliationFeesHaveBeenCollected;
+                                litigationRequest.ExternalStatusId = RequestStatus.ReconciliationFeesHaveBeenCollected;
+                            }
+
+                            litigationRequest.LitigationRequestStage = LitigationRequestStage.SetReformer;
+                            litigationRequest.LitigationRequestSubStage = LitigationRequestSubStage.SetReformerFirstTime;
+
+                            var updateResponse = _repository.Update<LitigationRequest, Guid>(litigationRequest);
+                            if (!updateResponse.IsDone)
+                                return updateResponse;
+
+                            var saveResponse = await _repository.SaveChangesAsync(new CancellationToken());
+                            if (!saveResponse.IsDone)
+                                return saveResponse;
+
+                            break;
+                        }
 
                         // Send Notification
                         // تم إرسال طلب  دفع رسوم الصلح رقم ....... لمقدم الطلب - موظف التدقيق - مدير ادارة التدقيق
@@ -490,9 +530,7 @@ namespace Bpf.Application.ModuleServices
                         break;
 
                     case RequestStatus.ReconciliationFeesHaveBeenCollected:
-
                         litigationRequest.IsReconciliationFeesHaveBeenCollected = true;
-
                         // Send Notification
                         // تم دفع رسوم الصلح رقم ....... لمقدم الطلب - موظف التدقيق - مدير ادارة التدقيق
                         try
@@ -510,10 +548,104 @@ namespace Bpf.Application.ModuleServices
                         }
                         catch (Exception e)
                         {
-
                         }
                         break;
 
+                    case RequestStatus.CollectionOfArbitrationFeesRequestIsBeingSent:
+                        litigationRequest.IsCollectionOfArbitrationFeesRequestIsBeingSent = true;
+                        if (litigationRequest.IsExemptionReduction == true)
+                        {
+                            litigationRequest.PaidOn = DateTime.Now;
+                            litigationRequest.IsArbitrationFeesHaveBeenCollected = true;
+                            litigationRequest.InternalStatusId = RequestStatus.WaitingForArbitratorsSelection;
+                            litigationRequest.ExternalStatusId = RequestStatus.WaitingForArbitratorsSelection;
+                            litigationRequest.LitigationRequestSubStage = LitigationRequestSubStage.LitigationRequestAddArbitratorListNomination;
+                            
+                            var updateResponse = _repository.Update<LitigationRequest, Guid>(litigationRequest);
+                            if (!updateResponse.IsDone)
+                                return updateResponse;
+
+                            var saveResponse = await _repository.SaveChangesAsync(cancellationToken);
+                            if (!saveResponse.IsDone)
+                                return saveResponse;
+
+                            break;
+                        }
+
+                        // Send Notification
+                        // تم إرسال طلب  دفع رسوم التحكيم رقم ....... لمقدم الطلب - موظف التدقيق - مدير ادارة التدقيق
+                        try
+                        {
+                            msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_CollectionOfArbitrationFeesRequestIsBeingSent).Result.Data?.Value;
+                            msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
+                            var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                            using (StreamReader streamReader = File.OpenText(pathToFile))
+                            {
+                                body = await streamReader.ReadToEndAsync();
+                                body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_CollectionOfArbitrationFeesRequestIsBeingSent).Result.Data?.Value);
+                                body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                            }
+                            SendNotificationMSPlaintiff(body, msg, litigationRequest, RequestType.LitigationRequest, "Collection Of Arbitration Fees Request Is Being Sent");
+                        }
+                        catch (Exception e)
+                        {
+                        }
+                        break;
+
+                    case RequestStatus.ArbitrationFeesHaveBeenCollected:
+                        litigationRequest.IsArbitrationFeesHaveBeenCollected = true;
+                        // Send Notification
+                        // تم دفع رسوم التحكيم رقم ....... لمقدم الطلب - موظف التدقيق - مدير ادارة التدقيق
+                        try
+                        {
+                            msg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_ArbitrationFeesHaveBeenCollected).Result.Data?.Value;
+                            msg = msg.Replace("{LitigationCode}", litigationRequest.RequestCode);
+                            var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                            using (StreamReader streamReader = File.OpenText(pathToFile))
+                            {
+                                body = await streamReader.ReadToEndAsync();
+                                body = body?.Replace("{content}", _sysSettingService.GetBySettingKey(SysSettingKeyConstants.LitigationRequest_ArbitrationFeesHaveBeenCollected).Result.Data?.Value);
+                                body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                            }
+                            SendNotificationMSPlaintiff(body, msg, litigationRequest, RequestType.LitigationRequest, "Arbitration Fees Have Been Collected");
+                        }
+                        catch (Exception e)
+                        {
+                        }
+                        break;
+                    case RequestStatus.LitigationApprovedCollectionOfReconciliationFeesRequestIsBeingSend:
+                        if (litigationRequest.IsExemptionReduction == true)
+                        {
+                            litigationRequest.PaidOn = DateTime.Now;
+                            litigationRequest.IsReconciliationFeesHaveBeenCollected = true;
+                            var department = (await _repository.GetQueryable<SysDepartment, Guid>())?
+                                               .Where(x => x.DepartmentType == DepartmentType.Reconciliation)
+                                               .SingleOrDefault();
+
+                            if (department != null && department.DistributionMode == DepartmentDistributionMode.AutoDistribution)
+                            {
+                                litigationRequest.InternalStatusId = RequestStatus.Received;
+                                litigationRequest.ExternalStatusId = RequestStatus.Received;
+                            }
+                            else
+                            {
+                                litigationRequest.InternalStatusId = RequestStatus.ReconciliationFeesHaveBeenCollected;
+                                litigationRequest.ExternalStatusId = RequestStatus.ReconciliationFeesHaveBeenCollected;
+                            }
+
+                            litigationRequest.LitigationRequestStage = LitigationRequestStage.SetReformer;
+                            litigationRequest.LitigationRequestSubStage = LitigationRequestSubStage.SetReformerFirstTime;
+
+                            var updateResponse = _repository.Update<LitigationRequest, Guid>(litigationRequest);
+                            if (!updateResponse.IsDone)
+                                return updateResponse;
+
+                            var saveResponse = await _repository.SaveChangesAsync(new CancellationToken());
+                            if (!saveResponse.IsDone)
+                                return saveResponse;
+
+                        }
+                        break;
                     case RequestStatus.Rejected:
                         // Send Notification
                         // تم رفض الطلب
@@ -572,11 +704,12 @@ namespace Bpf.Application.ModuleServices
                             case REAC.Domain.Shared.Enum.LitigationRequestCategory.Arbitration:
 
                                 litigationRequest.IsReconciliationFeesHaveBeenCollected = true;
+
                                 // Send Notification
                                 // تم دفع رسوم الصلح رقم ....... لمقدم الطلب - موظف التدقيق - مدير ادارة التدقيق
 
                                 litigationRequest.LitigationRequestStage = LitigationRequestStage.Arbitration;
-                                litigationRequest.LitigationRequestSubStage = LitigationRequestSubStage.ArbitratorSelectionDuration;
+                                litigationRequest.LitigationRequestSubStage = LitigationRequestSubStage.LitigationRequestAddArbitratorCount;
                                 break;
                             default:
                                 litigationRequest.LitigationRequestStage = LitigationRequestStage.SetReformer;

@@ -1,4 +1,4 @@
-﻿using Core.GenericRepository.Shared.Pagging;
+using Core.GenericRepository.Shared.Pagging;
 using Core.Shared.Responses;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -433,7 +433,7 @@ namespace REAC.Application.ModuleServices
             {
                 string inputFilePath = Path.Combine(Directory.GetCurrentDirectory(), litigationRequest.ArbitratorCitizen?.SigntureFile?.FilePath);
                 // Read file and convert to Base64
-                if (!string.IsNullOrEmpty(inputFilePath))
+                if (!string.IsNullOrEmpty(inputFilePath) && File.Exists(inputFilePath))
                 {
                     byte[] fileBytes = File.ReadAllBytes(inputFilePath);
                     base64String = Convert.ToBase64String(fileBytes);
@@ -621,6 +621,7 @@ namespace REAC.Application.ModuleServices
                 .Include(x => x.Area).Include(x => x.City)
                 .Include(x => x.LitigationRequestSessions)
                 .Include(x => x.LitigationRequestArbitrationReports)
+                .Include(x => x.LitigationRequestArbitrationCorrectionRequests)
                 .Include(x => x.ApplicantCitizen)
                 .Include(x => x.DefendantCitizen)
                 .Include(x => x.DefendantFacility)
@@ -736,8 +737,15 @@ namespace REAC.Application.ModuleServices
                         IsDone = allowAdd ? "--" : "تم",
                         SubmissionDate = litigationRequest.SentOn,
                         AuditorAcceptanceDate = litigationRequest.StartArbitrationDate,
-                        ArbitratorAcceptanceDate = litigationRequest.ArbitratorsChairmanNominationListSelectionDoneDateTime,
+                        ArbitratorAcceptanceDate = litigationRequest.ArbitratorsChairmanNominationListSelectionDoneDateTime ?? litigationRequest.StartArbitrationDate,
                         JudgmentDate = litigationRequest.JudgmentDecisionIssuingDateTime,
+                        CorrectionRequestStatus = litigationRequest.LitigationRequestArbitrationCorrectionRequests?
+                            .OrderByDescending(x => x.CreatedOn)
+                            .FirstOrDefault() is { } cr
+                            ? cr.ApproveRejectStatus == null ? "تحت المراجعة"
+                              : cr.ApproveRejectStatus == ApproveRejectStatus.Approve ? "مقبول"
+                              : "مرفوض"
+                            : null,
                     });
                 }
             }

@@ -696,6 +696,96 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.ToTable("ArbitratorStopFreeUpDecision", (string)null);
                 });
 
+            modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Arbitration.LitigationRequestArbitrationCorrectionRequest", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int?>("ApproveRejectStatus")
+                        .HasColumnType("int")
+                        .HasComment("Arbitrator decision: null=Pending, Approve=Accepted, Reject=Rejected");
+
+                    b.Property<string>("CorrectionDecisionText")
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Arbitrator correction decision text - max 2500 chars, filled on acceptance");
+
+                    b.Property<string>("CorrectionDescription")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Description of the requested correction - max 1000 chars");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("LitigationRequestId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Foreign key to the litigation request");
+
+                    b.Property<string>("RejectReason")
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Reason for rejection - required when ApproveRejectStatus = Reject, max 300 chars");
+
+                    b.Property<Guid>("RequestCitizenId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Citizen who submitted the correction request (plaintiff or defendant)");
+
+                    b.Property<DateTime>("RequestOn")
+                        .HasColumnType("datetime2")
+                        .HasComment("Date when the correction request was submitted");
+
+                    b.Property<int>("RequestParty")
+                        .HasColumnType("int")
+                        .HasComment("Party who submitted the request (Plaintiff / Defendant)");
+
+                    b.Property<DateTime?>("ResponseOn")
+                        .HasColumnType("datetime2")
+                        .HasComment("Date when the arbitrator responded to the request");
+
+                    b.HasKey("Id")
+                        .HasName("PK__LitigationRequestArbitrationCorrectionRequest");
+
+                    b.HasIndex("LitigationRequestId");
+
+                    b.HasIndex("RequestCitizenId");
+
+                    b.HasIndex(new[] { "Id" }, "LitigationRequestArbitrationCorrectionRequest_Id")
+                        .IsUnique();
+
+                    b.ToTable("LitigationRequestArbitrationCorrectionRequest", (string)null);
+                });
+
+            modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Arbitration.LitigationRequestArbitrationCorrectionRequestFile", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CorrectionRequestFileId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Foreign key to the file stored in SysFileManager");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("LitigationRequestArbitrationCorrectionRequestId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Foreign key to the correction request");
+
+                    b.HasKey("Id")
+                        .HasName("PK__LitigationRequestArbitrationCorrectionRequestFile");
+
+                    b.HasIndex("CorrectionRequestFileId");
+
+                    b.HasIndex("LitigationRequestArbitrationCorrectionRequestId");
+
+                    b.HasIndex(new[] { "Id" }, "LitigationRequestArbitrationCorrectionRequestFile_Id")
+                        .IsUnique();
+
+                    b.ToTable("LitigationRequestArbitrationCorrectionRequestFile", (string)null);
+                });
+
             modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Arbitration.LitigationRequestArbitrationReport", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1754,6 +1844,10 @@ namespace REAC.EntityFrameworkCore.Migrations
                         .HasColumnType("bit")
                         .HasComment("Indicates whether the litigation request has been sent");
 
+                    b.Property<bool?>("IsVerdictSessionReminderSent")
+                        .HasColumnType("bit")
+                        .HasComment("Indicates whether verdict session (judgment pronouncement) reminder notification was sent");
+
                     b.Property<DateTime?>("JudgmentDecisionIssuingDateTime")
                         .HasColumnType("datetime2")
                         .HasComment("Date and time of the note");
@@ -2573,6 +2667,68 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.HasIndex("LitigationRequestId");
 
                     b.ToTable("LitigationRequestReformerAssigningRequest", (string)null);
+                });
+
+            modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Litigation.LitigationRequestReopenLog", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("LitigationRequestId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Foreign key to the litigation request");
+
+                    b.Property<int>("NewInternalStatusId")
+                        .HasColumnType("int")
+                        .HasComment("Internal status after reopening");
+
+                    b.Property<int?>("NewStage")
+                        .HasColumnType("int")
+                        .HasComment("Stage after reopening");
+
+                    b.Property<int?>("NewSubStage")
+                        .HasColumnType("int")
+                        .HasComment("SubStage after reopening");
+
+                    b.Property<int>("PreviousInternalStatusId")
+                        .HasColumnType("int")
+                        .HasComment("Internal status before cancellation/rejection");
+
+                    b.Property<int?>("PreviousStage")
+                        .HasColumnType("int")
+                        .HasComment("Stage before cancellation/rejection");
+
+                    b.Property<int?>("PreviousSubStage")
+                        .HasColumnType("int")
+                        .HasComment("SubStage before cancellation/rejection");
+
+                    b.Property<string>("ReopenReason")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)")
+                        .HasComment("Reason for reopening the request - max 500 chars");
+
+                    b.Property<Guid?>("ReopenedBy")
+                        .HasColumnType("uniqueidentifier")
+                        .HasComment("Employee who performed the reopen action");
+
+                    b.Property<DateTime>("ReopenedOn")
+                        .HasColumnType("datetime2")
+                        .HasComment("Date when the request was reopened");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LitigationRequestId");
+
+                    b.HasIndex("ReopenedBy");
+
+                    b.ToTable("LitigationRequestReopenLogs");
                 });
 
             modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Litigation.LitigationRequestRequest", b =>
@@ -6909,6 +7065,44 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Navigation("SysArbitratorStatus");
                 });
 
+            modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Arbitration.LitigationRequestArbitrationCorrectionRequest", b =>
+                {
+                    b.HasOne("REAC.EntityFrameworkCore.Entities.Litigation.LitigationRequest", "LitigationRequest")
+                        .WithMany("LitigationRequestArbitrationCorrectionRequests")
+                        .HasForeignKey("LitigationRequestId")
+                        .IsRequired()
+                        .HasConstraintName("FKLitigationRequestArbitrationCorrectionRequest");
+
+                    b.HasOne("REAC.EntityFrameworkCore.Entities.Actor.Citizen", "RequestCitizen")
+                        .WithMany()
+                        .HasForeignKey("RequestCitizenId")
+                        .IsRequired()
+                        .HasConstraintName("FKRequestCitizenArbitrationCorrectionRequest");
+
+                    b.Navigation("LitigationRequest");
+
+                    b.Navigation("RequestCitizen");
+                });
+
+            modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Arbitration.LitigationRequestArbitrationCorrectionRequestFile", b =>
+                {
+                    b.HasOne("REAC.EntityFrameworkCore.Entities.System.SysFileManager", "CorrectionRequestFile")
+                        .WithMany("LitigationRequestArbitrationCorrectionRequestFiles")
+                        .HasForeignKey("CorrectionRequestFileId")
+                        .IsRequired()
+                        .HasConstraintName("FKCorrectionRequestFileArbitrationCorrectionRequestFile");
+
+                    b.HasOne("REAC.EntityFrameworkCore.Entities.Arbitration.LitigationRequestArbitrationCorrectionRequest", "LitigationRequestArbitrationCorrectionRequest")
+                        .WithMany("LitigationRequestArbitrationCorrectionRequestFiles")
+                        .HasForeignKey("LitigationRequestArbitrationCorrectionRequestId")
+                        .IsRequired()
+                        .HasConstraintName("FKArbitrationCorrectionRequestArbitrationCorrectionRequestFile");
+
+                    b.Navigation("CorrectionRequestFile");
+
+                    b.Navigation("LitigationRequestArbitrationCorrectionRequest");
+                });
+
             modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Arbitration.LitigationRequestArbitrationReport", b =>
                 {
                     b.HasOne("REAC.EntityFrameworkCore.Entities.Litigation.LitigationRequest", "LitigationRequest")
@@ -7692,6 +7886,23 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Navigation("LitigationRequest");
 
                     b.Navigation("ReformerCitizen");
+                });
+
+            modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Litigation.LitigationRequestReopenLog", b =>
+                {
+                    b.HasOne("REAC.EntityFrameworkCore.Entities.Litigation.LitigationRequest", "LitigationRequest")
+                        .WithMany("LitigationRequestReopenLogs")
+                        .HasForeignKey("LitigationRequestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("REAC.EntityFrameworkCore.Entities.System.SysEmployee", "ReopenedByEmployee")
+                        .WithMany()
+                        .HasForeignKey("ReopenedBy");
+
+                    b.Navigation("LitigationRequest");
+
+                    b.Navigation("ReopenedByEmployee");
                 });
 
             modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Litigation.LitigationRequestRequest", b =>
@@ -9542,6 +9753,11 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Navigation("CitizenRequestExperienceCertificateFiles");
                 });
 
+            modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Arbitration.LitigationRequestArbitrationCorrectionRequest", b =>
+                {
+                    b.Navigation("LitigationRequestArbitrationCorrectionRequestFiles");
+                });
+
             modelBuilder.Entity("REAC.EntityFrameworkCore.Entities.Arbitration.LitigationRequestArbitrationReport", b =>
                 {
                     b.Navigation("LitigationRequestArbitrationReportExplanationRequests");
@@ -9599,6 +9815,8 @@ namespace REAC.EntityFrameworkCore.Migrations
                 {
                     b.Navigation("LitigationDelegationRequests");
 
+                    b.Navigation("LitigationRequestArbitrationCorrectionRequests");
+
                     b.Navigation("LitigationRequestArbitrationReports");
 
                     b.Navigation("LitigationRequestArbitratorAssigningRequests");
@@ -9627,6 +9845,8 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Navigation("LitigationRequestReconciliationReports");
 
                     b.Navigation("LitigationRequestReformerAssigningRequests");
+
+                    b.Navigation("LitigationRequestReopenLogs");
 
                     b.Navigation("LitigationRequestRequests");
 
@@ -9849,6 +10069,8 @@ namespace REAC.EntityFrameworkCore.Migrations
                     b.Navigation("InternalRegulationsContracts");
 
                     b.Navigation("LawLicenseCitizens");
+
+                    b.Navigation("LitigationRequestArbitrationCorrectionRequestFiles");
 
                     b.Navigation("LitigationRequestArbitrationReportExplanationRequestFiles");
 

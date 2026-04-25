@@ -519,7 +519,7 @@ namespace REAC.Application.ModuleServices
                     {
                         litigationRequestForAllArbitratorNominationListDto.AllowDecision = false;
                         litigationRequestForAllArbitratorNominationListDto.AllowAdd = false;
-                        foreach (var litigationRequestArbitratorNominationList in litigationRequest.LitigationRequestArbitratorsChairmanNominationLists)
+                        foreach (var litigationRequestArbitratorNominationList in litigationRequest.LitigationRequestArbitratorsChairmanNominationLists.DistinctBy(x => x.ArbitratorChairmanCitizenId))
                         {
                             CitizenArbitratorCharmanShortStatusDto citizenArbitratorShortStatusChairmanDto = new CitizenArbitratorCharmanShortStatusDto();
                             citizenArbitratorShortStatusChairmanDto.Id = litigationRequestArbitratorNominationList.ArbitratorChairmanCitizenId;
@@ -957,7 +957,7 @@ namespace REAC.Application.ModuleServices
             litigationRequestForAllArbitratorNominationListDto.CitizenArbitratorShortStatusDtos = new List<CitizenArbitratorShortStatusWithValueDto>();
             if (litigationRequest.LitigationRequestArbitratorsChairmanNominationLists.Any())
             {
-                foreach (var chairmanNominationList in litigationRequest.LitigationRequestArbitratorsChairmanNominationLists)
+                foreach (var chairmanNominationList in litigationRequest.LitigationRequestArbitratorsChairmanNominationLists.DistinctBy(x => x.ArbitratorChairmanCitizenId))
                 {
                     CitizenArbitratorShortStatusWithValueDto citizenArbitratorShortStatusDto = new CitizenArbitratorShortStatusWithValueDto();
                     citizenArbitratorShortStatusDto.Id = chairmanNominationList.Id;

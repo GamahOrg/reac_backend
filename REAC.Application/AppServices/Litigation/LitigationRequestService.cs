@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Azure.Core;
 using Core.GenericRepository.BaseRepository;
 using Core.GenericRepository.Shared.Pagging;
@@ -304,7 +304,7 @@ namespace REAC.Application.AppServices.Litigation
                     {
 
                         var lastAmountLog = (await _repository.GetQueryable<LitigationRequestAmountLog, Guid>())
-                                                          .Include(x => x.Amounts)
+                                            .Include(x => x.Amounts)
                                                           .Where(log => log.LitigationRequest.Id == litigationRequest.Id)
                                                           .OrderByDescending(log => log.CreatedOn)
                                                           .FirstOrDefault();

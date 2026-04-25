@@ -57,6 +57,8 @@ public partial class LitigationRequest : BaseEntity<Guid>
     public bool? IsArbitratorAdminNominationListAddedPeriodSent { get; set; }
     [Comment("Indicates whether arbitrator session time added period notification was sent")]
     public bool? IsArbitratorSessionTimeAddedPeriodSent { get; set; }
+    [Comment("Indicates whether verdict session (judgment pronouncement) reminder notification was sent")]
+    public bool? IsVerdictSessionReminderSent { get; set; }
     public bool? IsArbitratorNominationListResponsePeriodSent { get; set; }
     public bool? IsArbitratorNominationListDecisionPeriodSent { get; set; }
 

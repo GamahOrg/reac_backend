@@ -102,7 +102,7 @@ namespace REAC.Application.ModuleServices
                                 Id = Guid.NewGuid(),
                                 LitigationRequestArbitrationCorrectionRequestId = correctionRequest.Id,
                                 CorrectionRequestFileId = fileId,
-                                CreatedOn=DateTime.Now
+                                CreatedOn = DateTime.Now
                             });
                     }
                 }
@@ -185,7 +185,7 @@ namespace REAC.Application.ModuleServices
                 catch { }
 
                 //return new BaseResponse { IsDone = true, Message = "تم تقديم طلب التصحيح بنجاح" };
-                return await GetArbitrationCorrectionRequestById(requestPayload.LitigationRequestId,new CancellationToken(false));
+                return await GetArbitrationCorrectionRequestById(requestPayload.LitigationRequestId, new CancellationToken(false));
             }
             catch (Exception ex)
             {
@@ -273,11 +273,12 @@ namespace REAC.Application.ModuleServices
             if (litigationRequest == null)
                 return new BaseResponse { IsDone = false, Message = "الطلب غير موجود" };
 
-            var record = litigationRequest.LitigationRequestArbitrationCorrectionRequests?
-                .FirstOrDefault();
+            var records = litigationRequest.LitigationRequestArbitrationCorrectionRequests?
+                .OrderByDescending(x => x.RequestOn).ToList() ?? new();
+
+            var latestRecord = records.FirstOrDefault();
 
             // Access control: requester, main arbitrator, or panel member
-            bool isParty = record?.RequestCitizenId == referenceId;
             bool isArbitrator = litigationRequest.ArbitratorCitizenId == referenceId
                 || litigationRequest.LitigationRequestArbitratorLists.Any(a => a.ArbitratorCitizenId == referenceId);
 
@@ -307,16 +308,21 @@ namespace REAC.Application.ModuleServices
             if (!string.IsNullOrEmpty(litigationRequest.ArbitratorCitizen?.SigntureFile?.FilePath))
             {
                 string inputFilePath = Path.Combine(Directory.GetCurrentDirectory(), litigationRequest.ArbitratorCitizen.SigntureFile.FilePath);
-                byte[] fileBytes = File.ReadAllBytes(inputFilePath);
-                base64String = Convert.ToBase64String(fileBytes);
+                if (File.Exists(inputFilePath))
+                {
+                    byte[] fileBytes = File.ReadAllBytes(inputFilePath);
+                    base64String = Convert.ToBase64String(fileBytes);
+                }
             }
             if (requestDto != null && !string.IsNullOrEmpty(base64String))
                 requestDto.ArbitratorCitizen.SigntureFile = base64String;
 
-            bool allowAdd = record == null && ! isArbitrator ;
+            // AllowAdd logic: only allow new request if no active or pending requests (as per user feedback)
+            bool hasActiveOrPending = records.Any(r => r.ApproveRejectStatus == null);
+            bool allowAdd = !hasActiveOrPending && !isArbitrator;
 
-            // AllowResponse: arbitrator can respond only if request is still pending
-            bool allowResponse = isArbitrator && record?.ApproveRejectStatus == null;
+            // AllowResponse: arbitrator can respond only if latest request is still pending
+            bool allowResponse = isArbitrator && latestRecord?.ApproveRejectStatus == null;
 
             return new DataResponse<LitigationRequestForArbitrationCorrectionRequestDto>
             {
@@ -325,7 +331,7 @@ namespace REAC.Application.ModuleServices
                     LitigationRequestShortDto = requestDto,
                     AllowAdd = allowAdd,
                     AllowResponse = allowResponse,
-                    CorrectionRequest = record !=null ? MapToCorrectionRequestDto(record):null
+                    CorrectionRequests = records.Select(r => MapToCorrectionRequestDto(r)).ToList()
                 },
                 IsDone = true
             };
@@ -355,6 +361,7 @@ namespace REAC.Application.ModuleServices
                     .Include(x => x.LitigationRequest).ThenInclude(x => x.Contract.SecondPartyFacility)
                     .Include(x => x.LitigationRequest).ThenInclude(x => x.ApplicantCitizen)
                     .Include(x => x.LitigationRequest).ThenInclude(x => x.DefendantCitizen)
+                    .Include(x => x.LitigationRequest).ThenInclude(x => x.LitigationRequestArbitrationReports)
                     .FirstOrDefault(x => x.Id == requestPayload.Id && x.LitigationRequestId == requestPayload.LitigationRequestId);
 
                 if (correctionRequest == null)
@@ -377,7 +384,15 @@ namespace REAC.Application.ModuleServices
                 if (requestPayload.Response == ApproveRejectStatus.Reject)
                     correctionRequest.RejectReason = requestPayload.RejectReason;
                 else
+                {
                     correctionRequest.CorrectionDecisionText = requestPayload.CorrectionDecisionText;
+                    var report = litigationRequest.LitigationRequestArbitrationReports?.LastOrDefault();
+                    if (report != null)
+                    {
+                        report.JudgmentDecisionText = requestPayload.CorrectionDecisionText;
+                        _repository.Update<LitigationRequestArbitrationReport, Guid>(report);
+                    }
+                }
 
                 _repository.Update<LitigationRequestArbitrationCorrectionRequest, Guid>(correctionRequest);
 
@@ -465,7 +480,7 @@ namespace REAC.Application.ModuleServices
                 }
                 catch { }
 
-                return await GetArbitrationCorrectionRequestById(requestPayload.LitigationRequestId,new CancellationToken());
+                return await GetArbitrationCorrectionRequestById(requestPayload.LitigationRequestId, new CancellationToken());
             }
             catch (Exception ex)
             {
@@ -502,7 +517,12 @@ namespace REAC.Application.ModuleServices
 
             var allCorrectionRequests = litigationRequests
                 .SelectMany(x => x.LitigationRequestArbitrationCorrectionRequests)
-                .OrderByDescending(x => x.RequestOn)
+                .ToList()
+                .GroupBy(c => c.LitigationRequestId)
+                .Select(g => g
+                    .OrderByDescending(c => c.CreatedOn)
+                    .First()
+                )
                 .ToList();
 
             var totalCount = allCorrectionRequests.Count;

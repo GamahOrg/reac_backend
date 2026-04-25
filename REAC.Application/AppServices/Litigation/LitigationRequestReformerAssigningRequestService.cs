@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Core.GenericRepository.BaseRepository;
 using Core.GenericRepository.Shared.Pagging;
 using Core.Log.Application.Contracts.IAppServices;
@@ -500,7 +500,10 @@ namespace REAC.Application.AppServices.Litigation
                         {
                             int reconciliationPeriod = 0;
                             int.TryParse(_sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reconciliation_Period).Result.Data?.Value, out reconciliationPeriod);
-                            int ExtendDays = item.LitigationRequest.LitigationRequestExtendPeriodRequests.LastOrDefault()?.RequiredDays ?? 0;
+                            int ExtendDays = item.LitigationRequest.LitigationRequestExtendPeriodRequests
+                                .Where(x => x.LitigationRequestExtendPeriodRequestTypeId == LitigationRequestExtendPeriodRequestType.Reconciliation
+                                         && x.LitigationRequestExtendPeriodRequestStatusId == LitigationRequestExtendPeriodRequestStatus.Approve)
+                                .Sum(x => x.RequiredDays);
                             int daysPassed = (DateTime.Now - (DateTime)item.RequestOn).Days;
                             int calculatedPeriod = ((reconciliationPeriod + ExtendDays) - daysPassed);
                             item.LitigationRequest.ReconciliationPeriod = Math.Max(0, calculatedPeriod);
@@ -567,6 +570,7 @@ namespace REAC.Application.AppServices.Litigation
                 .Include(x => x.LitigationRequest.Contract.FirstPartyCitizen)
                 .Include(x => x.LitigationRequest.Contract.SecondPartyFacility)
                 .Include(x => x.LitigationRequest.Contract.SecondPartyCitizen)
+                .Include(x => x.LitigationRequest.LitigationRequestExtendPeriodRequests)
                 //.Include(x => x.LitigationRequest.LitigationRequestReformerAssigningRequests)
                 .Include(x => x.LitigationRequest.Contract.LitigationRequestContractType);
 
@@ -599,8 +603,12 @@ namespace REAC.Application.AppServices.Litigation
 
                 foreach (var litigationRequestReformerAssigningRequest in results)
                 {
+                    int approvedExtendDays = litigationRequestReformerAssigningRequest.LitigationRequest.LitigationRequestExtendPeriodRequests
+                        .Where(x => x.LitigationRequestExtendPeriodRequestTypeId == LitigationRequestExtendPeriodRequestType.Reconciliation
+                                 && x.LitigationRequestExtendPeriodRequestStatusId == LitigationRequestExtendPeriodRequestStatus.Approve)
+                        .Sum(x => x.RequiredDays);
                     int daysPassed = (DateTime.Now - (DateTime)litigationRequestReformerAssigningRequest.RequestOn).Days;
-                    litigationRequestReformerAssigningRequest.LitigationRequest.ReconciliationPeriod = Math.Max(0, reconciliationPeriod - daysPassed);
+                    litigationRequestReformerAssigningRequest.LitigationRequest.ReconciliationPeriod = Math.Max(0, (reconciliationPeriod + approvedExtendDays) - daysPassed);
                 }
 
                 foreach (var litigationRequest in results)

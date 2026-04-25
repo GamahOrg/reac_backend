@@ -1,4 +1,4 @@
-﻿using Core.GenericRepository.Shared.BaseEntities;
+using Core.GenericRepository.Shared.BaseEntities;
 using REAC.Domain.Shared.Enum;
 
 namespace REAC.Application.Contracts.Dtos.Reconciliation
@@ -9,6 +9,7 @@ namespace REAC.Application.Contracts.Dtos.Reconciliation
         public LitigationRequestExtendPeriodRequestStatus? LitigationRequestExtendPeriodRequestStatusId { get; set; }
 
         public string? FinishStatusReason { get; set; }
+        public string? Notes { get; set; }
 
     }
 }

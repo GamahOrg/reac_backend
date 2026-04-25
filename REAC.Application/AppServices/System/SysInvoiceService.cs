@@ -157,9 +157,14 @@ namespace REAC.Application.AppServices.System
                     if (litigationRequest == null)
                         return new BaseResponse { Message = "الطلب غير موجودة" };
 
-                    litigationRequest.ExternalStatusId = RequestStatus.ArbitrationFeesHaveBeenCollected;
-                    litigationRequest.InternalStatusId = RequestStatus.ArbitrationFeesHaveBeenCollected;
                     litigationRequest.IsArbitrationFeesHaveBeenCollected = true;
+                    if (litigationRequest.InternalStatusId != RequestStatus.Cancelled
+                        && litigationRequest.InternalStatusId != RequestStatus.Rejected
+                        && litigationRequest.IsFinished != true)
+                    {
+                        litigationRequest.ExternalStatusId = RequestStatus.ArbitrationFeesHaveBeenCollected;
+                        litigationRequest.InternalStatusId = RequestStatus.ArbitrationFeesHaveBeenCollected;
+                    }
 
                     _repository.Update<LitigationRequest, Guid>(litigationRequest);
 

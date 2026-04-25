@@ -1,4 +1,4 @@
-﻿using Core.GenericRepository.Shared.Pagging;
+using Core.GenericRepository.Shared.Pagging;
 using Core.Log.Application.Contracts.Dto;
 using Core.Shared.Responses;
 using Microsoft.EntityFrameworkCore;
@@ -91,8 +91,20 @@ namespace REAC.Application.ModuleServices
                     litigationRequest.LitigationRequestSubStage = LitigationRequestSubStage.LitigationRequestAddArbitratorListNomination;
                     litigationRequest.ArbitratorsCountDateTime = DateTime.Now;
 
-                    litigationRequest.ExternalStatusId = RequestStatus.CollectionOfArbitrationFeesRequestIsBeingSent;
-                    litigationRequest.InternalStatusId = RequestStatus.CollectionOfArbitrationFeesRequestIsBeingSent;
+                    if (litigationRequest.IsExemptionReduction == true)
+                    {
+                        litigationRequest.IsArbitrationFeesHaveBeenCollected = true;
+                        litigationRequest.ExternalStatusId = RequestStatus.WaitingForArbitratorsSelection;
+                        litigationRequest.InternalStatusId = RequestStatus.WaitingForArbitratorsSelection;
+                        litigationRequest.LitigationRequestSubStage = LitigationRequestSubStage.LitigationRequestAddArbitratorListNomination;
+                    }
+                    else
+                    {
+                        litigationRequest.ExternalStatusId = RequestStatus.CollectionOfArbitrationFeesRequestIsBeingSent;
+                        litigationRequest.InternalStatusId = RequestStatus.CollectionOfArbitrationFeesRequestIsBeingSent;
+                    }
+
+                     _repository.Update<LitigationRequest, Guid>(litigationRequest);
 
                     await _repository.AddAsync<WorkFlowLog, Guid>(new WorkFlowLog()
                     {
@@ -1243,10 +1255,18 @@ namespace REAC.Application.ModuleServices
                 litigationRequest.LitigationRequestSubStage = LitigationRequestSubStage.LitigationRequestAddArbitratorListNomination;
                 litigationRequest.ArbitratorsCountDateTime = DateTime.Now;
 
-                if (litigationRequest.FirstPartyArbitratorsCount.Value == litigationRequest.SecondPartyArbitratorsCount.Value && litigationRequest.IsExemptionReduction == false)
+                if (litigationRequest.FirstPartyArbitratorsCount.Value == litigationRequest.SecondPartyArbitratorsCount.Value)
                 {
-                    litigationRequest.ExternalStatusId = RequestStatus.CollectionOfArbitrationFeesRequestIsBeingSent;
-                    litigationRequest.InternalStatusId = RequestStatus.CollectionOfArbitrationFeesRequestIsBeingSent;
+                    if (litigationRequest.IsExemptionReduction == true)
+                    {
+                        litigationRequest.IsArbitrationFeesHaveBeenCollected = true;
+                        litigationRequest.ExternalStatusId = RequestStatus.WaitingForArbitratorsSelection;
+                        litigationRequest.InternalStatusId = RequestStatus.WaitingForArbitratorsSelection;
+                    }
+                    else
+                    {
+                        litigationRequest.ExternalStatusId = RequestStatus.CollectionOfArbitrationFeesRequestIsBeingSent;
+                        litigationRequest.InternalStatusId = RequestStatus.CollectionOfArbitrationFeesRequestIsBeingSent;
 
                     #region اضافة فاتورة              
                     var addInvoice = await AddInvoice(litigationRequest);
@@ -1342,11 +1362,10 @@ namespace REAC.Application.ModuleServices
 
 
 
-                }
+                        }
+                    }
                 else
                 {
-                    // Send Notification
-                    // تم الإنتهاء من تحديد عدد المحكمين من قبل المدعى والمدعى عليه
                     try
                     {
                         var arbitrationAdmin = await _sysEmployeeService.GetAdminsByDepartmentType(DepartmentType.Arbitration);

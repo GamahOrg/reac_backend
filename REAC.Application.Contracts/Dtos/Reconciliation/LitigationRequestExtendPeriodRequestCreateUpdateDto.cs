@@ -1,4 +1,4 @@
-﻿using Core.GenericRepository.Shared.BaseEntities;
+using Core.GenericRepository.Shared.BaseEntities;
 
 namespace REAC.EntityFrameworkCore.Entities.Reconciliation;
 
@@ -11,6 +11,7 @@ public class LitigationRequestExtendPeriodRequestCreateUpdateDto : BaseEntity<Gu
     public string RequestReason { get; set; } = null!;
 
     public List<Guid> Files { get; set; }
+    public DateTime? CreatedOn { get; set; }
 }
 
 

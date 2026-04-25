@@ -1,7 +1,7 @@
-﻿using Core.GenericRepository.Shared.BaseEntities;
+using Core.GenericRepository.Shared.BaseEntities;
 using REAC.Domain.Shared.Enum;
 
-namespace REAC.EntityFrameworkCore.Entities.Litigation;
+namespace REAC.Application.Contracts.Dtos.Litigation;
 
 public partial class LitigationRequestMircoDto : BaseEntity<Guid>
 {
@@ -22,6 +22,8 @@ public partial class LitigationRequestMircoDto : BaseEntity<Guid>
 
     public ApproveRejectStatus Response { get; set; }
 
+    public int TotalArbitrationPeriod { get; set; }
+    public int TotalReconciliationPeriod { get; set; }
 
 }
 public partial class LitigationRequestMircoArbitratorDto : BaseEntity<Guid>
@@ -102,7 +104,7 @@ public partial class LitigationRequestMircoForRequestSessionDto : BaseEntity<Gui
     public DateTime SessionDatetime { get; set; }
     public string? Url { get; set; }
     public long? MeetingId { get; set; }
-    public string? SesstionType { get; set; }
+    public string? SessionType { get; set; }
 }
 
 public partial class LitigationRequestMircoForRequestReformerDto : BaseEntity<Guid>
@@ -162,13 +164,13 @@ public partial class LitigationRequestMircoForAdminReconciliationReportDto : Bas
     public DateTime? SubmissionDate { get; set; }
 
     /// <summary>تاريخ تأكيد سداد رسوم الصلح (PaidOn)</summary>
-    public DateTime? ReconciliationFeesPaidDate { get; set; }
+    public DateTime? FeeConfirmationDate { get; set; }
 
     /// <summary>تاريخ قبول المصلح الدعوى (StartReconciliationDate)</summary>
     public DateTime? ReformerAcceptanceDate { get; set; }
 
     /// <summary>تاريخ إصدار المحضر (LitigationRequestReconciliationReport.ReportDate)</summary>
-    public DateTime? ReportIssuanceDate { get; set; }
+    public DateTime? ReportDate { get; set; }
 }
 
 public partial class LitigationRequestMircoForAdminReportDto : BaseEntity<Guid>
@@ -193,4 +195,7 @@ public partial class LitigationRequestMircoForAdminReportDto : BaseEntity<Guid>
 
     /// <summary>تاريخ إصدار الحكم (JudgmentDecisionIssuingDateTime)</summary>
     public DateTime? JudgmentDate { get; set; }
+
+    /// <summary>حالة طلب التصحيح</summary>
+    public string? CorrectionRequestStatus { get; set; }
 }
