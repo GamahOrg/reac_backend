@@ -92,6 +92,20 @@ namespace REAC.Application.ModuleServices
                     }
                 }
 
+                // Check for duplicate session time within the same case (compare Ticks to avoid DateTimeKind mismatch)
+                bool sameTimeExists = litigationRequest.LitigationRequestSessions
+                    .Any(x => x.SessionDatetime.Ticks == requestPayload.SessionDateTime.Ticks);
+                if (sameTimeExists)
+                    return new BaseResponse { IsDone = false, Message = "يوجد جلسة بنفس التاريخ والوقت لهذه الدعوى، برجاء اختيار موعد آخر" };
+
+                // Check cross-type sessions on same case at same datetime (load then Ticks to bypass DateTimeKind mismatch)
+                var otherTypeSessions = (await _repository.GetQueryable<LitigationRequestSession, Guid>())?
+                    .Where(x => x.LitigationRequestId == requestPayload.RequestId
+                                && x.SessionTypeId != LitigationSessionType.ArbitrationSession)
+                    .ToList() ?? new List<LitigationRequestSession>();
+                if (otherTypeSessions.Any(x => x.SessionDatetime.Ticks == requestPayload.SessionDateTime.Ticks))
+                    return new BaseResponse { IsDone = false, Message = "يوجد جلسة بنفس التاريخ والوقت لهذه الدعوى، برجاء اختيار موعد آخر" };
+
                 // Conflict check against all parties and arbitrators on the same day (across arbitration and reconciliation)
                 var allSessionsOnDay = (await _repository.GetQueryable<LitigationRequestSession, Guid>())?
                     .Include(x => x.LitigationRequest).ThenInclude(x => x.Contract)
@@ -143,7 +157,7 @@ namespace REAC.Application.ModuleServices
 
                     foreach (var session in litigationRequest.LitigationRequestSessions.ToList())
                     {
-                        if (requestPayload.SessionDateTime == session.SessionDatetime)
+                        if (requestPayload.SessionDateTime.Ticks == session.SessionDatetime.Ticks)
                             return new BaseResponse()
                             {
                                 IsDone = false,
@@ -517,7 +531,8 @@ namespace REAC.Application.ModuleServices
                           .Include(x => x.Contract.SecondPartyFacility)
                           .Include(x => x.Contract.SecondPartyCitizen)
                           .Include(x => x.Contract.LitigationRequestContractType)
-                          .Include(x => x.LitigationRequestArbitratorLists).AsNoTracking()
+                          .Include(x => x.LitigationRequestArbitratorLists)
+                          .Include(x => x.LitigationRequestArbitratorAssigningRequests).AsNoTracking()
                           .Where(x => x.Id == requestId
                           & (x.ArbitratorCitizenId == referenceId
                              || x.LitigationRequestArbitratorLists.Any(a => a.ArbitratorCitizenId == referenceId))
@@ -535,6 +550,16 @@ namespace REAC.Application.ModuleServices
 
             bool allowAdd = true;
             bool isDone = false;
+
+            if (litigationRequest.LitigationRequestArbitratorLists.Count >= 3)
+            {
+                bool isChairman = litigationRequest.LitigationRequestArbitratorAssigningRequests
+                    .Any(x => x.ArbitratorAssigningRequestTypeId == ArbitratorAssigningRequestType.ArbitratorsChairman
+                        && x.Response == LitigationRequestArbitratorAssigningRequestStatus.Approve
+                        && x.CitizenId == referenceId);
+                if (!isChairman)
+                    allowAdd = false;
+            }
 
             if (litigationRequest.IsFinished.HasValue)
             {
@@ -1095,6 +1120,14 @@ private async Task<BaseResponse> AddVerdictPronouncementSession(ScheduleSessionP
                 return new BaseResponse { IsDone = false, Message = "موعد جلسة النطق بالحكم يجب ألا تتخطى مدة مرحلة التحكيم" };
         }
 
+        // Check cross-type sessions on same case at same datetime (load then Ticks to bypass DateTimeKind mismatch)
+        var otherTypeSessionsForVerdict = (await _repository.GetQueryable<LitigationRequestSession, Guid>())?
+            .Where(x => x.LitigationRequestId == requestPayload.RequestId
+                        && x.SessionTypeId != LitigationSessionType.VerdictPronouncement)
+            .ToList() ?? new List<LitigationRequestSession>();
+        if (otherTypeSessionsForVerdict.Any(x => x.SessionDatetime.Ticks == requestPayload.SessionDateTime.Ticks))
+            return new BaseResponse { IsDone = false, Message = "يوجد جلسة بنفس التاريخ والوقت لهذه الدعوى، برجاء اختيار موعد آخر" };
+
         bool isRescheduling = false;
         var existingVerdictSession = litigationRequest.LitigationRequestSessions
             .FirstOrDefault(x => x.SessionTypeId == LitigationSessionType.VerdictPronouncement);
@@ -1104,7 +1137,7 @@ private async Task<BaseResponse> AddVerdictPronouncementSession(ScheduleSessionP
             if (existingVerdictSession.SessionDatetime <= DateTime.Now)
                 return new BaseResponse { IsDone = false, Message = "لا يمكن إنشاء جلسة نطق حكم جديدة، الجلسة السابقة مكتملة" };
 
-            if (existingVerdictSession.SessionDatetime == requestPayload.SessionDateTime)
+            if (existingVerdictSession.SessionDatetime.Ticks == requestPayload.SessionDateTime.Ticks)
                 return new BaseResponse { IsDone = false, Message = "يوجد جلسة نطق حكم بنفس التاريخ" };
 
             var relatedModificationRequests = (await _repository.GetQueryable<LititgationRequestModificationRequest, Guid>())?
@@ -1382,6 +1415,14 @@ private async Task<BaseResponse> AddDeliberationSession(ScheduleSessionProcessRe
             if (daysDiff >= daysRemaining)
                 return new BaseResponse { IsDone = false, Message = "موعد جلسة المداولة يجب ألا تتخطى مدة مرحلة التحكيم" };
         }
+
+        // Check cross-type sessions on same case at same datetime (load then Ticks to bypass DateTimeKind mismatch)
+        var otherTypeSessionsForDeliberation = (await _repository.GetQueryable<LitigationRequestSession, Guid>())?
+            .Where(x => x.LitigationRequestId == requestPayload.RequestId
+                        && x.SessionTypeId != LitigationSessionType.DeliberationBetweenArbitrators)
+            .ToList() ?? new List<LitigationRequestSession>();
+        if (otherTypeSessionsForDeliberation.Any(x => x.SessionDatetime.Ticks == requestPayload.SessionDateTime.Ticks))
+            return new BaseResponse { IsDone = false, Message = "يوجد جلسة بنفس التاريخ والوقت لهذه الدعوى، برجاء اختيار موعد آخر" };
 
         // Time conflict check against arbitrators' other sessions (across all session types)
         var arbitratorIds = litigationRequest.LitigationRequestArbitratorLists

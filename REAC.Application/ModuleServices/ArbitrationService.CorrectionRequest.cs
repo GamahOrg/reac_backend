@@ -386,12 +386,6 @@ namespace REAC.Application.ModuleServices
                 else
                 {
                     correctionRequest.CorrectionDecisionText = requestPayload.CorrectionDecisionText;
-                    var report = litigationRequest.LitigationRequestArbitrationReports?.LastOrDefault();
-                    if (report != null)
-                    {
-                        report.JudgmentDecisionText = requestPayload.CorrectionDecisionText;
-                        _repository.Update<LitigationRequestArbitrationReport, Guid>(report);
-                    }
                 }
 
                 _repository.Update<LitigationRequestArbitrationCorrectionRequest, Guid>(correctionRequest);

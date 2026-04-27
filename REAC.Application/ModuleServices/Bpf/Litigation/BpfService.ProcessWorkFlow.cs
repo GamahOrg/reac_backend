@@ -531,6 +531,7 @@ namespace Bpf.Application.ModuleServices
 
                     case RequestStatus.ReconciliationFeesHaveBeenCollected:
                         litigationRequest.IsReconciliationFeesHaveBeenCollected = true;
+                        litigationRequest.PaidOn = DateTime.Now;
                         // Send Notification
                         // تم دفع رسوم الصلح رقم ....... لمقدم الطلب - موظف التدقيق - مدير ادارة التدقيق
                         try
