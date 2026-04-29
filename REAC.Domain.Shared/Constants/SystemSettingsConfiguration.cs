@@ -22,6 +22,8 @@ namespace REAC.Domain.Shared.Constants
             "Reconciliation.ExtendRequest.Added" ,
             "Reconciliation.ExtendRequest.Accepted" ,
             "Reconciliation.ExtendRequest.Rejected" ,
+            "Reconciliation.Reconciliator.AcceptTask" ,
+            "Reconciliation.Reconciliator.RejectTask" ,
             "Reformer.DeActivate" ,
             "Reformer.Activate" ,
             "SLA.LitigationRequestReformerAssigningRequestResponsePeriod" ,
@@ -83,7 +85,8 @@ namespace REAC.Domain.Shared.Constants
             "ArbitratorsNominationList.Added",
             "SLA.LitigationRequestArbitrationFeesNotPaidReminderFirstPeriod",
             "SLA.VerdictSessionReminderHoursBefore",
-            "SLA.VerdictSessionReminderMessage"
+            "SLA.VerdictSessionReminderMessage",
+            "Arbitration.LitigationRequestArbitrationReportExplanationRequestPeriod"
 
         };
 

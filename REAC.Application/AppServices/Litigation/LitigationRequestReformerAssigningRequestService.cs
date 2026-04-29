@@ -498,16 +498,6 @@ namespace REAC.Application.AppServices.Litigation
                     {
                         foreach (var item in litigationRequest.LitigationRequestReformerAssigningRequests.Where(x => x.CitizenId == referenceId))
                         {
-                            int reconciliationPeriod = 0;
-                            int.TryParse(_sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reconciliation_Period).Result.Data?.Value, out reconciliationPeriod);
-                            int ExtendDays = item.LitigationRequest.LitigationRequestExtendPeriodRequests
-                                .Where(x => x.LitigationRequestExtendPeriodRequestTypeId == LitigationRequestExtendPeriodRequestType.Reconciliation
-                                         && x.LitigationRequestExtendPeriodRequestStatusId == LitigationRequestExtendPeriodRequestStatus.Approve)
-                                .Sum(x => x.RequiredDays);
-                            int daysPassed = (DateTime.Now - (DateTime)item.RequestOn).Days;
-                            int calculatedPeriod = ((reconciliationPeriod + ExtendDays) - daysPassed);
-                            item.LitigationRequest.ReconciliationPeriod = Math.Max(0, calculatedPeriod);
-
                             CustomLitigationRequestMircoDto litigationRequestMircoDto = new CustomLitigationRequestMircoDto
                             {
                                 Id = item.Id,
@@ -598,19 +588,6 @@ namespace REAC.Application.AppServices.Litigation
             List<CustomLitigationRequestMircoAllDto> litigationRequestMircoDtos = new List<CustomLitigationRequestMircoAllDto>();
             if (results != null)
             {
-                int reconciliationPeriod = 0;
-                int.TryParse(_sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reconciliation_Period).Result.Data?.Value, out reconciliationPeriod);
-
-                foreach (var litigationRequestReformerAssigningRequest in results)
-                {
-                    int approvedExtendDays = litigationRequestReformerAssigningRequest.LitigationRequest.LitigationRequestExtendPeriodRequests
-                        .Where(x => x.LitigationRequestExtendPeriodRequestTypeId == LitigationRequestExtendPeriodRequestType.Reconciliation
-                                 && x.LitigationRequestExtendPeriodRequestStatusId == LitigationRequestExtendPeriodRequestStatus.Approve)
-                        .Sum(x => x.RequiredDays);
-                    int daysPassed = (DateTime.Now - (DateTime)litigationRequestReformerAssigningRequest.RequestOn).Days;
-                    litigationRequestReformerAssigningRequest.LitigationRequest.ReconciliationPeriod = Math.Max(0, (reconciliationPeriod + approvedExtendDays) - daysPassed);
-                }
-
                 foreach (var litigationRequest in results)
                 {
                     //var RejectReason1 = (await _repository.GetQueryable<LitigationRequestReformerAssigningRequest, Guid>()).Where(s => s.LitigationRequestId == litigationRequest.LitigationRequestId && s.Response == LitigationRequestReformerAssigningRequestStatus.Cancelled)?.OrderBy(s => s.ResponseOn);

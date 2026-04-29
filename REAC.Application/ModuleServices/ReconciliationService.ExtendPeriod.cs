@@ -360,22 +360,19 @@ namespace REAC.Application.ModuleServices
 
             if (litigationRequest != null)
             {
-                // 1. DIRECT DATABASE QUERY for approved days to ensure we get 100% accurate data from DB
                 var approvedDaysInHistory = (await _repository.GetQueryable<LitigationRequestExtendPeriodRequest, Guid>())
-                    .Where(x => x.LitigationRequestId == litigationRequest.Id 
+                    .Where(x => x.LitigationRequestId == litigationRequest.Id
                              && x.LitigationRequestExtendPeriodRequestStatusId == LitigationRequestExtendPeriodRequestStatus.Approve
                              && x.LitigationRequestExtendPeriodRequestTypeId == LitigationRequestExtendPeriodRequestType.Reconciliation)
                     .Sum(x => x.RequiredDays);
 
-                // 2. Use the ReconciliationPeriod snapshot and subtract the direct DB sum
-                var currentTotalPeriod = litigationRequest.ReconciliationPeriod.GetValueOrDefault(30);
+                var currentTotalPeriod = litigationRequest.ReconciliationPeriod.GetValueOrDefault(0);
                 var originalDuration = currentTotalPeriod - approvedDaysInHistory;
 
                 var baseDate = litigationRequest.StartReconciliationDate ?? litigationRequest.CreatedOn;
                 var orderedHistory = extendPeriodRequest.OrderBy(x => x.CreatedOn).ToList();
                 var currentCumulativeDays = originalDuration;
 
-                // Build the timeline sequentially
                 foreach (var h in orderedHistory)
                 {
                     h.LitigationFinishedDate = baseDate.AddDays(currentCumulativeDays);
@@ -387,20 +384,17 @@ namespace REAC.Application.ModuleServices
                     }
                 }
 
-                // 3. Populate the 'Add Form' DTO ONLY if it's a new pending request or a fresh one
                 if (extendPeriodRequestDto != null)
                 {
                     var lastHistory = orderedHistory.LastOrDefault();
-                    
-                    // If the latest from history is NOT pending, then this DTO is for a BRAND NEW request
-                    // If it IS pending, it was already updated inside the loop above with correct dates.
-                    if (lastHistory == null || lastHistory.LitigationRequestExtendPeriodRequestStatusId != null) 
+
+                    if (lastHistory == null || lastHistory.LitigationRequestExtendPeriodRequestStatusId != null)
                     {
                         extendPeriodRequestDto.LitigationFinishedDate = baseDate.AddDays(currentCumulativeDays);
                         extendPeriodRequestDto.LitigationFininshedNewDate = extendPeriodRequestDto.LitigationFinishedDate.Value.AddDays(extendPeriodRequestDto.RequiredDays);
                     }
-                    
-                    if (lastHistory != null && lastHistory.LitigationRequestExtendPeriodRequestStatusId == null) // Pending
+
+                    if (lastHistory != null && lastHistory.LitigationRequestExtendPeriodRequestStatusId == null)
                     {
                          extendPeriodRequestDto.Status = "extendLitigationRequest.underReview";
                          extendPeriodRequestDto.FinishStatusReason = lastHistory.FinishStatusReason;
@@ -490,22 +484,17 @@ namespace REAC.Application.ModuleServices
 
             if (litigationRequest != null)
             {
-                // 1. DIRECT DATABASE QUERY for approved days to ensure we get 100% accurate data from DB
-                var approvedDaysInHistory = (await _repository.GetQueryable<LitigationRequestExtendPeriodRequest, Guid>())
-                    .Where(x => x.LitigationRequestId == litigationRequest.Id 
-                             && x.LitigationRequestExtendPeriodRequestStatusId == LitigationRequestExtendPeriodRequestStatus.Approve
+                var approvedDaysInHistory = litigationRequest.LitigationRequestExtendPeriodRequests
+                    .Where(x => x.LitigationRequestExtendPeriodRequestStatusId == LitigationRequestExtendPeriodRequestStatus.Approve
                              && x.LitigationRequestExtendPeriodRequestTypeId == LitigationRequestExtendPeriodRequestType.Reconciliation)
                     .Sum(x => x.RequiredDays);
 
-                // 2. Use the ReconciliationPeriod snapshot and subtract the direct DB sum
-                var currentTotalPeriod = litigationRequest.ReconciliationPeriod.GetValueOrDefault(30);
-                var originalDuration = currentTotalPeriod - approvedDaysInHistory;
+                var originalDuration = litigationRequest.ReconciliationPeriod.GetValueOrDefault(0) - approvedDaysInHistory;
 
                 var baseDate = litigationRequest.StartReconciliationDate ?? litigationRequest.CreatedOn;
                 var orderedHistory = extendPeriodRequest.OrderBy(x => x.CreatedOn).ToList();
                 var currentCumulativeDays = originalDuration;
 
-                // Build the timeline sequentially
                 foreach (var h in orderedHistory)
                 {
                     h.LitigationFinishedDate = baseDate.AddDays(currentCumulativeDays);
@@ -517,19 +506,17 @@ namespace REAC.Application.ModuleServices
                     }
                 }
 
-                // 3. Populate the current (latest) request DTO
                 if (extendPeriodRequestDto != null)
                 {
                     var lastHistory = orderedHistory.LastOrDefault();
 
-                    // If latest in history is not pending, this DTO is for a NEW request form
                     if (lastHistory == null || lastHistory.LitigationRequestExtendPeriodRequestStatusId != null)
                     {
                         extendPeriodRequestDto.LitigationFinishedDate = baseDate.AddDays(currentCumulativeDays);
                         extendPeriodRequestDto.LitigationFininshedNewDate = extendPeriodRequestDto.LitigationFinishedDate.Value.AddDays(extendPeriodRequestDto.RequiredDays);
                     }
 
-                    if (lastHistory != null && lastHistory.LitigationRequestExtendPeriodRequestStatusId == null) // Pending
+                    if (lastHistory != null && lastHistory.LitigationRequestExtendPeriodRequestStatusId == null)
                     {
                         extendPeriodRequestDto.Status = "extendLitigationRequest.underReview";
                         extendPeriodRequestDto.FinishStatusReason = lastHistory.FinishStatusReason;

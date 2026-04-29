@@ -1494,7 +1494,7 @@ namespace REAC.Application.AppServices.Litigation
                 .Include(x => x.City)
                 .Include(x => x.ApplicantCitizen)
                 .Include(x => x.DefendantCitizen.Nationality)
-                .Include(x => x.DefendantFacility)
+                .Include(x => x.DefendantFacility).ThenInclude(f => f.Citizen)
                 .Include(x => x.Contract.SecondPartyCitizen)
                 .Include(x => x.Contract.SecondPartyCitizen.Area)
                 .Include(x => x.Contract.SecondPartyCitizen.City)
@@ -1593,7 +1593,7 @@ namespace REAC.Application.AppServices.Litigation
                 .Include(x => x.City)
                 .Include(x => x.ApplicantCitizen)
                 .Include(x => x.DefendantCitizen.Nationality)
-                .Include(x => x.DefendantFacility)
+                .Include(x => x.DefendantFacility).ThenInclude(f => f.Citizen)
                 .Include(x => x.Contract.SecondPartyCitizen)
                 .Include(x => x.Contract.SecondPartyCitizen.Nationality)
                 .Include(x => x.Contract.FirstPartyCitizen)
@@ -1826,7 +1826,7 @@ namespace REAC.Application.AppServices.Litigation
                 .Include(x => x.City)
                 .Include(x => x.ApplicantCitizen)
                 .Include(x => x.DefendantCitizen.Nationality)
-                .Include(x => x.DefendantFacility)
+                .Include(x => x.DefendantFacility).ThenInclude(f => f.Citizen)
                 .Include(x => x.Contract.SecondPartyCitizen)
                 .Include(x => x.Contract.SecondPartyCitizen.Area)
                 .Include(x => x.Contract.SecondPartyCitizen.City)
@@ -4137,7 +4137,14 @@ namespace REAC.Application.AppServices.Litigation
                         if (!addNewFacilityFromIntegrationResponse.IsDone)
                             return addNewFacilityFromIntegrationResponse;
 
-                        //goto TryGetFacilityAgian;
+                        facility = (await _repository.GetQueryable<Facility, Guid>())
+                            .FirstOrDefault(x => x.CommercialRegisterNumber == litigationRequestDto.SecondPartyFacilityCommercialRegistrationNo || x.Facility700Number == litigationRequestDto.SecondPartyFacilityCommercialRegistrationNo);
+                    }
+
+                    if (facility != null && !string.IsNullOrWhiteSpace(litigationRequestDto.SecondPartyEmail))
+                    {
+                        facility.Email = litigationRequestDto.SecondPartyEmail;
+                        _repository.Update<Facility, Guid>(facility);
                     }
                 }
 
@@ -4226,8 +4233,10 @@ namespace REAC.Application.AppServices.Litigation
                               .Include(x => x.Contract.SecondPartyFacility.Delegators)
                               .Where(x => x.Id == litigationRequest.Id).ToList().FirstOrDefault();
 
-                    newlitigationRequest.ReconciliationPeriod = newlitigationRequest.Contract.LitigationRequestContractType.ReconciliationPeriod;
                     newlitigationRequest.PretenderRating = 10;
+                    int reconciliationPeriod = 0;
+                    int.TryParse(_sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reconciliation_Period).Result.Data?.Value, out reconciliationPeriod);
+                    newlitigationRequest.ReconciliationPeriod = reconciliationPeriod;
                     int arbitrationPeriod = 0;
                     int.TryParse(_sysSettingService.GetBySettingKey(SysSettingKeyConstants.Arbitration_Period).Result.Data?.Value, out arbitrationPeriod);
                     newlitigationRequest.ArbitrationPeriod = arbitrationPeriod;
@@ -4487,8 +4496,10 @@ namespace REAC.Application.AppServices.Litigation
                               .Include(x => x.Contract.SecondPartyFacility.Delegators)
                               .Where(x => x.Id == litigationRequest.Id).ToList().FirstOrDefault();
 
-                    newlitigationRequest.ReconciliationPeriod = newlitigationRequest.Contract.LitigationRequestContractType.ReconciliationPeriod;
                     newlitigationRequest.PretenderRating = 10;
+                    int reconciliationPeriod2 = 0;
+                    int.TryParse(_sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reconciliation_Period).Result.Data?.Value, out reconciliationPeriod2);
+                    newlitigationRequest.ReconciliationPeriod = reconciliationPeriod2;
                     var newSaveResponse = await _repository.SaveChangesAsync();
                     if (saveResponse.IsDone)
                     {
@@ -4757,8 +4768,10 @@ namespace REAC.Application.AppServices.Litigation
                               .Include(x => x.Contract.SecondPartyFacility.Delegators)
                               .Where(x => x.Id == litigationRequest.Id).ToList().FirstOrDefault();
 
-                    newlitigationRequest.ReconciliationPeriod = newlitigationRequest.Contract.LitigationRequestContractType.ReconciliationPeriod;
                     newlitigationRequest.PretenderRating = 10;
+                    int reconciliationPeriod3 = 0;
+                    int.TryParse(_sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reconciliation_Period).Result.Data?.Value, out reconciliationPeriod3);
+                    newlitigationRequest.ReconciliationPeriod = reconciliationPeriod3;
                     var newSaveResponse = await _repository.SaveChangesAsync();
                     if (saveResponse.IsDone)
                     {
