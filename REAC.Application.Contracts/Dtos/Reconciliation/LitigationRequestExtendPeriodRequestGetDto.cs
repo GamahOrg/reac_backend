@@ -1,4 +1,4 @@
-﻿using Core.GenericRepository.Shared.BaseEntities;
+using Core.GenericRepository.Shared.BaseEntities;
 using REAC.EntityFrameworkCore.Entities.Reconciliation;
 
 namespace REAC.Application.Contracts.Dtos.Reconciliation
@@ -18,8 +18,13 @@ namespace REAC.Application.Contracts.Dtos.Reconciliation
         public int LitigationRequestExtendPeriodRequestStatusId { get; set; }
 
         public string? FinishStatusReason { get; set; }
+        public string? Status { get; set; }
+        public DateTime? LitigationFinishedDate { get; set; }
+        public DateTime? LitigationFininshedNewDate { get; set; }
+
 
         public List<LitigationRequestExtendPeriodRequestFileCreateUpdateDto> LitigationRequestExtendPeriodRequestFiles { get; set; }
+        public DateTime? CreatedOn { get; set; }
 
     }
 }

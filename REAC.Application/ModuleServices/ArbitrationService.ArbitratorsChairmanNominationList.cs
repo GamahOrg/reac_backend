@@ -519,7 +519,7 @@ namespace REAC.Application.ModuleServices
                     {
                         litigationRequestForAllArbitratorNominationListDto.AllowDecision = false;
                         litigationRequestForAllArbitratorNominationListDto.AllowAdd = false;
-                        foreach (var litigationRequestArbitratorNominationList in litigationRequest.LitigationRequestArbitratorsChairmanNominationLists)
+                        foreach (var litigationRequestArbitratorNominationList in litigationRequest.LitigationRequestArbitratorsChairmanNominationLists.DistinctBy(x => x.ArbitratorChairmanCitizenId))
                         {
                             CitizenArbitratorCharmanShortStatusDto citizenArbitratorShortStatusChairmanDto = new CitizenArbitratorCharmanShortStatusDto();
                             citizenArbitratorShortStatusChairmanDto.Id = litigationRequestArbitratorNominationList.ArbitratorChairmanCitizenId;
@@ -828,8 +828,8 @@ namespace REAC.Application.ModuleServices
                     litigationRequestMircoDto.RequestCode = litigationRequest.RequestCode;
                     litigationRequestMircoDto.Status = litigationRequest.ExternalStatus.RequestStatus;
 
-                    litigationRequestMircoDto.FirstPartyName = (litigationRequest.Contract.FirstPartyCitizen == null) ? litigationRequest.Contract.FirstPartyFacility.ArabicFacilityName : litigationRequest.Contract.FirstPartyCitizen.FullName;
-                    litigationRequestMircoDto.SecondPartyName = (litigationRequest.DefendantCitizen == null) ? litigationRequest.DefendantFacility.ArabicFacilityName : litigationRequest.DefendantCitizen.FullName;
+                    litigationRequestMircoDto.FirstPartyName = (litigationRequest.Contract.FirstPartyCitizen == null) ? litigationRequest.Contract.FirstPartyFacility?.ArabicFacilityName : litigationRequest.Contract.FirstPartyCitizen?.FullName;
+                    litigationRequestMircoDto.SecondPartyName = (litigationRequest.DefendantCitizen == null) ? litigationRequest.DefendantFacility?.ArabicFacilityName : litigationRequest.DefendantCitizen?.FullName;
                     litigationRequestMircoDto.RequestTypeName = litigationRequest.Contract.LitigationRequestContractType.TypeName;
 
                     if (litigationRequest.LitigationRequestArbitratorsChairmanNominationLists
@@ -869,50 +869,55 @@ namespace REAC.Application.ModuleServices
             _jwtReader.GetReferenceId(ref referenceId);
 
             var litigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>())
-                            .Include(x => x.Area).Include(x => x.City)
-                            .Include(x => x.InternalStatus)
-                            .Include(x => x.ExternalStatus)
-                            .Include(x => x.LitigationRequestArbitratorLists)
-                            .Include(x => x.ArbitratorCitizen)
-                            .ThenInclude(x => x.ArbitratorLitigationRequests)
-                            .Include(x => x.ArbitratorCitizen)
-                            .ThenInclude(x => x.CitizenRequests)
-                            .ThenInclude(x => x.SysArbitratorClass)
+    // Filter FIRST before loading related data
+    .Where(x => x.Id == requestId
+        && x.LitigationRequestArbitratorLists.Any(l => l.ArbitratorCitizenId == referenceId))
 
-                            .Include(x => x.LitigationRequestArbitratorsChairmanNominationLists)
-                            .ThenInclude(x => x.ArbitratorChairmanCitizen)
-                            .ThenInclude(x => x.ArbitratorLitigationRequests)
+    // Basic lookups
+    .Include(x => x.Area)
+    .Include(x => x.City)
+    .Include(x => x.InternalStatus)
+    .Include(x => x.ExternalStatus)
 
-                            .Include(x => x.LitigationRequestArbitratorsChairmanNominationLists)
-                            .ThenInclude(x => x.ArbitratorChairmanCitizen)
-                            .ThenInclude(x => x.LitigationRequestArbitratorAssigningRequests)
+    // Arbitrator
+    .Include(x => x.ArbitratorCitizen)
+        .ThenInclude(x => x.CitizenRequests)
+            .ThenInclude(x => x.SysArbitratorClass)
 
-                            .Include(x => x.LitigationRequestArbitratorsChairmanNominationLists)
-                            .ThenInclude(x => x.LitigationRequestArbitratorsChairmanNominationListValues)
+    // Arbitrator Lists
+    .Include(x => x.LitigationRequestArbitratorLists)
 
-                            .Include(x => x.LitigationRequestArbitratorNominationLists)
-                            .ThenInclude(x => x.ArbitratorCitizen)
-                            .ThenInclude(x => x.CitizenRequests)
-                            .ThenInclude(x => x.SysArbitratorClass)
+    // Chairman Nomination Lists (one Include chain per ThenInclude path)
+    .Include(x => x.LitigationRequestArbitratorsChairmanNominationLists)
+        .ThenInclude(x => x.ArbitratorChairmanCitizen)
+            .ThenInclude(x => x.LitigationRequestArbitratorAssigningRequests)
+    .Include(x => x.LitigationRequestArbitratorsChairmanNominationLists)
+        .ThenInclude(x => x.LitigationRequestArbitratorsChairmanNominationListValues)
 
-                            .Include(x => x.LitigationRequestArbitratorNominationLists)
-                            .ThenInclude(x => x.ArbitratorCitizen)
-                            .ThenInclude(x => x.LitigationRequestArbitratorLists)
+    // Arbitrator Nomination Lists
+    .Include(x => x.LitigationRequestArbitratorNominationLists)
+        .ThenInclude(x => x.ArbitratorCitizen)
+            .ThenInclude(x => x.CitizenRequests)
+                .ThenInclude(x => x.SysArbitratorClass)
+    .Include(x => x.LitigationRequestArbitratorNominationLists)
+        .ThenInclude(x => x.ArbitratorCitizen)
+            .ThenInclude(x => x.LitigationRequestArbitratorLists)
 
+    // Contract
+    .Include(x => x.Contract)
+        .ThenInclude(x => x.LitigationRequestContractType)
+    .Include(x => x.Contract)
+        .ThenInclude(x => x.FirstPartyFacility)
+    .Include(x => x.Contract)
+        .ThenInclude(x => x.FirstPartyCitizen)
+    .Include(x => x.Contract)
+        .ThenInclude(x => x.SecondPartyFacility)
+    .Include(x => x.Contract)
+        .ThenInclude(x => x.SecondPartyCitizen)
 
-                            .Include(x => x.LitigationRequestArbitratorLists)
-                            .Include(x => x.Contract)
-
-                            .Include(x => x.Contract.LitigationRequestContractType)
-                            .Include(x => x.Contract.FirstPartyFacility)
-                            .Include(x => x.Contract.FirstPartyCitizen)
-                            .Include(x => x.Contract.SecondPartyFacility)
-                            .Include(x => x.Contract.SecondPartyCitizen)
-                            .Include(x => x.Contract.LitigationRequestContractType)
-                            .Where(x => x.Id == requestId
-                            & x.LitigationRequestArbitratorLists.Any(l => l.ArbitratorCitizenId == referenceId)
-                            )
-                            .FirstOrDefault();
+    .AsSplitQuery()     // Split to avoid cartesian explosion
+    .AsNoTracking()
+    .FirstOrDefault();
 
             if (litigationRequest == null)
                 return new BaseResponse() { IsDone = false, Message = "طلب غير موجود" };
@@ -952,7 +957,7 @@ namespace REAC.Application.ModuleServices
             litigationRequestForAllArbitratorNominationListDto.CitizenArbitratorShortStatusDtos = new List<CitizenArbitratorShortStatusWithValueDto>();
             if (litigationRequest.LitigationRequestArbitratorsChairmanNominationLists.Any())
             {
-                foreach (var chairmanNominationList in litigationRequest.LitigationRequestArbitratorsChairmanNominationLists)
+                foreach (var chairmanNominationList in litigationRequest.LitigationRequestArbitratorsChairmanNominationLists.DistinctBy(x => x.ArbitratorChairmanCitizenId))
                 {
                     CitizenArbitratorShortStatusWithValueDto citizenArbitratorShortStatusDto = new CitizenArbitratorShortStatusWithValueDto();
                     citizenArbitratorShortStatusDto.Id = chairmanNominationList.Id;
@@ -1376,8 +1381,8 @@ namespace REAC.Application.ModuleServices
             else
             {
                 var areaDistances = (await _repository.GetQueryable<SysAreaDistances, Guid>())
-                                  .Where(s => s.SourceAreaId == litigationRequest.AreaId && s.DestinationAreaId== arbitratorCitizenRequest.AreaId).FirstOrDefault();
-                if (areaDistances!=null)
+                                  .Where(s => s.SourceAreaId == litigationRequest.AreaId && s.DestinationAreaId == arbitratorCitizenRequest.AreaId).FirstOrDefault();
+                if (areaDistances != null)
                 {
                     return areaDistances.Distance;
                 }

@@ -7,6 +7,7 @@ using REAC.Application.Contracts.Dtos.Delegator;
 using REAC.Application.Contracts.Dtos.Facility;
 using REAC.Application.Contracts.Dtos.Integration.Nafath;
 using REAC.Application.Contracts.Dtos.Litigation;
+using REAC.Application.Contracts.Dtos.Litigation.Rating;
 using REAC.Application.Contracts.Dtos.Notification;
 using REAC.Application.Contracts.Dtos.Reconciliation;
 using REAC.Application.Contracts.Dtos.Session;
@@ -206,6 +207,7 @@ namespace REAC.Application.Contracts
                     .ForMember(dest => dest.AreaName, opt => opt.MapFrom(src => src.Area.AreaName))
                     .ForMember(dest => dest.CityName, opt => opt.MapFrom(src => src.City.CityName))
                 .ReverseMap();
+            CreateMap<BeneficiarySatisfactionSurvey, BeneficiarySatisfactionSurveyDto>().ReverseMap();
             CreateMap<CitizenBankAccount, CitizenBankAccountCreateUpdateDto>().ReverseMap();
             CreateMap<LitigationRequestContract, LitigationRequestContractShortDto>().ReverseMap();
             CreateMap<SysNotification, SysNotificationCreateUpdateDto>().ReverseMap();
@@ -263,7 +265,14 @@ namespace REAC.Application.Contracts
             CreateMap<Delegator, LawyerDelegatorDto>().ReverseMap();
 
             CreateMap<Facility, FacilityCreateUpdateDto>().ReverseMap();
-            CreateMap<Facility, FacilityShortDto>().ReverseMap();
+            CreateMap<Facility, FacilityShortDto>()
+                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
+                .ForMember(dest => dest.Mobile, opt => opt.MapFrom(src => src.Citizen != null ? src.Citizen.Mobile : null))
+                .ForMember(dest => dest.IdentityNumber, opt => opt.MapFrom(src => src.Citizen != null ? src.Citizen.IdentityNumber : null))
+                .ForMember(dest => dest.City, opt => opt.MapFrom(src => src.City))
+                .ForMember(dest => dest.District, opt => opt.MapFrom(src => src.District))
+                .ForMember(dest => dest.Street, opt => opt.MapFrom(src => src.Street))
+                .ReverseMap();
             CreateMap<Facility, GetAllFacilitiesResponseDto>().ReverseMap();
             CreateMap<Facility, GetFacilityByIdResponse>().ReverseMap();
             CreateMap<Facility, EditFacilityRequestDto>().ReverseMap();

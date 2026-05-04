@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Core.GenericRepository.BaseRepository;
 using Core.Log.Application.Contracts.Dto;
 using Core.Log.Application.Contracts.IAppServices;
@@ -54,6 +54,7 @@ namespace REAC.Application.AppServices.SLA
                              .ThenInclude(x => x.WorkFlowStep)
                              .Include(x => x.WorkFlowProcessingLogs)
                              .ThenInclude(x => x.Employee)
+                             .Include(x => x.LitigationRequestReopenLogs)
                              .Include(x => x.Contract)
                              .Include(x => x.Contract.FirstPartyFacility).ThenInclude(x => x.Citizen)
                              .Include(x => x.Contract.FirstPartyCitizen)
@@ -136,7 +137,7 @@ namespace REAC.Application.AppServices.SLA
                                     double totalReviewHours = 0;
                                     totalReviewHours = (DateTime.Now - (DateTime)litigationRequest.ArbitratorsCountDateTime).TotalHours;
 
-                                    if (totalReviewHours >= secondReminderForApplicantToPayLitigationRequestArbitrationFeesPeriod)
+                                    if (totalReviewHours >= secondReminderForApplicantToPayLitigationRequestArbitrationFeesPeriod && !litigationRequest.LitigationRequestReopenLogs.Any())
                                     {
 
                                         litigationRequest.InternalStatusId = RequestStatus.Cancelled;
@@ -1615,7 +1616,82 @@ namespace REAC.Application.AppServices.SLA
 
             var repositoryLitigationRequestExtendRequestResponse = await _repository.SaveChangesAsync(default);
 
+            await SendVerdictSessionReminders();
+
             return new BaseResponse() { IsDone = true };
+        }
+
+        private async Task SendVerdictSessionReminders()
+        {
+            int reminderHoursBefore = 24;
+            int.TryParse(_sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_VerdictSessionReminderHoursBefore).Result.Data?.Value, out reminderHoursBefore);
+            if (reminderHoursBefore <= 0) reminderHoursBefore = 24;
+
+            var litigationRequests = (await _repository.GetQueryable<LitigationRequest, Guid>())?
+                .Include(x => x.ApplicantCitizen)
+                .Include(x => x.ArbitratorCitizen)
+                .Include(x => x.Contract.FirstPartyCitizen)
+                .Include(x => x.Contract.FirstPartyFacility).ThenInclude(x => x.Citizen)
+                .Include(x => x.Contract.SecondPartyCitizen)
+                .Include(x => x.Contract.SecondPartyFacility).ThenInclude(x => x.Citizen)
+                .Include(x => x.LitigationRequestSessions)
+                .Where(x => x.IsVerdictSessionReminderSent != true
+                    && x.IsFinished != true
+                    && x.LitigationRequestStage == LitigationRequestStage.Arbitration
+                    && x.LitigationRequestSessions.Any(s =>
+                        s.SessionTypeId == LitigationSessionType.VerdictPronouncement
+                        && s.SessionDatetime > DateTime.Now))
+                .ToList();
+
+            if (litigationRequests == null || !litigationRequests.Any())
+                return;
+
+            var reminderMsg = _sysSettingService.GetBySettingKey(SysSettingKeyConstants.SLA_VerdictSessionReminderMessage).Result.Data?.Value
+                ?? "تذكير: موعد جلسة النطق بالحكم للدعوى رقم {LitigationCode} خلال {Hours} ساعة";
+
+            var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+
+            foreach (var litigationRequest in litigationRequests)
+            {
+                var verdictSession = litigationRequest.LitigationRequestSessions
+                    .FirstOrDefault(s => s.SessionTypeId == LitigationSessionType.VerdictPronouncement
+                        && s.SessionDatetime > DateTime.Now);
+                if (verdictSession == null) continue;
+
+                double hoursUntilSession = (verdictSession.SessionDatetime - DateTime.Now).TotalHours;
+                if (hoursUntilSession > reminderHoursBefore) continue;
+
+                litigationRequest.IsVerdictSessionReminderSent = true;
+                _repository.Update<LitigationRequest, Guid>(litigationRequest);
+
+                try
+                {
+                    var msg = reminderMsg
+                        .Replace("{LitigationCode}", litigationRequest.RequestCode)
+                        .Replace("{Hours}", reminderHoursBefore.ToString());
+
+                    string body = string.Empty;
+                    if (File.Exists(pathToFile))
+                    {
+                        using StreamReader sr = File.OpenText(pathToFile);
+                        body = await sr.ReadToEndAsync();
+                        body = body?.Replace("{content}", msg);
+                        body = body?.Replace("{LitigationCode}", litigationRequest.RequestCode);
+                    }
+
+                    await SendNotificationMS(body, msg, litigationRequest, "تذكير بجلسة النطق بالحكم",
+                        NotificationActorType.Plaintiff, RequestType.LitigationRequest,
+                        notifyApplicant: true, notifyFirstParty: true, notifySecondParty: true, notifyDeptAdmin: true, notifyArbitrators: true, notifyArbitratorChairman: true);
+                }
+                catch (Exception ex)
+                {
+                    _loggerManager.Log(Core.Log.Domain.Shared.Enums.LoggerType.Database, new LogDto()
+                    {
+                        Type = Core.Log.Domain.Shared.Enums.LogType.Exception,
+                        Message = ex.ToString()
+                    });
+                }
+            }
         }
 
 

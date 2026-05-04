@@ -1,4 +1,4 @@
-﻿using Core.GenericRepository.Shared.Pagging;
+using Core.GenericRepository.Shared.Pagging;
 using Core.Shared.Responses;
 using Microsoft.EntityFrameworkCore;
 using REAC.Application.Contracts.Dtos.Litigation.CreateUpdate.Litigation;
@@ -34,7 +34,7 @@ namespace REAC.Application.ModuleServices
                     .Include(x => x.Contract).ThenInclude(x => x.FirstPartyFacility).ThenInclude(x => x.Citizen)
                     .Include(x => x.Contract).ThenInclude(x => x.SecondPartyFacility).ThenInclude(x => x.Citizen)
                      .Include(x => x.LitigationRequestExtendPeriodRequests.Where(x => x.LitigationRequestExtendPeriodRequestTypeId == LitigationRequestExtendPeriodRequestType.Arbitration))
-                        .FirstOrDefault(x => x.Id == requestPayload.LitigationRequestId & x.ArbitratorCitizenId == referenceId);
+                        .FirstOrDefault(x => x.Id == requestPayload.LitigationRequestId && x.ArbitratorCitizenId == referenceId);
 
                 if (litigationRequest == null)
                     return new BaseResponse()
@@ -56,17 +56,17 @@ namespace REAC.Application.ModuleServices
                 //    }
                 //}
 
-               
+
                 bool allowAdd = true;
 
-                if (litigationRequest.LitigationRequestExtendPeriodRequests.Count() > 0)
+                if (litigationRequest.LitigationRequestExtendPeriodRequests.Any(x => x.LitigationRequestExtendPeriodRequestStatusId == null))
                     allowAdd = false;
 
                 if (allowAdd)
                 {
                     LitigationRequestExtendPeriodRequest litigationRequestExtendPeriodRequest = new LitigationRequestExtendPeriodRequest()
                     {
-                        Id = requestPayload.LitigationRequestId,
+                        Id = Guid.NewGuid(),
                         LitigationRequestId = requestPayload.LitigationRequestId,
                         RequiredDays = requestPayload.RequiredDays,
                         RequestReason = requestPayload.RequestReason,
@@ -105,74 +105,78 @@ namespace REAC.Application.ModuleServices
                         return repositorySaveResponse;
 
                     // Send Notification
-                    // تم اضافة  طلب مد مدة التحكيم 
-                  
+                    // تم اضافة  طلب مد مدة التحكيم
+
                     try
                     {
-
-                        var msg = "";
-                        msg = _settingService.GetBySettingKey(SysSettingKeyConstants.Arbitration_ExtendRequest_Added).Result.Data?.Value;
-                        msg = msg?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                        var msg = "تم طلب تمديد مدة التحكيم للدعوى رقم " + litigationRequest?.RequestCode;
                         var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
                         string body;
                         using (StreamReader streamReader = File.OpenText(pathToFile))
                         {
                             body = await streamReader.ReadToEndAsync();
                             body = body?.Replace("{content}", _settingService.GetBySettingKey(SysSettingKeyConstants.Arbitration_ExtendRequest_Added).Result.Data?.Value);
-                            body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);  
+                            body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
                         }
-                        var arbitrationAdmin = await _sysEmployeeService.GetAdminsByDepartmentType(DepartmentType.Arbitration);
-                        if (arbitrationAdmin.IsDone)
+
+                        List<SysNotificationDto> notifications = new List<SysNotificationDto>();
+                        if (litigationRequest.ArbitratorCitizen != null)
                         {
-                             msg = _settingService.GetBySettingKey(SysSettingKeyConstants.ArbitratorSelectionDuration_Added).Result.Data?.Value;
-                            msg = msg?.Replace("{LitigationCode}", litigationRequest.RequestCode);
-                            using (StreamReader streamReader = File.OpenText(pathToFile))
+                            notifications.Add(new SysNotificationDto
                             {
-                                body = await streamReader.ReadToEndAsync();
-                                body = body?.Replace("{content}", _settingService.GetBySettingKey(SysSettingKeyConstants.ArbitratorSelectionDuration_Added).Result.Data?.Value);
-                                body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
-                            }
-
-                            List<SysNotificationDto> notifications = new List<SysNotificationDto>() {
-                                 new SysNotificationDto{
-
-                        ActorId = litigationRequest.ArbitratorCitizen.Id,
-                        RequestId=litigationRequest.Id,
-                        CreatedOn= DateTime.Now,
-                        RequestTypeId=RequestType.LitigationRequest,
-                        ActorTypeId=NotificationActorType.Arbitrator,
-                        Message=msg
-                        },
-                        new SysNotificationDto{
-
-                        ActorId = litigationRequest.ApplicantCitizen.Id,
-                        RequestId=litigationRequest.Id,
-                        CreatedOn= DateTime.Now,
-                        RequestTypeId=RequestType.LitigationRequest,
-                        ActorTypeId=NotificationActorType.Plaintiff,
-                        Message=msg
-                        },
-                           new SysNotificationDto{
-                        ActorId = (Guid)arbitrationAdmin.Data?.Id,
-                        RequestId=litigationRequest.Id,
-                        CreatedOn= DateTime.Now,
-                        RequestTypeId=RequestType.LitigationRequest,
-                        ActorTypeId=NotificationActorType.Employee,
-                        Message=msg
+                                ActorId = litigationRequest.ArbitratorCitizen.Id,
+                                RequestId = litigationRequest.Id,
+                                CreatedOn = DateTime.Now,
+                                RequestTypeId = RequestType.LitigationRequest,
+                                ActorTypeId = NotificationActorType.Arbitrator,
+                                Message = msg
+                            });
                         }
 
-                        };
-                            List<string> emails = new List<string>() {
-                                litigationRequest.ApplicantCitizen.Email,
-                                  arbitrationAdmin.Data?.Email
-                                };
-
-                            List<string> recipients = new List<string>()
+                        if (litigationRequest.ApplicantCitizen != null)
+                        {
+                            notifications.Add(new SysNotificationDto
                             {
-                                litigationRequest.ApplicantCitizen.Mobile,
-                                  arbitrationAdmin.Data?.Mobile
-                            };
-                            if (litigationRequest?.Contract?.FirstPartyCitizenId != null && litigationRequest?.Contract?.FirstPartyCitizenId != litigationRequest.ApplicantCitizenId)
+                                ActorId = litigationRequest.ApplicantCitizen.Id,
+                                RequestId = litigationRequest.Id,
+                                CreatedOn = DateTime.Now,
+                                RequestTypeId = RequestType.LitigationRequest,
+                                ActorTypeId = NotificationActorType.Plaintiff,
+                                Message = msg
+                            });
+                        }
+
+                        List<string> emails = new List<string>();
+                        List<string> recipients = new List<string>();
+
+                        if (litigationRequest.ApplicantCitizen != null)
+                        {
+                            if (!string.IsNullOrEmpty(litigationRequest.ApplicantCitizen.Email))
+                                emails.Add(litigationRequest.ApplicantCitizen.Email);
+                            
+                            if (!string.IsNullOrEmpty(litigationRequest.ApplicantCitizen.Mobile))
+                                recipients.Add(litigationRequest.ApplicantCitizen.Mobile);
+                        }
+
+                        var arbitrationAdmin = await _sysEmployeeService.GetAdminsByDepartmentType(DepartmentType.Arbitration);
+                        if (arbitrationAdmin.IsDone && arbitrationAdmin.Data != null)
+                        {
+                            emails.Add(arbitrationAdmin.Data.Email);
+                            recipients.Add(arbitrationAdmin.Data.Mobile);
+                            notifications.Add(new SysNotificationDto
+                            {
+                                ActorId = arbitrationAdmin.Data.Id,
+                                CreatedOn = DateTime.Now,
+                                ActorTypeId = NotificationActorType.Employee,
+                                IsViewed = false,
+                                ViewedOn = null,
+                                RequestId = litigationRequest.Id,
+                                RequestTypeId = RequestType.ArbitratorTaskrequests,
+                                Message = msg,
+                            });
+                        }
+
+                        if (litigationRequest?.Contract?.FirstPartyCitizenId != null && litigationRequest?.Contract?.FirstPartyCitizenId != litigationRequest.ApplicantCitizenId)
                             {
                                 notifications.Add(new SysNotificationDto
                                 {
@@ -187,7 +191,8 @@ namespace REAC.Application.ModuleServices
                                 recipients.Add(litigationRequest.Contract.FirstPartyCitizen.Mobile);
 
 
-                            };
+                            }
+                            ;
                             if (litigationRequest?.Contract?.FirstPartyFacility != null && litigationRequest?.Contract?.FirstPartyFacility?.CitizenId != litigationRequest.ApplicantCitizenId)
                             {
                                 notifications.Add(new SysNotificationDto
@@ -201,7 +206,8 @@ namespace REAC.Application.ModuleServices
                                 });
                                 emails.Add(litigationRequest.Contract.FirstPartyFacility.Citizen.Email);
                                 recipients.Add(litigationRequest.Contract.FirstPartyFacility.Citizen.Mobile);
-                            };
+                            }
+                            ;
                             if (litigationRequest?.Contract?.SecondPartyCitizenId != null)
                             {
                                 notifications.Add(new SysNotificationDto
@@ -215,7 +221,8 @@ namespace REAC.Application.ModuleServices
                                 });
                                 emails.Add(litigationRequest.Contract.SecondPartyCitizen.Email);
                                 recipients.Add(litigationRequest.Contract.SecondPartyCitizen.Mobile);
-                            };
+                            }
+                            ;
                             if (litigationRequest?.Contract?.SecondPartyFacilityId != null)
                             {
                                 notifications.Add(new SysNotificationDto
@@ -229,8 +236,9 @@ namespace REAC.Application.ModuleServices
                                 });
                                 emails.Add(litigationRequest.Contract.SecondPartyFacility.Citizen.Email);
                                 recipients.Add(litigationRequest.Contract.SecondPartyFacility.Citizen.Mobile);
-                            };
-                           await _notificationService.SendNotifications(new Contracts.Dtos.Notification.SendEmailDto()
+                            }
+                            ;
+                            await _notificationService.SendNotifications(new Contracts.Dtos.Notification.SendEmailDto()
                             {
                                 To = emails,
                                 Subject = "اضافة  الرد علي طلب مد مدة التحكيم",
@@ -242,12 +250,11 @@ namespace REAC.Application.ModuleServices
                                 notification_type = "SMS",
 
                             }, notifications);
-                        }
                     }
                     catch (Exception e)
                     {
 
-                      
+
                     }
 
 
@@ -277,8 +284,11 @@ namespace REAC.Application.ModuleServices
             try
             {
                 var litigationRequestExtendPeriodRequest = (await _repository.GetQueryable<LitigationRequestExtendPeriodRequest, Guid>())?
-                        .Where(x => x.LitigationRequestId == requestPayload.LitigationRequestId & x.LitigationRequestExtendPeriodRequestTypeId == LitigationRequestExtendPeriodRequestType.Arbitration)
-                        .SingleOrDefault();
+                        .Where(x => x.LitigationRequestId == requestPayload.LitigationRequestId 
+                                & x.LitigationRequestExtendPeriodRequestTypeId == LitigationRequestExtendPeriodRequestType.Arbitration
+                                & x.LitigationRequestExtendPeriodRequestStatusId == null)
+                        .OrderByDescending(x => x.CreatedOn)
+                        .FirstOrDefault();
 
 
                 if (litigationRequestExtendPeriodRequest == null)
@@ -289,6 +299,7 @@ namespace REAC.Application.ModuleServices
                     };
                 litigationRequestExtendPeriodRequest.LitigationRequestExtendPeriodRequestStatusId = requestPayload.LitigationRequestExtendPeriodRequestStatusId;
                 litigationRequestExtendPeriodRequest.FinishStatusReason = requestPayload.FinishStatusReason;
+                litigationRequestExtendPeriodRequest.Notes = requestPayload.Notes;
 
                 var savePeriodResponse = await _repository.SaveChangesAsync();
                 if (!savePeriodResponse.IsDone)
@@ -306,9 +317,9 @@ namespace REAC.Application.ModuleServices
                     .FirstOrDefault(x => x.Id == requestPayload.LitigationRequestId);
                 if (requestPayload.LitigationRequestExtendPeriodRequestStatusId == LitigationRequestExtendPeriodRequestStatus.Approve)
                 {
-                   
 
-                    litigationRequest.ArbitrationPeriod = litigationRequest.ArbitrationPeriod == null ? litigationRequestExtendPeriodRequest.RequiredDays : litigationRequest.ArbitrationPeriod + litigationRequestExtendPeriodRequest.RequiredDays;
+
+                    litigationRequest.ArbitrationPeriod = (litigationRequest.ArbitrationPeriod ?? 0) + litigationRequestExtendPeriodRequest.RequiredDays;
 
                     savePeriodResponse = await _repository.SaveChangesAsync();
                     if (!savePeriodResponse.IsDone)
@@ -376,7 +387,7 @@ namespace REAC.Application.ModuleServices
 
 
 
-                        List<SysNotificationDto> notifications = new List<SysNotificationDto>() {
+                        List<SysNotificationDto> notifications = new List<Contracts.Dtos.Notification.SysNotificationDto>() {
                                  new SysNotificationDto{
 
                         ActorId = litigationRequest.ArbitratorCitizen.Id,
@@ -396,12 +407,14 @@ namespace REAC.Application.ModuleServices
                         Message=msg
                         },
                            new SysNotificationDto{
-                        ActorId = (Guid)arbitrationAdmin.Data?.Id,
-                        RequestId=litigationRequest.Id,
-                        CreatedOn= DateTime.Now,
-                        RequestTypeId=RequestType.LitigationRequest,
-                        ActorTypeId=NotificationActorType.Employee,
-                        Message=msg
+                        ActorId = arbitrationAdmin.Data.Id,
+                         CreatedOn = DateTime.Now,
+                            ActorTypeId = NotificationActorType.Employee,
+                            IsViewed = false,
+                            ViewedOn = null,
+                            RequestId = litigationRequest.Id,
+                            RequestTypeId = RequestType.ArbitrationReport,
+                            Message = msg,
                         }
 
                         };
@@ -430,7 +443,8 @@ namespace REAC.Application.ModuleServices
                             recipients.Add(litigationRequest.Contract.FirstPartyCitizen.Mobile);
 
 
-                        };
+                        }
+                        ;
                         if (litigationRequest?.Contract?.FirstPartyFacility != null && litigationRequest?.Contract?.FirstPartyFacility.CitizenId != litigationRequest.ApplicantCitizenId)
                         {
                             notifications.Add(new SysNotificationDto
@@ -444,7 +458,8 @@ namespace REAC.Application.ModuleServices
                             });
                             emails.Add(litigationRequest.Contract.FirstPartyFacility.Citizen.Email);
                             recipients.Add(litigationRequest.Contract.FirstPartyFacility.Citizen.Mobile);
-                        };
+                        }
+                        ;
                         if (litigationRequest?.Contract?.SecondPartyCitizenId != null)
                         {
                             notifications.Add(new SysNotificationDto
@@ -458,7 +473,8 @@ namespace REAC.Application.ModuleServices
                             });
                             emails.Add(litigationRequest.Contract.SecondPartyCitizen.Email);
                             recipients.Add(litigationRequest.Contract.SecondPartyCitizen.Mobile);
-                        };
+                        }
+                        ;
                         if (litigationRequest?.Contract?.SecondPartyFacilityId != null)
                         {
                             notifications.Add(new SysNotificationDto
@@ -472,8 +488,9 @@ namespace REAC.Application.ModuleServices
                             });
                             emails.Add(litigationRequest.Contract.SecondPartyFacility.Citizen.Email);
                             recipients.Add(litigationRequest.Contract.SecondPartyFacility.Citizen.Mobile);
-                        };
-                        _notificationService.SendNotifications(new Contracts.Dtos.Notification.SendEmailDto()
+                        }
+                        ;
+                        await _notificationService.SendNotifications(new Contracts.Dtos.Notification.SendEmailDto()
                         {
                             To = emails,
                             Subject = "الرد علي طلب مد مدة التحكيم",
@@ -491,7 +508,7 @@ namespace REAC.Application.ModuleServices
                 {
 
                 }
-              
+
                 return await GetLitigationRequestExtendPeriodForEmployee(requestPayload.LitigationRequestId, cancellationToken);
             }
             catch (Exception ex)
@@ -535,10 +552,14 @@ namespace REAC.Application.ModuleServices
                          .Where(x => x.Id == requestId).AsNoTracking().ToList().FirstOrDefault();
 
             var request = _mapper.Map<LitigationRequestShortDto>(litigationRequest);
-            var extendPeriodRequest = _mapper.Map<List<LitigationRequestExtendPeriodRequestGetDto>>(litigationRequest?.LitigationRequestExtendPeriodRequests);
+            var extendPeriodRequest = _mapper.Map<List<LitigationRequestExtendPeriodRequestGetDto>>(litigationRequest?.LitigationRequestExtendPeriodRequests
+                                .OrderByDescending(x => x.CreatedOn));
 
             bool isDone = false;
             bool allowAdd = true;
+            
+            // Create a SEPARATE instance for the current/new request to avoid corrupting history references
+            var extendPeriodRequestDto = new LitigationRequestExtendPeriodRequestGetDto();
 
             if (litigationRequest.IsFinished.HasValue)
             {
@@ -556,19 +577,70 @@ namespace REAC.Application.ModuleServices
                 {
                     if (litigationRequest?.LitigationRequestExtendPeriodRequests != null)
                     {
-                        if (litigationRequest.LitigationRequestExtendPeriodRequests.Count(x => x.LitigationRequestExtendPeriodRequestTypeId == LitigationRequestExtendPeriodRequestType.Arbitration) > 0)
+                        if (litigationRequest.LitigationRequestExtendPeriodRequests.Any(x => x.LitigationRequestExtendPeriodRequestTypeId == LitigationRequestExtendPeriodRequestType.Arbitration
+                            && x.LitigationRequestExtendPeriodRequestStatusId == null))
                             allowAdd = false;
                     }
                 }
             }
+            // (Instance already created above to isolate from history references)
 
+            if (litigationRequest != null)
+            {
+                // 1. DIRECT DATABASE QUERY for approved days to ensure we get 100% accurate data from DB
+                var approvedDaysInHistory = (await _repository.GetQueryable<LitigationRequestExtendPeriodRequest, Guid>())
+                    .Where(x => x.LitigationRequestId == litigationRequest.Id 
+                             && x.LitigationRequestExtendPeriodRequestStatusId == LitigationRequestExtendPeriodRequestStatus.Approve
+                             && x.LitigationRequestExtendPeriodRequestTypeId == LitigationRequestExtendPeriodRequestType.Arbitration)
+                    .Sum(x => x.RequiredDays);
+
+                // 2. Use the ArbitrationPeriod snapshot and subtract the direct DB sum
+                var currentTotalPeriod = litigationRequest.ArbitrationPeriod.GetValueOrDefault(60);
+                var originalDuration = currentTotalPeriod - approvedDaysInHistory;
+
+                var baseDate = litigationRequest.StartArbitrationDate ?? litigationRequest.CreatedOn;
+                var orderedHistory = extendPeriodRequest.OrderBy(x => x.CreatedOn).ToList();
+                var currentCumulativeDays = originalDuration;
+
+                // Build the timeline sequentially
+                foreach (var h in orderedHistory)
+                {
+                    h.LitigationFinishedDate = baseDate.AddDays(currentCumulativeDays);
+                    h.LitigationFininshedNewDate = h.LitigationFinishedDate.Value.AddDays(h.RequiredDays);
+
+                    if (h.LitigationRequestExtendPeriodRequestStatusId == (int)LitigationRequestExtendPeriodRequestStatus.Approve)
+                    {
+                        currentCumulativeDays += h.RequiredDays;
+                    }
+                }
+
+                // 3. Populate THE ADD FORM DTO if needed
+                if (extendPeriodRequestDto != null)
+                {
+                    var lastHistory = orderedHistory.LastOrDefault();
+                    
+                    // If latest in history is not pending, this DTO is for a NEW request form
+                    if (lastHistory == null || lastHistory.LitigationRequestExtendPeriodRequestStatusId != null)
+                    {
+                        extendPeriodRequestDto.LitigationFinishedDate = baseDate.AddDays(currentCumulativeDays);
+                        extendPeriodRequestDto.LitigationFininshedNewDate = extendPeriodRequestDto.LitigationFinishedDate.Value.AddDays(extendPeriodRequestDto.RequiredDays);
+                    }
+
+                    if (lastHistory != null && lastHistory.LitigationRequestExtendPeriodRequestStatusId == null) // Pending
+                    {
+                         extendPeriodRequestDto.Status = "extendLitigationRequest.underReview";
+                         extendPeriodRequestDto.FinishStatusReason = lastHistory.FinishStatusReason;
+                    }
+                }
+            }
             return new DataResponse<LitigationRequestForExtendPeriodRequestDto>()
             {
                 Data = new LitigationRequestForExtendPeriodRequestDto()
                 {
                     LitigationRequestShortDto = request,
                     AllowAdd = allowAdd,
-                    LitigationRequestExtendPeriodRequestCreateUpdateDto = extendPeriodRequest.FirstOrDefault()
+                    LitigationRequestExtendPeriodRequestCreateUpdateDto = extendPeriodRequestDto,
+                    LitigationRequestExtendPeriodRequests = extendPeriodRequest // This is the Descending list
                 },
                 IsDone = true,
             };
@@ -601,37 +673,91 @@ namespace REAC.Application.ModuleServices
                          .Include(x => x.Contract.FirstPartyCitizen)
                          .Include(x => x.Contract.SecondPartyFacility)
                          .Include(x => x.Contract.SecondPartyCitizen)
-                         .Include(x => x.Contract.LitigationRequestContractType).AsNoTracking()
-                         .Where(x => x.Id == requestId).ToList().FirstOrDefault();
+                         .Where(x => x.LitigationRequestExtendPeriodRequests.Any(s => s.LitigationRequestExtendPeriodRequestTypeId == LitigationRequestExtendPeriodRequestType.Arbitration))
+                         .Include(x => x.Contract.LitigationRequestContractType).AsSplitQuery().AsNoTracking()
+                         .Where(x => x.Id == requestId).FirstOrDefault();
 
             var request = _mapper.Map<LitigationRequestShortDto>(litigationRequest);
 
-            var extendPeriodRequest = _mapper.Map<List<LitigationRequestExtendPeriodRequestGetDto>>(litigationRequest?.LitigationRequestExtendPeriodRequests.Where(x => x.LitigationRequestExtendPeriodRequestTypeId == LitigationRequestExtendPeriodRequestType.Arbitration));
+            var extendPeriodRequest = _mapper.Map<List<LitigationRequestExtendPeriodRequestGetDto>>(litigationRequest?.LitigationRequestExtendPeriodRequests
+                                .Where(x => x.LitigationRequestExtendPeriodRequestTypeId == LitigationRequestExtendPeriodRequestType.Arbitration)
+                                .OrderByDescending(x => x.CreatedOn));
 
-            bool isDone = false;
+            // Create a SEPARATE instance for the current/new request to avoid corrupting history references
+            var extendPeriodRequestDto = new LitigationRequestExtendPeriodRequestGetDto();
+            
             bool allowAdd = true;
 
-            if (litigationRequest.IsFinished.HasValue)
+            if (litigationRequest.IsFinished.HasValue && litigationRequest.IsFinished.Value)
             {
-                if (litigationRequest.IsFinished.Value)
+                allowAdd = false;
+            }
+            else if (litigationRequest?.LitigationRequestStage != LitigationRequestStage.Arbitration)
+            {
+                allowAdd = false;
+            }
+            else if (litigationRequest?.LitigationRequestExtendPeriodRequests != null)
+            {
+                var extendPeriodEntity = litigationRequest.LitigationRequestExtendPeriodRequests
+                    .Where(x => x.LitigationRequestExtendPeriodRequestTypeId == LitigationRequestExtendPeriodRequestType.Arbitration)
+                    .OrderByDescending(x => x.CreatedOn)
+                    .FirstOrDefault();
+
+                if (extendPeriodEntity != null)
                 {
-                    allowAdd = false;
-                    isDone = true;
+                    if (extendPeriodEntity.LitigationRequestExtendPeriodRequestStatusId != null)
+                        allowAdd = false;
                 }
             }
-            if (!isDone)
+
+            // (Instance already created above to isolate from history references)
+
+            if (litigationRequest != null)
             {
-                if (litigationRequest?.LitigationRequestStage != LitigationRequestStage.Arbitration)
-                    allowAdd = false;
-                else
+                var originalDuration = litigationRequest.ArbitrationPeriod.GetValueOrDefault(0);
+                var baseDate = litigationRequest.StartArbitrationDate ?? litigationRequest.CreatedOn;
+
+                // 1. Calculate the approved days across the history using ENTITIES to avoid mapping issues
+                var approvedDaysInHistory = litigationRequest.LitigationRequestExtendPeriodRequests
+                    .Where(x => x.LitigationRequestExtendPeriodRequestStatusId == LitigationRequestExtendPeriodRequestStatus.Approve
+                             && x.LitigationRequestExtendPeriodRequestTypeId == LitigationRequestExtendPeriodRequestType.Arbitration)
+                    .Sum(x => x.RequiredDays);
+                
+                // The Original Base is the total minus what has already been approved
+                var originalPeriod = originalDuration - approvedDaysInHistory;
+                var currentCumulativeDays = originalPeriod;
+
+                var orderedHistory = extendPeriodRequest.OrderBy(x => x.CreatedOn).ToList();
+
+                // 2. Build the timeline sequentially from oldest to newest
+                foreach (var h in orderedHistory)
                 {
-                    if (litigationRequest?.LitigationRequestExtendPeriodRequests != null)
+                    h.LitigationFinishedDate = baseDate.AddDays(currentCumulativeDays);
+                    h.LitigationFininshedNewDate = h.LitigationFinishedDate.Value.AddDays(h.RequiredDays);
+                    
+                    // Increment the cumulative baseline ONLY for approved requests
+                    if (h.LitigationRequestExtendPeriodRequestStatusId == (int)LitigationRequestExtendPeriodRequestStatus.Approve)
                     {
-                        if (litigationRequest.LitigationRequestExtendPeriodRequests.Count(x => x.LitigationRequestExtendPeriodRequestTypeId == LitigationRequestExtendPeriodRequestType.Arbitration) > 0)
-                        {
-                            if (litigationRequest.LitigationRequestExtendPeriodRequests.FirstOrDefault()?.LitigationRequestExtendPeriodRequestStatusId != null)
-                                allowAdd = false;
-                        }
+                        currentCumulativeDays += h.RequiredDays;
+                    }
+                }
+
+                // 3. Populate the current/latest request DTO if it's pending
+                if (extendPeriodRequestDto != null)
+                {
+                    var lastHistory = orderedHistory.LastOrDefault();
+                    
+                    // If latest in history is not pending, this DTO is for a NEW request form
+                    if (lastHistory == null || lastHistory.LitigationRequestExtendPeriodRequestStatusId != null)
+                    {
+                        extendPeriodRequestDto.LitigationFinishedDate = baseDate.AddDays(currentCumulativeDays);
+                        extendPeriodRequestDto.LitigationFininshedNewDate = extendPeriodRequestDto.LitigationFinishedDate.Value.AddDays(extendPeriodRequestDto.RequiredDays);
+                    }
+
+                    if (lastHistory != null && lastHistory.LitigationRequestExtendPeriodRequestStatusId == null) // Pending
+                    {
+                         extendPeriodRequestDto.Status = "extendLitigationRequest.underReview";
+                         extendPeriodRequestDto.FinishStatusReason = lastHistory.FinishStatusReason;
                     }
                 }
             }
@@ -642,7 +768,8 @@ namespace REAC.Application.ModuleServices
                 {
                     LitigationRequestShortDto = request,
                     AllowAdd = allowAdd,
-                    LitigationRequestExtendPeriodRequestCreateUpdateDto = extendPeriodRequest.FirstOrDefault()
+                    LitigationRequestExtendPeriodRequestCreateUpdateDto = extendPeriodRequestDto,
+                    LitigationRequestExtendPeriodRequests = extendPeriodRequest
                 },
                 IsDone = true,
             };
@@ -724,17 +851,26 @@ namespace REAC.Application.ModuleServices
                         {
                             if (litigationRequest?.LitigationRequestExtendPeriodRequests != null)
                             {
-                                if (litigationRequest.LitigationRequestExtendPeriodRequests.Count(x => x.LitigationRequestExtendPeriodRequestTypeId == LitigationRequestExtendPeriodRequestType.Arbitration) > 0)
+                                if (litigationRequest.LitigationRequestExtendPeriodRequests.Any(x => x.LitigationRequestExtendPeriodRequestTypeId == LitigationRequestExtendPeriodRequestType.Arbitration && x.LitigationRequestExtendPeriodRequestStatusId == null))
                                     allowAdd = false;
                             }
                         }
                     }
 
-                    if (allowAdd)
-                        litigationRequestMircoDto.IsDone = "--";
-                    else
-                        litigationRequestMircoDto.IsDone = "تم";
+                    litigationRequestMircoDto.TotalArbitrationPeriod = (litigationRequest.ArbitrationPeriod ?? 0);
 
+                    var extendPeriodRequest = litigationRequest?.LitigationRequestExtendPeriodRequests
+                        ?.OrderByDescending(x => x.CreatedOn)
+                        .FirstOrDefault(x => x.LitigationRequestExtendPeriodRequestTypeId == LitigationRequestExtendPeriodRequestType.Arbitration);
+
+                    if (extendPeriodRequest == null)
+                        litigationRequestMircoDto.IsDone = "--";
+                    else if (extendPeriodRequest.LitigationRequestExtendPeriodRequestStatusId == null)
+                        litigationRequestMircoDto.IsDone = "extendLitigationRequest.underReview";
+                    else if (extendPeriodRequest.LitigationRequestExtendPeriodRequestStatusId == LitigationRequestExtendPeriodRequestStatus.Approve)
+                        litigationRequestMircoDto.IsDone = "extendLitigationRequest.accepted";
+                    else if (extendPeriodRequest.LitigationRequestExtendPeriodRequestStatusId == LitigationRequestExtendPeriodRequestStatus.Reject)
+                        litigationRequestMircoDto.IsDone = "extendLitigationRequest.rejected";
                     litigationRequestMircoDto.Status = litigationRequest.InternalStatus.RequestStatus;
                     litigationRequestMircoDtos.Add(litigationRequestMircoDto);
 
@@ -829,22 +965,26 @@ namespace REAC.Application.ModuleServices
                                     if (litigationRequest.LitigationRequestExtendPeriodRequests.FirstOrDefault()?.LitigationRequestExtendPeriodRequestStatusId != null)
                                         allowAdd = false;
                                 }
-                                else
-                                {
+                                if (litigationRequest.LitigationRequestExtendPeriodRequests.Any(x => x.LitigationRequestExtendPeriodRequestTypeId == LitigationRequestExtendPeriodRequestType.Arbitration && x.LitigationRequestExtendPeriodRequestStatusId == null))
                                     allowAdd = false;
-                                }
-                            }
-                            else
-                            {
-                                allowAdd = false;
                             }
                         }
                     }
 
-                    if (allowAdd)
+                    litigationRequestMircoDto.TotalArbitrationPeriod = (litigationRequest.ArbitrationPeriod ?? 0);
+
+                    var extendPeriodRequest = litigationRequest?.LitigationRequestExtendPeriodRequests
+                        ?.OrderByDescending(x => x.CreatedOn)
+                        .FirstOrDefault(x => x.LitigationRequestExtendPeriodRequestTypeId == LitigationRequestExtendPeriodRequestType.Arbitration);
+
+                    if (extendPeriodRequest == null)
                         litigationRequestMircoDto.IsDone = "--";
-                    else
-                        litigationRequestMircoDto.IsDone = "تم";
+                    else if (extendPeriodRequest.LitigationRequestExtendPeriodRequestStatusId == null)
+                        litigationRequestMircoDto.IsDone = "extendLitigationRequest.underReview";
+                    else if (extendPeriodRequest.LitigationRequestExtendPeriodRequestStatusId == LitigationRequestExtendPeriodRequestStatus.Approve)
+                        litigationRequestMircoDto.IsDone = "extendLitigationRequest.accepted";
+                    else if (extendPeriodRequest.LitigationRequestExtendPeriodRequestStatusId == LitigationRequestExtendPeriodRequestStatus.Reject)
+                        litigationRequestMircoDto.IsDone = "extendLitigationRequest.rejected";
 
                     litigationRequestMircoDto.Status = litigationRequest?.InternalStatus?.RequestStatus;
                     litigationRequestMircoDtos.Add(litigationRequestMircoDto);

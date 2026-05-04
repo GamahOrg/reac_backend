@@ -1,4 +1,4 @@
-﻿using Core.GenericRepository.Shared.Pagging;
+using Core.GenericRepository.Shared.Pagging;
 using Core.Log.Application.Contracts.Dto;
 using Core.Shared.Responses;
 using Microsoft.EntityFrameworkCore;
@@ -13,6 +13,7 @@ using REAC.Domain.Shared.Enum;
 using REAC.EntityFrameworkCore.Entities.Litigation;
 using REAC.EntityFrameworkCore.Entities.System;
 using REAC.EntityFrameworkCore.Entities.Wpf.Business;
+using REAC.EntityFrameworkCore.Migrations;
 using System.Globalization;
 using System.Text;
 using System.Text.Json;
@@ -90,8 +91,20 @@ namespace REAC.Application.ModuleServices
                     litigationRequest.LitigationRequestSubStage = LitigationRequestSubStage.LitigationRequestAddArbitratorListNomination;
                     litigationRequest.ArbitratorsCountDateTime = DateTime.Now;
 
-                    litigationRequest.ExternalStatusId = RequestStatus.CollectionOfArbitrationFeesRequestIsBeingSent;
-                    litigationRequest.InternalStatusId = RequestStatus.CollectionOfArbitrationFeesRequestIsBeingSent;
+                    if (litigationRequest.IsExemptionReduction == true)
+                    {
+                        litigationRequest.IsArbitrationFeesHaveBeenCollected = true;
+                        litigationRequest.ExternalStatusId = RequestStatus.WaitingForArbitratorsSelection;
+                        litigationRequest.InternalStatusId = RequestStatus.WaitingForArbitratorsSelection;
+                        litigationRequest.LitigationRequestSubStage = LitigationRequestSubStage.LitigationRequestAddArbitratorListNomination;
+                    }
+                    else
+                    {
+                        litigationRequest.ExternalStatusId = RequestStatus.CollectionOfArbitrationFeesRequestIsBeingSent;
+                        litigationRequest.InternalStatusId = RequestStatus.CollectionOfArbitrationFeesRequestIsBeingSent;
+                    }
+
+                     _repository.Update<LitigationRequest, Guid>(litigationRequest);
 
                     await _repository.AddAsync<WorkFlowLog, Guid>(new WorkFlowLog()
                     {
@@ -102,14 +115,48 @@ namespace REAC.Application.ModuleServices
                         LogMessage = "تم تحديد عدد هيئة التحكيم النهائى" + arbitratorCountRequestPayload.ArbitratorCount + " محكم"
                     });
 
-                    #region اضافة فاتورة              
-                    var addInvoice = await AddInvoice(litigationRequest);
+                    #region اضافة فاتورة 
+                    if (litigationRequest.IsExemptionReduction == false)
+                    {
+                        var addInvoice = await AddInvoice(litigationRequest);
 
-                    if (!addInvoice.IsDone)
-                        return addInvoice;
+                        if (!addInvoice.IsDone)
+                            return addInvoice;
+
+                        try
+                        {
+                            // Send Notification
+                            var arbitrationAdmin = await _sysEmployeeService.GetAdminsByDepartmentType(DepartmentType.Arbitration);
+                            if (arbitrationAdmin.IsDone && arbitrationAdmin.Data != null)
+                            {
+
+                                #region ارسال اشعار بالفاتورة لسدادها
+                                string body;
+                                var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
+                                var invoice_CreatedInvoiceMessage = _settingService.GetBySettingKey(SysSettingKeyConstants.Invoice_CreatedInvoiceMessage).Result.Data?.Value;
+                                if (!string.IsNullOrWhiteSpace(invoice_CreatedInvoiceMessage))
+                                {
+                                    invoice_CreatedInvoiceMessage = invoice_CreatedInvoiceMessage?
+                                        .Replace("{LitigationCode}", litigationRequest.RequestCode)
+                                        .Replace("{InvoiceCode}", addInvoice.Data.InvoiceCode);
+                                    using (StreamReader streamReader = File.OpenText(pathToFile))
+                                    {
+                                        body = await streamReader.ReadToEndAsync();
+                                        body = body?.Replace("{content}", _settingService.GetBySettingKey(SysSettingKeyConstants.Invoice_CreatedInvoiceMessage).Result.Data?.Value);
+                                        body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode).Replace("{InvoiceCode}", addInvoice.Data.InvoiceCode); ;
+                                    }
+                                    await SendNotification(litigationRequest, RequestType.Invoices, arbitrationAdmin.Data, "فاتورة رسوم التحكيم", invoice_CreatedInvoiceMessage, body, false);
+                                }
+                                #endregion
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+
+                        }
+                    }
+
                     #endregion
-
-
 
                     var repositorySaveResponse = await _repository.SaveChangesAsync(new CancellationToken());
                     if (!repositorySaveResponse.IsDone)
@@ -134,24 +181,6 @@ namespace REAC.Application.ModuleServices
                             }
                             await SendNotification(litigationRequest, RequestType.LitigationRequest, arbitrationAdmin.Data, "عدد المحكمين النهائي", msg, body, true);
                             #endregion
-
-
-                            #region ارسال اشعار بالفاتورة لسدادها
-                            var invoice_CreatedInvoiceMessage = _settingService.GetBySettingKey(SysSettingKeyConstants.Invoice_CreatedInvoiceMessage).Result.Data?.Value;
-                            if (!string.IsNullOrWhiteSpace(invoice_CreatedInvoiceMessage))
-                            {
-                                invoice_CreatedInvoiceMessage = invoice_CreatedInvoiceMessage?
-                                    .Replace("{LitigationCode}", litigationRequest.RequestCode)
-                                    .Replace("{InvoiceCode}", addInvoice.Data.InvoiceCode);
-                                using (StreamReader streamReader = File.OpenText(pathToFile))
-                                {
-                                    body = await streamReader.ReadToEndAsync();
-                                    body = body?.Replace("{content}", _settingService.GetBySettingKey(SysSettingKeyConstants.Invoice_CreatedInvoiceMessage).Result.Data?.Value);
-                                    body = body?.Replace("{LitigationCode}", litigationRequest?.RequestCode).Replace("{InvoiceCode}", addInvoice.Data.InvoiceCode); ;
-                                }
-                                await SendNotification(litigationRequest, RequestType.Invoices, arbitrationAdmin.Data, "فاتورة رسوم التحكيم", invoice_CreatedInvoiceMessage, body, false);
-                            }
-                            #endregion
                         }
                     }
                     catch (Exception ex)
@@ -167,6 +196,7 @@ namespace REAC.Application.ModuleServices
                         Message = "لا يمكن إضافة عدد المحكمين"
                     };
                 }
+                
             }
             catch (Exception ex)
             {
@@ -185,7 +215,7 @@ namespace REAC.Application.ModuleServices
             decimal arbitrationFees = default;
             if (litigationRequest.LitigationRequestAmount != null && litigationRequest.DisputeAmount != null)
             {
-                arbitrationFees = await CalculateArbitrationFees(litigationRequest.ArbitratorsCount.Value,litigationRequest.DisputeAmount.Value, litigationRequest.LitigationRequestAmount);
+                arbitrationFees = await CalculateArbitrationFees(litigationRequest.ArbitratorsCount.Value, litigationRequest.DisputeAmount.Value, litigationRequest.LitigationRequestAmount);
             }
             else
             {
@@ -226,7 +256,7 @@ namespace REAC.Application.ModuleServices
                 LogMessage = "تم انشاء فاتورة لسداد رسوم التحكيم"
             });
 
-            
+
             #endregion
 
             #region Add APGI Integration Invoice 
@@ -311,7 +341,7 @@ namespace REAC.Application.ModuleServices
             try
 
             {
-                
+
 
 
                 var apiUrl = _settingService.GetBySettingKey(SysSettingKeyConstants.CreateInvoice_URL).Result.Data?.Value;
@@ -335,7 +365,7 @@ namespace REAC.Application.ModuleServices
                     {
                         ServiceID = int.Parse(serviceId),
                         //Price = (int)decimal.Parse(fees.Replace('٫', ','), new CultureInfo("de-DE")),
-                        Price = int.Parse(fees) ,
+                        Price = ParseFees(fees) ,
                         Quantity = 1
                     },
                     //new InvoiceTransactionDto
@@ -354,7 +384,7 @@ namespace REAC.Application.ModuleServices
                     Email = litigation.ApplicantCitizen?.Email,
                     CaseNumber = "ACaseNu10XXX1",
                     CaseDescription = "Arbitration Fees",
-                    RefIdPltfrm = "A-"+litigation.RequestCode
+                    RefIdPltfrm = "A-" + litigation.RequestCode
                 };
 
 
@@ -434,6 +464,35 @@ namespace REAC.Application.ModuleServices
                      });
                 return new DataResponse<InvoiceDataDto>() { Data = null, IsDone = false };
             }
+        }
+        private static int ParseFees(string fees)
+        {
+            if (string.IsNullOrWhiteSpace(fees))
+                return 0;
+
+            // Remove currency symbols, spaces, and Arabic/Persian characters
+            var cleaned = fees
+                .Replace(" ", "")
+                .Replace("ر.س", "")
+                .Replace("SAR", "")
+                .Replace("٫", ".")   // Arabic decimal separator
+                .Replace("،", "")    // Arabic comma
+                .Replace(",", ".");   // Normalize all to dot
+
+            // Handle cases like "800.000.00" (thousand separator + decimal)
+            var dotCount = cleaned.Count(c => c == '.');
+            if (dotCount > 1)
+            {
+                // Last dot is decimal, rest are thousand separators
+                var lastDot = cleaned.LastIndexOf('.');
+                cleaned = cleaned.Substring(0, lastDot).Replace(".", "")
+                        + cleaned.Substring(lastDot);
+            }
+
+            if (decimal.TryParse(cleaned, NumberStyles.Any, CultureInfo.InvariantCulture, out var result))
+                return (int)result;
+
+            throw new ArgumentException($"Cannot parse fees value: '{fees}'");
         }
         #endregion
 
@@ -557,7 +616,7 @@ namespace REAC.Application.ModuleServices
         }
 
 
-        public async Task<decimal> CalculateArbitrationFees(int arbitratorsCount,decimal disputeAmount, SysLitigationRequestAmount litigationRequestAmount)
+        public async Task<decimal> CalculateArbitrationFees(int arbitratorsCount, decimal disputeAmount, SysLitigationRequestAmount litigationRequestAmount)
         {
             decimal amount = 0;
 
@@ -573,11 +632,11 @@ namespace REAC.Application.ModuleServices
                     decimal exteraAmount = disputeAmount - (decimal)litigationRequestFees.ExtraAmount;
                     if (exteraAmount > 0)
                     {
-                        amount += exteraAmount * (litigationRequestFees.PercentageExtraAmount.Value/100);
+                        amount += exteraAmount * (litigationRequestFees.PercentageExtraAmount.Value / 100);
                     }
                 }
             }
-            
+
 
             return amount;
         }
@@ -1192,16 +1251,22 @@ namespace REAC.Application.ModuleServices
 
             if (litigationRequest.FirstPartyArbitratorsCount.HasValue & litigationRequest.SecondPartyArbitratorsCount.HasValue)
             {
+                litigationRequest.ArbitratorsCount = litigationRequest.FirstPartyArbitratorsCount;
+                litigationRequest.LitigationRequestSubStage = LitigationRequestSubStage.LitigationRequestAddArbitratorListNomination;
+                litigationRequest.ArbitratorsCountDateTime = DateTime.Now;
 
                 if (litigationRequest.FirstPartyArbitratorsCount.Value == litigationRequest.SecondPartyArbitratorsCount.Value)
                 {
-                    litigationRequest.ArbitratorsCount = litigationRequest.FirstPartyArbitratorsCount;
-                    litigationRequest.LitigationRequestSubStage = LitigationRequestSubStage.LitigationRequestAddArbitratorListNomination;
-                    litigationRequest.ArbitratorsCountDateTime = DateTime.Now;
-
-                    litigationRequest.ExternalStatusId = RequestStatus.CollectionOfArbitrationFeesRequestIsBeingSent;
-                    litigationRequest.InternalStatusId = RequestStatus.CollectionOfArbitrationFeesRequestIsBeingSent;
-
+                    if (litigationRequest.IsExemptionReduction == true)
+                    {
+                        litigationRequest.IsArbitrationFeesHaveBeenCollected = true;
+                        litigationRequest.ExternalStatusId = RequestStatus.WaitingForArbitratorsSelection;
+                        litigationRequest.InternalStatusId = RequestStatus.WaitingForArbitratorsSelection;
+                    }
+                    else
+                    {
+                        litigationRequest.ExternalStatusId = RequestStatus.CollectionOfArbitrationFeesRequestIsBeingSent;
+                        litigationRequest.InternalStatusId = RequestStatus.CollectionOfArbitrationFeesRequestIsBeingSent;
 
                     #region اضافة فاتورة              
                     var addInvoice = await AddInvoice(litigationRequest);
@@ -1297,11 +1362,10 @@ namespace REAC.Application.ModuleServices
 
 
 
-                }
+                        }
+                    }
                 else
                 {
-                    // Send Notification
-                    // تم الإنتهاء من تحديد عدد المحكمين من قبل المدعى والمدعى عليه
                     try
                     {
                         var arbitrationAdmin = await _sysEmployeeService.GetAdminsByDepartmentType(DepartmentType.Arbitration);

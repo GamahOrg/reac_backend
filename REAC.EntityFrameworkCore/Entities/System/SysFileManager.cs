@@ -22,6 +22,7 @@ public partial class SysFileManager : CreationBaseEntity<Guid>
     public string FileType { get; set; } = null!;
 
     public virtual ICollection<LitigationRequestArbitratorRecusalRequestFile> LitigationRequestArbitratorRecusalRequestFiles { get; set; } = new List<LitigationRequestArbitratorRecusalRequestFile>();
+    public virtual ICollection<LitigationRequestArbitrationCorrectionRequestFile> LitigationRequestArbitrationCorrectionRequestFiles { get; set; } = new List<LitigationRequestArbitrationCorrectionRequestFile>();
 
     public virtual ICollection<LitigationRequestArbitrationReportExplanationRequestFile> LitigationRequestArbitrationReportExplanationRequestFiles { get; set; } = new List<LitigationRequestArbitrationReportExplanationRequestFile>();
 

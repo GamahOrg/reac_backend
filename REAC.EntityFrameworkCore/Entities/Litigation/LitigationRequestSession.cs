@@ -12,6 +12,8 @@ public partial class LitigationRequestSession : BaseEntity<Guid>
     public DateTime SessionDatetime { get; set; }
     [Comment("Unique identifier of the litigation request session request type")]
     public LitigationRequestSessionRequestType LitigationRequestSessionRequestTypeId { get; set; }
+    [Comment("Type of the session (ArbitrationSession, VerdictPronouncement, DeliberationBetweenArbitrators)")]
+    public LitigationSessionType? SessionTypeId { get; set; }
     [Comment("Date and time when the record was created")]
     public DateTime CreatedOn { get; set; }
     [Comment("URL")]

@@ -1,4 +1,4 @@
-﻿using Core.GenericRepository.Shared.Pagging;
+using Core.GenericRepository.Shared.Pagging;
 using Core.Shared.Responses;
 using Microsoft.EntityFrameworkCore;
 using REAC.Application.Contracts.Dtos.Arbitration;
@@ -160,10 +160,7 @@ namespace REAC.Application.ModuleServices
                         var arbitrationAdmin = await _sysEmployeeService.GetAdminsByDepartmentType(DepartmentType.Arbitration);
 
 
-                        var msg = "";
-                        msg = _settingService.GetBySettingKey(SysSettingKeyConstants.ArbitraorRecusal_AddRequest).Result.Data?.Value;
-                        msg = msg?.Replace("{ArbitratorName}", arbitratorInfo?.FullName);
-                        msg = msg?.Replace("{LitigationCode}", litigationRequest?.RequestCode);
+                        var msg = "تم إضافة طلب رد محكم للدعوى رقم " + litigationRequest?.RequestCode;
                         var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
                         string body;
                         using (StreamReader streamReader = File.OpenText(pathToFile))

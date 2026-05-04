@@ -1,4 +1,4 @@
-﻿using Core.GenericRepository.Shared.Pagging;
+using Core.GenericRepository.Shared.Pagging;
 using Core.Shared.Responses;
 using Microsoft.EntityFrameworkCore;
 using REAC.Application.Contracts.Dtos.Arbitration;
@@ -57,7 +57,7 @@ namespace REAC.Application.ModuleServices
                         Message = "طلب غير موجود"
                     };
 
-                if (litigationRequest.IsArbitrationFeesHaveBeenCollected != true)
+                if (litigationRequest.IsArbitrationFeesHaveBeenCollected != true && litigationRequest.IsExemptionReduction != true)
                     return new BaseResponse()
                     {
                         IsDone = false,
@@ -124,8 +124,7 @@ namespace REAC.Application.ModuleServices
                     // تم إضافة قائمة تعيين هيئة التحكيم برجاء الاختيار
                     try
                     {
-                        var msg = _settingService.GetBySettingKey(SysSettingKeyConstants.ArbitratorsNominationList_Added).Result.Data?.Value;
-                        msg = msg?.Replace("{LitigationCode}", litigationRequest.RequestCode);
+                        var msg = "تم إضافة قائمة تعيين هيئة التحكيم للدعوى رقم " + litigationRequest?.RequestCode;
                         var expirationDateHours = int.Parse(_settingService.GetBySettingKey(SysSettingKeyConstants.Arbitration_ExpirationDateHours).Result.Data?.Value);
                         msg = msg?.Replace("{ExpirationDate}", DateTime.Now.AddHours(expirationDateHours).ToString("MM/dd/yyyy hh:mm tt", new CultureInfo("en-US")));
                         var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
@@ -163,7 +162,7 @@ namespace REAC.Application.ModuleServices
                                 CreatedOn = DateTime.Now,
                                 RequestTypeId = RequestType.LitigationRequest,
                                 ActorTypeId = NotificationActorType.Plaintiff,
-                                Message = msg
+                                Message=msg
                             });
                             emails.Add(litigationRequest.Contract.FirstPartyCitizen.Email);
                             recipients.Add(litigationRequest.Contract.FirstPartyCitizen.Mobile);
@@ -178,7 +177,7 @@ namespace REAC.Application.ModuleServices
                                 CreatedOn = DateTime.Now,
                                 RequestTypeId = RequestType.LitigationRequest,
                                 ActorTypeId = NotificationActorType.Plaintiff,
-                                Message = msg
+                                Message=msg
                             });
                             emails.Add(litigationRequest.Contract.FirstPartyFacility.Citizen.Email);
                             recipients.Add(litigationRequest.Contract.FirstPartyFacility.Citizen.Mobile);
@@ -193,7 +192,7 @@ namespace REAC.Application.ModuleServices
                                 CreatedOn = DateTime.Now,
                                 RequestTypeId = RequestType.LitigationRequest,
                                 ActorTypeId = NotificationActorType.Defendant,
-                                Message = msg
+                                Message=msg
                             });
                             emails.Add(litigationRequest.Contract.SecondPartyCitizen.Email);
                             recipients.Add(litigationRequest.Contract.SecondPartyCitizen.Mobile);
@@ -208,7 +207,7 @@ namespace REAC.Application.ModuleServices
                                 CreatedOn = DateTime.Now,
                                 RequestTypeId = RequestType.LitigationRequest,
                                 ActorTypeId = NotificationActorType.Defendant,
-                                Message = msg
+                                Message=msg
                             });
                             emails.Add(litigationRequest.Contract.SecondPartyFacility.Citizen.Email);
                             recipients.Add(litigationRequest.Contract.SecondPartyFacility.Citizen.Mobile);
@@ -1515,6 +1514,9 @@ namespace REAC.Application.ModuleServices
         }
 
         public async Task<BaseResponse> GetCitizenLitigationRequestForArbitratorsNominationListReplyForCoAdmin(Guid requestId, CancellationToken cancellationToken)
+
+
+
         {
             //Guid referenceId = Guid.Empty;
             //_jwtReader.GetReferenceId(ref referenceId);
@@ -2364,8 +2366,7 @@ namespace REAC.Application.ModuleServices
                     // تم تعيين هيئة التحكيم وإرسال طلبات المهام
                     try
                     {
-                        var msg = _settingService.GetBySettingKey(SysSettingKeyConstants.ArbitratorsNominationList_AssignedAndSent).Result.Data?.Value;
-                        msg = msg?.Replace("{LitigationCode}", litigationRequest.RequestCode);
+                        var msg = "تم تعيين هيئة التحكيم وإرسال طلبات المهام للدعوى رقم " + litigationRequest?.RequestCode;
                         var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
                         string body;
                         using (StreamReader streamReader = File.OpenText(pathToFile))
@@ -2670,8 +2671,7 @@ namespace REAC.Application.ModuleServices
                     // تم تعيين هيئة التحكيم وإرسال طلبات المهام
                     try
                     {
-                        var msg = _settingService.GetBySettingKey(SysSettingKeyConstants.ArbitratorsNominationList_AssignedAndSent).Result.Data?.Value;
-                        msg = msg?.Replace("{LitigationCode}", litigationRequest.RequestCode);
+                        var msg = "تم تعيين هيئة التحكيم وإرسال طلبات المهام للدعوى رقم " + litigationRequest?.RequestCode;
                         var pathToFile = Path.Combine(Directory.GetCurrentDirectory(), "EmailTemplete", "mail.html");
                         string body;
                         using (StreamReader streamReader = File.OpenText(pathToFile))

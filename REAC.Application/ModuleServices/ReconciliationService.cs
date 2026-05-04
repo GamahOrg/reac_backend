@@ -247,6 +247,14 @@ namespace REAC.Application.ModuleServices
                 litigationRequestReformerAssigningRequest.Reason = assignRequestPayload.Reason;
                 await _repository.AddAsync<LitigationRequestReformerAssigningRequest, Guid>(litigationRequestReformerAssigningRequest);
 
+                if (litigationRequest.IsExemptionReduction == true
+                    && litigationRequest.InternalStatusId == RequestStatus.ReconciliationFeesHaveBeenCollected)
+                {
+                    litigationRequest.InternalStatusId = RequestStatus.Received;
+                    litigationRequest.ExternalStatusId = RequestStatus.Received;
+                    _repository.Update<LitigationRequest, Guid>(litigationRequest);
+                }
+
                 // Send Notification
                 // تم إرسال مهمة مصلح لمصلح أخر
                 try

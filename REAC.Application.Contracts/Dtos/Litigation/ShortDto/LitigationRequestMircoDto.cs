@@ -1,7 +1,7 @@
-﻿using Core.GenericRepository.Shared.BaseEntities;
+using Core.GenericRepository.Shared.BaseEntities;
 using REAC.Domain.Shared.Enum;
 
-namespace REAC.EntityFrameworkCore.Entities.Litigation;
+namespace REAC.Application.Contracts.Dtos.Litigation;
 
 public partial class LitigationRequestMircoDto : BaseEntity<Guid>
 {
@@ -14,11 +14,16 @@ public partial class LitigationRequestMircoDto : BaseEntity<Guid>
     public int? ArbitrationPeriod { get; set; }
     public int? ReconciliationPeriod { get; set; }
     public int? ArbitratorsCount { get; set; }
-    
+
     public string? Status { get; set; } = null!;
     public string IsDone { get; set; } = null!;
+
+    public DateTime? JudgmentDecisionDate { get; set; }
+
     public ApproveRejectStatus Response { get; set; }
 
+    public int TotalArbitrationPeriod { get; set; }
+    public int TotalReconciliationPeriod { get; set; }
 
 }
 public partial class LitigationRequestMircoArbitratorDto : BaseEntity<Guid>
@@ -99,6 +104,7 @@ public partial class LitigationRequestMircoForRequestSessionDto : BaseEntity<Gui
     public DateTime SessionDatetime { get; set; }
     public string? Url { get; set; }
     public long? MeetingId { get; set; }
+    public string? SessionType { get; set; }
 }
 
 public partial class LitigationRequestMircoForRequestReformerDto : BaseEntity<Guid>
@@ -141,4 +147,55 @@ public partial class LitigationRequestMircoForRequestArbitratorDto : BaseEntity<
     public Guid? ArbitratorId { get; set; }
 
     public string? ArbitratorName { get; set; }
+}
+
+public partial class LitigationRequestMircoForAdminReconciliationReportDto : BaseEntity<Guid>
+{
+    public string? RequestCode { get; set; }
+    public DateTime RequestDate { get; set; }
+    public string FirstPartyName { get; set; } = null!;
+    public string SecondPartyName { get; set; } = null!;
+    public string RequestTypeName { get; set; } = null!;
+    public string? ReformerName { get; set; }
+    public string? Status { get; set; }
+    public string IsDone { get; set; } = null!;
+
+    /// <summary>تاريخ تقديم الدعوى (SentOn)</summary>
+    public DateTime? SubmissionDate { get; set; }
+
+    /// <summary>تاريخ تأكيد سداد رسوم الصلح (PaidOn)</summary>
+    public DateTime? FeeConfirmationDate { get; set; }
+
+    /// <summary>تاريخ قبول المصلح الدعوى (StartReconciliationDate)</summary>
+    public DateTime? ReformerAcceptanceDate { get; set; }
+
+    /// <summary>تاريخ إصدار المحضر (LitigationRequestReconciliationReport.ReportDate)</summary>
+    public DateTime? ReportDate { get; set; }
+}
+
+public partial class LitigationRequestMircoForAdminReportDto : BaseEntity<Guid>
+{
+    public string? RequestCode { get; set; }
+    public DateTime RequestDate { get; set; }
+    public string FirstPartyName { get; set; } = null!;
+    public string SecondPartyName { get; set; } = null!;
+    public string RequestTypeName { get; set; } = null!;
+    public string? ArbitratorName { get; set; }
+    public string? Status { get; set; }
+    public string IsDone { get; set; } = null!;
+
+    /// <summary>تاريخ تقديم الدعوى (SentOn)</summary>
+    public DateTime? SubmissionDate { get; set; }
+
+    /// <summary>تاريخ قبول الدعوى من المدقق (StartArbitrationDate)</summary>
+    public DateTime? AuditorAcceptanceDate { get; set; }
+
+    /// <summary>تاريخ قبول المحكم الدعوى (ArbitratorsChairmanNominationListSelectionDoneDateTime)</summary>
+    public DateTime? ArbitratorAcceptanceDate { get; set; }
+
+    /// <summary>تاريخ إصدار الحكم (JudgmentDecisionIssuingDateTime)</summary>
+    public DateTime? JudgmentDate { get; set; }
+
+    /// <summary>حالة طلب التصحيح</summary>
+    public string? CorrectionRequestStatus { get; set; }
 }

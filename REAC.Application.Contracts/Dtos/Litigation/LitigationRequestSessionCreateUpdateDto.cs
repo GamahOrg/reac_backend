@@ -1,4 +1,5 @@
 ﻿using Core.GenericRepository.Shared.BaseEntities;
+using REAC.Domain.Shared.Enum;
 
 namespace REAC.Application.Contracts.Dtos.Litigation;
 
@@ -8,5 +9,6 @@ public partial class LitigationRequestSessionCreateUpdateDto : BaseEntity<Guid>
 
     public DateTime SessionDatetime { get; set; }
     public string? SessionUrl { get; set; }
+    public LitigationSessionType? SessionTypeId { get; set; }
 
 }
