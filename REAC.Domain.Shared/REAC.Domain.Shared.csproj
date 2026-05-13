@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <Folder Include="Middlewares\" />
+    <Folder Include="Scripts\sprint23\" />
   </ItemGroup>
 
 </Project>

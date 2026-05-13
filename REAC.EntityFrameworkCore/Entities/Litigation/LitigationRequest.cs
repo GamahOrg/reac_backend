@@ -57,6 +57,8 @@ public partial class LitigationRequest : BaseEntity<Guid>
     public bool? IsArbitratorAdminNominationListAddedPeriodSent { get; set; }
     [Comment("Indicates whether arbitrator session time added period notification was sent")]
     public bool? IsArbitratorSessionTimeAddedPeriodSent { get; set; }
+    [Comment("Indicates whether verdict session (judgment pronouncement) reminder notification was sent")]
+    public bool? IsVerdictSessionReminderSent { get; set; }
     public bool? IsArbitratorNominationListResponsePeriodSent { get; set; }
     public bool? IsArbitratorNominationListDecisionPeriodSent { get; set; }
 
@@ -314,6 +316,8 @@ public partial class LitigationRequest : BaseEntity<Guid>
     public virtual ICollection<LitigationRequestExtendPeriodRequest> LitigationRequestExtendPeriodRequests { get; set; } = new List<LitigationRequestExtendPeriodRequest>();
     public virtual ICollection<LitigationRequestArbitrationReport> LitigationRequestArbitrationReports { get; set; } = new List<LitigationRequestArbitrationReport>();
     public virtual ICollection<LitigationRequestArbitratorRecusalRequest> LitigationRequestArbitratorRecusalRequests { get; set; } = new List<LitigationRequestArbitratorRecusalRequest>();
+    public virtual ICollection<LitigationRequestArbitrationCorrectionRequest> LitigationRequestArbitrationCorrectionRequests { get; set; } = new List<LitigationRequestArbitrationCorrectionRequest>();
+    public virtual ICollection<LitigationRequestReopenLog> LitigationRequestReopenLogs { get; set; } = new List<LitigationRequestReopenLog>();
 
     public virtual ICollection<LitigationRequestGround> LitigationRequestGrounds { get; set; } = new List<LitigationRequestGround>();
 

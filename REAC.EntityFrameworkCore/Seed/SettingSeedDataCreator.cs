@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using REAC.Domain.Shared.Constants;
 using REAC.EntityFrameworkCore.Entities.System;
 
@@ -739,17 +739,17 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                     {
                         Id = Guid.NewGuid(),
                         Key = "Arbitration.ExtendRequest.Added",
-                        Value = "عزيزي {ArbitratorCahirman}\r\n نود إبلاغكم بانه قام المحكم {ArbitratorName}\r\n بطلب تمديد مدة التحكيم علي الدعوى رقم {LitigationCode}\r\n",
+                        Value = "تم إضافة طلب تمديد مدة التحكيم للدعوى رقم {LitigationCode}",
                     },new SysSetting
                     {
                         Id = Guid.NewGuid(),
                         Key = "Arbitration.ExtendRequest.Accepted",
-                        Value = "تم الموافقة على طلب التمديد للدعوى رقم {LitigationCode}",
+                        Value = "تم قبول طلب تمديد مدة التحكيم للدعوى رقم {LitigationCode}",
                     },new SysSetting
                     {
                         Id = Guid.NewGuid(),
                         Key = "Arbitration.ExtendRequest.Rejected",
-                        Value = "تم رفض طلب التمديد لدعوي رقم {LitigationCode} ولمزيد من التفاصيل زيارة منصة المركز",
+                        Value = "تم رفض طلب تمديد مدة التحكيم للدعوى رقم {LitigationCode} ولمزيد من التفاصيل يرجى زيارة منصة المركز",
                     },new SysSetting
                     {
                         Id = Guid.NewGuid(),
@@ -920,17 +920,17 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                     {
                         Id = Guid.NewGuid(),
                         Key = "Reconciliation.ExtendRequest.Added",
-                        Value = "تم اضافة طلب مد مدة الصلح لدعوي رقم {LitigationCode}",
+                        Value = "تم إضافة طلب تمديد مدة الصلح للدعوى رقم {LitigationCode}",
                     },new SysSetting
                     {
                         Id = Guid.NewGuid(),
                         Key = "Reconciliation.ExtendRequest.Accepted",
-                        Value = "تم قبول طلب مد مدة الصلح لدعوي رقم {LitigationCode}",
+                        Value = "تم قبول طلب تمديد مدة الصلح للدعوى رقم {LitigationCode}",
                     },new SysSetting
                     {
                         Id = Guid.NewGuid(),
                         Key = "Reconciliation.ExtendRequest.Rejected",
-                        Value = "تم رفض طلب مد مدة الصلح لدعوي رقم {LitigationCode}",
+                        Value = "تم رفض طلب تمديد مدة الصلح للدعوى رقم {LitigationCode}",
                     },new SysSetting
                     {
                         Id = Guid.NewGuid(),
@@ -1742,6 +1742,17 @@ namespace Ticketing.EntityFrameworkCore.SeedData
                             Id = Guid.NewGuid(),
                             Key = "Configurable.ArbitratorRegistrationFees",
                             Value = "30"
+                        },
+                        new SysSetting
+                        {
+                            Id = Guid.NewGuid(),
+                            Key = "SLA.VerdictSessionReminderHoursBefore",
+                            Value = "24"
+                        },new SysSetting
+                        {
+                            Id = Guid.NewGuid(),
+                            Key = "SLA.VerdictSessionReminderMessage",
+                            Value = "تذكير: موعد جلسة النطق بالحكم للدعوى رقم {LitigationCode} خلال {Hours} ساعة"
                         },
                         #endregion
                 });

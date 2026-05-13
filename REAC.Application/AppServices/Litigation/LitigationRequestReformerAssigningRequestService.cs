@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Core.GenericRepository.BaseRepository;
 using Core.GenericRepository.Shared.Pagging;
 using Core.Log.Application.Contracts.IAppServices;
@@ -498,12 +498,6 @@ namespace REAC.Application.AppServices.Litigation
                     {
                         foreach (var item in litigationRequest.LitigationRequestReformerAssigningRequests.Where(x => x.CitizenId == referenceId))
                         {
-                            int reconciliationPeriod = 0;
-                            int.TryParse(_sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reconciliation_Period).Result.Data?.Value, out reconciliationPeriod);
-
-                            int daysPassed = (DateTime.Now - (DateTime)item.RequestOn).Days;
-                            item.LitigationRequest.ReconciliationPeriod = Math.Max(0, reconciliationPeriod - daysPassed);
-
                             CustomLitigationRequestMircoDto litigationRequestMircoDto = new CustomLitigationRequestMircoDto
                             {
                                 Id = item.Id,
@@ -566,6 +560,7 @@ namespace REAC.Application.AppServices.Litigation
                 .Include(x => x.LitigationRequest.Contract.FirstPartyCitizen)
                 .Include(x => x.LitigationRequest.Contract.SecondPartyFacility)
                 .Include(x => x.LitigationRequest.Contract.SecondPartyCitizen)
+                .Include(x => x.LitigationRequest.LitigationRequestExtendPeriodRequests)
                 //.Include(x => x.LitigationRequest.LitigationRequestReformerAssigningRequests)
                 .Include(x => x.LitigationRequest.Contract.LitigationRequestContractType);
 
@@ -593,15 +588,6 @@ namespace REAC.Application.AppServices.Litigation
             List<CustomLitigationRequestMircoAllDto> litigationRequestMircoDtos = new List<CustomLitigationRequestMircoAllDto>();
             if (results != null)
             {
-                int reconciliationPeriod = 0;
-                int.TryParse(_sysSettingService.GetBySettingKey(SysSettingKeyConstants.Reconciliation_Period).Result.Data?.Value, out reconciliationPeriod);
-
-                foreach (var litigationRequestReformerAssigningRequest in results)
-                {
-                    int daysPassed = (DateTime.Now - (DateTime)litigationRequestReformerAssigningRequest.RequestOn).Days;
-                    litigationRequestReformerAssigningRequest.LitigationRequest.ReconciliationPeriod = Math.Max(0, reconciliationPeriod - daysPassed);
-                }
-
                 foreach (var litigationRequest in results)
                 {
                     //var RejectReason1 = (await _repository.GetQueryable<LitigationRequestReformerAssigningRequest, Guid>()).Where(s => s.LitigationRequestId == litigationRequest.LitigationRequestId && s.Response == LitigationRequestReformerAssigningRequestStatus.Cancelled)?.OrderBy(s => s.ResponseOn);

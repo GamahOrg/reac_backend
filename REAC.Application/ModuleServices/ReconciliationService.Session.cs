@@ -331,6 +331,7 @@ namespace REAC.Application.ModuleServices
                         LitigationRequestSessionRequestTypeId = LitigationRequestSessionRequestType.Reconciliation,
                         SessionUrl = sessionUrl,
                         MeetingId = _zoomMeeting?.id,
+                        SessionTypeId = requestPayload.SessionTypeId,
                     };
 
 
@@ -758,44 +759,41 @@ namespace REAC.Application.ModuleServices
                                       .Include(x => x.Contract.FirstPartyCitizen)
                                       .Include(x => x.Contract.SecondPartyFacility)
                                       .Include(x => x.Contract.SecondPartyCitizen)
-                                      .Include(x => x.Contract.LitigationRequestContractType).Include(x => x.LitigationDelegationRequests)
- .ThenInclude(x => x.Delegator);
+                                      .Include(x => x.Contract.LitigationRequestContractType)
+                                      .Include(x => x.LitigationDelegationRequests)
+                                      .ThenInclude(x => x.Delegator);
+                                      
             litigationRequests = entitiesQuerable
                 .Where(x =>
 
-
-                x.RequestCode != null & x.InternalStatusId != RequestStatus.Rejected
+                (x.RequestCode != null & x.InternalStatusId != RequestStatus.Rejected
                 & x.LitigationRequestSessions.Count(x => x.LitigationRequestSessionRequestTypeId == LitigationRequestSessionRequestType.Reconciliation) > 0
                 & x.ApplicantCitizenId == referenceId
-                & x.LitigationRequestCategoryId != LitigationRequestCategory.Arbitration & x.ReformerCitizenId.HasValue
+                & x.LitigationRequestCategoryId != LitigationRequestCategory.Arbitration)
 
-                |
-x.InternalStatusId != RequestStatus.Cancelled && x.IsFinished != true && x.LitigationDelegationRequests.Any(x => x.IsActive != true && x.IsApproved == true)
-&& x.LitigationDelegationRequests.Any(x => x.Delegator.CitizenId == referenceId)
-                |
-                x.RequestCode != null & x.InternalStatusId != RequestStatus.Rejected
+                ||
+                (x.InternalStatusId != RequestStatus.Cancelled && x.IsFinished != true && x.LitigationDelegationRequests.Any(x => x.IsActive != true && x.IsApproved == true)
+                && x.LitigationDelegationRequests.Any(x => x.Delegator.CitizenId == referenceId))
+
+                ||
+                (x.RequestCode != null & x.InternalStatusId != RequestStatus.Rejected
                 & x.LitigationRequestSessions.Count(x => x.LitigationRequestSessionRequestTypeId == LitigationRequestSessionRequestType.Reconciliation) > 0
-                & x.RequestCode != null
                 & x.Contract.SecondPartyCitizenId == referenceId
-                & x.LitigationRequestCategoryId != LitigationRequestCategory.Arbitration & x.ReformerCitizenId.HasValue
+                & x.LitigationRequestCategoryId != LitigationRequestCategory.Arbitration)
 
+                ||
 
-                |
-
-                x.RequestCode != null & x.InternalStatusId != RequestStatus.Rejected
+                (x.RequestCode != null & x.InternalStatusId != RequestStatus.Rejected
                 & x.LitigationRequestSessions.Count(x => x.LitigationRequestSessionRequestTypeId == LitigationRequestSessionRequestType.Reconciliation) > 0
-                & x.RequestCode != null
                 & x.Contract.FirstPartyFacility.CitizenId == referenceId
-                & x.LitigationRequestCategoryId != LitigationRequestCategory.Arbitration & x.ReformerCitizenId.HasValue
+                & x.LitigationRequestCategoryId != LitigationRequestCategory.Arbitration)
 
+                ||
 
-                |
-
-                x.RequestCode != null & x.InternalStatusId != RequestStatus.Rejected
+                (x.RequestCode != null & x.InternalStatusId != RequestStatus.Rejected
                 & x.LitigationRequestSessions.Count(x => x.LitigationRequestSessionRequestTypeId == LitigationRequestSessionRequestType.Reconciliation) > 0
-                & x.RequestCode != null
                 & x.Contract.SecondPartyFacility.CitizenId == referenceId
-                & x.LitigationRequestCategoryId != LitigationRequestCategory.Arbitration & x.ReformerCitizenId.HasValue)
+                & x.LitigationRequestCategoryId != LitigationRequestCategory.Arbitration))
                                         .OrderByDescending(x => x.CreatedOn)
                                         .AsSplitQuery()
                                         .AsNoTracking()

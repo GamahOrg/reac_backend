@@ -1,4 +1,4 @@
-﻿using Core.GenericRepository.Shared.Pagging;
+using Core.GenericRepository.Shared.Pagging;
 using Core.Shared.Responses;
 using Microsoft.EntityFrameworkCore;
 using REAC.Application.Contracts.Dtos.Notification;
@@ -872,9 +872,13 @@ namespace REAC.Application.ModuleServices
             var lstNotification = new List<SysNotificationDto>();
             
             //المصلح اللى على الدعوة
-            if (litigationRequest.ReformerCitizenId.HasValue)
+            if (litigationRequest.ReformerCitizenId.HasValue && litigationRequest.ReformerCitizen != null)
             {
-                objEmail.To.Add(litigationRequest?.ReformerCitizen.Email);
+                if (!string.IsNullOrEmpty(litigationRequest.ReformerCitizen.Email))
+                {
+                    objEmail.To.Add(litigationRequest.ReformerCitizen.Email);
+                }
+
                 lstNotification.Add(new Contracts.Dtos.Notification.SysNotificationDto()
                 {
                     ActorId = litigationRequest.ReformerCitizenId.Value,
@@ -886,14 +890,24 @@ namespace REAC.Application.ModuleServices
                     RequestTypeId = RequestType.ReformationReport,
                     Message = msg,
                 });
-                objSms.recipients.Add(litigationRequest?.ReformerCitizen.Mobile);
 
+                if (!string.IsNullOrEmpty(litigationRequest.ReformerCitizen.Mobile))
+                {
+                    objSms.recipients.Add(litigationRequest.ReformerCitizen.Mobile);
+                }
             }
             //مدير ادارة الصلح
-            if (deptAdminInfoReconciliation is not null)
+            if (deptAdminInfoReconciliation != null && deptAdminInfoReconciliation.IsDone && deptAdminInfoReconciliation.Data != null)
             {
-                objEmail.To.Add(deptAdminInfoReconciliation?.Data?.Email);
-                objSms.recipients.Add(deptAdminInfoReconciliation?.Data?.Mobile);
+                if (!string.IsNullOrEmpty(deptAdminInfoReconciliation.Data.Email))
+                {
+                    objEmail.To.Add(deptAdminInfoReconciliation.Data.Email);
+                }
+                
+                if (!string.IsNullOrEmpty(deptAdminInfoReconciliation.Data.Mobile))
+                {
+                    objSms.recipients.Add(deptAdminInfoReconciliation.Data.Mobile);
+                }
 
                 lstNotification.Add(new Contracts.Dtos.Notification.SysNotificationDto()
                 {

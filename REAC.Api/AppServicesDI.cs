@@ -59,6 +59,7 @@ namespace REAC.Api
             services.AddScoped<ICitizenBankAccountService, CitizenBankAccountService>();
             services.AddScoped<ISysBankService, SysBankService>();
             services.AddScoped<IArbitrationService, ArbitrationService>();
+            services.AddScoped<ILitigationRequestAdminService, LitigationRequestAdminService>();
             services.AddScoped<ILitigationRequestArbitratorAssigningRequestService, LitigationRequestArbitratorAssigningRequestService>();
             services.AddScoped<ISysMeetingLocationService, SysMeetingLocationService>();
             services.AddScoped<ISysArbitratorCountService, SysArbitratorCountService>();
@@ -105,6 +106,7 @@ namespace REAC.Api
             services.AddScoped<ILitigationRequestRequestService, LitigationRequestRequestService>();
             services.AddScoped<ILitigationRequestRequestFileService, LitigationRequestRequestFileService>();
             services.AddScoped<ILitigationRatingService, LitigationRatingService>();
+            services.AddScoped<IBeneficiarySatisfactionSurveyService, BeneficiarySatisfactionSurveyService>();
             services.AddScoped<ISysDepartmentService, SysDepartmentService>();
             services.AddScoped<ISysEmployeeService, SysEmployeeService>();
             services.AddScoped<ISysFileManagerService, SysFileManagerService>();

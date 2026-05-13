@@ -1,4 +1,4 @@
-﻿using Core.GenericRepository.Shared.Pagging;
+using Core.GenericRepository.Shared.Pagging;
 using Core.Shared.Responses;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -32,7 +32,7 @@ namespace REAC.Application.ModuleServices
                 var litigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>())?
                         .Include(x => x.LitigationRequestArbitrationReports)
                         .Include(x => x.LitigationRequestArbitratorAssigningRequests)
-                        .ThenInclude(x=>x.ArbitratorCitizen)
+                        .ThenInclude(x => x.ArbitratorCitizen)
                         .Include(x => x.ArbitratorCitizen)
                         .Include(x => x.ApplicantCitizen)
                     .Include(x => x.Contract)
@@ -251,7 +251,7 @@ namespace REAC.Application.ModuleServices
                                     recipients.Add(arbitrator.ArbitratorCitizen.Mobile);
                                 }
                                 emails = emails.Where(e => e != null).ToList();
-                                recipients= recipients.Where(r => r != null).ToList();
+                                recipients = recipients.Where(r => r != null).ToList();
                                 await _notificationService.SendNotifications(new Contracts.Dtos.Notification.SendEmailDto()
                                 {
                                     To = emails,
@@ -360,6 +360,7 @@ namespace REAC.Application.ModuleServices
             Guid referenceId = Guid.Empty;
             _jwtReader.GetReferenceId(ref referenceId);
 
+            var arbitrationAdmin = await _sysEmployeeService.GetAdminsByDepartmentType(DepartmentType.Arbitration);
 
             var litigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>())
                          .Include(x => x.DefendantCitizen)
@@ -391,16 +392,17 @@ namespace REAC.Application.ModuleServices
                          .Include(x => x.Contract.LitigationRequestContractType)
                          .Include(x => x.LitigationRequestInvoice)
                          .Where(x => x.Id == requestId
-                         & x.ArbitratorCitizenId == referenceId
-                         | x.ApplicantCitizenId == referenceId & x.Id == requestId
-                      |
-                      x.Contract.FirstPartyCitizenId == referenceId & x.Id == requestId
-                      |
-                        x.Contract.SecondPartyCitizenId == referenceId & x.Id == requestId
-                      |
-                       x.Contract.FirstPartyFacility.CitizenId == referenceId & x.Id == requestId
-                      |
-                      x.Contract.SecondPartyFacility.CitizenId == referenceId & x.Id == requestId
+                         //   & x.ArbitratorCitizenId == referenceId
+                         //   | arbitrationAdmin.Data.Id == referenceId
+                         //   | x.ApplicantCitizenId == referenceId & x.Id == requestId
+                         //|
+                         //x.Contract.FirstPartyCitizenId == referenceId & x.Id == requestId
+                         //|
+                         //  x.Contract.SecondPartyCitizenId == referenceId & x.Id == requestId
+                         //|
+                         // x.Contract.FirstPartyFacility.CitizenId == referenceId & x.Id == requestId
+                         //|
+                         //x.Contract.SecondPartyFacility.CitizenId == referenceId & x.Id == requestId
                          ).AsNoTracking().ToList().FirstOrDefault();
 
             if (litigationRequest == null)
@@ -424,17 +426,20 @@ namespace REAC.Application.ModuleServices
                 request.LitigationRequestAmount = new SysLitigationRequestAmountCreateUpdateDto()
                 {
                     Fees = MinRequestAmount.LitigationRequestFees.FirstOrDefault().ArbitrationFees,
-                    
+
                 };
             }
             if (!string.IsNullOrEmpty(litigationRequest.ArbitratorCitizen?.SigntureFile?.FilePath))
             {
                 string inputFilePath = Path.Combine(Directory.GetCurrentDirectory(), litigationRequest.ArbitratorCitizen?.SigntureFile?.FilePath);
                 // Read file and convert to Base64
-                byte[] fileBytes = File.ReadAllBytes(inputFilePath);
-                base64String = Convert.ToBase64String(fileBytes);
+                if (!string.IsNullOrEmpty(inputFilePath) && File.Exists(inputFilePath))
+                {
+                    byte[] fileBytes = File.ReadAllBytes(inputFilePath);
+                    base64String = Convert.ToBase64String(fileBytes);
+                }
             }
-            if (request != null)
+            if (request != null && !string.IsNullOrEmpty(base64String))
             {
                 request.ArbitratorCitizen.SigntureFile = base64String;
             }
@@ -602,6 +607,163 @@ namespace REAC.Application.ModuleServices
                 IsDone = true
             };
         }
+        public async Task<BaseResponse> GetLitigationRequestForReportForAdmin(LitigationRequestReportAdminFilterDto filter, CancellationToken cancellationToken)
+        {
+            Guid referenceId = Guid.Empty;
+            _jwtReader.GetReferenceId(ref referenceId);
+
+            var arbitrationAdmin = await _sysEmployeeService.GetAdminsByDepartmentType(DepartmentType.Arbitration);
+            if (!arbitrationAdmin.IsDone || arbitrationAdmin.Data?.Id != referenceId)
+                return new BaseResponse { IsDone = false, Message = "غير مصرح لك بالوصول، هذه الخدمة متاحة لرئيس هيئة التحكيم فقط" };
+
+            var entitiesQuerable = (await _repository.GetQueryable<LitigationRequest, Guid>())
+                .Include(x => x.ArbitratorCitizen)
+                .Include(x => x.Area).Include(x => x.City)
+                .Include(x => x.LitigationRequestSessions)
+                .Include(x => x.LitigationRequestArbitrationReports)
+                .Include(x => x.LitigationRequestArbitrationCorrectionRequests)
+                .Include(x => x.ApplicantCitizen)
+                .Include(x => x.DefendantCitizen)
+                .Include(x => x.DefendantFacility)
+                .Include(x => x.InternalStatus)
+                .Include(x => x.ExternalStatus)
+                .Include(x => x.LitigationRequestAmount)
+                .Include(x => x.LitigationRequestCategory)
+                .Include(x => x.SysExemptionReductionCategory)
+                .Include(x => x.LitigationRequestOwnerType)
+                .Include(x => x.Contract)
+                .Include(x => x.Contract.LitigationRequestContractType)
+                .Include(x => x.Contract.ContractFile)
+                .Include(x => x.Contract.AssociationRegistrationCertificateFile)
+                .Include(x => x.Contract.FoundingLetterFile)
+                .Include(x => x.Contract.InternalRegulationsFile)
+                .Include(x => x.Contract.FirstPartyFacility)
+                .Include(x => x.Contract.FirstPartyCitizen)
+                .Include(x => x.Contract.SecondPartyFacility)
+                .Include(x => x.Contract.SecondPartyCitizen);
+
+            var query = entitiesQuerable.Where(x =>
+                x.RequestCode != null
+                & x.LitigationRequestStage == LitigationRequestStage.Arbitration
+                & (x.InternalStatusId == RequestStatus.JudgmentDecisionIssued || x.InternalStatusId == RequestStatus.WaitingForArbitratorsApproval)
+                & x.LitigationRequestCategoryId != LitigationRequestCategory.Reconciliation);
+
+            // البحث برقم الدعوى
+            if (!string.IsNullOrWhiteSpace(filter.RequestCode))
+                query = query.Where(x => x.RequestCode!.Contains(filter.RequestCode));
+
+            // البحث باسم المحكم
+            if (!string.IsNullOrWhiteSpace(filter.ArbitratorName))
+                query = query.Where(x => x.ArbitratorCitizen != null && x.ArbitratorCitizen.FullName.Contains(filter.ArbitratorName));
+
+            // البحث باسم أحد أطراف الدعوى
+            if (!string.IsNullOrWhiteSpace(filter.PartyName))
+                query = query.Where(x =>
+                    (x.Contract.FirstPartyCitizen != null && x.Contract.FirstPartyCitizen.FullName.Contains(filter.PartyName)) ||
+                    (x.Contract.FirstPartyFacility != null && x.Contract.FirstPartyFacility.ArabicFacilityName.Contains(filter.PartyName)) ||
+                    (x.Contract.SecondPartyCitizen != null && x.Contract.SecondPartyCitizen.FullName.Contains(filter.PartyName)) ||
+                    (x.Contract.SecondPartyFacility != null && x.Contract.SecondPartyFacility.ArabicFacilityName.Contains(filter.PartyName)) ||
+                    (x.DefendantCitizen != null && x.DefendantCitizen.FullName.Contains(filter.PartyName)) ||
+                    (x.DefendantFacility != null && x.DefendantFacility.ArabicFacilityName.Contains(filter.PartyName)));
+
+            // التصفية حسب تاريخ تقديم الدعوى
+            if (filter.SubmissionDateFrom.HasValue)
+                query = query.Where(x => x.SentOn >= filter.SubmissionDateFrom.Value);
+            if (filter.SubmissionDateTo.HasValue)
+                query = query.Where(x => x.SentOn <= filter.SubmissionDateTo.Value);
+
+            // التصفية حسب تاريخ قبول الدعوى من المدقق
+            if (filter.AuditorAcceptanceDateFrom.HasValue)
+                query = query.Where(x => x.StartArbitrationDate >= filter.AuditorAcceptanceDateFrom.Value);
+            if (filter.AuditorAcceptanceDateTo.HasValue)
+                query = query.Where(x => x.StartArbitrationDate <= filter.AuditorAcceptanceDateTo.Value);
+
+            // التصفية حسب تاريخ قبول المحكم الدعوى
+            if (filter.ArbitratorAcceptanceDateFrom.HasValue)
+                query = query.Where(x => x.ArbitratorsChairmanNominationListSelectionDoneDateTime >= filter.ArbitratorAcceptanceDateFrom.Value);
+            if (filter.ArbitratorAcceptanceDateTo.HasValue)
+                query = query.Where(x => x.ArbitratorsChairmanNominationListSelectionDoneDateTime <= filter.ArbitratorAcceptanceDateTo.Value);
+
+            // التصفية حسب تاريخ إصدار الحكم
+            if (filter.JudgmentDateFrom.HasValue)
+                query = query.Where(x => x.JudgmentDecisionIssuingDateTime >= filter.JudgmentDateFrom.Value);
+            if (filter.JudgmentDateTo.HasValue)
+                query = query.Where(x => x.JudgmentDecisionIssuingDateTime <= filter.JudgmentDateTo.Value);
+
+            var litigationRequests = query
+                .OrderByDescending(x => x.CreatedOn)
+                .AsSplitQuery()
+                .AsNoTracking()
+                .GetPaged(filter.PageIndex, filter.PageSize);
+
+            var dtos = new List<LitigationRequestMircoForAdminReportDto>();
+            if (litigationRequests != null)
+            {
+                foreach (var litigationRequest in litigationRequests.Results)
+                {
+                    bool allowAdd = true;
+                    bool isDone = false;
+
+                    if (litigationRequest.IsFinished.HasValue && litigationRequest.IsFinished.Value)
+                    {
+                        allowAdd = false;
+                        isDone = true;
+                    }
+
+                    if (!isDone)
+                    {
+                        if (litigationRequest?.LitigationRequestStage != LitigationRequestStage.Arbitration)
+                            allowAdd = false;
+                        else if (litigationRequest?.LitigationRequestSubStage == LitigationRequestSubStage.JudgmentDecisionIssued)
+                            allowAdd = false;
+                        else if (litigationRequest?.LitigationRequestArbitrationReports?.Count > 0)
+                            allowAdd = false;
+                    }
+
+                    dtos.Add(new LitigationRequestMircoForAdminReportDto
+                    {
+                        Id = litigationRequest!.Id,
+                        RequestDate = litigationRequest.CreatedOn,
+                        RequestCode = litigationRequest.RequestCode,
+                        FirstPartyName = (litigationRequest.Contract.FirstPartyCitizen == null)
+                            ? litigationRequest.Contract.FirstPartyFacility?.ArabicFacilityName ?? string.Empty
+                            : litigationRequest.Contract.FirstPartyCitizen?.FullName ?? string.Empty,
+                        SecondPartyName = (litigationRequest.Contract.SecondPartyCitizen == null)
+                            ? litigationRequest.DefendantFacility?.ArabicFacilityName ?? string.Empty
+                            : litigationRequest.Contract.SecondPartyCitizen?.FullName ?? string.Empty,
+                        RequestTypeName = litigationRequest.Contract.LitigationRequestContractType?.TypeName ?? string.Empty,
+                        ArbitratorName = litigationRequest.ArbitratorCitizen?.FullName,
+                        Status = litigationRequest.InternalStatus?.RequestStatus,
+                        IsDone = allowAdd ? "--" : "تم",
+                        SubmissionDate = litigationRequest.SentOn,
+                        AuditorAcceptanceDate = litigationRequest.StartArbitrationDate,
+                        ArbitratorAcceptanceDate = litigationRequest.ArbitratorsChairmanNominationListSelectionDoneDateTime ?? litigationRequest.StartArbitrationDate,
+                        JudgmentDate = litigationRequest.JudgmentDecisionIssuingDateTime,
+                        CorrectionRequestStatus = litigationRequest.LitigationRequestArbitrationCorrectionRequests?
+                            .OrderByDescending(x => x.CreatedOn)
+                            .FirstOrDefault() is { } cr
+                            ? cr.ApproveRejectStatus == null ? "تحت المراجعة"
+                              : cr.ApproveRejectStatus == ApproveRejectStatus.Approve ? "مقبول"
+                              : "مرفوض"
+                            : null,
+                    });
+                }
+            }
+
+            return new DataResponse<PagedResult<LitigationRequestMircoForAdminReportDto>>
+            {
+                Data = new PagedResult<LitigationRequestMircoForAdminReportDto>
+                {
+                    Results = dtos,
+                    CurrentPage = litigationRequests!.CurrentPage,
+                    PageCount = litigationRequests.PageCount,
+                    PageSize = litigationRequests.PageSize,
+                    TotalCount = litigationRequests.TotalCount
+                },
+                IsDone = true
+            };
+        }
+
         #endregion
 
         #region Nafath

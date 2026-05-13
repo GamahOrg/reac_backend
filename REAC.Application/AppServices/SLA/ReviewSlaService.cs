@@ -52,6 +52,7 @@ namespace REAC.Application.AppServices.SLA
                              .ThenInclude(x => x.WorkFlowStep)
                              .Include(x => x.WorkFlowProcessingLogs)
                              .ThenInclude(x => x.Employee)
+                             .Include(x => x.LitigationRequestReopenLogs)
                              .Include(x => x.Contract)
                              .Include(x => x.Contract.FirstPartyFacility).ThenInclude(x => x.Citizen)
                              .Include(x => x.Contract.FirstPartyCitizen)
@@ -132,13 +133,13 @@ namespace REAC.Application.AppServices.SLA
                                 var workFlowProcessingLog = litigationRequest.WorkFlowProcessingLogs.Where(x => x.EmployeeId.HasValue == false & x.IsFinished == false).OrderBy(x => x.CreatedOn).LastOrDefault();
 
 
-                                if (workFlowProcessingLog is not null)
+                                if (workFlowProcessingLog is not null && !litigationRequest.LitigationRequestReopenLogs.Any())
                                 {
                                     double totalReviewHours = 0;
                                     totalReviewHours = (DateTime.Now - workFlowProcessingLog.CreatedOn).TotalHours;
 
 
-                                    if (totalReviewHours >= secondReminderForApplicantToPayLitigationRequestFeesPeriod)
+                                    if (totalReviewHours >= secondReminderForApplicantToPayLitigationRequestFeesPeriod && !litigationRequest.LitigationRequestReopenLogs.Any())
                                     {
 
                                         litigationRequest.InternalStatusId = RequestStatus.Cancelled;
@@ -738,7 +739,7 @@ namespace REAC.Application.AppServices.SLA
                             {
                                 if (litigationRequest.IsReminderForCancelLitigationForNotesSent != true)
                                 {
-                                    if (totalReviewHours >= reminderForApplicantSecondPeriod)
+                                    if (totalReviewHours >= reminderForApplicantSecondPeriod && !litigationRequest.LitigationRequestReopenLogs.Any())
 
 
                                     {
@@ -1125,7 +1126,7 @@ namespace REAC.Application.AppServices.SLA
                                 if (totalReviewHours >= secondAgreementRequestForRequest)
                                 {
                                     // لو الدعوي تحكيم يتم الالغاء
-                                    if (litigationRequest.LitigationRequestCategoryId == LitigationRequestCategory.Arbitration)
+                                    if (litigationRequest.LitigationRequestCategoryId == LitigationRequestCategory.Arbitration && !litigationRequest.LitigationRequestReopenLogs.Any())
                                     {
                                         litigationRequest.IsFinished = true;
                                         litigationRequest.IsActive = false;

@@ -67,14 +67,14 @@ namespace REAC.Application.AppServices.System
                 {
                     Data = new SysLitigationRequestContractTypeDto
                     {
-                        AcknowledgmentContent = (litigationRequest.Contract.LitigationRequestContractType.AcknowledgmentContent == null) ? null :
-                        $"{litigationRequest.Contract.LitigationRequestContractType.AcknowledgmentContent.Replace("{اسم المدعي}",
+                        AcknowledgmentContent = (litigationRequest.Contract?.LitigationRequestContractType.AcknowledgmentContent == null) ? null :
+                        $"{litigationRequest.Contract?.LitigationRequestContractType.AcknowledgmentContent.Replace("{اسم المدعي}",
                         citizen.FullName).Replace("{رقم هوية المدعي}",
                         citizen.IdentityNumber).Replace("{مصدر الهوية}",
                         citizen.District).Replace("{تاريخ الميلادي لليوم}",
                         DateTime.Now.ToString())}",
-                        TypeName = litigationRequest.Contract.LitigationRequestContractType.CodingPrefixSymbol,
-                        TermsAndConditions = litigationRequest.Contract.LitigationRequestContractType.TermsAndConditions
+                        TypeName = litigationRequest.Contract?.LitigationRequestContractType.CodingPrefixSymbol,
+                        TermsAndConditions = litigationRequest.Contract?.LitigationRequestContractType.TermsAndConditions
                     },
                     IsDone = true
                 };

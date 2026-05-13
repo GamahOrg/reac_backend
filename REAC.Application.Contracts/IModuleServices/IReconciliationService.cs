@@ -31,6 +31,8 @@ namespace REAC.Application.ModuleServices
         Task<BaseResponse> GetLitigationRequestForReport(Guid requestId, CancellationToken cancellationToken);
 
         Task<BaseResponse> GetLitigationRequestForReport(int pageIndex, int pageSize, CancellationToken cancellationToken);
+
+        Task<BaseResponse> GetLitigationRequestForReconciliationAdminReport(ReconciliationReportAdminFilterDto filter, CancellationToken cancellationToken);
         Task<BaseResponse> GetPagedLitigationRequestExtendPeriod(int pageIndex, int pageSize, CancellationToken cancellationToken);
 
         #region Citizen Report Reply

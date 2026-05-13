@@ -1,4 +1,4 @@
-﻿namespace REAC.Domain.Shared.Constants
+namespace REAC.Domain.Shared.Constants
 {
     public class SysSettingKeyConstants
     {
@@ -280,6 +280,8 @@
         public const string LitigationRequest_LitigationFeesHaveBeenCollected = "LitigationRequest.LitigationFeesHaveBeenCollected";
         public const string LitigationRequest_CollectionOfReconciliationFeesRequestIsBeingSent = "LitigationRequest.CollectionOfReconciliationFeesRequestIsBeingSent";
         public const string LitigationRequest_ReconciliationFeesHaveBeenCollected = "LitigationRequest.ReconciliationFeesHaveBeenCollected";
+        public const string LitigationRequest_CollectionOfArbitrationFeesRequestIsBeingSent = "LitigationRequest.CollectionOfArbitrationFeesRequestIsBeingSent";
+        public const string LitigationRequest_ArbitrationFeesHaveBeenCollected = "LitigationRequest.ArbitrationFeesHaveBeenCollected";
 
         public const string SLA_LitigationRequestFeesNotPaidReminderFirstPeriod = "SLA.LitigationRequestFeesNotPaidReminderFirstPeriod";
         public const string SLA_LitigationRequestFeesNotPaidReminderSecondPeriod = "SLA.LitigationRequestFeesNotPaidReminderSecondPeriod";
@@ -306,6 +308,9 @@
 
         public const string SLA_AddLitigationRequestArbitrationSessionPeriod = "SLA.AddLitigationRequestArbitrationSessionPeriod";
         public const string SLA_AddLitigationRequestArbitrationSessionWarning = "SLA.AddLitigationRequestArbitrationSessionWarning";
+
+        public const string SLA_VerdictSessionReminderHoursBefore = "SLA.VerdictSessionReminderHoursBefore";
+        public const string SLA_VerdictSessionReminderMessage = "SLA.VerdictSessionReminderMessage";
 
         public const string SLA_Reconciliation_ReformerMaxSessionsCountPerDay = "Reconciliation.ReformerMaxSessionsCountPerDay";
         public const string SLA_Arbitration_ArbitratorMaxSessionsCountPerDay = "SLA.Arbitration.ArbitratorMaxSessionsCountPerDay";

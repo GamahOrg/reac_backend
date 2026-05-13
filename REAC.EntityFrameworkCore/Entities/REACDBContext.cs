@@ -30,6 +30,9 @@ public partial class REACDBContext : DbContext
     public virtual DbSet<SysInvoiceType> InvoiceTypes { get; set; }
     public virtual DbSet<LitigationRequestArbitratorRecusalRequest> LitigationRequestArbitratorRecusalRequests { get; set; }
     public virtual DbSet<LitigationRequestArbitratorRecusalRequestFile> LitigationRequestArbitratorRecusalRequestFiles { get; set; }
+    public virtual DbSet<LitigationRequestArbitrationCorrectionRequest> LitigationRequestArbitrationCorrectionRequests { get; set; }
+    public virtual DbSet<LitigationRequestArbitrationCorrectionRequestFile> LitigationRequestArbitrationCorrectionRequestFiles { get; set; }
+    public virtual DbSet<LitigationRequestReopenLog> LitigationRequestReopenLogs { get; set; }
     public virtual DbSet<LitigationRequestArbitratorsChairmanNominationListValue> LitigationRequestArbitratorsChairmanNominationListValues { get; set; }
 
 
@@ -205,9 +208,30 @@ public partial class REACDBContext : DbContext
     public virtual DbSet<SysCity> SysCities { get; set; }
     public virtual DbSet<OtherCategory> OtherCategories { get; set; }
     public virtual DbSet<SysNationality> SysNationalities { get; set; }
-   
+    public virtual DbSet<BeneficiarySatisfactionSurvey> BeneficiarySatisfactionSurveys { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<BeneficiarySatisfactionSurvey>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__BeneficiarySatisfactionSurvey");
+            entity.ToTable("BeneficiarySatisfactionSurvey");
+            entity.Property(e => e.Id).ValueGeneratedNever();
+
+            entity.HasIndex(e => new { e.LitigationRequestId, e.CitizenId, e.StageType },
+                "IX_BeneficiarySatisfactionSurvey_Unique").IsUnique();
+
+            entity.HasOne(d => d.LitigationRequest).WithMany()
+                .HasForeignKey(d => d.LitigationRequestId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_BeneficiarySatisfactionSurvey_LitigationRequest");
+
+            entity.HasOne(d => d.Citizen).WithMany()
+                .HasForeignKey(d => d.CitizenId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_BeneficiarySatisfactionSurvey_Citizen");
+        });
+
         modelBuilder.Entity<LitigationRequestArbitratorRecusalRequest>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK__LitigationRequestArbitratorRecusalRequest");
@@ -246,6 +270,43 @@ public partial class REACDBContext : DbContext
             .HasConstraintName("FKLitigationRequestArbitratorRecusalRequesArbitratorRecusalRequestFiles2313000");
 
         });
+
+        modelBuilder.Entity<LitigationRequestArbitrationCorrectionRequest>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__LitigationRequestArbitrationCorrectionRequest");
+            entity.ToTable("LitigationRequestArbitrationCorrectionRequest");
+            entity.HasIndex(e => e.Id, "LitigationRequestArbitrationCorrectionRequest_Id").IsUnique();
+            entity.Property(e => e.Id).ValueGeneratedNever();
+
+            entity.HasOne(d => d.LitigationRequest).WithMany(p => p.LitigationRequestArbitrationCorrectionRequests)
+                .HasForeignKey(d => d.LitigationRequestId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FKLitigationRequestArbitrationCorrectionRequest");
+
+            entity.HasOne(d => d.RequestCitizen).WithMany()
+                .HasForeignKey(d => d.RequestCitizenId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FKRequestCitizenArbitrationCorrectionRequest");
+        });
+
+        modelBuilder.Entity<LitigationRequestArbitrationCorrectionRequestFile>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__LitigationRequestArbitrationCorrectionRequestFile");
+            entity.ToTable("LitigationRequestArbitrationCorrectionRequestFile");
+            entity.HasIndex(e => e.Id, "LitigationRequestArbitrationCorrectionRequestFile_Id").IsUnique();
+            entity.Property(e => e.Id).ValueGeneratedNever();
+
+            entity.HasOne(d => d.CorrectionRequestFile).WithMany(p => p.LitigationRequestArbitrationCorrectionRequestFiles)
+                .HasForeignKey(d => d.CorrectionRequestFileId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FKCorrectionRequestFileArbitrationCorrectionRequestFile");
+
+            entity.HasOne(d => d.LitigationRequestArbitrationCorrectionRequest).WithMany(p => p.LitigationRequestArbitrationCorrectionRequestFiles)
+                .HasForeignKey(d => d.LitigationRequestArbitrationCorrectionRequestId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FKArbitrationCorrectionRequestArbitrationCorrectionRequestFile");
+        });
+
         modelBuilder.Entity<LitigationRequestArbitrationReportExplanationRequest>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK__LitigationRequestArbitrationReportExplanationRequest");

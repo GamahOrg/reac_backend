@@ -19,7 +19,7 @@ namespace REAC.Application.Contracts.Dtos.Wpf.Business
     public class AssignArbitratorRequestPayload
     {
         public Guid RequestId { get; set; }
-        public Guid LitigationRequestArbitratorListId { get; set; }
+        public Guid? LitigationRequestArbitratorListId { get; set; }
         public ArbitratorAssigningRequestType ArbitratorAssigningRequestTypeId { get; set; }
         public Guid ArbitratorId { get; set; }
     }

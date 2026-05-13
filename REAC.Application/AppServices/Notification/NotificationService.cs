@@ -299,6 +299,22 @@ namespace REAC.Application.AppServices.Notification
         {
             try
             {
+                // Add Mobile2/Email2 for Defendant recipients
+                foreach (var notification in notifications)
+                {
+                    if (notification.ActorTypeId == Domain.Shared.Enum.NotificationActorType.Defendant)
+                    {
+                        var citizenResponse = await _repository.GetByIdAsync<Citizen, Guid>(notification.ActorId);
+                        if (citizenResponse?.IsDone == true && citizenResponse is DataResponse<Citizen> citizenData && citizenData.Data != null)
+                        {
+                            var citizen = citizenData.Data;
+                            if (email != null && !string.IsNullOrWhiteSpace(citizen.Email2) && !email.To.Contains(citizen.Email2))
+                                email.To.Add(citizen.Email2);
+                            if (sms != null && !string.IsNullOrWhiteSpace(citizen.Mobile2) && !sms.recipients.Contains(citizen.Mobile2))
+                                sms.recipients.Add(citizen.Mobile2);
+                        }
+                    }
+                }
 
                 if (email is not null)
                 {

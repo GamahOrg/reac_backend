@@ -1,4 +1,4 @@
-﻿using Core.Shared.Responses;
+using Core.Shared.Responses;
 using Microsoft.EntityFrameworkCore;
 using REAC.Application.Contracts.Dtos.Litigation.CreateUpdate.Litigation;
 using REAC.Application.Contracts.Dtos.Integration.GEE;
@@ -11,6 +11,9 @@ using REAC.EntityFrameworkCore.Entities.Reconciliation;
 using REAC.EntityFrameworkCore.Entities.Wpf.Business;
 using Core.GenericRepository.Shared.Pagging;
 using REAC.Application.Contracts.Dtos.Litigation;
+using REAC.Application.Contracts.Dtos.Reconciliation;
+using REAC.EntityFrameworkCore.Entities.System;
+using REAC.Application.AppServices.System;
 
 namespace REAC.Application.ModuleServices
 {
@@ -324,6 +327,8 @@ namespace REAC.Application.ModuleServices
             if (referenceId == Guid.Empty)
                 return new BaseResponse() { IsDone = false, Message = "غير مصرح" };
 
+            var reconciliationAdmin = await _employeeService.GetAdminsByDepartmentType(DepartmentType.Reconciliation);
+
             var litigationRequest = (await _repository.GetQueryable<LitigationRequest, Guid>())
                          .Include(x => x.ReformerCitizen)
                          .ThenInclude(x=>x.SigntureFile)
@@ -400,7 +405,7 @@ namespace REAC.Application.ModuleServices
                          .AsNoTracking()
                          .FirstOrDefault(x => x.Id == requestId
                          &&
-                       x.LitigationRequestReformerAssigningRequests.Any(l => l.CitizenId == referenceId) & x.Id == requestId
+                         (x.LitigationRequestReformerAssigningRequests.Any(l => l.CitizenId == referenceId) & x.Id == requestId || reconciliationAdmin.Data.Id == referenceId)
                          );
             if (litigationRequest == null)
                 return new BaseResponse() { IsDone = false, Message = "غير مصرح" };
@@ -558,8 +563,8 @@ namespace REAC.Application.ModuleServices
                     litigationRequestMircoDto.Id = litigationRequest.Id;
                     litigationRequestMircoDto.RequestDate = litigationRequest.CreatedOn;
                     litigationRequestMircoDto.RequestCode = litigationRequest.RequestCode;
-                    litigationRequestMircoDto.FirstPartyName = (litigationRequest.Contract.FirstPartyCitizen == null) ? litigationRequest.Contract.FirstPartyFacility.ArabicFacilityName : litigationRequest.Contract.FirstPartyCitizen.FullName;
-                    litigationRequestMircoDto.SecondPartyName = (litigationRequest.DefendantCitizen == null) ? litigationRequest.DefendantFacility.ArabicFacilityName : litigationRequest.DefendantCitizen.FullName;
+                    litigationRequestMircoDto.FirstPartyName = (litigationRequest.Contract.FirstPartyCitizen == null) ? litigationRequest.Contract.FirstPartyFacility?.ArabicFacilityName : litigationRequest.Contract.FirstPartyCitizen?.FullName;
+                    litigationRequestMircoDto.SecondPartyName = (litigationRequest.DefendantCitizen == null) ? litigationRequest.DefendantFacility?.ArabicFacilityName : litigationRequest.DefendantCitizen?.FullName;
                     litigationRequestMircoDto.RequestTypeName = litigationRequest.Contract.LitigationRequestContractType.TypeName;
                     bool allowAdd = true;
                     bool isDone = false;
@@ -632,6 +637,136 @@ namespace REAC.Application.ModuleServices
             };
 
         }
+        public async Task<BaseResponse> GetLitigationRequestForReconciliationAdminReport(ReconciliationReportAdminFilterDto filter, CancellationToken cancellationToken)
+        {
+            Guid referenceId = Guid.Empty;
+            _jwtReader.GetReferenceId(ref referenceId);
+
+            var reconciliationAdmin = await _employeeService.GetAdminsByDepartmentType(DepartmentType.Reconciliation);
+            if (!reconciliationAdmin.IsDone || reconciliationAdmin.Data?.Id != referenceId)
+                return new BaseResponse { IsDone = false, Message = "غير مصرح لك بالوصول، هذه الخدمة متاحة لمدير إدارة الصلح فقط" };
+
+            var entitiesQuerable = (await _repository.GetQueryable<LitigationRequest, Guid>())
+                .Include(x => x.ReformerCitizen)
+                .Include(x => x.Area).Include(x => x.City)
+                .Include(x => x.LitigationRequestReconciliationReports)
+                .Include(x => x.ApplicantCitizen)
+                .Include(x => x.DefendantCitizen)
+                .Include(x => x.DefendantFacility)
+                .Include(x => x.InternalStatus)
+                .Include(x => x.ExternalStatus)
+                .Include(x => x.LitigationRequestAmount)
+                .Include(x => x.LitigationRequestCategory)
+                .Include(x => x.SysExemptionReductionCategory)
+                .Include(x => x.LitigationRequestOwnerType)
+                .Include(x => x.Contract)
+                .Include(x => x.Contract.LitigationRequestContractType)
+                .Include(x => x.Contract.ContractFile)
+                .Include(x => x.Contract.AssociationRegistrationCertificateFile)
+                .Include(x => x.Contract.FoundingLetterFile)
+                .Include(x => x.Contract.InternalRegulationsFile)
+                .Include(x => x.Contract.FirstPartyFacility)
+                .Include(x => x.Contract.FirstPartyCitizen)
+                .Include(x => x.Contract.SecondPartyFacility)
+                .Include(x => x.Contract.SecondPartyCitizen);
+
+            var query = entitiesQuerable.Where(x =>
+                x.RequestCode != null
+                & x.LitigationRequestCategoryId != LitigationRequestCategory.Arbitration
+                & x.LitigationRequestReconciliationReports.Any());
+
+            // البحث برقم الدعوى
+            if (!string.IsNullOrWhiteSpace(filter.RequestCode))
+                query = query.Where(x => x.RequestCode!.Contains(filter.RequestCode));
+
+            // البحث باسم المصلح
+            if (!string.IsNullOrWhiteSpace(filter.ReformerName))
+                query = query.Where(x => x.ReformerCitizen != null && x.ReformerCitizen.FullName.Contains(filter.ReformerName));
+
+            // البحث باسم أحد أطراف الدعوى
+            if (!string.IsNullOrWhiteSpace(filter.PartyName))
+                query = query.Where(x =>
+                    (x.Contract.FirstPartyCitizen != null && x.Contract.FirstPartyCitizen.FullName.Contains(filter.PartyName)) ||
+                    (x.Contract.FirstPartyFacility != null && x.Contract.FirstPartyFacility.ArabicFacilityName.Contains(filter.PartyName)) ||
+                    (x.Contract.SecondPartyCitizen != null && x.Contract.SecondPartyCitizen.FullName.Contains(filter.PartyName)) ||
+                    (x.Contract.SecondPartyFacility != null && x.Contract.SecondPartyFacility.ArabicFacilityName.Contains(filter.PartyName)) ||
+                    (x.DefendantCitizen != null && x.DefendantCitizen.FullName.Contains(filter.PartyName)) ||
+                    (x.DefendantFacility != null && x.DefendantFacility.ArabicFacilityName.Contains(filter.PartyName)));
+
+            // التصفية حسب تاريخ تقديم الدعوى
+            if (filter.SubmissionDateFrom.HasValue)
+                query = query.Where(x => x.SentOn >= filter.SubmissionDateFrom.Value);
+            if (filter.SubmissionDateTo.HasValue)
+                query = query.Where(x => x.SentOn <= filter.SubmissionDateTo.Value);
+
+            // التصفية حسب تاريخ تأكيد سداد رسوم الصلح
+            if (filter.ReconciliationFeesPaidDateFrom.HasValue)
+                query = query.Where(x => x.PaidOn >= filter.ReconciliationFeesPaidDateFrom.Value);
+            if (filter.ReconciliationFeesPaidDateTo.HasValue)
+                query = query.Where(x => x.PaidOn <= filter.ReconciliationFeesPaidDateTo.Value);
+
+            // التصفية حسب تاريخ قبول المصلح الدعوى
+            if (filter.ReformerAcceptanceDateFrom.HasValue)
+                query = query.Where(x => x.StartReconciliationDate >= filter.ReformerAcceptanceDateFrom.Value);
+            if (filter.ReformerAcceptanceDateTo.HasValue)
+                query = query.Where(x => x.StartReconciliationDate <= filter.ReformerAcceptanceDateTo.Value);
+
+            // التصفية حسب تاريخ إصدار المحضر
+            if (filter.ReportIssuanceDateFrom.HasValue)
+                query = query.Where(x => x.LitigationRequestReconciliationReports.Any(r => r.ReportDate >= filter.ReportIssuanceDateFrom.Value));
+            if (filter.ReportIssuanceDateTo.HasValue)
+                query = query.Where(x => x.LitigationRequestReconciliationReports.Any(r => r.ReportDate <= filter.ReportIssuanceDateTo.Value));
+
+            var litigationRequests = query
+                .OrderByDescending(x => x.CreatedOn)
+                .AsSplitQuery()
+                .AsNoTracking()
+                .GetPaged(filter.PageIndex, filter.PageSize);
+
+            var dtos = new List<LitigationRequestMircoForAdminReconciliationReportDto>();
+            if (litigationRequests != null)
+            {
+                foreach (var litigationRequest in litigationRequests.Results)
+                {
+                    bool isDone = litigationRequest.IsFinished.HasValue && litigationRequest.IsFinished.Value;
+
+                    dtos.Add(new LitigationRequestMircoForAdminReconciliationReportDto
+                    {
+                        Id = litigationRequest.Id,
+                        RequestDate = litigationRequest.CreatedOn,
+                        RequestCode = litigationRequest.RequestCode,
+                        FirstPartyName = (litigationRequest.Contract.FirstPartyCitizen == null)
+                            ? litigationRequest.Contract.FirstPartyFacility?.ArabicFacilityName ?? string.Empty
+                            : litigationRequest.Contract.FirstPartyCitizen?.FullName ?? string.Empty,
+                        SecondPartyName = (litigationRequest.Contract.SecondPartyCitizen == null)
+                            ? litigationRequest.DefendantFacility?.ArabicFacilityName ?? string.Empty
+                            : litigationRequest.Contract.SecondPartyCitizen.FullName ?? string.Empty,
+                        RequestTypeName = litigationRequest.Contract.LitigationRequestContractType?.TypeName ?? string.Empty,
+                        ReformerName = litigationRequest.ReformerCitizen?.FullName,
+                        Status = litigationRequest.InternalStatus?.RequestStatus,
+                        IsDone = isDone ? "تم" : "--",
+                        SubmissionDate = litigationRequest.SentOn,
+                        FeeConfirmationDate = litigationRequest.PaidOn ?? (litigationRequest.IsExemptionReduction == true || litigationRequest.ExemptionReductionCategoryId.HasValue ? litigationRequest.SentOn : null),
+                        ReformerAcceptanceDate = litigationRequest.StartReconciliationDate,
+                        ReportDate = litigationRequest.LitigationRequestReconciliationReports.FirstOrDefault()?.ReportDate,
+                    });
+                }
+            }
+
+            return new DataResponse<PagedResult<LitigationRequestMircoForAdminReconciliationReportDto>>
+            {
+                Data = new PagedResult<LitigationRequestMircoForAdminReconciliationReportDto>
+                {
+                    Results = dtos,
+                    CurrentPage = litigationRequests!.CurrentPage,
+                    PageCount = litigationRequests.PageCount,
+                    PageSize = litigationRequests.PageSize,
+                    TotalCount = litigationRequests.TotalCount
+                },
+                IsDone = true
+            };
+        }
+
         #endregion
 
 
